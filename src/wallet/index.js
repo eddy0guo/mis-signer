@@ -26,7 +26,7 @@ export default ({ config, db }) => {
 	wallet.get('/1',async (req, res) => {
 
 		walletInst = await getWalletInst();
-		let [result,err] = await to(erc20.testBalanceOf(walletInst))
+		let [err,result] = await to(erc20.testBalanceOf(walletInst))
 		console.log(result,err);
 
 		// await walletInst.queryAllBalance()
@@ -37,8 +37,12 @@ export default ({ config, db }) => {
 	wallet.get('/2',async (req, res) => {
 
 		walletInst = await getWalletInst();
-		let [result,err] = await to(erc20.testTransfer(walletInst))
+		let [err,result] = await to(erc20.testTransfer(walletInst))
 		console.log(result,err);
+		if( !err ){
+			// 先简单处理，Execute 前更新UTXO
+			await walletInst.queryAllBalance()
+		}
 
 		res.json({ result:result,err:err });
 	});

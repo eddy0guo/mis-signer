@@ -6,7 +6,7 @@ const walletHelper = {
     async testWalletWithSeed(seed,pass){
         let wallet = new Wallet();
         await Wallets.addWallet(wallet,true)
-        let parmas = {
+        let params = {
             type: "seed",
             walletName: "My First Wallet"
         };    
@@ -14,18 +14,18 @@ const walletHelper = {
             console.log("seed不正确");
             return;
         }
-        Object.assign(parmas, {
+        Object.assign(params, {
             seed: seed,
             pwd: pass
         });
-        await wallet.import(parmas)
+        await wallet.import(params)
         await wallet.queryAllBalance()
         return wallet
     },
     async testWallet(mnemoArray,password) {
         let wallet = new Wallet();
         await Wallets.addWallet(wallet,true)
-        let parmas = {
+        let params = {
             type: "mnemonic",
             walletName: "My First Wallet"
         };
@@ -33,11 +33,11 @@ const walletHelper = {
             console.log("check mnonemic error");
             return;
         }
-        Object.assign(parmas, {
+        Object.assign(params, {
             mnemonic: mnemoArray.trim(),
             pwd: password
         });
-        await wallet.import(parmas)
+        await wallet.import(params)
         await wallet.queryAllBalance()
         // let address = await wallet.getAddress()
         // console.log(wallet.walletId,address)

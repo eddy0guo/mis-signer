@@ -338,7 +338,7 @@ export default class Wallet {
       }
     }
 
-    console.log(allAddrs)
+    // console.log(allAddrs)
 
 
     let pureAddrNums = 0;

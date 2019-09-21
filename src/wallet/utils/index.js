@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
 import * as moment from 'moment'
-import { Address } from '@spinlee/flowjs'
+import { Address } from '@asimovdev/asimovjs'
 import * as bip39 from "bip39";
 import { crypto } from "bitcore-lib";
 

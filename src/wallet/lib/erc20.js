@@ -28,22 +28,21 @@ New key pair (priv, pubkey) (format:hex)
 
 const abiStr = '[{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"spender","type":"address"},{"name":"amount","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"from","type":"address"},{"name":"to","type":"address"},{"name":"amount","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"getTemplateInfo","outputs":[{"name":"","type":"uint16"},{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"owner","type":"address","value":"0x66b31cab7d9eb10cfcdb7a3c19dcd45f362e15ba8e"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"to","type":"address"},{"name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_category","type":"uint16"},{"name":"_templateName","type":"string"}],"name":"initTemplate","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"owner","type":"address"},{"name":"spender","type":"address"}],"name":"allowance","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"}]';
 
-const contractAddress = '0x6365cba3663d1d1ece4123bf4fdab4b761a56dde07';
-const address1 = '0x66b31cab7d9eb10cfcdb7a3c19dcd45f362e15ba8e';
-const wallet2 = '0x668a4cd95f49cd3eb6639a860d4cc7e94172571e7e';
-const address2 = '0x6619fd2d2fd1db189c075ff25800f7b98ff3205e5a';
-const words2 = 'benefit park visit oxygen supply oil pupil snack pipe decade young bracket';
+const contractAddress = '0x633c6e19bdc52f8d76baaaa5adc963b09a11a8509c';
+
+/**
+ * Addresses of Asilink
+ */
+const addr1 = '0x6699fe56a98aa190bdd63239e82d03ae0dba8ad1a1';
+const addr2 = '0x661743c23467045cde4b199a29568dabdb9733a739';
+
+/**
+ * Address of Wallet
+ */
+const addr0 = '0x6619fd2d2fd1db189c075ff25800f7b98ff3205e5a';
+const word0 = 'benefit park visit oxygen supply oil pupil snack pipe decade young bracket';
 
 //Wallet('benefit park visit oxygen supply oil pupil snack pipe decade young bracket','111111')
-
-const deployContractData = {
-  data: String,
-  to: String,
-  from: String,
-  type: String,
-  amount: Number,
-  toSignMessage: String
-}
 
 export default class erc20 {
   static async testBalanceOf(wallet) {
@@ -52,7 +51,7 @@ export default class erc20 {
       "inputs": [{
         "name": "owner",
         "type": "address",
-        "value": "0x66b31cab7d9eb10cfcdb7a3c19dcd45f362e15ba8e"
+        "value": addr0
       }],
       "name": "balanceOf",
       "outputs": [{
@@ -63,7 +62,7 @@ export default class erc20 {
       "stateMutability": "view",
       "type": "function"
     };
-    return erc20.callFunction(abiInfo, wallet);
+    return erc20.callContract(abiInfo, wallet);
   }
 
   static async testTransfer(wallet) {
@@ -72,7 +71,7 @@ export default class erc20 {
       "inputs": [{
         "name": "to",
         "type": "address",
-        "value": wallet2
+        "value": addr2
       }, {
         "name": "amount",
         "type": "uint256",
@@ -90,120 +89,66 @@ export default class erc20 {
 
     //0xa9059cbb
     // 0x0000000000000000000000668a4cd95f49cd3eb6639a860d4cc7e94172571e7e0000000000000000000000000000000000000000000000000000000000000001
-    return erc20.callFunction(abiInfo, wallet);
+    return erc20.callContract(abiInfo, wallet);
   }
 
 
-  static genData(abiInfo) {
-
-    if (!abiInfo) {
-      return;
-    }
-    if (!abiInfo.inputs) {
-      return;
-    }
-    let funcArgs = [];
-
-    abiInfo.inputs.forEach(i => {
-      if (isArrayType(i.type)) {
-        let arr = JSON.parse(i.value);
-        let type = i.type.replace('[]', '');
-        let result = []
-        arr.forEach(a => {
-          result.push(callParamsConvert(type, a))
-        });
-
-        funcArgs.push(result);
-
-      } else {
-
-        funcArgs.push(callParamsConvert(i.type, i.value))
-
-      }
-
-    })
-
-    let functionHash, paramsHash = ""
-
-    try {
-      functionHash = helper.encodeFunctionId(abiInfo);
-    } catch (e) {
-      console.log({
-        message: e.message,
-        type: 'error'
-      });
-      return;
-    }
-
-    try {
-      paramsHash = helper.encodeParams(abiInfo, funcArgs).toString('hex');
-    } catch (e) {
-      console.log({
-        message: e.message,
-        type: 'error'
-      });
-      return;
-    }
-
-    let data = functionHash.replace('0x', '') + paramsHash.replace('0x', '');
-
-    return data;
-  }
-
-  static async callFunction(abiInfo, wallet) {
+  
+  /**
+   * Call Contract Function with abi Info
+   * @param {*} abiInfo 
+   * @param {*} wallet 
+   */
+  static async callContract(abiInfo, wallet) {
     let params = {
       to: contractAddress,
       amount: 0,
-      assetId: 0,
+      assetId: CONSTANT.DEFAULT_ASSET,
       data: erc20.genData(abiInfo)
     };
     // a9059cbb0000000000000000000000668a4cd95f49cd3eb6639a860d4cc7e94172571e7e0000000000000000000000000000000000000000000000000000000000000001
     console.log(params.data)
 
     if (abiInfo.stateMutability == 'view' || abiInfo.stateMutability == 'pure') {
-      // functionHash = helper.encodeFunctionId(abiInfo)
-      let paramAry = [address1, contractAddress, params.data, abiInfo.name, abiStr]
-      console.log(paramAry)
+      let paramAry = [addr1, contractAddress, params.data, abiInfo.name, abiStr]
       return chain.callreadonlyfunction(paramAry)
-      // console.log(res,err)
     } else {
-      params.from = address2;
-      params.type = 'call';
+      params.from = addr0
+      params.type = CONSTANT.CONTRACT_TYPE.CALL
       // console.log("call:", params)
-      return erc20.doCallContract(params, wallet, 0.02, 0, 0, '111111')
+      return erc20.executeContract(params, wallet, '111111')
       // console.log("call result:", res)
     }
   }
 
-  static async doCallContract(params, wallet, amount, assetId, from, password) {
-    assetId = CONSTANT.DEFAULT_ASSET
-    from = await wallet.getAddress()
+  /**
+   * Execute Contract Function，执行前需要确保本地UTXO缓存是最新的。
+   * @param {*} params 
+   * @param {*} wallet 
+   * @param {*} password 
+   */
+  static async executeContract(params, wallet, password) {
+    // 先简单处理，Execute 前更新UTXO
+    // await wallet.queryAllBalance()
 
-    // console.log("from:",from)
-
-    let {
-      ins,
-      changeOut
-    } = await TranService.chooseUTXO(
+    let { ins, changeOut } = await TranService.chooseUTXO(
       wallet.walletId,
-      amount,
-      assetId,
-      from
+      params.amount,
+      params.assetId,
+      params.from
     );
 
-    // console.log("ins:",ins,changeOut)
+    console.log(ins,changeOut)
 
     let outs = [{
-      amount: btc2sts(parseFloat(amount)),
-      assets: assetId,
+      amount: btc2sts(parseFloat(params.amount)),
+      assets: params.assetId,
       address: params.to,
       data: params.data || "",
       contractType: params.type || ""
     }];
 
-    // console.log("outs:",outs)
-
-    if (changeOut&changeOut.length) {
+    if (changeOut && changeOut.length) {
       outs = outs.concat(changeOut);
     }
 
@@ -218,7 +163,7 @@ export default class erc20 {
     try {
       let rawtx = TranService.generateRawTx(ins, outs, keys);
 
-      console.log("Raw TX:",rawtx)
+      console.log("Raw TX:", rawtx)
       if (!rawtx) {
         console.log("Raw TX Error")
         return;
@@ -227,10 +172,57 @@ export default class erc20 {
       // let decoded = await TranService.decodeRawTx(rawtx)
       // console.log(decoded)
 
-      console.log("success:");
+      console.log("Success:",params,ins,outs);
       return chain.sendrawtransaction([rawtx]);
     } catch (e) {
       console.log("TX Error", e)
     }
   }
+
+
+
+  static genData(abiInfo) {
+    if (!abiInfo) return
+    if (!abiInfo.inputs) return
+
+    let funcArgs = []
+
+    abiInfo.inputs.forEach(i => {
+      if (isArrayType(i.type)) {
+        let arr = JSON.parse(i.value);
+        let type = i.type.replace('[]', '');
+        let result = []
+        arr.forEach(a => {
+          result.push(callParamsConvert(type, a))
+        });
+        funcArgs.push(result);
+      } else {
+        funcArgs.push(callParamsConvert(i.type, i.value))
+      }
+    })
+
+    let functionHash, paramsHash = ""
+
+    try {
+      functionHash = helper.encodeFunctionId(abiInfo);
+    } catch (e) {
+      console.log("encodeFunctionId:",e,abiInfo);
+      return;
+    }
+
+    try {
+      paramsHash = helper.encodeParams(abiInfo, funcArgs).toString('hex');
+    } catch (e) {
+      console.log("encodeParams",e,abiInfo,funcArgs);
+      return;
+    }
+
+    let data = functionHash.replace('0x', '') + paramsHash.replace('0x', '');
+
+    console.log(functionHash, paramsHash)
+
+    return data;
+  }
+
+
 }

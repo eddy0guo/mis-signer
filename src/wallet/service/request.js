@@ -1,7 +1,7 @@
 import axios from 'axios'
 import Cfg from '../cfg'
 import Cache from './cache'
-console.log(Cfg)
+// console.log(Cfg)
 const networkCache = Cache.getNetwork();
 const network = Cfg[networkCache.value]||networkCache.value;
 
@@ -35,13 +35,13 @@ service.interceptors.request.use(config => {
 // respone interceptor
 service.interceptors.response.use(
   response => {
-    console.log("--------service.interceptors.response-------------\n",response.data)
-    console.log("--------service.interceptors.response-------------\n")
+    // console.log("--------service.interceptors.response-------------\n",response.data)
+    // console.log("--------service.interceptors.response-------------\n")
     let data = response.data
-    if (!data){
-      console.log("--------service.interceptors.response-------------\n",response)
-      console.log("--------service.interceptors.response-------------\n")
-    }
+    // if (!data){
+    //   console.log("--------service.interceptors.response-------------\n",response)
+    //   console.log("--------service.interceptors.response-------------\n")
+    // }
     if (data.error) {
       console.log('err' + data.error)
       if (data.error.code == -32000) {
@@ -64,7 +64,7 @@ service.interceptors.response.use(
   })
 
 export function rpc(url, params, host) {
-  console.log("--------rpc-------------\n",url,params,host,"\n--------rpc-------------\n")
+  // console.log("--------rpc-------------\n",url,params,host,"\n--------rpc-------------\n")
   return service.request({
     url: '/',
     host: host,

@@ -1,5 +1,5 @@
 import { HDPublicKey, PrivateKey } from "bitcore-lib";
-import { Address, Network } from "@spinlee/flowjs";
+import { Address, Network } from "@asimovdev/asimovjs";
 
 import Wallets from "./wallets";
 import { CONSTANT } from '../constant'

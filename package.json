@@ -1,7 +1,7 @@
 {
-  "name": "express-es6-rest-api",
+  "name": "mist-signer",
   "version": "0.3.0",
-  "description": "Starter project for an ES6 RESTful Express API",
+  "description": "Mist Signer",
   "main": "dist",
   "scripts": {
     "dev": "nodemon -w src --exec \"babel-node src --presets es2015,stage-0\"",
@@ -24,12 +24,12 @@
       "no-unused-vars": 1
     }
   },
-  "repository": "developit/express-es6-rest-api",
-  "author": "Jason Miller <jason@developit.ca>",
+  "repository": "mistdex/mist-signer",
+  "author": "Ryan",
   "license": "MIT",
   "dependencies": {
+    "@asimovdev/asimovjs": "1.0.30",
     "@spinlee/ethers": "^1.0.12",
-    "@spinlee/flowjs": "^1.0.9",
     "await-to-js": "^2.1.1",
     "axios": "^0.17.0",
     "bignumber.js": "^8.0.2",
@@ -60,6 +60,7 @@
     "qs": "^6.6.0",
     "resource-router-middleware": "^0.6.0",
     "scryptsy": "^2.0.0",
+    "solc": "^0.5.11",
     "uuid": "^3.3.2"
   },
   "devDependencies": {

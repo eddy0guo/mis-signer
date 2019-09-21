@@ -1,7 +1,7 @@
 import { chain } from '../api/chain';
 import { walletRPC } from "../api/wallet";
 
-import { Transaction } from "@spinlee/flowjs"
+import { Transaction } from "@asimovdev/asimovjs"
 import Storage from "./storage";
 import { btc2sts } from "../utils";
 import AddressService from "./address";
@@ -254,7 +254,12 @@ export const TranService = {
 
         let utxos = allUtxos[asset];
 
-        // console.log("chooseUTXO", allUtxos,asset,utxos )
+        console.log("chooseUTXO", allUtxos,asset,utxos )
+
+        if( !utxos ){
+            return { ins: [], changeOut:[] };
+        }
+
         let otherAddrUtxos = [];
 
         if (addr) {
@@ -280,6 +285,8 @@ export const TranService = {
         let [willspendUTXO, totalAmount] = PickUtoxs(amount, utxos);
         let changeOut = [];
 
+        console.log("totalAmount , amount ", totalAmount , amount)
+
         if (totalAmount < amount) {
             let [otherAddrWillspendUTXO, otherAddrTotalAmount] = PickUtoxs(amount - totalAmount, otherAddrUtxos);
             if (otherAddrTotalAmount + totalAmount >= amount) {
@@ -298,6 +305,8 @@ export const TranService = {
                 assets: asset,
                 address: addr ? addr : allAddrs[0][0].address
             })
+
+            console.log("changeOut:",changeOut);
         }
 
         // if (!isDefaultAsset) {

@@ -93,5 +93,10 @@ export const CONSTANT = {
   // PASSWORD_REG: /(?=.*[0-9].*)(?=.*[a-z].*){8,}/,
   PASSWORD_REG: /^[A-Za-z0-9`~!@#$%^&*()_\-+={}\[\]\\|:;"'<>,.?/]{8,}$/,
   ASSETINFO_ABI: [{ "constant": true, "inputs": [{ "name": "assetIndex", "type": "uint32" }], "name": "getAssetInfo", "outputs": [{ "name": "", "type": "bool" }, { "name": "", "type": "string" }, { "name": "", "type": "string" }, { "name": "", "type": "string" }, { "name": "", "type": "uint32" }, { "name": "", "type": "uint256" }], "payable": false, "stateMutability": "view", "type": "function" }],
-  ASSETINFO_ABI_NAME: 'getAssetInfo'
+  ASSETINFO_ABI_NAME: 'getAssetInfo',
+  CONTRACT_TYPE:{
+    NORMAL:"",
+    CALL:"call",
+    CREATE:"create"
+  }
 };
