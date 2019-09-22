@@ -159,10 +159,10 @@ export const chain = {
         return rpc('getrawmempool', params);
     },
 
-    //marshalled: {"jsonrpc":"1.0","method":"getrawtransaction","params":["123"],"id":1},
-    //marshalled: {"jsonrpc":"1.0","method":"getrawtransaction","params":["123",1],"id":1},
+    //marshalled: {"jsonrpc":"1.0","method":"flow_getRawTransaction","params":["123"],"id":1},
+    //marshalled: {"jsonrpc":"1.0","method":"flow_getRawTransaction","params":["123",1],"id":1},
     getrawtransaction: function(params) {
-        return rpc('getrawtransaction', params);
+        return rpc('flow_getRawTransaction', params);
     },
 
     //marshalled: {"jsonrpc":"1.0","method":"gettxout","params":["123",1],"id":1},

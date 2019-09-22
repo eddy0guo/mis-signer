@@ -2,7 +2,7 @@ import helper from '../lib/txHelper'
 import { chain } from '../api/chain'
 import { TranService } from "../service/transaction";
 import { CONSTANT } from "../constant";
-import {btc2sts,isArrayType,callParamsConvert} from "../utils";
+import { btc2sts, isArrayType, callParamsConvert } from "../utils";
 
 export default class Token {
     abiStr = '[{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"spender","type":"address"},{"name":"amount","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"from","type":"address"},{"name":"to","type":"address"},{"name":"amount","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"getTemplateInfo","outputs":[{"name":"","type":"uint16"},{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"owner","type":"address","value":"0x66b31cab7d9eb10cfcdb7a3c19dcd45f362e15ba8e"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"to","type":"address"},{"name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_category","type":"uint16"},{"name":"_templateName","type":"string"}],"name":"initTemplate","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"owner","type":"address"},{"name":"spender","type":"address"}],"name":"allowance","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"}]';
@@ -11,6 +11,16 @@ export default class Token {
     constructor(address) {
         this.address = address;
     }
+
+    /**
+     * unlock once
+     * @param {*} wallet 
+     * @param {*} password 
+     */
+    unlock(wallet, password) {
+        this.wallet = wallet
+        this.password = password
+    }
     /**
      * Call Contract Function with abi Info
      * 除了充值合约，主币的amount应该都是0，扣fee会自动计算。
@@ -18,20 +28,20 @@ export default class Token {
      * @param {*} abiInfo 
      * @param {*} wallet 
      */
-    async callContract(abiInfo,wallet=null,password="") {
+    async callContract(abiInfo) {
         let params = {
             to: this.address,
             amount: 0,
             assetId: CONSTANT.DEFAULT_ASSET,
             data: this.getHexData(abiInfo)
         };
-        
+
         if (abiInfo.stateMutability == 'view' || abiInfo.stateMutability == 'pure') {
             return chain.callreadonlyfunction([this.address, this.address, params.data, abiInfo.name, this.abiStr])
         } else {
-            params.from = await wallet.getAddress()
+            params.from = await this.wallet.getAddress()
             params.type = CONSTANT.CONTRACT_TYPE.CALL
-            return this.executeContract(params, wallet, password)
+            return this.executeContract(params)
         }
     }
 
@@ -40,10 +50,10 @@ export default class Token {
      * await wallet.queryAllBalance()
      * 
      * @param {*} params 
-     * @param {*} wallet 
-     * @param {*} password 
      */
-    async executeContract(params, wallet, password) {
+    async executeContract(params) {
+        let wallet = this.wallet;
+        let password = this.password;
 
         let { ins, changeOut } = await TranService.chooseUTXO(
             wallet.walletId,
@@ -74,6 +84,8 @@ export default class Token {
         try {
             let rawtx = TranService.generateRawTx(ins, outs, keys);
 
+            console.log("RAWTX:",rawtx)
+
             if (!rawtx) {
                 console.log("executeContract Raw TX Error")
                 return;
@@ -86,25 +98,110 @@ export default class Token {
         }
     }
 
-
+    /**
+     * return balance of address
+     * @param {*} address 
+     */
     async balanceOf(address) {
         let abiInfo = {
             "constant": true,
             "inputs": [{
-              "name": "owner",
-              "type": "address",
-              "value": address
+                "name": "owner",
+                "type": "address",
+                "value": address
             }],
             "name": "balanceOf",
             "outputs": [{
-              "name": "balance",
-              "type": "uint256"
+                "name": "balance",
+                "type": "uint256"
             }],
             "payable": false,
             "stateMutability": "view",
             "type": "function"
-          };
-          return this.callContract(abiInfo);
+        };
+        return this.callContract(abiInfo);
+    }
+
+    async allowance(owner, spender) {
+        let abiInfo = {
+            "constant": true,
+            "inputs": [
+                {
+                    "name": "owner",
+                    "type": "address",
+                    "value": owner
+                },
+                {
+                    "name": "spender",
+                    "type": "address",
+                    "value": spender
+                }
+            ],
+            "name": "allowance",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        }
+        return this.callContract(abiInfo);
+    }
+
+    async transfer(address, amount) {
+        let abiInfo = {
+            "constant": false,
+            "inputs": [{
+                "name": "to",
+                "type": "address",
+                "value": address
+            }, {
+                "name": "amount",
+                "type": "uint256",
+                "value": amount
+            }],
+            "name": "transfer",
+            "outputs": [{
+                "name": "",
+                "type": "bool"
+            }],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        };
+        return this.callContract(abiInfo);
+    }
+
+    async approve(spender, amount) {
+        let abiInfo = {
+            "constant": false,
+            "inputs": [
+                {
+                    "name": "spender",
+                    "type": "address",
+                    "value": spender
+                },
+                {
+                    "name": "amount",
+                    "type": "uint256",
+                    "value": amount
+                }
+            ],
+            "name": "approve",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        }
+        return this.callContract(abiInfo);
     }
 
     /**

@@ -4,6 +4,7 @@ import { walletRPC } from './api/wallet'
 import walletHelper from './lib/walletHelper'
 import to from 'await-to-js'
 import TokenTest from './contract/TokenTest'
+import AssetTest from './asset/AssetTest'
 
 let walletInst;
 async function getTestInst(){
@@ -15,6 +16,7 @@ async function getTestInst(){
 export default ({ config, db }) => {
 	let wallet = Router();
 	let tokenTest = new TokenTest()
+	let assetTest = new AssetTest()
 
 	wallet.get('/', async (req, res) => {
 		walletInst = await getTestInst();
@@ -22,19 +24,45 @@ export default ({ config, db }) => {
 		res.json({ wallet:address })
 	});
 
-	wallet.get('/1',async (req, res) => {
+	wallet.get('/balance',async (req, res) => {
 
-		walletInst = await getTestInst();
-		let [err,result] = await to(tokenTest.testBalanceOf(walletInst))
+		let [err,result] = await to(tokenTest.testBalanceOf())
 		console.log(result,err);
 
 		res.json({ result:result,err:err });
 	});
 
-	wallet.get('/2',async (req, res) => {
+	wallet.get('/transfer',async (req, res) => {
 
 		walletInst = await getTestInst();
 		let [err,result] = await to(tokenTest.testTransfer(walletInst))
+		console.log(result,err);
+
+		if( !err ){
+			// 先简单处理，Execute 前更新UTXO
+			await walletInst.queryAllBalance()
+		}
+
+		res.json({ result:result,err:err });
+	});
+
+	wallet.get('/approve',async (req, res) => {
+
+		walletInst = await getTestInst();
+		let [err,result] = await to(tokenTest.testApprove(walletInst))
+		console.log(result,err);
+
+		res.json({ result:result,err:err });
+	});
+
+	/**
+	 * Assets Test
+	 */
+
+	wallet.get('/assetTransfer',async (req, res) => {
+
+		walletInst = await getTestInst();
+		let [err,result] = await to(assetTest.testTransfer(walletInst))
 		console.log(result,err);
 
 		if( !err ){
@@ -63,11 +91,25 @@ export default ({ config, db }) => {
 	 * -information of raw transaction
 	 */
 	wallet.get('/tx',async (req, res) => {
-		walletInst = await getTestInst();
-		let address = await walletInst.getAddress()
+		let address
+		if( req.query.address ){
+			address = req.query.address
+		} else {
+			walletInst = await getTestInst();
+			address = await walletInst.getAddress()
+		}
 		let num = 3
 		let reverse = true
+
 		let [err,result] = await to(chain.searchrawtransactions([address,true,0,num,false,reverse,[]]))
+
+		res.json({result,err });
+	});
+
+	wallet.get('/rawtx',async (req, res) => {
+		let txid = req.query.txid
+
+		let [err,result] = await to(chain.getrawtransaction([txid,true,true]))
 
 		res.json({result,err });
 	});
@@ -83,13 +125,19 @@ export default ({ config, db }) => {
 	 * UTXO information
 	 */
 	wallet.get('/utxo',async (req, res) => {
-		walletInst = await getTestInst();
-		let address = await walletInst.getAddress()
+		let address
+		if( req.query.address ){
+			address = req.query.address
+		} else {
+			walletInst = await getTestInst();
+			address = await walletInst.getAddress()
+		}
 
 		let [err,result] = await to(walletRPC.getutxobyaddress([[address],""]))
 
 		res.json({result,err });
 	});
+
 
 	return wallet;
 }

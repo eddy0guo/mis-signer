@@ -324,6 +324,12 @@ export const TranService = {
 
         return { ins: willspendUTXO, changeOut };
     },
+    /**
+     * 暂时没用，支持多币种手续费的方法。
+     * @param {*} walletId 
+     * @param {*} assetObjArr 
+     * @param {*} addr 
+     */
     async chooseUTXO_V2(walletId, assetObjArr, addr = "") {
         let allUtxos = await Storage.get("walletUTXO" + walletId);
         let allAddrs = await AddressService.getAddrs(walletId);
@@ -419,23 +425,19 @@ export const TranService = {
         changeOut = changeOut.filter(out => out.amount > 0);
         return { ins, changeOut };
       },
-    generateRawTx(inputs, outputs, keys) {
+    generateRawTx(inputs, outputs, keys,gasLimit = 0) {
 
         let tx;
         try {
             //validate
             tx = new Transaction({
                 inputs,
-                outputs
+                outputs,
+                gasLimit
             });
 
         } catch (e) {
-            console.log(e);
-            console.log({
-                message: '交易构建错误，请检查交易数据',
-                type: 'error',
-                duration: 3 * 1000
-            })
+            console.log('交易构建错误，请检查交易数据',e)
             return ''
         }
 
@@ -443,24 +445,14 @@ export const TranService = {
         try {
             tx.sign(keys)
         } catch (e) {
-            console.log(e);
-            console.log({
-                message: '签名错误，请检查密码',
-                type: 'error',
-                duration: 3 * 1000
-            })
+            console.log('签名错误，请检查密码',e);
             return ''
         }
 
         try {
             return tx.toHex();
         } catch (e) {
-            console.log(e);
-            console.log({
-                message: '交易格式化错误，请检查数据',
-                type: 'error',
-                duration: 3 * 1000
-            })
+            console.log('交易格式化错误，请检查数据',e);
             return ''
         }
     }

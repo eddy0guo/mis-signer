@@ -21,38 +21,22 @@ export default class TokenTest {
         this.erc20 = new Token(this.contractAddress)
     }
 
-    async testBalanceOf(wallet) {
+    async testBalanceOf() {
       return this.erc20.balanceOf(this.addr0)
     }
   
     /**
-     * a9059cbb00000000000000000000006619fd2d2fd1db189c075ff25800f7b98ff3205e5a0000000000000000000000000000000000000000000000000000000000000001
-     * a9059cbb0000000000000000000000661743c23467045cde4b199a29568dabdb9733a7390000000000000000000000000000000000000000000000000000000000000001
-     * a9059cbb0000000000000000000000661743c23467045cde4b199a29568dabdb9733a7390000000000000000000000000000000000000000000000000000000000000002
-     * @param {*} wallet 
+     *
+     *  @param {*} wallet 
      */
     async testTransfer(wallet) {
-      let abiInfo = {
-        "constant": false,
-        "inputs": [{
-          "name": "to",
-          "type": "address",
-          "value": this.addr2
-        }, {
-          "name": "amount",
-          "type": "uint256",
-          "value": "1"
-        }],
-        "name": "transfer",
-        "outputs": [{
-          "name": "",
-          "type": "bool"
-        }],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function"
-      };
-      return this.erc20.callContract(abiInfo, wallet,"111111");
+      this.erc20.unlock(wallet,"111111")
+      return this.erc20.transfer(this.addr2,"33");
+    }
+
+    async testApprove(wallet) {
+      this.erc20.unlock(wallet,"111111")
+      return this.erc20.approve(this.addr2,"333");
     }
   
   }
