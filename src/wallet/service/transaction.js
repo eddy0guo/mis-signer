@@ -324,6 +324,101 @@ export const TranService = {
 
         return { ins: willspendUTXO, changeOut };
     },
+    async chooseUTXO_V2(walletId, assetObjArr, addr = "") {
+        let allUtxos = await Storage.get("walletUTXO" + walletId);
+        let allAddrs = await AddressService.getAddrs(walletId);
+    
+        let ins = [], changeOut = [], success = true;
+    
+        // Asset classification
+        const proxyAssetObjArr = [];
+        for (let assetObj of assetObjArr) {
+          let mark = false;
+          for (let proxyAssetObj of proxyAssetObjArr) {
+            if (assetObj.asset === proxyAssetObj.asset) {
+              mark = true;
+              proxyAssetObj.amount = parseFloat(proxyAssetObj.amount) + parseFloat(assetObj.amount);
+              break;
+            }
+          }
+          if (!mark) {
+            proxyAssetObjArr.push(assetObj);
+          }
+        }
+    
+        // multi-currency
+        // assetObj:{amount,asset}
+        for (const assetObj of proxyAssetObjArr) {
+          if (!assetObj || !assetObj.asset) {
+            break;
+          }
+          let utxos = allUtxos[assetObj.asset];
+          let otherAddrUtxos = [];
+    
+          let transCache = Cache.getTransCache(walletId, assetObj.asset);
+    
+          // filter freeze utxo
+          for (let tran of transCache) {
+            for (let freezeUtxo of tran.freezeUtxo) {
+              for (let i = 0; i < utxos.length; i++) {
+                if (utxos[i].txid === freezeUtxo.txid && utxos[i].vout === freezeUtxo.vout) {
+                  utxos.splice(i, 1);
+                  break;
+                }
+              }
+            }
+          }
+    
+          // multiple address
+          if (addr) {
+            const proxy_utxos = [];
+            for (let utxo of utxos) {
+              if (utxo.address === addr) {
+                proxy_utxos.push(utxo);
+              } else {
+                otherAddrUtxos.push(utxo);
+              }
+            }
+            utxos = proxy_utxos;
+          }
+    
+          if (typeof assetObj.amount == 'string') {
+            assetObj.amount = parseFloat(assetObj.amount);
+          }
+    
+          // pick utxo
+          let [willspendUTXO, totalAmount] = PickUtoxs(assetObj.amount, utxos);
+          if (totalAmount < assetObj.amount) {
+            let [otherAddrWillspendUTXO, otherAddrTotalAmount] = PickUtoxs(assetObj.amount - totalAmount, otherAddrUtxos);
+            if (otherAddrTotalAmount + totalAmount >= assetObj.amount) {
+              changeOut.push({
+                amount: btc2sts(totalAmount + otherAddrTotalAmount - assetObj.amount),
+                assets: assetObj.asset,
+                address: addr ? addr : allAddrs[0][0].address
+              })
+              willspendUTXO = willspendUTXO.concat(otherAddrWillspendUTXO);
+            } else {
+              success = false;
+              break;
+            }
+          } else {
+            changeOut.push({
+              amount: btc2sts(totalAmount - assetObj.amount),
+              assets: assetObj.asset,
+              address: addr ? addr : allAddrs[0][0].address
+            })
+          }
+    
+          ins = ins.concat(willspendUTXO);
+        }
+    
+        if (!success) {
+          ins = [], changeOut = []
+        }
+    
+        changeOut = changeOut.filter(out => out.amount > 0);
+        return { ins, changeOut };
+      },
     generateRawTx(inputs, outputs, keys) {
 
         let tx;
