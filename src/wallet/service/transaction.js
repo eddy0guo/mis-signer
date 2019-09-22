@@ -254,7 +254,7 @@ export const TranService = {
 
         let utxos = allUtxos[asset];
 
-        console.log("chooseUTXO", allUtxos,asset,utxos )
+        // console.log("chooseUTXO", allUtxos,asset,utxos )
 
         if( !utxos ){
             return { ins: [], changeOut:[] };
@@ -426,7 +426,6 @@ export const TranService = {
         return { ins, changeOut };
       },
     generateRawTx(inputs, outputs, keys,gasLimit = 0) {
-
         let tx;
         try {
             //validate
@@ -441,8 +440,9 @@ export const TranService = {
             return ''
         }
 
-
         try {
+            console.log("KEYS:",keys)
+            console.log("TX:",tx.toHex())
             tx.sign(keys)
         } catch (e) {
             console.log('签名错误，请检查密码',e);

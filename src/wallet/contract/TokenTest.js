@@ -31,12 +31,12 @@ export default class TokenTest {
      */
     async testTransfer(wallet) {
       this.erc20.unlock(wallet,"111111")
-      return this.erc20.transfer(this.addr2,"33");
+      return this.erc20.transfer(this.addr2,33);
     }
 
     async testApprove(wallet) {
       this.erc20.unlock(wallet,"111111")
-      return this.erc20.approve(this.addr2,"333");
+      return this.erc20.approve(this.addr2,333);
     }
   
   }
