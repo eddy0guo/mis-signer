@@ -7,7 +7,7 @@ export default class StorageTest {
     contract;
 
     constructor(){
-        this.contract = new Token(this.contractAddress)
+        this.contract = new Contract(this.contractAddress)
     }
 
     async testInsert() {
