@@ -4,19 +4,23 @@ import { walletRPC } from './api/wallet'
 import walletHelper from './lib/walletHelper'
 import to from 'await-to-js'
 import TokenTest from './contract/TokenTest'
+import OrganizationTest from './contract/OrganizationTest'
 import AssetTest from './asset/AssetTest'
 
 let walletInst;
 async function getTestInst(){
 	if( walletInst ) return walletInst;
-	walletInst = await walletHelper.testWallet('benefit park visit oxygen supply oil pupil snack pipe decade young bracket','111111')
+	walletInst = await walletHelper.testWallet('ivory local this tooth occur glide wild wild few popular science horror','111111')
 	return walletInst
 }
 
 export default ({ config, db }) => {
 	let wallet = Router();
 	let tokenTest = new TokenTest()
+	let organizationTest = new OrganizationTest()
 	let assetTest = new AssetTest()
+
+
 
 	wallet.get('/', async (req, res) => {
 		walletInst = await getTestInst();
@@ -27,6 +31,7 @@ export default ({ config, db }) => {
 	wallet.get('/balance',async (req, res) => {
 
 		let [err,result] = await to(tokenTest.testBalanceOf())
+
 		console.log(result,err);
 
 		res.json({ result:result,err:err });
@@ -138,6 +143,22 @@ export default ({ config, db }) => {
 		res.json({result,err });
 	});
 
+    wallet.get('/getTemplateInfo',async (req, res) => {
+
+		let [err,result] = await to(organizationTest.testGetTemplateInfo());
+		console.log(result,err);
+
+		res.json({ result:result,err:err });
+	});
+
+    wallet.get('/issueMoreAsset/:index',async (req, res) => {
+       let index = '000000000000000200000005' 
+       walletInst = await getTestInst();
+		let [err,result] = await to(organizationTest.testissueMoreAsset(index,walletInst));
+		console.log(result,err);
+
+		res.json({ result:result,err:err });
+	});
 
 	return wallet;
 }
