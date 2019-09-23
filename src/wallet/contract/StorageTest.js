@@ -6,32 +6,32 @@ export default class StorageTest {
     // 对应 protocol demo下的Storage合约
     contract;
 
-    constructor(){
+    constructor() {
         this.contract = new Contract(this.contractAddress)
     }
 
-    async testInsert() {
+    async testInsert(walletInst) {
         let abiInfo = {
-        "constant": false,
-        "inputs": [{
-            "components": [{
-            "name": "text",
-            "type": "string"
+            "constant": false,
+            "inputs": [{
+                "components": [{
+                    "name": "text",
+                    "type": "string"
+                }],
+                "name": "recordData",
+                "type": "tuple"
             }],
-            "name": "recordData",
-            "type": "tuple"
-        }],
-        "name": "Insert",
-        "outputs": [{
-            "name": "success",
-            "type": "bool"
-        }],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function"
+            "name": "Insert",
+            "outputs": [{
+                "name": "success",
+                "type": "bool"
+            }],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
         }
-        
-      return this.contract.callContract(abiInfo)
+        this.contract.unlock(walletInst, "111111")
+        return this.contract.callContract(abiInfo)
     }
-  
-  }
+
+}
