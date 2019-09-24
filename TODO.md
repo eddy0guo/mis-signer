@@ -50,6 +50,7 @@
 ### Wallet
 
 - GetBalance
+- Transfer
 - WrapAsset
 - UnwarpAsset
 
@@ -67,3 +68,9 @@
 - (later)UnwrapAsset
 - approve
 - transferFrom
+
+
+## Safe
+
+- Order Sign
+- Approve Method
