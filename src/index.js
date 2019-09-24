@@ -7,6 +7,7 @@ import initializeDb from './db';
 import middleware from './middleware';
 import api from './api';
 import wallet from './wallet';
+import adex  from './adex';
 import config from './config.json';
 
 let app = express();
@@ -33,6 +34,7 @@ initializeDb( db => {
 	// api router
 	app.use('/api', api({ config, db }));
 	app.use('/wallet', wallet({ config, db }));
+	app.use('/adex',adex({ config, db }));
 
 	app.server.listen(process.env.PORT || config.port, () => {
 		console.log(`Started on port ${app.server.address().port}`);

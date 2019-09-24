@@ -6,6 +6,11 @@ import to from 'await-to-js'
 import TokenTest from './contract/TokenTest'
 import OrganizationTest from './contract/OrganizationTest'
 import AssetTest from './asset/AssetTest'
+<<<<<<< Updated upstream
+=======
+import StorageTest from './contract/StorageTest'
+import myTokena from './contract/myToken'
+>>>>>>> Stashed changes
 
 let walletInst;
 async function getTestInst(){
@@ -19,8 +24,13 @@ export default ({ config, db }) => {
 	let tokenTest = new TokenTest()
 	let organizationTest = new OrganizationTest()
 	let assetTest = new AssetTest()
+<<<<<<< Updated upstream
 
 
+=======
+	let storageTest = new StorageTest()
+	let myToken = new myTokena()
+>>>>>>> Stashed changes
 
 	wallet.get('/', async (req, res) => {
 		walletInst = await getTestInst();
@@ -28,6 +38,43 @@ export default ({ config, db }) => {
 		res.json({ wallet:address })
 	});
 
+<<<<<<< Updated upstream
+=======
+	wallet.get('/storage',async (req, res) => {
+		walletInst = await getTestInst();
+		let [err,result] = await to(storageTest.testInsert(walletInst))
+		console.log(result,err);
+
+		res.json({ result:result,err:err });
+	});
+
+    wallet.get('/mybalance/:address',async (req, res) => {
+
+        let address = "sss";
+		let [err,result] = await to(myToken.myBalance(address))
+		console.log(result,err);
+
+		res.json({ result:result,err:err });
+	});
+
+	wallet.get('/myAprove',async (req, res) => {
+
+		walletInst = await getTestInst();
+		let [err,result] = await to(tokenTest.testTransfer(walletInst))
+		console.log(result,err);
+
+		if( !err ){
+			// 先简单处理，Execute 前更新UTXO
+			await walletInst.queryAllBalance()
+		}
+
+		res.json({ result:result,err:err });
+	});
+
+
+
+
+>>>>>>> Stashed changes
 	wallet.get('/balance',async (req, res) => {
 
 		let [err,result] = await to(tokenTest.testBalanceOf())

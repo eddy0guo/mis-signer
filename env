@@ -1,0 +1,13 @@
+  npm install pg --sava 
+   1048  npm run dev
+    1049  npm install --save-dev babel-preset-es2015
+     1050  npm run dev
+      1051  npm install --save-dev babel-cli
+       1052  npm run dev
+        1053  npm install --save-dev babel-preset-stage-0
+         1054  npm run dev
+          1055  npm install resource-router-middleware --save
+           1056  npm run dev
+            1057  npm install axios --save
+             1058  npm run dev
+

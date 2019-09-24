@@ -248,6 +248,8 @@ export default class Token {
         }
 
         let data = functionHash.replace('0x', '') + paramsHash.replace('0x', '');
+
+        console.log("gxy---gethexdata=",data);
         return data;
     }
 

@@ -1,0 +1,9 @@
+
+> mist-signer@0.3.0 dev /home/mist/gitlab_code/gitlab/mist-signer
+> nodemon -w src --exec "babel-node src --presets es2015,stage-0"
+
+[33m[nodemon] 1.19.2[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching dir(s): src/**/*[39m
+[32m[nodemon] starting `babel-node src --presets es2015,stage-0`[39m
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
