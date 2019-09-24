@@ -7,6 +7,12 @@ import TokenTest from './contract/TokenTest'
 import AssetTest from './asset/AssetTest'
 import StorageTest from './contract/StorageTest'
 
+let testWallets = {
+	"0x6619fd2d2fd1db189c075ff25800f7b98ff3205e5a":"benefit park visit oxygen supply oil pupil snack pipe decade young bracket",
+	"0x66b31cab7d9eb10cfcdb7a3c19dcd45f362e15ba8e":"federal strong comic spy real develop cave ramp equip cheap behind negative",
+	"0x668a4cd95f49cd3eb6639a860d4cc7e94172571e7e":"present shoe never wise ignore nuclear bring sick left kangaroo shed gold"
+}
+
 let walletInst;
 async function getTestInst(){
 	if( walletInst ) return walletInst;

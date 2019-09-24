@@ -1,5 +1,4 @@
 'use strict'
-// var ethers = require('@spinlee/ethers')
 var asimov = require('@asimovdev/asimovjs')
 
 module.exports = {

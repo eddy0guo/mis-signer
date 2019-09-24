@@ -29,7 +29,6 @@
   "license": "MIT",
   "dependencies": {
     "@asimovdev/asimovjs": "1.0.30",
-    "@spinlee/ethers": "^1.0.12",
     "await-to-js": "^2.1.1",
     "axios": "^0.17.0",
     "bignumber.js": "^8.0.2",

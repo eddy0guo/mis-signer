@@ -12,23 +12,6 @@
     chai "^4.2.0"
     mock "^0.1.1"
 
-"@spinlee/ethers@^1.0.12":
-  version "1.0.12"
-  resolved "https://registry.npm.taobao.org/@spinlee/ethers/download/@spinlee/ethers-1.0.12.tgz#190c1fceee5e90a8fed073b55f4214f1776a7046"
-  integrity sha1-GQwfzu5ekKj+0HO1X0IU8XdqcEY=
-  dependencies:
-    "@types/node" "^10.3.2"
-    aes-js "3.0.0"
-    bn.js "^4.4.0"
-    elliptic "6.3.3"
-    for-own "^1.0.0"
-    hash.js "1.1.3"
-    js-sha3 "0.5.7"
-    scrypt-js "2.0.4"
-    setimmediate "1.0.4"
-    uuid "2.0.1"
-    xmlhttprequest "1.8.0"
-
 "@types/es6-promise@^3.3.0":
   version "3.3.0"
   resolved "https://registry.npm.taobao.org/@types/es6-promise/download/@types/es6-promise-3.3.0.tgz#61b55e554fd807b563f158a7986ee53d3a5a5a9d"
@@ -2366,13 +2349,6 @@ for-own@^0.1.4:
   version "0.1.5"
   resolved "https://registry.npm.taobao.org/for-own/download/for-own-0.1.5.tgz#5265c681a4f294dabbf17c9509b6763aa84510ce"
   integrity sha1-UmXGgaTylNq78XyVCbZ2OqhFEM4=
-  dependencies:
-    for-in "^1.0.1"
-
-for-own@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.npm.taobao.org/for-own/download/for-own-1.0.0.tgz#c63332f415cedc4b04dbfe70cf836494c53cb44b"
-  integrity sha1-xjMy9BXO3EsE2/5wz4NklMU8tEs=
   dependencies:
     for-in "^1.0.1"
 
