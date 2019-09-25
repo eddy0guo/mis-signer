@@ -1,8 +1,8 @@
 -- tokens table
 create table newtokens(
  symbol text primary key,
- address text not null,
- decimals integer not null,
+ address text ,
+ decimals integer ,
  created_at timestamp
 );
 create unique index idx_newtokens_address on newtokens (address);
@@ -10,11 +10,11 @@ create unique index idx_newtokens_address on newtokens (address);
 -- markets table
 create table newmarkets(
  id text primary key,
- base_token_address text not null,
- base_token_symbol text not null,
+ base_token_address text ,
+ base_token_symbol text ,
 
- quote_token_address text not null,
- quote_token_symbol text not null,
+ quote_token_address text ,
+ quote_token_symbol text ,
 
  created_at timestamp
 );
@@ -22,20 +22,20 @@ create table newmarkets(
 -- trades table
 create table newtrades(
   id SERIAL PRIMARY KEY,
-  transaction_id integer not null,
+  transaction_id integer ,
   transaction_hash text,
 
-  status text not null,
-  market_id text not null,
+  status text ,
+  market_id text ,
 
-  maker  text not null,
-  taker  text not null,
-  price numeric(32,18) not null,
-  amount numeric(32,18) not null,
+  maker  text ,
+  taker  text ,
+  price numeric(32,18) ,
+  amount numeric(32,18) ,
 
-  taker_side text not null,
-  maker_order_id  text not null,
-  taker_order_id text not null,
+  taker_side text ,
+  maker_order_id  text ,
+  taker_order_id text ,
   created_at timestamp
 );
 create index idx_newtrades_transaction_hash on newtrades (transaction_hash);
@@ -45,18 +45,18 @@ create index idx_newmarket_id_status_executed_at on trades (market_id, status, c
 
 -- orders table
 create table neworders(
-  id text not null primary key,
-  trader_address text not null,
-  market_id text not null,
-  side text not null,
-  price  numeric(32,18) not null,
-  amount  numeric(32,18) not null,
-  status text not null,
-  type text not null,
-  available_amount  numeric(32,18) not null,
-  confirmed_amount  numeric(32,18) not null,
-  canceled_amount  numeric(32,18) not null,
-  pending_amount  numeric(32,18) not null,
+  id text  primary key,
+  trader_address text ,
+  market_id text ,
+  side text ,
+  price  numeric(32,18) ,
+  amount  numeric(32,18) ,
+  status text ,
+  type text ,
+  available_amount  numeric(32,18) ,
+  confirmed_amount  numeric(32,18) ,
+  canceled_amount  numeric(32,18) ,
+  pending_amount  numeric(32,18) ,
 
   updated_at  timestamp,
   created_at  timestamp
@@ -68,8 +68,8 @@ create index idx_newmarket_trader_address on neworders (trader_address, market_i
 create table newtransactions(
   id SERIAL PRIMARY KEY,
   transaction_hash text,
-  market_id text not null,
-  status text not null,
+  market_id text ,
+  status text ,
   updated_at  timestamp,
   created_at timestamp
 );
@@ -78,11 +78,11 @@ create unique index idx_newtransactions_transaction_hash on newtransactions (tra
 -- launch_logs table
 create table newlaunch_logs(
   id SERIAL PRIMARY KEY,
-  status text not null,
+  status text ,
   transaction_hash text,
   block_number integer,
-  t_from text not null,
-  t_to text not null,
+  t_from text ,
+  t_to text ,
   value numeric(32,18),
   updated_at  timestamp,
   created_at  timestamp

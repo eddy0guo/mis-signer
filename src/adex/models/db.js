@@ -1,3 +1,4 @@
+import to from 'await-to-js'
 
 export default class db{
         clientDB;
@@ -12,9 +13,9 @@ export default class db{
                                 });
                 this.clientDB  = client;
         }
-        async insertorder(ordermessage) {
+        async insert_order(ordermessage) {
                 
-               this.clientDB.query('insert into neworder values($1,$2,$3)',ordermessage, function(err, data) {
+               this.clientDB.query('insert into neworders values($6,$1,$2,$3,$4,$5)',ordermessage, function(err, data) {
                                 if(err) {
                                 return console.error('查询失败', err);
                                 }else{
@@ -25,7 +26,8 @@ export default class db{
                                 }); 
                return "sss";
        } 
-        async listorders() {
+        async list_orders(filter) {
+
                this.clientDB.query('SELECT * FROM orders limit 1', function(err, data) {
                                 if(err) {
                                 return console.error('查询失败', err);
@@ -38,7 +40,27 @@ export default class db{
                return "sss";
        } 
 
-      async findorders(orderid) {
+      async filter_orders(filter,sss) {
+                let result; 
+               // await this.clientDB.query('SELECT * FROM orders where type=$2 and price <= $1', filter,function(err, data) {
+                await this.clientDB.query('SELECT * FROM orders where price <= $1', filter,function(err, data) {
+                                if(err) {
+                                return console.error('查询失败', err);
+                                }else{
+
+                                result = JSON.stringify(data.rows); 
+                                console.log('成功1111',JSON.stringify(data.rows)); 
+                                return JSON.stringify(data.rows);
+                                }   
+                                }); 
+
+                //                sleep(1);
+                                console.log('igxy-2222---成功',result); 
+               return "sss";
+       } 
+
+
+      async find_orders(orderid) {
                 let id = [orderid];
                 this.clientDB.query('SELECT * FROM orders where id=$1', id,function(err, data) {
                                 if(err) {

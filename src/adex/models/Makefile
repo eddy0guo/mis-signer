@@ -7,6 +7,9 @@ initdb: rmdb
 seed: initdb
 	psql postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable < ./seed.sql
 
+test:
+	psql postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable < ./test.sql
+
 clean:
 	go clean
 
