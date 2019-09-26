@@ -15,7 +15,7 @@ export default class db{
         }
         async insert_order(ordermessage) {
                 
-               this.clientDB.query('insert into neworders values($6,$1,$2,$3,$4,$5)',ordermessage, function(err, data) {
+               this.clientDB.query('insert into neworders values($7,$1,$2,$3,$4,$5)',ordermessage, function(err, data) {
                                 if(err) {
                                 return console.error('查询失败', err);
                                 }else{
@@ -40,10 +40,10 @@ export default class db{
                return "sss";
        } 
 
-      async filter_orders(filter,sss) {
+      async filter_orders(filter) {
                 let result; 
                // await this.clientDB.query('SELECT * FROM orders where type=$2 and price <= $1', filter,function(err, data) {
-                await this.clientDB.query('SELECT * FROM orders where price <= $1', filter,function(err, data) {
+                await this.clientDB.query('SELECT * FROM orders limit 2',function(err, data) {
                                 if(err) {
                                 return console.error('查询失败', err);
                                 }else{
@@ -56,7 +56,7 @@ export default class db{
 
                 //                sleep(1);
                                 console.log('igxy-2222---成功',result); 
-               return "sss";
+               return result;
        } 
 
 
