@@ -99,13 +99,16 @@ export default class engine{
 
         async call_asimov(trades) {
                 
+           // let addr = '0x6699fe56a98aa190bdd63239e82d03ae0dba8ad1a1';
+           // let value = 33;
 
                 console.log("gxy44-trades = --",trades);
-                let tokenTest = new TokenTest()
+                let tokenTest = new TokenTest();
                 walletInst = await getTestInst();
-                let [err,result] = await to(tokenTest.testTransfer(walletInst))
-                 console.log(result,err);
-
+                for(item in trades){
+                        let [err,result] = await to(tokenTest.testTransferfrom(walletInst,trades[item].maker,trades[item].amount))
+                         console.log(result,err);
+                }
                 if( !err ){
                         // 先简单处理，Execute 前更新UTXO
                         await walletInst.queryAllBalance()

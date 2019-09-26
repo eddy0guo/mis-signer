@@ -6,8 +6,7 @@ export default class TokenTest {
     /**
      * Addresses of Asilink
      */
-    addr1 = '0x6699fe56a98aa190bdd63239e82d03ae0dba8ad1a1';
-    addr2 = '0x661743c23467045cde4b199a29568dabdb9733a739';
+    mist_ex = '0x637f192bff74f7205f98cdba6e058a0be58f369b73';
 
     /**
      * Address of Wallet
@@ -34,9 +33,15 @@ export default class TokenTest {
       return this.erc20.transfer(this.addr2,33);
     }
 
-    async testApprove(wallet) {
+    async testApprove(wallet,mist_ex,value) {
       this.erc20.unlock(wallet,"111111")
-      return this.erc20.approve(this.addr2,333);
+      return this.erc20.approve(mist_ex,value);
     }
+
+     async testTransfrom(wallet,addr,value) {
+      this.erc20.unlock(wallet,"111111")
+      return this.erc20.transferfrom(mist_ex,addr,value);
+    }
+
   
   }

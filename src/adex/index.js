@@ -1,11 +1,21 @@
 import to from 'await-to-js'
-
+import TokenTest from '../wallet/contract/TokenTest'
+import walletHelper from '../wallet/lib/walletHelper'
 import { Router } from 'express'
 import order1 from './api/order'
+
+let walletInst;
+async function getTestInst(){
+        if( walletInst ) return walletInst;
+                walletInst = await walletHelper.testWallet('ivory local this tooth occur glide wild wild few popular science horror','111111')
+                                return walletInst
+}
 
 export default ({ config, db }) => {
 	let adex  = Router();
     let order = new order1();
+    let tokenTest = new TokenTest()
+
         
    	adex.get('/hello', async (req, res) => {
        let result = "sss";
@@ -14,13 +24,41 @@ export default ({ config, db }) => {
 	});
 
 
-	adex.get('/build_order', async (req, res) => {
+    adex.get('/balance',async (req, res) => {
 
-//          let   trader_address   = "0x43d9649b4a2d2ef6d03a877d440d448d1c1ce"; //       | text                        |           | not null | 
-//          let   market_id        = "ASIM-PAI"      ; //       | text                        |           | not null | 
-//          let   side             = "sell"      ; //       | text                        |           | not null | 
-//          let   price            = 1.10000000000000000      ; //       | numeric(32,18)              |           | not null | 
-//          let   amount           = 10.966700000000000000      ; //       | numeric(32,18)              |           | not null | 
+                    let [err,result] = await to(tokenTest.testBalanceOf())
+                    console.log(result,err);
+
+                    res.json({ result:result,err:err });
+                    });
+
+    adex.get('/transfer',async (req, res) => {
+
+                    walletInst = await getTestInst();
+                    let [err,result] = await to(tokenTest.testTransfer(walletInst))
+                    console.log(result,err);
+
+                    if( !err ){
+                    // 先简单处理，Execute 前更新UTXO
+                    await walletInst.queryAllBalance()
+                    }
+
+                    res.json({ result:result,err:err });
+                    });
+
+    adex.get('/approve',async (req, res) => {
+                    
+                    let mist_ex = "0x637f192bff74f7205f98cdba6e058a0be58f369b73";
+                    let value = "1234";
+                    walletInst = await getTestInst();
+                    let [err,result] = await to(tokenTest.testApprove(walletInst,mist_ex,value))
+                    console.log(result,err);
+
+                    res.json({ result:result,err:err });
+                    });
+
+    adex.get('/build_order', async (req, res) => {
+
 //           id               | text                        |           | not null | 
 //            trader_address   | text                        |           |          | 
 //             market_id        | text                        |           |          | 

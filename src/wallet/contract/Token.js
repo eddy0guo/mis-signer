@@ -207,6 +207,12 @@ export default class Token {
         return this.callContract(abiInfo);
     }
 
+    async transferfrom(from, to,amount) {
+        let abiInfo = {"constant":false,"inputs":[{"name":"from","type":"address","value":from},{"name":"to","type":"address","value":to},{"name":"amount","type":"uint256","value":amount}],"name":"transferFrom","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"};
+        return this.callContract(abiInfo);
+    }  
+
+
     /**
      * Generate ABI Hex Data
      * @param {*} abiInfo 
