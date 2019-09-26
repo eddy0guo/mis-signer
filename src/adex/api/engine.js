@@ -37,9 +37,10 @@ export default class engine{
                 console.log("gxy44444555----length",result.length);
                 for (var i = 0;i<result.length ;i++){
 
-                    match_orders.push(result[i]);
                     //返回的字面量用+处理成数值
-                    amount += +result[i].amount;  
+                    result[i].amount = +result[i].amount;
+                    match_orders.push(result[i]);
+                    amount += result[i].amount;  
                     if (amount >= message.amount){
                         
                         break;
@@ -56,53 +57,23 @@ export default class engine{
         }
         
         async make_trades(find_orders,my_order){
-            /*
-             *------------------+--------------------------
-             id               | integer                    
-             transaction_id   | integer                    
-             transaction_hash | text                       
-             status           | text                       
-             market_id        | text                       
-             maker            | text                       
-             taker            | text                       
-             price            | numeric(32,18)             
-             amount           | numeric(32,18)             
-             taker_side       | text                       
-             maker_order_id   | text                       
-             taker_order_id   | text                       
-             created_at       | timestamp without time zone
-             *
-             */
-           /***
-            *
-            *
-            *  { id:
-            *       '7ffad1ed9c1e152e8bc0e6064bbefb042e6739254f5f618d93659c3cfd762992',
-            *           trader_address: '0x43d9649b4a2d2ef6d03a877d440d448d1c1ce',
-            *               market_id: 'ASIM-PAI',
-            *                   side: 'buy',
-            *                       price: '1.430000000000000000',
-            *                           amount: '4.966700000000000000',
-            *                               status: '10:44:31 AM',
-            *                                   type: null,
-            *                                       available_amount: null,
-            *                                           confirmed_amount: null,
-            *                                               canceled_amount: null,
-            *                                                   pending_amount: null,
-            *                                                       updated_at: null,
-            *                                                           created_at: null },
-            */
                  var create_time = date.format(new Date(),'YYYY-MM-DD HH:mm:ss'); 
                 let trade_arr = [];
                 let amount=0;
                 for(var item = 0; item < find_orders.length;item++){
                     
                     //最低价格的一单最后成交，成交数量按照吃单剩下的额度成交,并且更新最后一个order的可用余额fixme__gxy
+                    amount += find_orders[item].amount;
+
                     if(item == find_orders.length - 1 && amount > my_order.amount ){
+                        
                                 
-                       find_orders[item].amount = find_orders[item].amount - amount;
+                       find_orders[item].amount -= (amount - my_order.amount);
+                    console.log("gxyyyimmmmm----", find_orders[item].amount);
 
                     }
+
+                    console.log("gxyyy----", find_orders[item].amount);
                         let trade={
                            id:               null,
                            transaction_id:   null,
@@ -119,8 +90,7 @@ export default class engine{
                            created_at:       create_time
                         };
                   //插入trades表_  fixme__gxy        
-                    amount += find_orders[item].amount;
-                        trade_arr.push(trade);
+                    trade_arr.push(trade);
                 }
                 
                 return trade_arr;
@@ -129,6 +99,8 @@ export default class engine{
 
         async call_asimov(trades) {
                 
+
+                console.log("gxy44-trades = --",trades);
                 let tokenTest = new TokenTest()
                 walletInst = await getTestInst();
                 let [err,result] = await to(tokenTest.testTransfer(walletInst))

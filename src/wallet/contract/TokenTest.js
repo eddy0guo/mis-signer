@@ -1,7 +1,7 @@
 import Token from './Token'
 
 export default class TokenTest {
-    contractAddress = '0x633c6e19bdc52f8d76baaaa5adc963b09a11a8509c';
+    contractAddress = '0x631f62ca646771cd0c78e80e4eaf1d2ddf8fe414bf';
 
     /**
      * Addresses of Asilink
@@ -12,8 +12,8 @@ export default class TokenTest {
     /**
      * Address of Wallet
      */
-    addr0 = '0x6619fd2d2fd1db189c075ff25800f7b98ff3205e5a';
-    word0 = 'benefit park visit oxygen supply oil pupil snack pipe decade young bracket';
+    addr0 = '0x66edd03c06441f8c2da19b90fcc42506dfa83226d3';
+    word0 = 'ivory local this tooth occur glide wild wild few popular science horror';
 
     erc20;
 
