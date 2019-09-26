@@ -1,6 +1,8 @@
 import client from '../models/db'
 import engine from './engine'
+import utils2 from './utils'
 const crypto = require('crypto');
+var date = require("silly-datetime");
 //require('babel-polyfill');
 //require('babel-register');
 
@@ -12,31 +14,42 @@ export default class order{
          this.db =  new client();
          this.exchange = new engine(this.db);
          this.root_hash = crypto.createHmac('sha256', '123')
+         this.utils = new utils2;
     }
 
 
-
-
-//   var sha256 =   function (str){
-//            let hash = crypto.createHmac('sha256', '123456')
-//                    .update(str, 'utf8')
-//                    .digest('hex'); // a65014c0dfa57751a749866e844b6c42266b9b7d54d5c59f7f7067d973f77817
-//            return hash;
-//    }
-//
-
     async build(message) {
-            var now  = new Date();
-            var create_time = now.toLocaleTimeString();
-                    message.push(create_time);
 
-            let st r= message.join("");
-            let hash = root_hash.update(str, 'utf8').digest('hex'); // a65014c0dfa57751a749866e844b6c42266b9b7d54d5c59f7f7067d973f77817
-            console.log("id=",hash);
-            console.log("string=",message.join(""));
-            message.push(hash);
-            let result = this.db.insert_order(message);
-            this.exchange.match(message);
+            var create_time = date.format(new Date(),'YYYY-MM-DD HH:mm:ss'); 
+            
+            let arr = this.utils.arr_values(message);
+            arr.push(create_time);
+            let str = arr.join("");
+            let hash = this.root_hash.update(str, 'utf8').digest('hex'); // a65014c0dfa57751a749866e844b6c42266b9b7d54d5c59f7f7067d973f77817
+
+
+             message.id = hash;
+            message.created_at= create_time;
+            
+            let arr_message = this.utils.arr_values(message);
+
+
+            console.log("string=",arr_message.join("-"));
+
+            
+           
+            let result = await this.db.insert_order(arr_message);
+
+            let find_orders = await this.exchange.match(message);
+
+
+            console.log("findorderssssss=",find_orders);
+
+            let trades = await this .exchange.make_trades(find_orders);
+
+           
+
+            console.log("findorders=",find_orders);
             return result;
     }
 

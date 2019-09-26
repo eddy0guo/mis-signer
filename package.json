@@ -62,6 +62,7 @@
     "qs": "^6.6.0",
     "resource-router-middleware": "^0.6.0",
     "scryptsy": "^2.0.0",
+    "silly-datetime": "^0.1.2",
     "solc": "^0.5.11",
     "uuid": "^3.3.2"
   },
