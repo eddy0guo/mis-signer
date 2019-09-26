@@ -38,9 +38,9 @@ export default class TokenTest {
       return this.erc20.approve(mist_ex,value);
     }
 
-     async testTransfrom(wallet,addr,value) {
+     async testTransferfrom(wallet,addr,value) {
       this.erc20.unlock(wallet,"111111")
-      return this.erc20.transferfrom(mist_ex,addr,value);
+      return this.erc20.transferfrom(this.mist_ex,addr,value);
     }
 
   

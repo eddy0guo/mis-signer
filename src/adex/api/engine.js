@@ -105,7 +105,7 @@ export default class engine{
                 console.log("gxy44-trades = --",trades);
                 let tokenTest = new TokenTest();
                 walletInst = await getTestInst();
-                for(item in trades){
+                for(var item in trades){
                         let [err,result] = await to(tokenTest.testTransferfrom(walletInst,trades[item].maker,trades[item].amount))
                          console.log(result,err);
                 }
