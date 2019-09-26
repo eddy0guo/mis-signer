@@ -45,11 +45,11 @@ export default class order{
 
             console.log("findorderssssss=",find_orders);
 
-            let trades = await this .exchange.make_trades(find_orders);
+            let trades = await this.exchange.make_trades(find_orders,message);
 
-           
+            
+            let txid = await this.exchange.call_asimov(trades)
 
-            console.log("findorders=",find_orders);
             return result;
     }
 

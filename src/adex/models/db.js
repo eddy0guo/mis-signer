@@ -36,8 +36,8 @@ export default class db{
         } 
 
         async filter_orders(filter) {
-                
-                let result = await this.clientDB.query('SELECT * FROM neworders where price>=$1 and side=$2 order by price desc',filter); 
+               //价格低的匹配优先级低 
+                let result = await this.clientDB.query('SELECT * FROM neworders where price>=$1 and side=$2 order by price',filter); 
                 console.log('igxy-2222---成功',JSON.stringify(result.rows)); 
 
                 return result.rows;
