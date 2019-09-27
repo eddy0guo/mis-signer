@@ -6,13 +6,19 @@ export default class TokenTest {
     /**
      * Addresses of Asilink
      */
-    mist_ex = '0x637f192bff74f7205f98cdba6e058a0be58f369b73';
+   // mist_ex = '0x637f192bff74f7205f98cdba6e058a0be58f369b73';
+    taker = '0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9'
 
     /**
      * Address of Wallet
      */
     addr0 = '0x66edd03c06441f8c2da19b90fcc42506dfa83226d3';
     word0 = 'ivory local this tooth occur glide wild wild few popular science horror';
+
+     
+    taker = '0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9';
+    taker_word = 'enhance donor garment gospel loop purse pumpkin bag oven bone decide street';
+
 
     erc20;
 
@@ -39,8 +45,17 @@ export default class TokenTest {
     }
 
      async testTransferfrom(wallet,addr,value) {
+       await wallet.queryAllBalance()
+                          
       this.erc20.unlock(wallet,"111111")
-      return this.erc20.transferfrom(this.mist_ex,addr,value);
+      return this.erc20.transferfrom(this.taker,addr,3);
+    }
+
+      async dex_Transferfrom(wallet,addr,value) {
+       await wallet.queryAllBalance()
+                          
+      this.erc20.unlock(wallet,"111111")
+      return this.erc20.dex_transferfrom(this.taker,addr,3);
     }
 
   

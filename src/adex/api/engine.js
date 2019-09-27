@@ -107,11 +107,13 @@ export default class engine{
                 walletInst = await getTestInst();
                 for(var item in trades){
                         let [err,result] = await to(tokenTest.testTransferfrom(walletInst,trades[item].maker,trades[item].amount))
-                         console.log(result,err);
-                }
-                if( !err ){
-                        // 先简单处理，Execute 前更新UTXO
-                        await walletInst.queryAllBalance()
+                         console.log("gxy---engine-call_asimov_result = -",result);
+
+
+                        if( !err ){
+                                // 先简单处理，Execute 前更新UTXO
+                                await walletInst.queryAllBalance()
+                        }
                 }
                 return result;
         }

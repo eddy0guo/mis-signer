@@ -5,11 +5,19 @@ import { Router } from 'express'
 import order1 from './api/order'
 
 let walletInst;
+let wallet_taker;
 async function getTestInst(){
         if( walletInst ) return walletInst;
                 walletInst = await walletHelper.testWallet('ivory local this tooth occur glide wild wild few popular science horror','111111')
                                 return walletInst
 }
+
+async function taker_wallet(){
+        if( walletInst ) return walletInst;
+                wallet_taker = await walletHelper.testWallet('enhance donor garment gospel loop purse pumpkin bag oven bone decide street','111111')
+                                return wallet_taker
+}
+
 
 export default ({ config, db }) => {
 	let adex  = Router();
@@ -46,12 +54,27 @@ export default ({ config, db }) => {
                     res.json({ result:result,err:err });
                     });
 
+    adex.get('/transfer_from',async (req, res) => {
+
+                    walletInst = await getTestInst();
+                    let [err,result] = await to(tokenTest.testTransferfrom(walletInst,'0x66b7637198aee4fffa103fc0082e7a093f81e05a64',5))
+                    console.log(result,err);
+
+                    if( !err ){
+                    // 先简单处理，Execute 前更新UTXO
+                    await walletInst.queryAllBalance()
+                    }
+
+                    res.json({ result:result,err:err });
+                    });
+
+    
     adex.get('/approve',async (req, res) => {
                     
-                    let mist_ex = "0x637f192bff74f7205f98cdba6e058a0be58f369b73";
-                    let value = "1234";
-                    walletInst = await getTestInst();
-                    let [err,result] = await to(tokenTest.testApprove(walletInst,mist_ex,value))
+                    let mist_ex = "0x66edd03c06441f8c2da19b90fcc42506dfa83226d3";
+                    let value = "6666";
+                    wallet_taker = await taker_wallet();
+                    let [err,result] = await to(tokenTest.testApprove(wallet_taker,mist_ex,value))
                     console.log(result,err);
 
                     res.json({ result:result,err:err });
@@ -59,28 +82,13 @@ export default ({ config, db }) => {
 
     adex.get('/build_order', async (req, res) => {
 
-//           id               | text                        |           | not null | 
-//            trader_address   | text                        |           |          | 
-//             market_id        | text                        |           |          | 
-//              side             | text                        |           |          | 
-//               price            | numeric(32,18)              |           |          | 
-//                amount           | numeric(32,18)              |           |          | 
-//                 status           | text                        |           |          | 
-//                  type             | text                        |           |          | 
-//                   available_amount | numeric(32,18)              |           |          | 
-//                    confirmed_amount | numeric(32,18)              |           |          | 
-//                     canceled_amount  | numeric(32,18)              |           |          | 
-//                      pending_amount   | numeric(32,18)              |           |          | 
-//                       updated_at       | timestamp without time zone |           |          | 
-//                        created_at       | timestamp without time zone | 
-
        let message = {
                       id:null,
-                      trader_address: "0x43d9649b4a2d2ef6d03a877d440d448d1c1ce",
+                      trader_address: "0x66edd03c06441f8c2da19b90fcc42506dfa83226d3",
                       market_id: "ASIM-PAI",
                       side: "sell",
                       price: 1.13000000000000000,
-                      amount: 10.966700000000000000,
+                      amount: 11.00000000000000,
                       status:null,
                       type:null,
                       available_amount:null,
