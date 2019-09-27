@@ -30,6 +30,7 @@ export default class Token {
      * @param {*} wallet 
      */
     async callContract(abiInfo) {
+            console.log("callContracti111111:");
         let params = {
             to: this.address,
             amount: 0,
@@ -40,8 +41,10 @@ export default class Token {
         console.log("params.data:",params.data)
 
         if (abiInfo.stateMutability == 'view' || abiInfo.stateMutability == 'pure') {
+            console.log("callContractig2222:");
             return chain.callreadonlyfunction([this.address, this.address, params.data, abiInfo.name, this.abiStr])
         } else {
+            console.log("callContractigxyyyy:");
             params.from = await this.wallet.getAddress()
             params.type = CONSTANT.CONTRACT_TYPE.CALL
             return this.executeContract(params)
@@ -84,6 +87,7 @@ export default class Token {
             password
         );
 
+                console.log("executeContract Raw TX 1111")
         try {
             let rawtx = TranService.generateRawTx(ins, outs, keys, this.gasLimit);
 
@@ -213,8 +217,17 @@ export default class Token {
     }  
 
 
-    async dex_transferfrom(from, to,amount) {
-        let abiInfo = {"constant":false,"inputs":[{"name":"from","type":"address","value":from},{"name":"to","type":"address","value":to},{"name":"amount","type":"uint256","value":amount}],"name":"transferFrom","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"};
+    async dex_match_order(trades) {
+
+let relayer = '0x66edd03c06441f8c2da19b90fcc42506dfa83226d3';
+let token_address = '0x631f62ca646771cd0c78e80e4eaf1d2ddf8fe414bf';
+
+
+            console.log("dex_match_order-----inner:",trades);
+
+        let abiInfo = {"constant":false,"inputs":[{"components":[{"name":"taker","type":"address"},{"name":"maker","type":"address"},{"name":"amount","type":"uint256"}],"name":"TradeParams","type":"tuple[]","value":trades},{"components":[{"name":"quoteToken","type":"address"},{"name":"relayer","type":"address"}],"name":"orderAddressSet","type":"tuple","value":[token_address,relayer]}],"name":"matchOrder","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"};
+
+
         return this.callContract(abiInfo);
     }  
 
@@ -230,9 +243,10 @@ export default class Token {
 
         let funcArgs = []
 
+            console.log("getHexData----2222:");
         abiInfo.inputs.forEach(i => {
             if (isArrayType(i.type)) {
-                let arr = JSON.parse(i.value);
+                let arr = i.value;
                 let type = i.type.replace('[]', '');
                 let result = []
                 arr.forEach(a => {
@@ -244,6 +258,7 @@ export default class Token {
             }
         })
 
+            console.log("getHexData----333:");
         let functionHash, paramsHash = ""
 
         try {

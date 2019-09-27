@@ -84,7 +84,7 @@ export default ({ config, db }) => {
 
        let message = {
                       id:null,
-                      trader_address: "0x66edd03c06441f8c2da19b90fcc42506dfa83226d3",
+                      trader_address: "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
                       market_id: "ASIM-PAI",
                       side: "sell",
                       price: 1.13000000000000000,

@@ -105,8 +105,8 @@ export default class engine{
                 console.log("gxy44-trades = --",trades);
                 let tokenTest = new TokenTest();
                 walletInst = await getTestInst();
-                for(var item in trades){
-                        let [err,result] = await to(tokenTest.testTransferfrom(walletInst,trades[item].maker,trades[item].amount))
+                        let [err,result] = await to(tokenTest.dex_match_order(walletInst,trades))
+
                          console.log("gxy---engine-call_asimov_result = -",result);
 
 
@@ -114,8 +114,7 @@ export default class engine{
                                 // 先简单处理，Execute 前更新UTXO
                                 await walletInst.queryAllBalance()
                         }
-                }
-                return result;
+                return "kkkk";
         }
 
 

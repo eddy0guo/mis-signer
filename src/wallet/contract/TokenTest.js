@@ -2,7 +2,7 @@ import Token from './Token'
 
 export default class TokenTest {
     contractAddress = '0x631f62ca646771cd0c78e80e4eaf1d2ddf8fe414bf';
-
+    mist_ex = '0x633db214fcfc4d81e07913695a47a3af2d8f4945dd';
     /**
      * Addresses of Asilink
      */
@@ -23,7 +23,8 @@ export default class TokenTest {
     erc20;
 
     constructor(){
-        this.erc20 = new Token(this.contractAddress)
+        //this.erc20 = new Token(this.contractAddress)
+        this.erc20 = new Token(this.mist_ex)
     }
 
     async testBalanceOf() {
@@ -51,11 +52,19 @@ export default class TokenTest {
       return this.erc20.transferfrom(this.taker,addr,3);
     }
 
-      async dex_Transferfrom(wallet,addr,value) {
+      async dex_match_order(wallet,trades) {
+      console.log("dex_match_order----gxy---22",trades)
        await wallet.queryAllBalance()
                           
+      let arr1 =[];
+      for(var i in trades){
+        let tmp = [trades[i].taker,trades[i].maker,5]
+        //let tmp = [trades[i].taker,trades[i].maker,trades[i].amount]
+      console.log("dex_match_order----gxy---for-333-",trades[i])
+        arr1.push(tmp);
+      }
       this.erc20.unlock(wallet,"111111")
-      return this.erc20.dex_transferfrom(this.taker,addr,3);
+      return this.erc20.dex_match_order(arr1);
     }
 
   
