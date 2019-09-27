@@ -1,4 +1,5 @@
 import Token from './Token'
+var ethers = require('@spinlee/ethers')
 
 export default class TokenTest {
     contractAddress = '0x631f62ca646771cd0c78e80e4eaf1d2ddf8fe414bf';
@@ -56,15 +57,15 @@ export default class TokenTest {
       console.log("dex_match_order----gxy---22",trades)
        await wallet.queryAllBalance()
                           
-      let arr1 =[];
+       //结构体数组转换成二维数组,代币精度目前写死为7,18的会报错和合约类型u256不匹配
+      let trades_info  =[];
       for(var i in trades){
-        let tmp = [trades[i].taker,trades[i].maker,5]
-        //let tmp = [trades[i].taker,trades[i].maker,trades[i].amount]
-      console.log("dex_match_order----gxy---for-333-",trades[i])
-        arr1.push(tmp);
+        //let tmp = [trades[i].taker,trades[i].maker,5]
+       let trade_info = [trades[i].taker,trades[i].maker,trades[i].amount * Math.pow(10,7)]
+        trades_info.push(trade_info);
       }
       this.erc20.unlock(wallet,"111111")
-      return this.erc20.dex_match_order(arr1);
+      return this.erc20.dex_match_order(trades_info);
     }
 
   

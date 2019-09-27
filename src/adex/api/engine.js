@@ -1,9 +1,11 @@
 import to from 'await-to-js'
 import TokenTest from '../../wallet/contract/TokenTest'
 import walletHelper from '../../wallet/lib/walletHelper'
+import mist_ex  from '../../wallet/contract/mist_ex'
 var date = require("silly-datetime");
 
 
+var ex_address = '0x633db214fcfc4d81e07913695a47a3af2d8f4945dd';
 let walletInst;
 async function getTestInst(){
         if( walletInst ) return walletInst;
@@ -98,22 +100,40 @@ export default class engine{
         }
 
         async call_asimov(trades) {
-                
-           // let addr = '0x6699fe56a98aa190bdd63239e82d03ae0dba8ad1a1';
-           // let value = 33;
+
+                // let addr = '0x6699fe56a98aa190bdd63239e82d03ae0dba8ad1a1';
+                // let value = 33;
 
                 console.log("gxy44-trades = --",trades);
-                let tokenTest = new TokenTest();
+                let mist  = new mist_ex(ex_address);
                 walletInst = await getTestInst();
-                        let [err,result] = await to(tokenTest.dex_match_order(walletInst,trades))
+            //    let [err,result] = await to(tokenTest.dex_match_order(walletInst,trades));
 
-                         console.log("gxy---engine-call_asimov_result = -",result);
+              //          console.log("gxy---engine-call_asimov_result = -",result);
 
 
-                        if( !err ){
-                                // 先简单处理，Execute 前更新UTXO
-                                await walletInst.queryAllBalance()
-                        }
+
+
+                console.log("dex_match_order----gxy---22",trades)
+                await walletInst.queryAllBalance();
+
+                        //结构体数组转换成二维数组,代币精度目前写死为7,18的会报错和合约类型u256不匹配
+                        let trades_info  =[];
+                for(var i in trades){
+                        let trade_info  = [trades[i].taker,trades[i].maker,5]
+                      //  let trade_info = [trades[i].taker,trades[i].maker,trades[i].amount * Math.pow(10,7)];
+                                trades_info.push(trade_info);
+                }
+                mist.unlock(walletInst,"111111");
+                let [err,result] = await to(mist.dex_match_order(trades_info));
+
+
+                       console.log("gxy---engine-call_asimov_result = -",result);
+
+                if( !err ){
+                        // 先简单处理，Execute 前更新UTXO
+                        await walletInst.queryAllBalance()
+                }
                 return "kkkk";
         }
 
