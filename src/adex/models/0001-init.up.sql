@@ -1,14 +1,14 @@
 -- tokens table
-create table newtokens(
+create table mist_tokens(
  symbol text primary key,
  address text ,
  decimals integer ,
  created_at timestamp
 );
-create unique index idx_newtokens_address on newtokens (address);
+create unique index idx_mist_tokens_address on mist_tokens (address);
 
 -- markets table
-create table newmarkets(
+create table mist_markets(
  id text primary key,
  base_token_address text ,
  base_token_symbol text ,
@@ -20,7 +20,7 @@ create table newmarkets(
 );
 
 -- trades table
-create table newtrades(
+create table mist_trades(
   id SERIAL PRIMARY KEY,
   transaction_id integer ,
   transaction_hash text,
@@ -38,13 +38,13 @@ create table newtrades(
   taker_order_id text ,
   created_at timestamp
 );
-create index idx_newtrades_transaction_hash on newtrades (transaction_hash);
-create index idx_newtrades_taker on newtrades (taker,market_id);
-create index idx_newtrades_maker on newtrades (maker,market_id);
-create index idx_newmarket_id_status_executed_at on trades (market_id, status, create_at);
+create index idx_mist_trades_transaction_hash on mist_trades (transaction_hash);
+create index idx_mist_trades_taker on mist_trades (taker,market_id);
+create index idx_mist_trades_maker on mist_trades (maker,market_id);
+create index idx_mist_market_id_status_executed_at on trades (market_id, status, create_at);
 
 -- orders table
-create table neworders(
+create table mist_orders(
   id text  primary key,
   trader_address text ,
   market_id text ,
@@ -61,11 +61,11 @@ create table neworders(
   updated_at  timestamp,
   created_at  timestamp
 );
-create index idx_newmarket_id_status on neworders (market_id, status);
-create index idx_newmarket_trader_address on neworders (trader_address, market_id, status, created_at);
+create index idx_mist_market_id_status on mist_orders (market_id, status);
+create index idx_mist_market_trader_address on mist_orders (trader_address, market_id, status, created_at);
 
 -- transactions table
-create table newtransactions(
+create table mist_transactions(
   id SERIAL PRIMARY KEY,
   transaction_hash text,
   market_id text ,
@@ -73,10 +73,10 @@ create table newtransactions(
   updated_at  timestamp,
   created_at timestamp
 );
-create unique index idx_newtransactions_transaction_hash on newtransactions (transaction_hash);
+create unique index idx_mist_transactions_transaction_hash on mist_transactions (transaction_hash);
 
 -- launch_logs table
-create table newlaunch_logs(
+create table mist_launch_logs(
   id SERIAL PRIMARY KEY,
   status text ,
   transaction_hash text,
@@ -87,5 +87,5 @@ create table newlaunch_logs(
   updated_at  timestamp,
   created_at  timestamp
 );
-create index idx_newcreated_at on newlaunch_logs (created_at);
-create unique index idx_newlaunch_logs_transaction_hash on newlaunch_logs (transaction_hash);
+create index idx_mist_created_at on mist_launch_logs (created_at);
+create unique index idx_mist_launch_logs_transaction_hash on mist_launch_logs (transaction_hash);
