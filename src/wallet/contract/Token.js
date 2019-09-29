@@ -243,7 +243,6 @@ let token_address = '0x631f62ca646771cd0c78e80e4eaf1d2ddf8fe414bf';
 
         let funcArgs = []
 
-            console.log("getHexData----2222:");
         abiInfo.inputs.forEach(i => {
             if (isArrayType(i.type)) {
                 let arr = i.value;
@@ -258,7 +257,6 @@ let token_address = '0x631f62ca646771cd0c78e80e4eaf1d2ddf8fe414bf';
             }
         })
 
-            console.log("getHexData----333:");
         let functionHash, paramsHash = ""
 
         try {

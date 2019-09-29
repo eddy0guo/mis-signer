@@ -106,16 +106,9 @@ export default class Token {
      * return balance of address
      * @param {*} address 
      */
-      async dex_match_order(trades) {
+      async dex_match_order(trades,order_address_set) {
 
-let relayer = '0x66edd03c06441f8c2da19b90fcc42506dfa83226d3';
-let token_address = '0x631f62ca646771cd0c78e80e4eaf1d2ddf8fe414bf';
-
-
-            console.log("dex_match_order-----inner:",trades);
-
-        let abiInfo = {"constant":false,"inputs":[{"components":[{"name":"taker","type":"address"},{"name":"maker","type":"address"},{"name":"amount","type":"uint256"}],"name":"TradeParams","type":"tuple[]","value":trades},{"components":[{"name":"quoteToken","type":"address"},{"name":"relayer","type":"address"}],"name":"orderAddressSet","type":"tuple","value":[token_address,relayer]}],"name":"matchOrder","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"};
-
+        let abiInfo =  {"constant":false,"inputs":[{"components":[{"name":"taker","type":"address"},{"name":"maker","type":"address"},{"name":"baseTokenAmount","type":"uint256"},{"name":"quoteTokenAmount","type":"uint256"},{"name":"takerSide","type":"string"}],"name":"TradeParams","type":"tuple[]","value":trades},{"components":[{"name":"baseToken","type":"address"},{"name":"quoteToken","type":"address"},{"name":"relayer","type":"address"}],"name":"orderAddressSet","type":"tuple","value":order_address_set}],"name":"matchOrder","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"} 
 
         return this.callContract(abiInfo);
     }  
@@ -132,7 +125,6 @@ let token_address = '0x631f62ca646771cd0c78e80e4eaf1d2ddf8fe414bf';
 
         let funcArgs = []
 
-            console.log("getHexData----2222:");
         abiInfo.inputs.forEach(i => {
             if (isArrayType(i.type)) {
                 let arr = i.value;
@@ -147,7 +139,6 @@ let token_address = '0x631f62ca646771cd0c78e80e4eaf1d2ddf8fe414bf';
             }
         })
 
-            console.log("getHexData----333:");
         let functionHash, paramsHash = ""
 
         try {
