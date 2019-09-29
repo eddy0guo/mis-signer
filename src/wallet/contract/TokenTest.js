@@ -2,7 +2,10 @@ import Token from './Token'
 var ethers = require('@spinlee/ethers')
 
 export default class TokenTest {
-    contractAddress = '0x631f62ca646771cd0c78e80e4eaf1d2ddf8fe414bf';
+    
+    GXY = '0x631f62ca646771cd0c78e80e4eaf1d2ddf8fe414bf';
+    PAI = '0x63429bfcfdfbfa0048d1aeaa471be84675f1324a02';
+
     mist_ex = '0x633db214fcfc4d81e07913695a47a3af2d8f4945dd';
     /**
      * Addresses of Asilink

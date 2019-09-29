@@ -5,7 +5,6 @@ import walletHelper from './lib/walletHelper'
 import to from 'await-to-js'
 import TokenTest from './contract/TokenTest'
 import AssetTest from './asset/AssetTest'
-import StorageTest from './contract/StorageTest'
 
 let testWallets = {
 	"0x6619fd2d2fd1db189c075ff25800f7b98ff3205e5a":"benefit park visit oxygen supply oil pupil snack pipe decade young bracket",
@@ -24,7 +23,6 @@ export default ({ config, db }) => {
 	let wallet = Router();
 	let tokenTest = new TokenTest()
 	let assetTest = new AssetTest()
-	let storageTest = new StorageTest()
 
 	wallet.get('/', async (req, res) => {
 		walletInst = await getTestInst();
@@ -32,13 +30,6 @@ export default ({ config, db }) => {
 		res.json({ wallet:address })
 	});
 
-	wallet.get('/storage',async (req, res) => {
-		walletInst = await getTestInst();
-		let [err,result] = await to(storageTest.testInsert(walletInst))
-		console.log(result,err);
-
-		res.json({ result:result,err:err });
-	});
 
 	wallet.get('/balance',async (req, res) => {
 

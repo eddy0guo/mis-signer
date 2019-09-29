@@ -1,5 +1,7 @@
 import to from 'await-to-js'
 import TokenTest from '../wallet/contract/TokenTest'
+import Token from '../wallet/contract/Token'
+
 import walletHelper from '../wallet/lib/walletHelper'
 import { Router } from 'express'
 import order1 from './api/order'
@@ -18,6 +20,21 @@ async function taker_wallet(){
                                 return wallet_taker
 }
 
+let    GXY = '0x631f62ca646771cd0c78e80e4eaf1d2ddf8fe414bf';
+let    PAI = '0x63429bfcfdfbfa0048d1aeaa471be84675f1324a02';
+
+
+let addr0 = '0x66edd03c06441f8c2da19b90fcc42506dfa83226d3';
+let word0 = 'ivory local this tooth occur glide wild wild few popular science horror';
+
+            
+let taker = '0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9';
+let taker_word = 'enhance donor garment gospel loop purse pumpkin bag oven bone decide street';
+
+let maker = '0x66b7637198aee4fffa103fc0082e7a093f81e05a64';
+let maker_word = 'one concert capable dolphin useful earth betray absurd price nerver morning danger'
+
+let addr_chenfei = '0x668191f35bcc9d4c834e06bdbcb773609c40ba4cea';
 
 export default ({ config, db }) => {
 	let adex  = Router();
@@ -39,6 +56,22 @@ export default ({ config, db }) => {
 
                     res.json({ result:result,err:err });
                     });
+
+    adex.get('/list_balance',async (req, res) => {
+                    
+                    let token_arr = [GXY,PAI];
+                    let addr_arr = [taker,maker,addr_chenfei];
+                    for(var i in token_arr){
+                        let token = new Token(token_arr[i]);
+                        for(var m in addr_arr){
+                            let [err,result] = await to(token.balanceOf(addr_arr[m]));
+                            console.log('tokenname:' + token_arr[i] + '    useraddr:' + addr_arr[m] + '       balance:' + result);
+                        } 
+                    }
+
+                    res.json("sss");
+                    });
+
 
     adex.get('/transfer',async (req, res) => {
 
