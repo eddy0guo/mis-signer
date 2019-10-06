@@ -14,8 +14,6 @@ export default class db{
                 this.clientDB  = client;
         }
 
-
-
         /**
          *orders
          *
@@ -23,52 +21,54 @@ export default class db{
          *
          *
          *
-         */
-        async insert_order(ordermessage) {
+		 */
+		async insert_order(ordermessage) {
 
-                this.clientDB.query('insert into mist_orders values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)',ordermessage, function(err, data) {
-                                if(err) {
-                                return console.error('查询失败', err);
-                                }else{
-                                // result = JSON.stringify(data.rows); 
-                                console.log('成功',JSON.stringify(data.rows)); 
-                                return JSON.stringify(data.rows);
-                                }   
-                                }); 
-                return "sss";
-        } 
-        async list_orders(filter) {
+			let [err,result] = await to(this.clientDB.query('insert into mist_orders values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)',ordermessage));
+			if(err) {
+				return console.error('insert_order_查询失败', err);
+			}
+			console.log('insert_order_成功',JSON.stringify(result.rows)); 
+			return JSON.stringify(result.rows);
+		}
 
-        let result = await this.clientDB.query('SELECT * FROM mist_orders order by created_at desc limit 30'); 
-                console.log('igxy-2222---成功',JSON.stringify(result.rows)); 
+		async list_orders(filter) {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders order by created_at desc limit 30',filter)); 
+			if(err) {
+				return console.error('insert_order_查询失败', err);
+			}
+			console.log('insert_order_成功',JSON.stringify(result.rows)); 
+			return result.rows;
 
-                return result;
+		} 
 
-        } 
+		async filter_orders(filter) {
+			//价格低的匹配优先级低 
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where price>=$1 and side=$2 order by price desc',filter)); 
+			if(err) {
+				return console.error('insert_order_查询失败', err);
+			}
+			console.log('insert_order_成功',JSON.stringify(result.rows)); 
+			return result.rows;
 
-        async filter_orders(filter) {
-               //价格低的匹配优先级低 
-                let result = await this.clientDB.query('SELECT * FROM mist_orders where price>=$1 and side=$2 order by price desc',filter); 
-                console.log('igxy-2222---成功',JSON.stringify(result.rows)); 
+		} 
 
-                return result.rows;
-        } 
+		
+        async update_orders(update_info) {
+			let [err,result] = await to(this.clientDB
+				.query('UPDATE mist_orders SET (available_amount,confirmed_amount,canceled_amount,pending_amount,updated_at)=($1,$2,$3,$4,$5) WHERE id=$6',update_info)); 
+
+			if(err) {
+				return console.error('insert_order_查询失败', err);
+			}
+			console.log('insert_order_成功',JSON.stringify(result.rows)); 
+			return result.rows;
 
 
-        async find_orders(orderid) {
-                let result = await this.clientDB.query('SELECT * FROM mist_orders limit 2'); 
-                console.log('igxy-2222---成功',JSON.stringify(result.rows)); 
-
-                return result;
         } 
 
 
         async findtrades(tradeid) {
-                let result = await this.clientDB.query('SELECT * FROM mist_orders limit 2'); 
-                console.log('igxy-2222---成功',JSON.stringify(result.rows)); 
-
-                return result;
-
 
         }
 
@@ -77,12 +77,6 @@ export default class db{
          *
          * */
         async findtrades(tradeid) {
-                let result = await this.clientDB.query('SELECT * FROM mist_orders limit 2'); 
-                console.log('igxy-2222---成功',JSON.stringify(result.rows)); 
-
-                return result;
-
-
         }
 
 
@@ -91,11 +85,6 @@ export default class db{
          *
          * */
         async findtrades(tradeid) {
-                let result = await this.clientDB.query('SELECT * FROM mist_orders limit 2'); 
-                console.log('igxy-2222---成功',JSON.stringify(result.rows)); 
-
-                return result;
-
 
         }
 
@@ -103,24 +92,17 @@ export default class db{
         /*
          *
          *
-         *
-         *
-         *
-         *
          *trades
          */
-        async insert_trade(trademessage) {
+        async insert_trades(trade_info) {
+			let [err,result] = await to(this.clientDB.query('insert into mist_trades values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)',trade_info));
+			if(err) {
+				return console.error('insert_traders_查询失败', err);
+			}
+			console.log('insert_order_成功',JSON.stringify(result.rows)); 
+			return JSON.stringify(result.rows);
 
-                this.clientDB.query('insert into mist_trades values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)',trademessage, function(err, data) {
-                                if(err) {
-                                return console.error('查询失败', err);
-                                }else{
-                                // result = JSON.stringify(data.rows); 
-                                console.log('成功',JSON.stringify(data.rows)); 
-                                return JSON.stringify(data.rows);
-                                }   
-                                }); 
-                return "sss";
+
         } 
          /**
          *lauchers
@@ -129,16 +111,7 @@ export default class db{
          * */
           async insert_trade(trademessage) {
 
-                this.clientDB.query('insert into mist_trades values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)',trademessage, function(err, data) {
-                                if(err) {
-                                return console.error('查询失败', err);
-                                }else{
-                                // result = JSON.stringify(data.rows); 
-                                console.log('成功',JSON.stringify(data.rows)); 
-                                return JSON.stringify(data.rows);
-                                }   
-                                }); 
-                return "sss";
+
         } 
 
          /**
@@ -148,20 +121,7 @@ export default class db{
          * */
           async insert_trade(trademessage) {
 
-                this.clientDB.query('insert into mist_trades values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)',trademessage, function(err, data) {
-                                if(err) {
-                                return console.error('查询失败', err);
-                                }else{
-                                // result = JSON.stringify(data.rows); 
-                                console.log('成功',JSON.stringify(data.rows)); 
-                                return JSON.stringify(data.rows);
-                                }   
-                                }); 
-                return "sss";
         } 
-
-
-
 
         /**
          *watchers
@@ -169,17 +129,6 @@ export default class db{
          *
          * */
           async insert_watcher(message) {
-
-                this.clientDB.query('insert into mist_trades values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)',trademessage, function(err, data) {
-                                if(err) {
-                                return console.error('查询失败', err);
-                                }else{
-                                // result = JSON.stringify(data.rows); 
-                                console.log('成功',JSON.stringify(data.rows)); 
-                                return JSON.stringify(data.rows);
-                                }   
-                                }); 
-                return "sss";
         } 
 
 }

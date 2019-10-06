@@ -21,7 +21,7 @@ create table mist_markets(
 
 -- trades table
 create table mist_trades(
-  id SERIAL PRIMARY KEY,
+  id text PRIMARY KEY,
   transaction_id integer ,
   transaction_hash text,
 
@@ -41,7 +41,7 @@ create table mist_trades(
 create index idx_mist_trades_transaction_hash on mist_trades (transaction_hash);
 create index idx_mist_trades_taker on mist_trades (taker,market_id);
 create index idx_mist_trades_maker on mist_trades (maker,market_id);
-create index idx_mist_market_id_status_executed_at on trades (market_id, status, create_at);
+create index idx_mist_market_id_status_executed_at on mist_trades (market_id, status, created_at);
 
 -- orders table
 create table mist_orders(

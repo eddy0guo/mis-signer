@@ -2,13 +2,16 @@ import to from 'await-to-js'
 import TokenTest from '../../wallet/contract/TokenTest'
 import walletHelper from '../../wallet/lib/walletHelper'
 import mist_ex  from '../../wallet/contract/mist_ex'
+import utils2 from './utils'
 var date = require("silly-datetime");
+var index = require("../index");
 
 
 var ex_address = '0x63d2007ae83b2853d85c5bd556197e09ca4d52d9c9';
 let walletInst;
 async function getTestInst(){
         if( walletInst ) return walletInst;
+		//relayer words
         walletInst = await walletHelper.testWallet('ivory local this tooth occur glide wild wild few popular science horror','111111')
                 return walletInst
 }
@@ -18,6 +21,7 @@ export default class engine{
         db;
         constructor(client) { 
                 this.db = client;
+				this.utils = new utils2;
         }
 
 
@@ -65,6 +69,7 @@ export default class engine{
                 for(var item = 0; item < find_orders.length;item++){
                     
                     //最低价格的一单最后成交，成交数量按照吃单剩下的额度成交,并且更新最后一个order的可用余额fixme__gxy
+					//这是假设吃单全部成交,挂单有剩余的场景
                     amount += find_orders[item].amount;
 
                     if(item == find_orders.length - 1 && amount > my_order.amount ){
@@ -74,10 +79,10 @@ export default class engine{
                     console.log("gxyyyimmmmm----", find_orders[item].amount);
 
                     }
-
+					
                     console.log("gxyyy----", find_orders[item].amount);
                         let trade={
-                           id:               null,
+                           id:               null,//fixme
                            transaction_id:   null,
                            transaction_hash: null,
                            status:           "pending",
@@ -91,23 +96,30 @@ export default class engine{
                            taker_order_id:   my_order.id,
                            created_at:       create_time
                         };
+
+					let trade_id = this.utils.get_hash(trade);
+					trade.id = trade_id;
                   //插入trades表_  fixme__gxy        
                     trade_arr.push(trade);
+		 		//匹配订单后，同时更新taker和maker的order信息,先不做错误处理,4个数值先写死
+				  let update_maker_orders_info = [1,2,3,4,create_time,find_orders[item].id];
+				  let update_taker_orders_info = [1,2,3,4,create_time,my_order.id];
+           		  await this.db.update_orders(update_maker_orders_info);
+            	  await this.db.update_orders(update_taker_orders_info);
+               	  await this.db.insert_trades(this.utils.arr_values(trade));
+            
                 }
-                
+		    
                 return trade_arr;
         
         }
 
         async call_asimov(trades) {
-
-
-                console.log("gxy44-trades = --",trades);
                 let mist  = new mist_ex(ex_address);
                 walletInst = await getTestInst();
 
-
-                console.log("dex_match_order----gxy---22",trades)
+                console.log("dex_match_order----gxy---22",trades);
+				//更新utxo的操作放在打包交易之前，不然部分时候还是出现没更新的情况
                 await walletInst.queryAllBalance();
 
                         //结构体数组转换成二维数组,代币精度目前写死为7,18的会报错和合约类型u256不匹配
@@ -125,24 +137,16 @@ export default class engine{
                          trades_info.push(trade_info);
                 }
                 
-                let relayer = '0x66edd03c06441f8c2da19b90fcc42506dfa83226d3';
 
-                let GXY = '0x631f62ca646771cd0c78e80e4eaf1d2ddf8fe414bf';
-                let PAI = '0x63429bfcfdfbfa0048d1aeaa471be84675f1324a02';
-
-                let order_address_set = [PAI,GXY,relayer];
+                let order_address_set = [index.PAI,index.GXY,index.relayer];
 
                 mist.unlock(walletInst,"111111");
-                let [err,result] = await to(mist.dex_match_order(trades_info,order_address_set));
+                let [err,txid] = await to(mist.dex_match_order(trades_info,order_address_set));
 
 
-                       console.log("gxy---engine-call_asimov_result = -",result);
+                console.log("gxy---engine-call_asimov_result = -",txid);
 
-                if( !err ){
-                        // 先简单处理，Execute 前更新UTXO
-                        await walletInst.queryAllBalance()
-                }
-                return "kkkk";
+                return txid;
         }
 
 

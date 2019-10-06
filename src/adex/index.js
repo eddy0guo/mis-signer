@@ -27,10 +27,10 @@ async function my_wallet(word){
 
 
 
-let    GXY = '0x631f62ca646771cd0c78e80e4eaf1d2ddf8fe414bf';
-let    PAI = '0x63429bfcfdfbfa0048d1aeaa471be84675f1324a02';
+var    GXY = '0x631f62ca646771cd0c78e80e4eaf1d2ddf8fe414bf';
+var    PAI = '0x63429bfcfdfbfa0048d1aeaa471be84675f1324a02';
 var ex_address = '0x63d2007ae83b2853d85c5bd556197e09ca4d52d9c9';
-let relayer = '0x66edd03c06441f8c2da19b90fcc42506dfa83226d3';
+var relayer = '0x66edd03c06441f8c2da19b90fcc42506dfa83226d3';
 
 
 let addr0 = '0x66edd03c06441f8c2da19b90fcc42506dfa83226d3';
@@ -70,16 +70,18 @@ export default ({ config, db }) => {
                     
                     let token_arr = [GXY,PAI];
                     let addr_arr = [taker,maker,addr_chenfei];
-
+					let balances = [];
                     for(var i in token_arr){
                         let token = new Token(token_arr[i]);
                         for(var m in addr_arr){
                             let [err,result] = await to(token.balanceOf(addr_arr[m]));
-                            console.log('tokenname:' + token_arr[i] + '    useraddr:' + addr_arr[m] + '       balance:' + result);
+							let balance_info = 'tokenname:' + token_arr[i] + '    useraddr:' + addr_arr[m] + '       balance:' + result;
+							balances.push(balance_info);
+                            console.log(balance_info);
                         } 
                     }
 
-                    res.json("sss");
+					res.json(balances);
                     });
 
     //所有token合约赋予所有地址权限
@@ -195,4 +197,5 @@ export default ({ config, db }) => {
 
  //   clientDB.end();
 	return adex;
-}
+};
+export{GXY,PAI,relayer};

@@ -47,8 +47,11 @@ export default class order{
 
             let trades = await this.exchange.make_trades(find_orders,message);
 
-            
+           //匹配订单后，同时更新taker和maker的order信息 
+
             let txid = await this.exchange.call_asimov(trades)
+//            this.db.insert_transactions(arr_message);
+//            this.db.insert_launchers(arr_message);
 
             return result;
     }
