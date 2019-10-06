@@ -43,12 +43,19 @@ export default class db{
 		} 
 
 		async filter_orders(filter) {
-			//价格低的匹配优先级低 
-			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where price>=$1 and side=$2 order by price desc',filter)); 
-			if(err) {
-				return console.error('insert_order_查询失败', err);
+
+			let err;
+			let result;
+			if(filter[1] == 'sell'){
+				[err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where price<=$1 and side=$2 order by price asc',filter)); 
+			}else{
+				
+				[err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where price>=$1 and side=$2 order by price desc',filter)); 
 			}
-			console.log('insert_order_成功',JSON.stringify(result.rows)); 
+			if(err) {
+				return console.error('insert_order_查询失败11', err);
+			}
+			console.log('insert_order',JSON.stringify(result.rows)); 
 			return result.rows;
 
 		} 
@@ -56,12 +63,13 @@ export default class db{
 		
         async update_orders(update_info) {
 			let [err,result] = await to(this.clientDB
-				.query('UPDATE mist_orders SET (available_amount,confirmed_amount,canceled_amount,pending_amount,updated_at)=($1,$2,$3,$4,$5) WHERE id=$6',update_info)); 
+				.query('UPDATE mist_orders SET (available_amount,confirmed_amount,canceled_amount,\
+				pending_amount,updated_at)=(available_amount+$1,confirmed_amount+$2,canceled_amount+$3,pending_amount+$4,$5) WHERE id=$6',update_info)); 
 
 			if(err) {
-				return console.error('insert_order_查询失败', err);
+				return console.error('update_order_查询失败', err);
 			}
-			console.log('insert_order_成功',JSON.stringify(result.rows)); 
+			console.log('update_order_成功',JSON.stringify(result.rows)); 
 			return result.rows;
 
 

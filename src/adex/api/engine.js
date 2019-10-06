@@ -26,12 +26,12 @@ export default class engine{
 
 
         async match(message) {
-                let type =  "buy"; 
+                let side =  "buy"; 
                 if (message.side == "buy"){
-                        type = "sell"
+                        side = "sell"
                 }
 
-                let filter = [message.price,type];
+                let filter = [message.price,side];
 
                 let result = await this.db.filter_orders(filter); 
 
@@ -53,25 +53,22 @@ export default class engine{
                     }
 
                 }
-                //没有吃完订单，更新order的可用余额,fixme_gxy
-                if(message.amount > amount){
-                       
-                    console.log("gxy44-The remaining amount = --",message.amount = amount);
-                }
 
                 return match_orders;
         }
         
         async make_trades(find_orders,my_order){
-                 var create_time = date.format(new Date(),'YYYY-MM-DD HH:mm:ss'); 
+          //       var create_time = date.format(new Date(),'YYYY-MM-DD HH:mm:ss'); 
+		  		let create_time = this.utils.get_current_time();
                 let trade_arr = [];
                 let amount=0;
                 for(var item = 0; item < find_orders.length;item++){
                     
                     //最低价格的一单最后成交，成交数量按照吃单剩下的额度成交,并且更新最后一个order的可用余额fixme__gxy
-					//这是假设吃单全部成交,挂单有剩余的场景
                     amount += find_orders[item].amount;
 
+
+					//吃单全部成交,挂单有剩余的场景,
                     if(item == find_orders.length - 1 && amount > my_order.amount ){
                         
                                 
@@ -79,10 +76,10 @@ export default class engine{
                     console.log("gxyyyimmmmm----", find_orders[item].amount);
 
                     }
-					
+
                     console.log("gxyyy----", find_orders[item].amount);
                         let trade={
-                           id:               null,//fixme
+                           id:               null,
                            transaction_id:   null,
                            transaction_hash: null,
                            status:           "pending",
@@ -101,9 +98,12 @@ export default class engine{
 					trade.id = trade_id;
                   //插入trades表_  fixme__gxy        
                     trade_arr.push(trade);
-		 		//匹配订单后，同时更新taker和maker的order信息,先不做错误处理,4个数值先写死
-				  let update_maker_orders_info = [1,2,3,4,create_time,find_orders[item].id];
-				  let update_taker_orders_info = [1,2,3,4,create_time,my_order.id];
+		 		//匹配订单后，同时更新taker和maker的order信息,先不做错误处理,买单和卖单的计算逻辑是相同的,只需要更新available和pending
+				//此更新逻辑适用于全部成交和部分成交的两种情况
+				//available_amount,confirmed_amount,canceled_amount,pending_amount
+				  let update_maker_orders_info = [-find_orders[item].amount,0,0,find_orders[item].amount,create_time,find_orders[item].id];
+				  let update_taker_orders_info = [-find_orders[item].amount,0,0,find_orders[item].amount,create_time,my_order.id];
+
            		  await this.db.update_orders(update_maker_orders_info);
             	  await this.db.update_orders(update_taker_orders_info);
                	  await this.db.insert_trades(this.utils.arr_values(trade));

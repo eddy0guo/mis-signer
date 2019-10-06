@@ -2,7 +2,7 @@ const crypto = require('crypto');
 var date = require("silly-datetime");
 
 export default class utils{
-
+	root_hash;
 	 constructor() {
          this.root_hash = crypto.createHmac('sha256', '123')
     }
@@ -20,9 +20,15 @@ export default class utils{
 			let arr = this.arr_values(message);
             arr.push(create_time);
             let str = arr.join("");
-         let root_hash = crypto.createHmac('sha256', '123')
-            let hash = root_hash.update(str, 'utf8').digest('hex'); 
+            let hash = this.root_hash.update(str, 'utf8').digest('hex'); 
 			return hash;
 
     }
+
+	get_current_time(){
+			let milli_seconds = new Date().getMilliseconds();
+			var create_time = date.format(new Date(),'YYYY-MM-DD HH:mm:ss');
+
+			return create_time + '.' + milli_seconds;
+	}
 }

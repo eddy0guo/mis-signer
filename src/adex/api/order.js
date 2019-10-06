@@ -13,19 +13,16 @@ export default class order{
     constructor() {
          this.db =  new client();
          this.exchange = new engine(this.db);
-         this.root_hash = crypto.createHmac('sha256', '123')
          this.utils = new utils2;
     }
 
 
     async build(message) {
 
-            var create_time = date.format(new Date(),'YYYY-MM-DD HH:mm:ss'); 
+          //  var create_time = date.format(new Date(),'YYYY-MM-DD HH:mm:ss.SSS'); 
+		  	let create_time = this.utils.get_current_time();
             
-            let arr = this.utils.arr_values(message);
-            arr.push(create_time);
-            let str = arr.join("");
-            let hash = this.root_hash.update(str, 'utf8').digest('hex'); // a65014c0dfa57751a749866e844b6c42266b9b7d54d5c59f7f7067d973f77817
+            let hash = this.utils.get_hash(message); // a65014c0dfa57751a749866e844b6c42266b9b7d54d5c59f7f7067d973f77817
 
 
              message.id = hash;
@@ -50,6 +47,7 @@ export default class order{
            //匹配订单后，同时更新taker和maker的order信息 
 
             let txid = await this.exchange.call_asimov(trades)
+//           目前先做打包交易完成后更新transaction的交易，launcher的暂时没必要做
 //            this.db.insert_transactions(arr_message);
 //            this.db.insert_launchers(arr_message);
 
