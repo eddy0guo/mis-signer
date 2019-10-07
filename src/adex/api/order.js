@@ -56,8 +56,34 @@ export default class order{
             return result;
     }
 
-    async cancle(walletInst) {
-        return this.contract.callContract(abiInfo)
+    async cancle_order(message) {
+
+            console.log("cancle_order--message=",message);
+		let create_time = this.utils.get_current_time();
+		let cancle_info = [-message.amount,0,message.amount,0,create_time,message.id];
+		let result = await this.db.update_orders(cancle_info);
+
+            console.log("cancle_order--result=",result);
+        return result;
     }
+
+	async list_orders(message) {
+
+            console.log("cancle_order--message=",message);
+		let filter_info = [message.address];
+		let result = await this.db.list_orders(filter_info);
+
+            console.log("cancle_order--result=",result);
+        return result;
+    }
+
+	async order_book() {
+
+		let result = await this.db.order_book();
+        console.log("cancle_order--result=",result);
+        return result;
+    }
+ 
+
  
 }

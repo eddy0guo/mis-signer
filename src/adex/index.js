@@ -179,22 +179,30 @@ export default ({ config, db }) => {
 	});
 
 	adex.get('/cancle_order', async (req, res) => {
-       let result = "sss";
-       let err = "kkk";
+       let message = {
+			 amount: 0.233300000000000000,
+			 id: "67d4259b990f1a0f36543a04142e8126bc92c3d1263d0b0435364d4c06749a65",
+		   };
+       let [err,result] = await to(order.cancle_order(message));
+       res.json({result,err });
+	});
+
+	adex.get('/list_orders', async (req, res) => {
+       
+		let message = {address:"0x66b7637198aee4fffa103fc0082e7a093f81e05a64"}
+
+       let [err,result] = await to(order.list_orders(message));
+
        res.json({result,err });
 	});
 
 	adex.get('/order_book', async (req, res) => {
-       let result = "sss";
-       let err = "kkk";
+
+       let [err,result] = await to(order.order_book());
        res.json({result,err });
 	});
 
-	adex.get('/orders', async (req, res) => {
-       let result = "sss";
-       let err = "kkk";
-       res.json({result,err });
-	});
+	
 
  //   clientDB.end();
 	return adex;

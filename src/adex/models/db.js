@@ -32,12 +32,12 @@ export default class db{
 			return JSON.stringify(result.rows);
 		}
 
-		async list_orders(filter) {
-			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders order by created_at desc limit 30',filter)); 
+		async list_orders(address) {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where trader_address=$1 order by created_at desc limit 30',address)); 
 			if(err) {
-				return console.error('insert_order_查询失败', err);
+				return console.error('list_order_查询失败', err);
 			}
-			console.log('insert_order_成功',JSON.stringify(result.rows)); 
+			console.log('list_order_成功',JSON.stringify(result.rows)); 
 			return result.rows;
 
 		} 
@@ -76,8 +76,14 @@ export default class db{
         } 
 
 
-        async findtrades(tradeid) {
-
+        async order_book() {
+			let [err,result] = await to(this.clientDB.query('select s.* from  (SELECT price,sum(amount) as amount,side FROM mist_orders\
+			where available_amount>0  group by price,side)s order by s.price desc limit 30')); 
+			if(err) {
+				return console.error('list_order_查询失败', err);
+			}
+			console.log('list_order_成功',JSON.stringify(result.rows)); 
+			return result.rows;
         }
 
         /*
