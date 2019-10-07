@@ -27,7 +27,7 @@ async function my_wallet(word){
 
 
 
-var    GXY = '0x631f62ca646771cd0c78e80e4eaf1d2ddf8fe414bf';
+var    GXY = '0x631f62ca646771cd0c78e80e4eaf1d2ddf8fe414bf'; //ASIM
 var    PAI = '0x63429bfcfdfbfa0048d1aeaa471be84675f1324a02';
 var ex_address = '0x63d2007ae83b2853d85c5bd556197e09ca4d52d9c9';
 var relayer = '0x66edd03c06441f8c2da19b90fcc42506dfa83226d3';
@@ -173,9 +173,7 @@ export default ({ config, db }) => {
        };
 
 
-       //let message =  [trader_address,market_id,side,price,amount]
-       let err; 
-       let result = await to(order.build(message))
+       let [err,result] = await to(order.build(message))
        console.log(result,err);
        res.json({ result,err });
 	});

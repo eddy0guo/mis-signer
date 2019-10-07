@@ -7,3 +7,6 @@ insert into mist_orders (id, trader_address, market_id,side,price,amount,availab
 insert into mist_orders (id, trader_address, market_id,side,price,amount,available_amount,confirmed_amount,canceled_amount,pending_amount) values ('0c079fc878f18d5bf01350ba7c58b77699762c7462534058d1a1e72d16107a72','0x66b7637198aee4fffa103fc0082e7a093f81e05a64', 'ASIM-PAI','sell',4.240000000000000000,4.766700000000000000,4.766700000000000000,0,0,0);
 insert into mist_orders (id, trader_address, market_id,side,price,amount,available_amount,confirmed_amount,canceled_amount,pending_amount) values ('0c079fc878f18d5bf01350ba7c58b77699762c7462534058d1a1e72d16108a71','0x66b7637198aee4fffa103fc0082e7a093f81e05a64', 'ASIM-PAI','sell',5.240000000000000000,4.766700000000000000,4.766700000000000000,0,0,0);
 
+
+
+

@@ -127,8 +127,13 @@ export default class db{
          *
          *
          * */
-          async insert_trade(trademessage) {
-
+          async insert_transactions(TXinfo) {
+			let [err,result] = await to(this.clientDB.query('insert into mist_transactions values($1,$2,$3,$4,$5)',TXinfo));
+			if(err) {
+				return console.error('insert_traders_查询失败', err);
+			}
+			console.log('insert_order_成功',JSON.stringify(result.rows)); 
+			return JSON.stringify(result.rows);
         } 
 
         /**

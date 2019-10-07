@@ -48,7 +48,9 @@ export default class order{
 
             let txid = await this.exchange.call_asimov(trades)
 //           目前先做打包交易完成后更新transaction的交易，launcher的暂时没必要做
-//            this.db.insert_transactions(arr_message);
+			
+			let TXinfo = [txid,"pending",message.market_id,create_time,create_time];
+            this.db.insert_transactions(TXinfo);
 //            this.db.insert_launchers(arr_message);
 
             return result;
