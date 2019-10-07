@@ -98,7 +98,13 @@ export default class db{
          *makkets
          *
          * */
-        async findtrades(tradeid) {
+        async list_markets() {
+			let [err,result] = await to(this.clientDB.query('select * from mist_markets')); 
+			if(err) {
+				return console.error('list_order_查询失败', err);
+			}
+			console.log('list_order_成功',JSON.stringify(result.rows)); 
+			return result.rows;
 
         }
 

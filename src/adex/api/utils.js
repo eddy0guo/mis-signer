@@ -20,7 +20,9 @@ export default class utils{
 			let arr = this.arr_values(message);
             arr.push(create_time);
             let str = arr.join("");
-            let hash = this.root_hash.update(str, 'utf8').digest('hex'); 
+
+         let root_hash = crypto.createHmac('sha256', '123')
+            let hash = root_hash.update(str, 'utf8').digest('hex'); 
 			return hash;
 
     }

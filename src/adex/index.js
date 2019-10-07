@@ -5,6 +5,7 @@ import Token from '../wallet/contract/Token'
 import walletHelper from '../wallet/lib/walletHelper'
 import { Router } from 'express'
 import order1 from './api/order'
+import market1 from './api/market'
 
 let walletInst;
 let wallet_taker;
@@ -48,6 +49,7 @@ let addr_chenfei = '0x668191f35bcc9d4c834e06bdbcb773609c40ba4cea';
 export default ({ config, db }) => {
 	let adex  = Router();
     let order = new order1();
+    let market = new market1();
     let tokenTest = new TokenTest()
 
         
@@ -202,9 +204,13 @@ export default ({ config, db }) => {
        res.json({result,err });
 	});
 
-	
+	adex.get('/list_markets', async (req, res) => {
 
- //   clientDB.end();
+       let [err,result] = await to(market.list_markets());
+       res.json({result,err });
+	});
+
+
 	return adex;
 };
 export{GXY,PAI,relayer};
