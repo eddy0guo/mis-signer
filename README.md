@@ -1,27 +1,17 @@
-Express & ES6 REST API Boilerplate
-==================================
+# Mist Signer
 
-This is a straightforward boilerplate for building REST APIs with ES6 and Express.
+## Getting Started
 
-- ES6 support via [babel](https://babeljs.io)
-- REST resources as middleware via [resource-router-middleware](https://github.com/developit/resource-router-middleware)
-- CORS support via [cors](https://github.com/troygoode/node-cors)
-- Body Parsing via [body-parser](https://github.com/expressjs/body-parser)
-
-> Tip: If you are using [Mongoose](https://github.com/Automattic/mongoose), you can automatically expose your Models as REST resources using [restful-mongoose](https://git.io/restful-mongoose).
-
-
-
-Getting Started
 ---------------
 
 ```sh
-# clone it
-git clone git@github.com:developit/express-es6-rest-api.git
-cd express-es6-rest-api
 
-# Make it your own
-rm -rf .git && git init && npm init
+# mangodb for did
+brew install mongodb
+mongod --dbpath '~/data/db'
+
+# postgres db for engine
+docker-compose up db
 
 # Install dependencies
 npm install
@@ -32,10 +22,10 @@ PORT=6666 npm run dev
 # Start production server:
 PORT=8080 npm start
 ```
-Docker Support
-------
+
+## Docker Support
+
 ```sh
-cd express-es6-rest-api
 
 # Build your docker
 docker build -t es6/api-service .
@@ -51,7 +41,3 @@ docker run -p 8080:8080 es6/api-service
 
 ```
 
-License
--------
-
-MIT

@@ -7,7 +7,7 @@ let config = require('./database'); // get db config file
 
 module.exports = function (passport) {
     let opts = {};
-    opts.jwtFromRequest = ExtractJwt.fromAuthHeader();
+    opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
     opts.secretOrKey = config.secret;
     passport.use(new JwtStrategy(opts, function (jwt_payload, done) {
         // console.log('--------------------------------');

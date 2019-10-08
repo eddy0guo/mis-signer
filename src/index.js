@@ -9,6 +9,7 @@ import api from './api';
 import wallet from './wallet';
 import adex  from './adex';
 import config from './config.json';
+import did from './did'
 
 let app = express();
 app.server = http.createServer(app);
@@ -35,6 +36,7 @@ initializeDb( db => {
 	app.use('/api', api({ config, db }));
 	app.use('/wallet', wallet({ config, db }));
 	app.use('/adex',adex({ config, db }));
+	app.use('/did',did({config,db}))
 
 	app.server.listen(process.env.PORT || config.port, () => {
 		console.log(`Started on port ${app.server.address().port}`);

@@ -1,4 +1,4 @@
-  npm install pg --sava 
+  npm install pg --save
    1048  npm run dev
     1049  npm install --save-dev babel-preset-es2015
      1050  npm run dev
