@@ -32,8 +32,8 @@ export default class db{
 			return JSON.stringify(result.rows);
 		}
 
-		async list_orders(address) {
-			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where trader_address=$1 order by created_at desc limit 30',address)); 
+		async list_orders() {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders order by updated_at desc limit 30')); 
 			if(err) {
 				return console.error('list_order_查询失败', err);
 			}
@@ -41,6 +41,18 @@ export default class db{
 			return result.rows;
 
 		} 
+
+		async my_orders(address) {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where trader_address=$1 order by updated_at desc limit 30',address)); 
+			if(err) {
+				return console.error('list_order_查询失败', err);
+			}
+			console.log('list_order_成功',JSON.stringify(result.rows)); 
+			return result.rows;
+
+		} 
+
+
 
 		async filter_orders(filter) {
 
@@ -124,6 +136,28 @@ export default class db{
 
 
         } 
+
+		async list_trades() {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_trades order by created_at desc limit 30')); 
+			if(err) {
+				return console.error('list_order_查询失败', err);
+			}
+			console.log('list_order_成功',JSON.stringify(result.rows)); 
+			return result.rows;
+
+		} 
+
+		async my_trades(address) {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_trades where taker=$1 or maker=$1 order by created_at desc limit 30',address)); 
+			if(err) {
+				return console.error('list_order_查询失败', err);
+			}
+			console.log('list_order_成功',JSON.stringify(result.rows)); 
+			return result.rows;
+
+		} 
+
+
          /**
          *lauchers
          *

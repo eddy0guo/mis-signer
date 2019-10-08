@@ -69,13 +69,23 @@ export default class order{
 
 	async list_orders(message) {
 
-            console.log("cancle_order--message=",message);
-		let filter_info = [message.address];
-		let result = await this.db.list_orders(filter_info);
+		let result = await this.db.list_orders();
 
             console.log("cancle_order--result=",result);
         return result;
     }
+
+	async my_orders(message) {
+
+            console.log("cancle_order--message=",message);
+		let filter_info = [message.address];
+		let result = await this.db.my_orders(filter_info);
+
+            console.log("cancle_order--result=",result);
+        return result;
+    }
+
+
 
 	async order_book() {
 

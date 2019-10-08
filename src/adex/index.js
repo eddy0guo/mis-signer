@@ -5,6 +5,7 @@ import Token from '../wallet/contract/Token'
 import walletHelper from '../wallet/lib/walletHelper'
 import { Router } from 'express'
 import order1 from './api/order'
+import trades1 from './api/trades'
 import market1 from './api/market'
 
 let walletInst;
@@ -49,6 +50,7 @@ let addr_chenfei = '0x668191f35bcc9d4c834e06bdbcb773609c40ba4cea';
 export default ({ config, db }) => {
 	let adex  = Router();
     let order = new order1();
+    let trades = new trades1();
     let market = new market1();
     let tokenTest = new TokenTest()
 
@@ -191,12 +193,22 @@ export default ({ config, db }) => {
 
 	adex.get('/list_orders', async (req, res) => {
        
-		let message = {address:"0x66b7637198aee4fffa103fc0082e7a093f81e05a64"}
 
-       let [err,result] = await to(order.list_orders(message));
+       let [err,result] = await to(order.list_orders());
 
        res.json({result,err });
 	});
+
+	adex.get('/my_orders', async (req, res) => {
+       
+		let message = {address:"0x66b7637198aee4fffa103fc0082e7a093f81e05a64"}
+
+       let [err,result] = await to(order.my_orders(message));
+
+       res.json({result,err });
+	});
+
+
 
 	adex.get('/order_book', async (req, res) => {
 
@@ -209,6 +221,27 @@ export default ({ config, db }) => {
        let [err,result] = await to(market.list_markets());
        res.json({result,err });
 	});
+
+	adex.get('/list_trades', async (req, res) => {
+       
+
+       let [err,result] = await to(trades.list_trades());
+
+       res.json({result,err });
+	});
+
+
+	adex.get('/my_trades', async (req, res) => {
+       
+		let message = {address:"0x66b7637198aee4fffa103fc0082e7a093f81e05a64"}
+
+       let [err,result] = await to(trades.my_trades(message));
+
+       res.json({result,err });
+	});
+
+
+
 
 
 	return adex;
