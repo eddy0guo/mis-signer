@@ -65,19 +65,18 @@ export default class engine{
                 for(var item = 0; item < find_orders.length;item++){
                     
                     //最低价格的一单最后成交，成交数量按照吃单剩下的额度成交,并且更新最后一个order的可用余额fixme__gxy
-                    amount += find_orders[item].amount;
+                    amount += find_orders[item].available_amount;
 
 
 					//吃单全部成交,挂单有剩余的场景,
                     if(item == find_orders.length - 1 && amount > my_order.amount ){
                         
                                 
-                       find_orders[item].amount -= (amount - my_order.amount);
-                    console.log("gxyyyimmmmm----", find_orders[item].amount);
+                       find_orders[item].available_amount -= (amount - my_order.amount);
 
                     }
 
-                    console.log("gxyyy----", find_orders[item].amount);
+                    console.log("gxyyy--available_amount--", find_orders[item].available_amount);
                         let trade={
                            id:               null,
                            transaction_id:   null,
@@ -87,7 +86,7 @@ export default class engine{
                            maker:            find_orders[item].trader_address,
                            taker:            my_order.trader_address,
                            price:            find_orders[item].price,
-                           amount:           find_orders[item].amount,
+                           amount:           find_orders[item].available_amount,
                            taker_side:       find_orders[item].side,
                            maker_order_id:   find_orders[item].id,
                            taker_order_id:   my_order.id,
@@ -101,8 +100,8 @@ export default class engine{
 		 		//匹配订单后，同时更新taker和maker的order信息,先不做错误处理,买单和卖单的计算逻辑是相同的,只需要更新available和pending
 				//此更新逻辑适用于全部成交和部分成交的两种情况
 				//available_amount,confirmed_amount,canceled_amount,pending_amount
-				  let update_maker_orders_info = [-find_orders[item].amount,0,0,find_orders[item].amount,create_time,find_orders[item].id];
-				  let update_taker_orders_info = [-find_orders[item].amount,0,0,find_orders[item].amount,create_time,my_order.id];
+				  let update_maker_orders_info = [-find_orders[item].available_amount,0,0,find_orders[item].available_amount,create_time,find_orders[item].id];
+				  let update_taker_orders_info = [-find_orders[item].available_amount,0,0,find_orders[item].available_amount,create_time,my_order.id];
 
            		  await this.db.update_orders(update_maker_orders_info);
             	  await this.db.update_orders(update_taker_orders_info);
