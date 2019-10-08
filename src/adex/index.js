@@ -158,20 +158,23 @@ export default ({ config, db }) => {
     adex.get('/build_order', async (req, res) => {
     	//打印键值对中的值
   		var obj = urllib.parse(req.url,true).query;
- 	   console.log("11111111111111",obj);
+ 	   console.log("obj=",obj);
        let message = {
                       id:null,
-                      trader_address: "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
-                      market_id: "ASIM-PAI",
-                      side: "buy",
-                      price: 11.000000000000000,
-                      amount: 5.00000000000000,
+                      trader_address: obj.trader_address,
+                      market_id: obj.market_id,
+                      side: obj.side,
+                      price: obj.price,
+                      amount: obj.amount,
+//                      side: "buy",
+//                      price: 11.000000000000000,
+//                      amount: 5.00000000000000,
 //					   side: "sell",
 //                     price: 1.13000000000000000,
 //                     amount: 11.00000000000000,
                       status:null,
                       type:null,
-                      available_amount:5,
+                      available_amount:obj.amount,
                       confirmed_amount:0,
                       canceled_amount:0,
                       pending_amount:0,

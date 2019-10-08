@@ -42,7 +42,7 @@ export default class trades{
 			
 			let volume  = 0;
 			     for(var index in trades_by_price){
-                 	volume  += trades_by_price[index].amount;
+                 	volume  += +trades_by_price[index].amount;
 				}
 
 		 	let open = 0;
@@ -69,7 +69,7 @@ export default class trades{
         	console.log("trading_view--result=",trades_by_time);
 		}
 		 console.log("bars---",bars);
-        return result;
+        return bars;
     }
 
 

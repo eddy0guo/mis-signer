@@ -45,6 +45,7 @@ export default class engine{
 
                     //返回的字面量用+处理成数值
                     result[i].amount = +result[i].amount;
+                    result[i].available_amount = +result[i].available_amount;
                     match_orders.push(result[i]);
                     amount += result[i].amount;  
                     if (amount >= message.amount){
@@ -70,13 +71,11 @@ export default class engine{
 
 					//吃单全部成交,挂单有剩余的场景,
                     if(item == find_orders.length - 1 && amount > my_order.amount ){
-                        
                                 
                        find_orders[item].available_amount -= (amount - my_order.amount);
-
                     }
 
-                    console.log("gxyyy--available_amount--", find_orders[item].available_amount);
+                    console.log("gxyyy--available_amount-333-", find_orders[item].available_amount,my_order.amount );
                         let trade={
                            id:               null,
                            transaction_id:   null,
