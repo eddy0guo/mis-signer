@@ -157,6 +157,17 @@ export default class db{
 
 		} 
 
+		async sort_trades(message,sort_by) {
+			let sql = 'SELECT * FROM mist_trades where market_id=$1  and created_at>=$2 and  created_at<=$3 order by ' + sort_by + ' desc limit 30';		
+			let [err,result] = await to(this.clientDB.query(sql,message)); 
+			if(err) {
+				return console.error('list_order_查询失败', err);
+			}
+			console.log('list_order_成功',JSON.stringify(result.rows)); 
+			return result.rows;
+
+		} 
+
 
          /**
          *lauchers

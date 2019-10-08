@@ -7,6 +7,7 @@ import { Router } from 'express'
 import order1 from './api/order'
 import trades1 from './api/trades'
 import market1 from './api/market'
+const urllib = require('url');
 
 let walletInst;
 let wallet_taker;
@@ -155,7 +156,9 @@ export default ({ config, db }) => {
                     });
 
     adex.get('/build_order', async (req, res) => {
-
+    	//打印键值对中的值
+  		var obj = urllib.parse(req.url,true).query;
+ 	   console.log("11111111111111",obj);
        let message = {
                       id:null,
                       trader_address: "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
@@ -242,7 +245,19 @@ export default ({ config, db }) => {
 
 
 
+	adex.get('/trading_view', async (req, res) => {
+		let current_time = Math.floor(new Date().getTime() / 1000);
 
+		let message = {
+		market_id:"ASIM-PAI",   
+		from: current_time - current_time%300 - 300*100,   //当前所在的时间区间不计算  
+		to: current_time - current_time%300,
+		granularity: 300,
+		};
+
+		let [err,result] = await to(trades.trading_view(message));
+        res.json({result,err });
+	});
 
 	return adex;
 };
