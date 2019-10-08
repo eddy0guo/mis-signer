@@ -41,7 +41,8 @@ export default ({ config, db }) => {
 			let newUser = new User({
 				username: req.body.username,
 				password: req.body.password,
-				mnemonic: mnemonic
+				mnemonic: mnemonic,
+				address: address,
 			});
 			// save the user
 			newUser.save(function(err) {
@@ -87,7 +88,10 @@ export default ({ config, db }) => {
 			let wallet = await walletHelper.testWallet(user.mnemonic,payPassword)
 			let address = await wallet.getAddress()
 
+			// clear info
 			user.password = undefined;
+			user.mnemonic = undefined;
+
 			res.json({
 				success: true,
 				user: user,
