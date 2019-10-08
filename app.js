@@ -45,15 +45,16 @@ app.use(passport.initialize());
 // 我们开发的路由分发函数
 // route api lists
 
-app.use('/sign', require('./routes/sign'));
+app.use('/sign', require('./routes/sign'))
+app.use('/did', require('./routes/did'))
 
 
 // default response
 app.get('/', function(req, res) {
   res.send('Mist Contract API');
-});
+})
 
 // 实际启动express服务器
 app.listen(8000, function() {
   console.log('listening on http://localhost:8000');
-});
+})
