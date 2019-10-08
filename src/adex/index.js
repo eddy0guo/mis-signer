@@ -159,7 +159,7 @@ export default ({ config, db }) => {
                       trader_address: "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
                       market_id: "ASIM-PAI",
                       side: "buy",
-                      price: 3.000000000000000,
+                      price: 11.000000000000000,
                       amount: 5.00000000000000,
 //					   side: "sell",
 //                     price: 1.13000000000000000,

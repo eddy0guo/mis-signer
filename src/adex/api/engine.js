@@ -128,10 +128,10 @@ export default class engine{
                        let trade_info = [
                             trades[i].taker,
                             trades[i].maker,
-                           //trades[i].amount *  trades[i].price * Math.pow(10,18),  //    uint256 baseTokenAmount;
-                           // trades[i].amount * Math.pow(10,18),  // quoteTokenAmount;
-                            10,  //    uint256 baseTokenAmount;
-                            5,  // quoteTokenAmount;
+                           trades[i].amount *  trades[i].price,  //    uint256 baseTokenAmount;
+                           trades[i].amount,  // quoteTokenAmount;
+                         //   10,  //    uint256 baseTokenAmount;
+                         //   5,  // quoteTokenAmount;
                             trades[i].taker_side
                             ];
                          trades_info.push(trade_info);
