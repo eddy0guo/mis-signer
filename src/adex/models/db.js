@@ -84,7 +84,6 @@ export default class db{
 			console.log('update_order_成功',JSON.stringify(result.rows)); 
 			return result.rows;
 
-
         } 
 
 
@@ -184,21 +183,54 @@ export default class db{
          *
          *
          * */
-          async insert_transactions(TXinfo) {
-			let [err,result] = await to(this.clientDB.query('insert into mist_transactions values($1,$2,$3,$4,$5)',TXinfo));
+        async insert_transactions(TXinfo) {
+			let [err,result] = await to(this.clientDB.query('insert into mist_transactions values($1,$2,$3,$4,$5,$6)',TXinfo));
 			if(err) {
-				return console.error('insert_traders_查询失败', err);
+				return console.error('insert_transactions_查询失败', err);
 			}
-			console.log('insert_order_成功',JSON.stringify(result.rows)); 
+			console.log('insert_transactions_成功',JSON.stringify(result.rows)); 
 			return JSON.stringify(result.rows);
         } 
 
-        /**
-         *watchers
-         *
-         *
-         * */
-          async insert_watcher(message) {
-        } 
+		async list_transactions() {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_transactions  order by id desc limit 30')); 
+			if(err) {
+				return console.error('list_transactions_查询失败', err);
+			}
+			console.log('list_transactions_成功',JSON.stringify(result.rows)); 
+			return result.rows;
 
+		} 
+
+		async list_successful_transactions() {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_transactions where status=\'successful\' order by id desc limit 30')); 
+			if(err) {
+				return console.error('list_successful_transactions_查询失败', err);
+			}
+			console.log('list_successful_transactions_成功',JSON.stringify(result.rows)); 
+			return result.rows;
+
+		} 
+
+		async get_transaction(id) {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_transactions where id=$1',id)); 
+			if(err) {
+				return console.error('get_transaction_查询失败', err);
+			}
+			console.log('get_transaction_成功',JSON.stringify(result.rows)); 
+			return result.rows;
+
+		} 
+	
+        async update_transactions(update_info) {
+			let [err,result] = await to(this.clientDB
+				.query('UPDATE mist_transactions SET (status,updated_at)=($1,$2) WHERE  id=$3',update_info)); 
+
+			if(err) {
+				return console.error('update_order_查询失败', err);
+			}
+			console.log('update_order_成功',JSON.stringify(result.rows)); 
+			return result.rows;
+
+        } 
 }

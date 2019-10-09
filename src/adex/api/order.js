@@ -49,7 +49,17 @@ export default class order{
             let txid = await this.exchange.call_asimov(trades)
 //           目前先做打包交易完成后更新transaction的交易，launcher的暂时没必要做
 			
-			let TXinfo = [txid,"pending",message.market_id,create_time,create_time];
+            let transactions = await this.db.list_transactions();
+
+            console.log("transactions=",transactions);
+			let id = 0;
+			
+			if(transactions.length != 0){
+				id = transactions[0].id;
+			}
+            
+
+			let TXinfo = [id+1,txid,message.market_id,"pending",create_time,create_time];
             this.db.insert_transactions(TXinfo);
 //            this.db.insert_launchers(arr_message);
 

@@ -66,7 +66,8 @@ create index idx_mist_market_trader_address on mist_orders (trader_address, mark
 
 -- transactions table
 create table mist_transactions(
-  transaction_hash text PRIMARY KEY,
+  id SERIAL PRIMARY KEY,
+  transaction_hash text,
   market_id text ,
   status text ,
   updated_at  timestamp,
