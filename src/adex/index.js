@@ -7,6 +7,7 @@ import { Router } from 'express'
 import order1 from './api/order'
 import trades1 from './api/trades'
 import market1 from './api/market'
+import watcher1 from './cli/watcher'
 const urllib = require('url');
 
 let walletInst;
@@ -53,9 +54,11 @@ export default ({ config, db }) => {
     let order = new order1();
     let trades = new trades1();
     let market = new market1();
+    let wathcer = new watcher1();
     let tokenTest = new TokenTest()
+	wathcer.start();
 
-        
+	        
    	adex.get('/hello', async (req, res) => {
        let result = "sss";
        let err;
