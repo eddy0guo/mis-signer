@@ -39,6 +39,8 @@ export default class order{
 
             let find_orders = await this.exchange.match(message);
 
+			if(find_orders.length == 0){return;}
+
 
             console.log("findorderssssss=",find_orders);
 
@@ -57,7 +59,15 @@ export default class order{
 			if(transactions.length != 0){
 				id = transactions[0].id;
 			}
-            
+			
+            	console.log("trades[i]=22222222222222",trades);
+			for(var i in trades){
+				trades[i].transaction_id = id + 1;
+				trades[i].transaction_hash = txid;
+
+            	console.log("trades[i]=",trades[i]);
+				await this.db.insert_trades(this.utils.arr_values(trades[i]));
+			}
 
 			let TXinfo = [id+1,txid,message.market_id,"pending",create_time,create_time];
             this.db.insert_transactions(TXinfo);

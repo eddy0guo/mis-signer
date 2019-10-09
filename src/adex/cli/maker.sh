@@ -4,7 +4,7 @@
 
 #curl -v http://119.23.181.166:13000/adex/list_trades
 i=3;
-while((i--));
+while((3));
 do
 	price=$(($(($RANDOM % 50)) + 1));
 	amount=$(($(($RANDOM % 20)) + 1));

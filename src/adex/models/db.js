@@ -76,7 +76,7 @@ export default class db{
         async update_orders(update_info) {
 			let [err,result] = await to(this.clientDB
 				.query('UPDATE mist_orders SET (available_amount,confirmed_amount,canceled_amount,\
-				pending_amount,updated_at)=(available_amount+$1,confirmed_amount+$2,canceled_amount+$3,pending_amount+$4,$5) WHERE id=$6',update_info)); 
+				pending_amount,status,updated_at)=(available_amount+$1,confirmed_amount+$2,canceled_amount+$3,pending_amount+$4,$5,$6) WHERE id=$7',update_info)); 
 
 			if(err) {
 				return console.error('update_order_查询失败', err);
@@ -166,6 +166,19 @@ export default class db{
 			return result.rows;
 
 		} 
+
+
+        async update_transactions(update_info) {
+			let [err,result] = await to(this.clientDB
+				.query('UPDATE mist_transactions SET (status,updated_at)=($1,$2) WHERE  id=$3',update_info)); 
+
+			if(err) {
+				return console.error('update_order_查询失败', err);
+			}
+			console.log('update_order_成功',JSON.stringify(result.rows)); 
+			return result.rows;
+
+        } 
 
 
          /**

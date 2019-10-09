@@ -65,6 +65,10 @@ export default class engine{
                 let amount=0;
                 for(var item = 0; item < find_orders.length;item++){
                     
+				//partial_filled,pending,full_filled,默认吃单有剩余，挂单吃完
+ 				  let maker_status = 'full_filled'; 
+ 				  let taker_status = 'partial_filled'; 
+				  
                     //最低价格的一单最后成交，成交数量按照吃单剩下的额度成交,并且更新最后一个order的可用余额fixme__gxy
                     amount += find_orders[item].available_amount;
 
@@ -73,6 +77,8 @@ export default class engine{
                     if(item == find_orders.length - 1 && amount > my_order.amount ){
                                 
                        find_orders[item].available_amount -= (amount - my_order.amount);
+					   maker_status = 'partial_filled';
+					   taker_status = 'full_filled';
                     }
 
                     console.log("gxyyy--available_amount-333-", find_orders[item].available_amount,my_order.amount );
@@ -99,12 +105,14 @@ export default class engine{
 		 		//匹配订单后，同时更新taker和maker的order信息,先不做错误处理,买单和卖单的计算逻辑是相同的,只需要更新available和pending
 				//此更新逻辑适用于全部成交和部分成交的两种情况
 				//available_amount,confirmed_amount,canceled_amount,pending_amount
-				  let update_maker_orders_info = [-find_orders[item].available_amount,0,0,find_orders[item].available_amount,create_time,find_orders[item].id];
-				  let update_taker_orders_info = [-find_orders[item].available_amount,0,0,find_orders[item].available_amount,create_time,my_order.id];
+		
+
+				  let update_maker_orders_info = [-find_orders[item].available_amount,0,0,find_orders[item].available_amount,maker_status,create_time,find_orders[item].id];
+				  let update_taker_orders_info = [-find_orders[item].available_amount,0,0,find_orders[item].available_amount,taker_status,create_time,my_order.id];
 
            		  await this.db.update_orders(update_maker_orders_info);
             	  await this.db.update_orders(update_taker_orders_info);
-               	  await this.db.insert_trades(this.utils.arr_values(trade));
+               	//  await this.db.insert_trades(this.utils.arr_values(trade));
             
                 }
 		    
