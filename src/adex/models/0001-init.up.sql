@@ -36,6 +36,7 @@ create table mist_trades(
   taker_side text ,
   maker_order_id  text ,
   taker_order_id text ,
+  updated_at timestamp ,
   created_at timestamp
 );
 create index idx_mist_trades_transaction_hash on mist_trades (transaction_hash);

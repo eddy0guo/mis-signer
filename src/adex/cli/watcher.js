@@ -47,11 +47,13 @@ export default class watcher{
 				let status = 'successful';
 				let info = [status,update_time,id+1]
 				this.db.update_transactions(info);
+				this.db.update_trades(info);
 				id++;
 			}else if(err){
 				let status = 'failed';
 				let info = [status,update_time,id+1]
 				this.db.update_transactions(info);
+				this.db.update_trades(info);
 				id++;
             	console.log("chain.getrawtransaction--err",err);
 			}else{
@@ -60,8 +62,6 @@ export default class watcher{
 			}
 			this.utils.sleep(1000);
 		}
-		
-        return "kkkuuuuuuuuuuuuuuuuuuuuuuuuk";
     }
  
  

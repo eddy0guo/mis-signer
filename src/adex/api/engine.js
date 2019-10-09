@@ -95,7 +95,8 @@ export default class engine{
                            taker_side:       find_orders[item].side,
                            maker_order_id:   find_orders[item].id,
                            taker_order_id:   my_order.id,
-                           created_at:       create_time
+                           created_at:       create_time,
+                           updated_at:       create_time
                         };
 
 					let trade_id = this.utils.get_hash(trade);

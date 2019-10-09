@@ -126,7 +126,7 @@ export default class db{
          *trades
          */
         async insert_trades(trade_info) {
-			let [err,result] = await to(this.clientDB.query('insert into mist_trades values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)',trade_info));
+			let [err,result] = await to(this.clientDB.query('insert into mist_trades values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)',trade_info));
 			if(err) {
 				return console.error('insert_traders_查询失败', err);
 			}
@@ -168,9 +168,9 @@ export default class db{
 		} 
 
 
-        async update_transactions(update_info) {
+        async update_trades(update_info) {
 			let [err,result] = await to(this.clientDB
-				.query('UPDATE mist_transactions SET (status,updated_at)=($1,$2) WHERE  id=$3',update_info)); 
+				.query('UPDATE mist_trades SET (status,updated_at)=($1,$2) WHERE  transaction_id=$3',update_info)); 
 
 			if(err) {
 				return console.error('update_order_查询失败', err);
