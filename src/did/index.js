@@ -26,17 +26,23 @@ export default ({ config, db }) => {
 		} else {
 			// create wallet
 			let wallet = new Wallet();
-			await Wallets.addWallet(wallet,true)
-			let address = await wallet.getAddress()
-
+//			await Wallets.addWallet(wallet,true)
+//			let address = await wallet.getAddress()
+//这里直接创建会报错assert 为定义，在库里注释掉了generate address的代码规避
 			await wallet.create({
 				walletName: "My First Wallet",
 				lang: "en",
 				mnemonicLength: 12,
 				pwd: payPassword
 			});
+//			await Wallets.addWallet(wallet,true)
+//			let address = await wallet.getAddress()
 
-			let mnemonic = wallet.getMnemonic(payPassword);
+		 	console.log("signup444---mnemonic",mnemonic);
+			let mnemonic = await wallet.getMnemonic(payPassword);
+			let  walletInst = await walletHelper.testWallet(mnemonic,payPassword);
+			let address = await walletInst.getAddress();
+		 	console.log("signup-3333333333333333---address=",address);
 
 			let newUser = new User({
 				username: req.body.username,

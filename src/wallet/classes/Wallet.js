@@ -55,7 +55,7 @@ export default class Wallet {
         this.setSeed(seed, pwd);
         this.setXpubkey(seed);
         // await this.storeWltInfo();
-        await AddressService.generateAddress();
+       // await AddressService.generateAddress();
         // this.closeLoading();
         resolve();
       }, 200);
