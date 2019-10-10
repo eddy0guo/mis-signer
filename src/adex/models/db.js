@@ -89,7 +89,7 @@ export default class db{
 
         async order_book() {
 			let [err,result] = await to(this.clientDB.query('select s.* from  (SELECT price,sum(amount) as amount,side FROM mist_orders\
-			where available_amount>0  group by price,side)s order by s.price desc limit 30')); 
+			where available_amount>0  group by price,side)s order by s.price desc limit 100')); 
 			if(err) {
 				return console.error('list_order_查询失败', err);
 			}

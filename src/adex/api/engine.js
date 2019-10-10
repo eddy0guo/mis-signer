@@ -35,7 +35,6 @@ export default class engine{
 
                 let result = await this.db.filter_orders(filter); 
 
-                console.log("gxy4444444444----",result);
                 let match_orders =[];
                 let amount = 0;
                 //find and retunr。all orders。which's price below this order
@@ -126,8 +125,7 @@ export default class engine{
                 walletInst = await getTestInst();
 
                 console.log("dex_match_order----gxy---22",trades);
-				//更新utxo的操作放在打包交易之前，不然部分时候还是出现没更新的情况
-                await walletInst.queryAllBalance();
+		
 
                         //结构体数组转换成二维数组,代币精度目前写死为7,18的会报错和合约类型u256不匹配
                         let trades_info  =[];
@@ -148,10 +146,12 @@ export default class engine{
                 let order_address_set = [index.PAI,index.GXY,index.relayer];
 
                 mist.unlock(walletInst,"111111");
+				//更新utxo的操作放在打包交易之前，不然部分时候还是出现没更新的情况
+                await walletInst.queryAllBalance();
                 let [err,txid] = await to(mist.dex_match_order(trades_info,order_address_set));
 
 
-                console.log("gxy---engine-call_asimov_result = -",txid);
+                console.log("gxy---engine-call_asimov_result = -",txid,err);
 
                 return txid;
         }
