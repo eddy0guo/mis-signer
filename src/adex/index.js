@@ -247,7 +247,7 @@ export default ({ config, db }) => {
 		var obj = urllib.parse(req.url,true).query;
        console.log("obj=",obj);
 	
-       let [err,result] = await to(order.order_book());
+       let [err,result] = await to(order.order_book(obj.marketID));
        res.json({result,err });
 	});
 

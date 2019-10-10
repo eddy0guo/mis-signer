@@ -87,9 +87,9 @@ export default class db{
         } 
 
 
-        async order_book() {
-			let [err,result] = await to(this.clientDB.query('select s.* from  (SELECT price,sum(amount) as amount,side FROM mist_orders\
-			where available_amount>0  group by price,side)s order by s.price desc limit 100')); 
+        async order_book(side) {
+			let [err,result] = await to(this.clientDB.query('select s.* from  (SELECT price,sum(amount) as amount FROM mist_orders\
+			where available_amount>0  and side=$1 group by price)s order by s.price desc limit 100',side)); 
 			if(err) {
 				return console.error('list_order_查询失败', err);
 			}
@@ -111,6 +111,16 @@ export default class db{
          * */
         async list_markets() {
 			let [err,result] = await to(this.clientDB.query('select * from mist_markets')); 
+			if(err) {
+				return console.error('list_order_查询失败', err);
+			}
+			console.log('list_order_成功',JSON.stringify(result.rows)); 
+			return result.rows;
+
+        }
+
+		 async get_market(marketID) {
+			let [err,result] = await to(this.clientDB.query('select * from mist_markets where id=$1',marketID)); 
 			if(err) {
 				return console.error('list_order_查询失败', err);
 			}

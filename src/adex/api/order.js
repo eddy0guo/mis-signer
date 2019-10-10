@@ -109,9 +109,26 @@ export default class order{
 
 	async order_book() {
 
-		let result = await this.db.order_book();
-        console.log("cancle_order--result=",result);
-        return result;
+		let asks = await this.db.order_book(['sell']);
+		let bids = await this.db.order_book(['buy']);
+		
+		let asks_arr = [];
+		let bids_arr = [];
+		 for(var item in asks){
+
+                    asks_arr.push(this.utils.arr_values(asks[item]));
+         }
+
+	  for(var item in bids){
+                    bids_arr.push(this.utils.arr_values(bids[item]));
+         }
+	
+		let order_book={
+				asks:asks_arr,
+				bids:bids_arr,
+			};
+        console.log("order_book--result=",order_book);
+        return order_book;
     }
  
 
