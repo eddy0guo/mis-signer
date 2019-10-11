@@ -60,7 +60,7 @@ export default ({ config, db }) => {
     let market = new market1();
     let wathcer = new watcher1();
     let tokenTest = new TokenTest()
-	wathcer.start();
+//	wathcer.start();
 
 	        
    	adex.get('/faucet', async (req, res) => {
@@ -73,12 +73,27 @@ export default ({ config, db }) => {
 	});
 
 
-    adex.get('/balance',async (req, res) => {
+    adex.get('/balances',async (req, res) => {
+					var obj = urllib.parse(req.url,true).query;
+ 	 				  console.log("obj=",obj);
+                    let token_arr = [GXY,PAI,XRP,BTC,VLS];
+                    let tokenname_arr = ["GXY","PAI","XRP","BTC","VLS"];
+                    let addr_arr = [obj.address];
+					let balances = [];
+                    for(var i in token_arr){
+                        let token = new Token(token_arr[i]);
+                        for(var m in addr_arr){
+                            let [err,result] = await to(token.balanceOf(addr_arr[m]));
+							let balance_info ={
+								tokenname: tokenname_arr[i],   
+								useraddr:result,
+							};
+							balances.push(balance_info);
+                            console.log(balance_info);
+                        } 
+                    }
 
-                    let [err,result] = await to(tokenTest.testBalanceOf())
-                    console.log(result,err);
-
-                    res.json({ result:result,err:err });
+                    res.json(balances);
                     });
 
     adex.get('/list_balance',async (req, res) => {
@@ -259,8 +274,11 @@ export default ({ config, db }) => {
 
 	adex.get('/list_trades', async (req, res) => {
        
+		
+		var obj = urllib.parse(req.url,true).query;
+       console.log("obj=",obj);
 
-       let [err,result] = await to(trades.list_trades());
+       let [err,result] = await to(trades.list_trades(obj.marketID));
 
        res.json({result,err });
 	});
@@ -296,7 +314,7 @@ export default ({ config, db }) => {
 
 
 		let message = {
-		market_id:"ASIM-PAI",   
+		market_id:obj.marketID,   
 		from: current_time - current_time%obj.granularity - obj.granularity*obj.number,   //当前所在的时间区间不计算  
 		to: current_time - current_time%obj.granularity,
 		granularity: obj.granularity,

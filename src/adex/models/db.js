@@ -59,10 +59,10 @@ export default class db{
 			let err;
 			let result;
 			if(filter[1] == 'sell'){
-				[err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where price<=$1 and side=$2 and available_amount>0 order by price asc',filter)); 
+				[err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where price<=$1 and side=$2 and available_amount>0 and market_id=$3 order by price asc',filter)); 
 			}else{
 				
-				[err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where price>=$1 and side=$2 and available_amount>0 order by price desc',filter)); 
+				[err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where price>=$1 and side=$2 and available_amount>0 and market_id=$3 order by price desc',filter)); 
 			}
 			if(err) {
 				return console.error('insert_order_查询失败11', err);
@@ -146,8 +146,8 @@ export default class db{
 
         } 
 
-		async list_trades() {
-			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_trades order by created_at desc limit 30')); 
+		async list_trades(marketID) {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_trades where market_id=$1 order by created_at desc limit 30'),marketID); 
 			if(err) {
 				return console.error('list_order_查询失败', err);
 			}

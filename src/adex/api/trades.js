@@ -12,9 +12,9 @@ export default class trades{
          this.utils = new utils2;
     }
 
-	async list_trades() {
+	async list_trades(marketID) {
 
-		let result = await this.db.list_trades();
+		let result = await this.db.list_trades([marketID]);
         console.log("cancle_order--result=",result);
         return result;
     }

@@ -31,7 +31,7 @@ export default class engine{
                         side = "sell"
                 }
 
-                let filter = [message.price,side];
+                let filter = [message.price,side,message.market_id];
 
                 let result = await this.db.filter_orders(filter); 
 
@@ -141,9 +141,14 @@ export default class engine{
                             ];
                          trades_info.push(trade_info);
                 }
-                
-
-                let order_address_set = [index.PAI,index.GXY,index.relayer];
+               let token_address = await this.db.get_market([trades[0].market_id]);
+	
+			
+                console.log("dex_match_order----gxy---333333",token_address[0].base_token_address,token_address[0].quote_token_address);
+			
+				//这里合约逻辑写反了。参数顺序也故意写反，使整体没问题，等下次合约更新调整过来，fixme
+                //let order_address_set = [token_address[0].base_token_address,token_address[0].quote_token_address,index.relayer];
+                let order_address_set = [token_address[0].quote_token_address,token_address[0].base_token_address,index.relayer];
 
                 mist.unlock(walletInst,"111111");
 				//更新utxo的操作放在打包交易之前，不然部分时候还是出现没更新的情况
