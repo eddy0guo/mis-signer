@@ -14,8 +14,9 @@ export default class trades{
 
 	async list_trades(marketID) {
 
+        console.log("list_trades--result=",[marketID]);
 		let result = await this.db.list_trades([marketID]);
-        console.log("cancle_order--result=",result);
+        console.log("list_trades--result=",result);
         return result;
     }
 
