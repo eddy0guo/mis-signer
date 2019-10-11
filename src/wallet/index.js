@@ -3,13 +3,25 @@ import { chain } from './api/chain'
 import { walletRPC } from './api/wallet'
 import walletHelper from './lib/walletHelper'
 import to from 'await-to-js'
+import StandardToken from './contract/Token'
 import TokenTest from './contract/TokenTest'
 import AssetTest from './asset/AssetTest'
+import Token from './contract/mist_ex'
 
 let testWallets = {
 	"0x6619fd2d2fd1db189c075ff25800f7b98ff3205e5a":"benefit park visit oxygen supply oil pupil snack pipe decade young bracket",
 	"0x66b31cab7d9eb10cfcdb7a3c19dcd45f362e15ba8e":"federal strong comic spy real develop cave ramp equip cheap behind negative",
 	"0x668a4cd95f49cd3eb6639a860d4cc7e94172571e7e":"present shoe never wise ignore nuclear bring sick left kangaroo shed gold"
+}
+
+let taker = '0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9';
+let taker_word = 'enhance donor garment gospel loop purse pumpkin bag oven bone decide street';
+let taker_wallet;
+// 避免重复创建Taker Wallet Instance
+async function getTakerWallet() {
+	if( taker_wallet ) return taker_wallet;
+	taker_wallet = await walletHelper.testWallet(taker_word,'111111')
+	return taker_wallet
 }
 
 let walletInst;
@@ -30,6 +42,24 @@ export default ({ config, db }) => {
 		res.json({ wallet:address })
 	});
 
+	wallet.get('/faucet/:token/:address',async (req, res) => {
+		console.log(req.params)
+		let token = new StandardToken(req.params.token)
+		let takerWallet = await getTakerWallet();
+		await takerWallet.queryAllBalance()
+		token.unlock(takerWallet,'111111')
+		let [err,result] = await to(token.transfer(req.params.address,10000))
+		console.log(result,err);
+		res.json({ result:result,err:err });
+	});
+
+	wallet.get('/balanceOf/:token/:address',async (req, res) => {
+		console.log(req.params)
+		let token = new StandardToken(req.params.token)
+		let [err,result] = await to(token.balanceOf(req.params.address))
+		console.log(result,err);
+		res.json({ result:result,err:err });
+	});
 
 	wallet.get('/balance',async (req, res) => {
 
