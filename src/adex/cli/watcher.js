@@ -34,7 +34,7 @@ export default class watcher {
 		if (transaction.length == 0) {
 			console.log("have not pending transaction");
 			setTimeout(loop, 1000);
-			continue;
+			return;
 		}
 
 		let [err, result] = await to(chain.getrawtransaction([transaction[0].transaction_hash, true, true]))
