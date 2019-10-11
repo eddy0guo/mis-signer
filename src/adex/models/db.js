@@ -101,8 +101,27 @@ export default class db{
          *tokens
          *
          * */
-        async findtrades(tradeid) {
+        async list_tokens(tradeid) {
+			let [err,result] = await to(this.clientDB.query('select * from mist_tokens')); 
+			if(err) {
+				return console.error('list_order_查询失败', err);
+			}
+			console.log('list_order_成功',JSON.stringify(result.rows)); 
+			return result.rows;
+
         }
+
+	  async get_tokens(symbol) {
+			let [err,result] = await to(this.clientDB.query('select * from mist_tokens where symbol=$1',symbol)); 
+			if(err) {
+				return console.error('list_order_查询失败', err);
+			}
+			console.log('list_order_成功',JSON.stringify(result.rows)); 
+			return result.rows;
+
+        }
+
+
 
 
          /*
@@ -147,11 +166,11 @@ export default class db{
         } 
 
 		async list_trades(marketID) {
-			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_trades where market_id=$1 order by created_at desc limit 30'),marketID); 
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_trades where market_id=$1 order by created_at desc limit 30',marketID)); 
 			if(err) {
-				return console.error('list_order_查询失败', err);
+				return console.error('list_trades_查询失败', err);
 			}
-			console.log('list_order_成功',JSON.stringify(result.rows)); 
+			console.log('list_trades_成功',JSON.stringify(result.rows)); 
 			return result.rows;
 
 		} 

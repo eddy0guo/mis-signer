@@ -1,6 +1,7 @@
 -- tokens table
 create table mist_tokens(
  symbol text primary key,
+ name text,
  address text ,
  decimals integer ,
  created_at timestamp

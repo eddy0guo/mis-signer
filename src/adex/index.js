@@ -8,6 +8,7 @@ import order1 from './api/order'
 import trades1 from './api/trades'
 import market1 from './api/market'
 import watcher1 from './cli/watcher'
+import mist_wallet1 from './api/mist_wallet'
 const urllib = require('url');
 
 let walletInst;
@@ -59,6 +60,7 @@ export default ({ config, db }) => {
     let trades = new trades1();
     let market = new market1();
     let wathcer = new watcher1();
+    let mist_wallet = new mist_wallet1();
     let tokenTest = new TokenTest()
 //	wathcer.start();
 
@@ -76,21 +78,21 @@ export default ({ config, db }) => {
     adex.get('/balances',async (req, res) => {
 					var obj = urllib.parse(req.url,true).query;
  	 				  console.log("obj=",obj);
-                    let token_arr = [GXY,PAI,XRP,BTC,VLS];
-                    let tokenname_arr = ["GXY","PAI","XRP","BTC","VLS"];
-                    let addr_arr = [obj.address];
+                    let token_arr = await mist_wallet.list_tokens();
+
 					let balances = [];
+ 	 				  console.log("obj11111111133=",token_arr);
                     for(var i in token_arr){
-                        let token = new Token(token_arr[i]);
-                        for(var m in addr_arr){
-                            let [err,result] = await to(token.balanceOf(addr_arr[m]));
+ 	 				  console.log("obj111111111=",token_arr[i]);
+                    	    let token = new Token(token_arr[i].address);
+                            let [err,result] = await to(token.balanceOf(obj.address));
 							let balance_info ={
-								tokenname: tokenname_arr[i],   
-								useraddr:result,
+								token_symbol: token_arr[i].symbol,   
+								token_name: token_arr[i].name,   
+								balance:result,
 							};
 							balances.push(balance_info);
                             console.log(balance_info);
-                        } 
                     }
 
                     res.json(balances);
@@ -140,46 +142,8 @@ export default ({ config, db }) => {
                     });
 
 
-
-    adex.get('/transfer',async (req, res) => {
-
-                    walletInst = await getTestInst();
-                    let [err,result] = await to(tokenTest.testTransfer(walletInst))
-                    console.log(result,err);
-
-                    if( !err ){
-                    // 先简单处理，Execute 前更新UTXO
-                    await walletInst.queryAllBalance()
-                    }
-
-                    res.json({ result:result,err:err });
-                    });
-
-    adex.get('/transfer_from',async (req, res) => {
-
-                    walletInst = await getTestInst();
-                    let [err,result] = await to(tokenTest.testTransferfrom(walletInst,'0x66b7637198aee4fffa103fc0082e7a093f81e05a64',5))
-                    console.log(result,err);
-
-                    if( !err ){
-                    // 先简单处理，Execute 前更新UTXO
-                    await walletInst.queryAllBalance()
-                    }
-
-                    res.json({ result:result,err:err });
-                    });
-
-    
-    adex.get('/approve',async (req, res) => {
-                    
-                    let mist_ex = "0x66edd03c06441f8c2da19b90fcc42506dfa83226d3";
-                    let value = "6666";
-                    wallet_taker = await taker_wallet();
-                    let [err,result] = await to(tokenTest.testApprove(wallet_taker,mist_ex,value))
-                    console.log(result,err);
-
-                    res.json({ result:result,err:err });
-                    });
+  
+  
 
     adex.get('/build_order', async (req, res) => {
     	//打印键值对中的值
