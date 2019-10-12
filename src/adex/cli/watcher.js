@@ -33,7 +33,10 @@ export default class watcher {
 		//全部都是成功的,就睡眠1s
 		if (transaction.length == 0) {
 			console.log("have not pending transaction");
-			setTimeout(loop, 1000);
+			setTimeout(()=>{
+            this.loop.call(this)
+        	}, 1000);
+
 			return;
 		}
 
