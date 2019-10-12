@@ -152,7 +152,9 @@ export default class engine{
 
                 mist.unlock(walletInst,"111111");
 				//更新utxo的操作放在打包交易之前，不然部分时候还是出现没更新的情况
-                await walletInst.queryAllBalance();
+                let [err2,result] = await to(walletInst.queryAllBalance());
+                console.log("gxy---engine-call_asimov_result2222 = -",result,err2);
+
                 let [err,txid] = await to(mist.dex_match_order(trades_info,order_address_set));
 
 

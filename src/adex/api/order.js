@@ -81,7 +81,7 @@ export default class order{
 
             console.log("cancle_order--message=",message);
 		let create_time = this.utils.get_current_time();
-		let cancle_info = [-message.amount,0,message.amount,0,create_time,message.id];
+		let cancle_info = [-message.amount,0,message.amount,0,'cancled',create_time,message.id];
 		let result = await this.db.update_orders(cancle_info);
 
             console.log("cancle_order--result=",result);
