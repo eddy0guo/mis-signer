@@ -245,7 +245,7 @@ export default class db{
 		} 
 
 		async list_successful_transactions() {
-			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_transactions where status=\'successful\' order by id desc limit 30')); 
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_transactions where status !=\'pending\' order by id desc limit 30')); 
 			if(err) {
 				return console.error('list_successful_transactions_查询失败', err);
 			}

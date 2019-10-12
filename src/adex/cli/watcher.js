@@ -19,10 +19,10 @@ export default class watcher {
 	}
 
 	async loop() {
+	
 		let transactions = await this.db.list_successful_transactions()
-
-		let id = 0
-
+		
+		let id = 0;
 		if (transactions.length != 0) {
 			id = transactions[0].id;
 		}
@@ -37,6 +37,7 @@ export default class watcher {
 			return;
 		}
 
+			console.log("have n555555555555555555",id_arr);
 		let [err, result] = await to(chain.getrawtransaction([transaction[0].transaction_hash, true, true]))
 
 		//          console.log("chain.getrawtransaction",result,err);
@@ -47,20 +48,22 @@ export default class watcher {
 			let info = [status, update_time, id + 1]
 			this.db.update_transactions(info);
 			this.db.update_trades(info);
-			id++;
 		} else if (err) {
 			let status = 'failed';
 			let info = [status, update_time, id + 1]
 			this.db.update_transactions(info);
 			this.db.update_trades(info);
-			id++;
 			console.log("chain.getrawtransaction--err", err);
 		} else {
 
+
+			console.log("have n66666",id_arr);
 			console.log("pending transaction", transaction[0].transaction_hash);
 		}
 
-		setTimeout(loop, 1000);
+		setTimeout(()=>{
+			this.loop.call(this)
+		}, 1000);
 
 	}
 

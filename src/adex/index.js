@@ -62,7 +62,7 @@ export default ({ config, db }) => {
     let wathcer = new watcher1();
     let mist_wallet = new mist_wallet1();
     let tokenTest = new TokenTest()
-//	wathcer.start();
+	wathcer.start();
 
 	        
    	adex.get('/faucet', async (req, res) => {
