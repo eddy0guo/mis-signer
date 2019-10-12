@@ -33,7 +33,7 @@ export default class db{
 		}
 
 		async list_orders() {
-			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders order by updated_at desc limit 30')); 
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders order by create_at desc limit 30')); 
 			if(err) {
 				return console.error('list_order_查询失败', err);
 			}
@@ -43,7 +43,7 @@ export default class db{
 		} 
 
 		async my_orders(address) {
-			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where trader_address=$1 order by updated_at desc limit 30',address)); 
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where trader_address=$1 order by created_at desc limit 30',address)); 
 			if(err) {
 				return console.error('list_order_查询失败', err);
 			}

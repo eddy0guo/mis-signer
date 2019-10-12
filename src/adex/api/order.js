@@ -25,8 +25,9 @@ export default class order{
             let hash = this.utils.get_hash(message); // a65014c0dfa57751a749866e844b6c42266b9b7d54d5c59f7f7067d973f77817
 
 
-             message.id = hash;
+            message.id = hash;
             message.created_at= create_time;
+			message.updated_at= create_time;
             
             let arr_message = this.utils.arr_values(message);
 

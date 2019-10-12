@@ -152,7 +152,7 @@ export default ({ config, db }) => {
        let message = {
                       id:null,
                       trader_address: obj.trader_address,
-                      market_id: obj.market_id,
+                      market_id: obj.marketID,
                       side: obj.side,
                       price: obj.price,
                       amount: obj.amount,
