@@ -65,13 +65,12 @@ export default ({ config, db }) => {
 	wathcer.start();
 
 	        
-   	adex.get('/faucet', async (req, res) => {
-                    await walletInst.queryAllBalance()
-				 walletInst = await getTestInst();
-                    let [err,result] = await to(tokenTest.testTransfer(walletInst))
-                    console.log(result,err);
+   	adex.get('/list_market_quotations', async (req, res) => {
+					 let result = await market.list_market_quotations();
+                    console.log(result);
 
-       res.json({result,err });
+
+       res.json({result});
 	});
 
 
@@ -186,7 +185,7 @@ export default ({ config, db }) => {
 		   };
 **/
 	    var obj = urllib.parse(req.url,true).query;
-       console.log("obj=",obj);
+       console.log("cancled_obj=",obj);
 		let message = {
 			 amount: obj.amount,
 			 id: obj.orderID,

@@ -1,6 +1,8 @@
 import client from '../models/db'
 import utils2 from './utils'
 const crypto = require('crypto');
+import to from 'await-to-js';
+
 var date = require("silly-datetime");
 
 export default class makets{
@@ -18,6 +20,22 @@ export default class makets{
         console.log("cancle_order--result=",result);
         return result;
     }
+
+	async list_market_quotations() {
+
+		let markets = await this.list_markets();
+		let quotations = [];
+        console.log("cancle_order--result22223333=",markets);
+		for(var index in markets){
+			let [err,result] = await to(this.db.get_market_quotations([markets[index].id]));
+        	 console.log("get_market_quotations--result=",result,err);
+			if(!err){
+				quotations.push(result);	
+			}
+		}
+        return quotations;
+    }
+ 
  
 
  
