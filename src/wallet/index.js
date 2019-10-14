@@ -7,7 +7,7 @@ import StandardToken from './contract/Token'
 import TokenTest from './contract/TokenTest'
 import AssetTest from './asset/AssetTest'
 import Asset from './asset/Asset'
-import Token from './contract/mist_ex'
+import { CONSTANT } from "./constant";
 
 let testWallets = {
 	"0x6619fd2d2fd1db189c075ff25800f7b98ff3205e5a":"benefit park visit oxygen supply oil pupil snack pipe decade young bracket",
