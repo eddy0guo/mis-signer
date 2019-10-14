@@ -6,6 +6,7 @@ import to from 'await-to-js'
 import StandardToken from './contract/Token'
 import TokenTest from './contract/TokenTest'
 import AssetTest from './asset/AssetTest'
+import Asset from './asset/Asset'
 import Token from './contract/mist_ex'
 
 let testWallets = {
@@ -95,6 +96,12 @@ export default ({ config, db }) => {
 	/**
 	 * Assets Test
 	 */
+
+	wallet.get('/assetBalanceOf/:address',async (req,res)=>{
+		let asset = new Asset(CONSTANT.DEFAULT_ASSET)
+		let [err,result] = await to(asset.balanceOf(req.params.address))
+		res.json({ result:result,err:err });
+	});
 
 	wallet.get('/assetTransfer',async (req, res) => {
 
