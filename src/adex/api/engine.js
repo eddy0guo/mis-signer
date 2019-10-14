@@ -66,7 +66,6 @@ export default class engine{
                     
 				//partial_filled,pending,full_filled,默认吃单有剩余，挂单吃完
  				  let maker_status = 'full_filled'; 
- 				  let taker_status = 'partial_filled'; 
 				  
                     //最低价格的一单最后成交，成交数量按照吃单剩下的额度成交,并且更新最后一个order的可用余额fixme__gxy
                     amount += find_orders[item].available_amount;
@@ -77,7 +76,6 @@ export default class engine{
                                 
                        find_orders[item].available_amount -= (amount - my_order.amount);
 					   maker_status = 'partial_filled';
-					   taker_status = 'full_filled';
                     }
 
                     console.log("gxyyy--available_amount-333-", find_orders[item].available_amount,my_order.amount );
@@ -108,10 +106,10 @@ export default class engine{
 		
 
 				  let update_maker_orders_info = [-find_orders[item].available_amount,0,0,find_orders[item].available_amount,maker_status,create_time,find_orders[item].id];
-				  let update_taker_orders_info = [-find_orders[item].available_amount,0,0,find_orders[item].available_amount,taker_status,create_time,my_order.id];
+			//	  let update_taker_orders_info = [-find_orders[item].available_amount,0,0,find_orders[item].available_amount,taker_status,create_time,my_order.id];
 
            		  await this.db.update_orders(update_maker_orders_info);
-            	  await this.db.update_orders(update_taker_orders_info);
+            //	  await this.db.update_orders(update_taker_orders_info);
                	//  await this.db.insert_trades(this.utils.arr_values(trade));
             
                 }
