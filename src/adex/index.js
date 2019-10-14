@@ -117,30 +117,34 @@ export default ({ config, db }) => {
                     });
 
     //所有token合约赋予所有地址权限
-    adex.get('/all_approve',async (req, res) => {
+    adex.get('/approves',async (req, res) => {
                     
-                    let token_arr = [GXY,PAI];
-                    let word_arr = [maker_word,taker_word];
+                   var obj = urllib.parse(req.url,true).query;
+                      console.log("obj=",obj);
 
-                    for(var i in token_arr){
-                        let token  = new Token(token_arr[i]);
-                        for(var n in word_arr){
-                                let wallet = await my_wallet(word_arr[n]);
-                                
-                                    console.log("approve wallet =",wallet);
+                    let token_arr = await mist_wallet.list_tokens();
+                    let txids =[];
+                    for(let i in token_arr){
+                                    let token  = new Token(token_arr[i].address);
+                                    let wallet = await my_wallet(obj.word);
+                                    let address = await wallet.getAddress();
 
+                                    console.log("333--address",address);
+                                    
                                      token.unlock(wallet,"111111")
+                                    let [err,balance] = await to(token.balanceOf(address));
+                                    let [err3,allowance] = await to(token.allowance(address,ex_address));
+                                    if(balance != allowance){
+                                        await wallet.queryAllBalance()
+                                        let [err2,txid] = await to(token.approve(ex_address,balance));
+                                        txids.push(result2)
+                                        console.log("444--",err2,txid);
 
-                                    await wallet.queryAllBalance()
-                                    let [err,result] = await to(token.approve(relayer,100000));
-                                    console.log("approve result=",result,err);
-                        }
+                                    }
+                                    console.log("444--",balance,allowance);
                     }
-
-                    res.json("sss");
+                    res.json(txids);
                     });
-
-
   
   
 

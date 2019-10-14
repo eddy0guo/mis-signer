@@ -16,7 +16,7 @@ export default class utils{
        return arr_message;
     }
 	get_hash(message){
-			var create_time = date.format(new Date(),'YYYY-MM-DD HH:mm:ss');
+			var create_time = this.get_current_time();
 			let arr = this.arr_values(message);
             arr.push(create_time);
             let str = arr.join("");

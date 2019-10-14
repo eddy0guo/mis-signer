@@ -45,24 +45,45 @@ export default class watcher {
 
 		//          console.log("chain.getrawtransaction",result,err);
 		//检测txid失败之后，更新为failed就不再管了,暂定为8个区块确认
+		//无论是失败还是成功，都会更新orders的confirm_amount,一个transaction确认成功，去更新一个taker和多个maker的order
 		let update_time = this.utils.get_current_time();
 		if (!err && result.confirmations >= 8) {
 			let status = 'successful';
 			let info = [status, update_time, id + 1]
 			this.db.update_transactions(info);
 			this.db.update_trades(info);
+
+			let trades = await this.db.transactions_trades([id+1]);
+				console.log("have n666666666666666666",trades);			
+			for(var index in trades){
+				let update_maker_orders_info = [0,+trades[index].amount,0,-+trades[index].amount,update_time,trades[index].maker_order_id];
+            	let update_taker_orders_info = [0,+trades[index].amount,0,-+trades[index].amount,update_time,trades[index].taker_order_id];
+				this.db.update_order_confirm(update_maker_orders_info);
+                this.db.update_order_confirm(update_taker_orders_info);
+			}
+
 		} else if (err) {
 			let status = 'failed';
 			let info = [status, update_time, id + 1]
 			this.db.update_transactions(info);
 			this.db.update_trades(info);
+
+			let trades = await this.db.transactions_trades([id+1]);
+				console.log("have n666666666666666666",trades);			
+			for(var index in trades){
+				let update_maker_orders_info = [0,+trades[index].amount,0,-+trades[index].amount,update_time,trades[index].maker_order_id];
+            	let update_taker_orders_info = [0,+trades[index].amount,0,-+trades[index].amount,update_time,trades[index].taker_order_id];
+				this.db.update_order_confirm(update_maker_orders_info);
+                this.db.update_order_confirm(update_taker_orders_info);
+			}
+
 			console.log("chain.getrawtransaction--err", err);
 		} else {
-
-
 			console.log("have n66666",id_arr);
 			console.log("pending transaction", transaction[0].transaction_hash);
 		}
+
+
 
 		setTimeout(()=>{
 			this.loop.call(this)
