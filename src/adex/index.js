@@ -294,3 +294,4 @@ export default ({ config, db }) => {
 
 	return adex;
 };
+export{relayer};
