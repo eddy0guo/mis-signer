@@ -1,21 +1,23 @@
-insert into mist_markets (id,base_token_address,base_token_symbol,quote_token_address,quote_token_symbol,created_at) values ('ASIM-PAI', '0x631f62ca646771cd0c78e80e4eaf1d2ddf8fe414bf','ASIM', '0x63429bfcfdfbfa0048d1aeaa471be84675f1324a02','PAI', NOW());
-insert into mist_markets (id,base_token_address,base_token_symbol,quote_token_address,quote_token_symbol,created_at) values ('BTC-PAI', '0x63b543f99847bd77bb378a77ca216cdc749ebf8494','BTC', '0x63429bfcfdfbfa0048d1aeaa471be84675f1324a02','PAI', NOW());
-insert into mist_markets (id,base_token_address,base_token_symbol,quote_token_address,quote_token_symbol,created_at) values ('XRP-PAI', '0x6388e9a82e400a5da6ce837a045d812baea3a1f1e5','XRP', '0x63429bfcfdfbfa0048d1aeaa471be84675f1324a02','PAI', NOW());
+insert into mist_markets (id,base_token_address,base_token_symbol,quote_token_address,quote_token_symbol,created_at) values ('ASIM-PI', '0x639a9f78bdaac0a33b39de17c13cf7271d86800a7d','ASIM', '0x6376141c4fa5b11841f7dc186d6a9014a11efcbae6','PI', NOW());
+insert into mist_markets (id,base_token_address,base_token_symbol,quote_token_address,quote_token_symbol,created_at) values ('MT-PI', '0x63b98f4bf0360c91fec1668aafdc552d3c725f66bf','MT', '0x6376141c4fa5b11841f7dc186d6a9014a11efcbae6','PI', NOW());
+insert into mist_markets (id,base_token_address,base_token_symbol,quote_token_address,quote_token_symbol,created_at) values ('USDT-PI', '0x636b02db01ec1aa50abe1c2a8030b43b7a7867a308','USDT', '0x6376141c4fa5b11841f7dc186d6a9014a11efcbae6','PI', NOW());
 
-insert into mist_markets (id,base_token_address,base_token_symbol,quote_token_address,quote_token_symbol,created_at) values ('ASIM-BTC', '0x631f62ca646771cd0c78e80e4eaf1d2ddf8fe414bf','ASIM', '0x63b543f99847bd77bb378a77ca216cdc749ebf8494','BTC', NOW());
-insert into mist_markets (id,base_token_address,base_token_symbol,quote_token_address,quote_token_symbol,created_at) values ('XRP-BTC', '0x6388e9a82e400a5da6ce837a045d812baea3a1f1e5','XRP', '0x63b543f99847bd77bb378a77ca216cdc749ebf8494','BTC', NOW());
+insert into mist_markets (id,base_token_address,base_token_symbol,quote_token_address,quote_token_symbol,created_at) values ('ASIM-USDT', '0x639a9f78bdaac0a33b39de17c13cf7271d86800a7d','ASIM', '0x636b02db01ec1aa50abe1c2a8030b43b7a7867a308','USDT', NOW());
+insert into mist_markets (id,base_token_address,base_token_symbol,quote_token_address,quote_token_symbol,created_at) values ('ETH-USDT', '0x6305ed5c64dcee4dd0065333b8bd677abc87762fd3','ETH', '0x636b02db01ec1aa50abe1c2a8030b43b7a7867a308','USDT', NOW());
 
-insert into mist_markets (id,base_token_address,base_token_symbol,quote_token_address,quote_token_symbol,created_at) values ('VLS-ASIM', '0x6386db063e10ef893138e560c55eb42bb9e13ac7dc','VLS', '0x631f62ca646771cd0c78e80e4eaf1d2ddf8fe414bf','ASIM', NOW());
-
-
-
+insert into mist_markets (id,base_token_address,base_token_symbol,quote_token_address,quote_token_symbol,created_at) values ('ETH-MT', '0x6305ed5c64dcee4dd0065333b8bd677abc87762fd3','ETH', '0x63b98f4bf0360c91fec1668aafdc552d3c725f66bf','MT', NOW());
+insert into mist_markets (id,base_token_address,base_token_symbol,quote_token_address,quote_token_symbol,created_at) values ('BTC-MT', '0x63f6a701dd4bd8be879fc12fd4acdd93f01345d63e','BTC', '0x63b98f4bf0360c91fec1668aafdc552d3c725f66bf','MT', NOW());
 
 
 
 
 
-insert into mist_tokens (address, symbol, name, decimals) values ('0x63429bfcfdfbfa0048d1aeaa471be84675f1324a02', 'PAI','PAII', 18);
-insert into mist_tokens (address, symbol, name,decimals) values ('0x631f62ca646771cd0c78e80e4eaf1d2ddf8fe414bf', 'ASIM','ASIMM', 18);
-insert into mist_tokens (address, symbol, name,decimals) values ('0x63b543f99847bd77bb378a77ca216cdc749ebf8494', 'BTC','BTCC', 18);
-insert into mist_tokens (address, symbol, name,decimals) values ('0x6386db063e10ef893138e560c55eb42bb9e13ac7dc', 'VLS','VLSS', 18);
-insert into mist_tokens (address, symbol, name,decimals) values ('0x6388e9a82e400a5da6ce837a045d812baea3a1f1e5', 'XRP','XRPP', 18);
+
+
+
+insert into mist_tokens (address, symbol, name, decimals) values ('0x6376141c4fa5b11841f7dc186d6a9014a11efcbae6', 'PI','PII', 18);
+insert into mist_tokens (address, symbol, name,decimals) values ('0x639a9f78bdaac0a33b39de17c13cf7271d86800a7d', 'ASIM','ASIMM', 18);
+insert into mist_tokens (address, symbol, name,decimals) values ('0x63f6a701dd4bd8be879fc12fd4acdd93f01345d63e', 'BTC','BTCC', 18);
+insert into mist_tokens (address, symbol, name,decimals) values ('0x636b02db01ec1aa50abe1c2a8030b43b7a7867a308', 'USDT','USDTS', 18);
+insert into mist_tokens (address, symbol, name,decimals) values ('0x6305ed5c64dcee4dd0065333b8bd677abc87762fd3', 'ETH','ETHP', 18);
+insert into mist_tokens (address, symbol, name,decimals) values ('0x63b98f4bf0360c91fec1668aafdc552d3c725f66bf', 'MT','MTT', 18);

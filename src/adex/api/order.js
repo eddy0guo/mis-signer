@@ -30,7 +30,11 @@ export default class order{
 
             let find_orders = await this.exchange.match(message);
 
-            if(find_orders.length == 0){return;}
+            if(find_orders.length == 0){
+
+            	let result = await this.db.insert_order(arr_message1);
+				return result;
+			}
 
             console.log("findorderssssss=",find_orders);
 
