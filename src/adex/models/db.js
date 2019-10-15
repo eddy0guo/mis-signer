@@ -37,7 +37,6 @@ export default class db{
 			if(err) {
 				return console.error('list_order_查询失败', err);
 			}
-			console.log('list_order_成功',JSON.stringify(result.rows)); 
 			return result.rows;
 
 		} 
@@ -47,7 +46,7 @@ export default class db{
 			if(err) {
 				return console.error('list_order_查询失败', err);
 			}
-			console.log('list_order_成功',JSON.stringify(result.rows)); 
+			//console.log('list_order_成功',JSON.stringify(result.rows)); 
 			return result.rows;
 
 		} 
@@ -67,7 +66,7 @@ export default class db{
 			if(err) {
 				return console.error('insert_order_查询失败11', err);
 			}
-			console.log('insert_order',JSON.stringify(result.rows)); 
+			//console.log('insert_order',JSON.stringify(result.rows)); 
 			return result.rows;
 
 		} 
@@ -89,7 +88,6 @@ export default class db{
 
 		 async update_order_confirm(update_info) {
 
-			console.log('update_order_成功1111111111111111789111',update_info); 
 			let [err,result] = await to(this.clientDB
 				.query('UPDATE mist_orders SET (available_amount,confirmed_amount,canceled_amount,\
 				pending_amount,updated_at)=(available_amount+$1,confirmed_amount+$2,canceled_amount+$3,pending_amount+$4,$5) WHERE id=$6',update_info)); 
@@ -111,7 +109,7 @@ export default class db{
 			if(err) {
 				return console.error('list_order_查询失败', err);
 			}
-			console.log('list_order_成功',JSON.stringify(result.rows)); 
+			//console.log('list_order_成功',JSON.stringify(result.rows)); 
 			return result.rows;
         }
 
@@ -124,7 +122,6 @@ export default class db{
 			if(err) {
 				return console.error('list_order_查询失败', err);
 			}
-			console.log('list_order_成功',JSON.stringify(result.rows)); 
 			return result.rows;
 
         }
@@ -151,7 +148,6 @@ export default class db{
 			if(err) {
 				return console.error('list_order_查询失败', err);
 			}
-			console.log('list_order_成功',JSON.stringify(result.rows)); 
 			return result.rows;
 
         }
@@ -174,7 +170,7 @@ export default class db{
                 return console.error('get_market_quotations_查询失败', err);
             }
 
-            console.log('get_market_quotations_成功',JSON.stringify(result.rows));
+            //console.log('get_market_quotations_成功',JSON.stringify(result.rows));
             return result.rows;
 
         }
@@ -201,7 +197,6 @@ export default class db{
 			if(err) {
 				return console.error('list_trades_查询失败', err);
 			}
-			console.log('list_trades_成功',JSON.stringify(result.rows)); 
 			return result.rows;
 
 		} 
@@ -211,7 +206,6 @@ export default class db{
 			if(err) {
 				return console.error('list_order_查询失败', err);
 			}
-			console.log('list_order_成功',JSON.stringify(result.rows)); 
 			return result.rows;
 
 		} 
@@ -234,7 +228,6 @@ export default class db{
 			if(err) {
 				return console.error('list_order_查询失败', err);
 			}
-			console.log('list_order_成功',JSON.stringify(result.rows)); 
 			return result.rows;
 
 		} 
@@ -282,7 +275,6 @@ export default class db{
 			if(err) {
 				return console.error('list_transactions_查询失败', err);
 			}
-//			console.log('list_transactions_成功',JSON.stringify(result.rows)); 
 			return result.rows;
 
 		} 
@@ -292,7 +284,6 @@ export default class db{
 			if(err) {
 				return console.error('list_successful_transactions_查询失败', err);
 			}
-//			console.log('list_successful_transactions_成功',JSON.stringify(result.rows)); 
 			return result.rows;
 
 		} 
