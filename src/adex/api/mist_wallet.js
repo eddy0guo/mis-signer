@@ -9,7 +9,7 @@ import walletHelper from '../../wallet/lib/walletHelper'
 const crypto = require('crypto');
 var date = require("silly-datetime");
 
-
+let btc_price = 58000;
 let walletInst;
 async function getTestInst(){
         if( walletInst ) return walletInst;
@@ -40,50 +40,39 @@ export default class mist_wallet{
         return result;
     }
 
+	//寻找交易对的优先级依次为，PI,USDT,MT
+	async get_token_price2pi(symbol) {
+			let marketID = symbol + "-PI";
+			let result = await this.db.get_market_current_price([marketID]);	
+        console.log("get_token_price2pi--result=",result,marketID);
+			if(result.length == 0){
+				marketID = symbol + "-USDT";
+				let price2usdt = await this.db.get_market_current_price([marketID]);	
+				let price_usdt2pi = await this.db.get_market_current_price(["USDT-PI"]);	
 
 
-	async allowance(address) {
+				if(price2usdt.length == 0){
+					marketID = symbol + "-MT";
+					let price2mt = await this.db.get_market_current_price([marketID]);
+					let price_mt2pi = await this.db.get_market_current_price(["MT-PI"]);
+					result = price2mt[0].price * price_mt2pi[0].price;
+				}else{
+					result = price2usdt[0].price * price_usdt2pi[0].price;
+				}
 
-        console.log("cancle_order--result=",address);
+			}else{
+				result = result[0].price;
+			}
+		
+        console.log("get_token_price2pi--result=",result);
         return result;
     }
 
-	async transfrom() {
-		                    walletInst = await getTestInst();
-                    let [err,result] = await to(tokenTest.testTransferfrom(walletInst,'0x66b7637198aee4fffa103fc0082e7a093f81e05a64',5))
-                    console.log(result,err);
-
-                    if( !err ){
-                    // 先简单处理，Execute 前更新UTXO
-                    await walletInst.queryAllBalance()
-                    }
-
-                    return res.json({ result:result,err:err });
-
-    }
-
-	async transfer() {
-		walletInst = await getTestInst();
-                    let [err,result] = await to(tokenTest.testTransfer(walletInst))
-                    console.log(result,err);
-
-                    if( !err ){
-                    // 先简单处理，Execute 前更新UTXO
-                    await walletInst.queryAllBalance()
-                    }
-
-                    return res.json({ result:result,err:err });
-    }
- 
-
- 	async approve() {
-		let mist_ex = "0x66edd03c06441f8c2da19b90fcc42506dfa83226d3";
-                    let value = "6666";
-                    wallet_taker = await taker_wallet();
-                    let [err,result] = await to(tokenTest.testApprove(wallet_taker,mist_ex,value))
-                    console.log(result,err);
-
-                    return res.json({ result:result,err:err });	
+	async get_token_price2btc(symbol) {
+		 let price2pi = await this.get_token_price2pi(symbol);	
+		 let price2btc = price2pi/btc_price;
+		 let result = price2btc.toFixed(6)
+        return result;
     }
  
 }

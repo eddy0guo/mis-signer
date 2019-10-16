@@ -74,6 +74,29 @@ export default ({ config, db }) => {
 	});
 
 
+ 	adex.get('/get_token_price', async (req, res) => {
+				var obj = urllib.parse(req.url,true).query;
+ 	 				  console.log("obj=",obj);
+				let result = await mist_wallet.get_token_price2pi(obj.symbol);
+                    console.log(result);
+
+
+       res.json({result});
+	});
+
+	adex.get('/get_token_price2btc', async (req, res) => {
+			var obj = urllib.parse(req.url,true).query;
+ 	 				  console.log("obj=",obj);
+			let result = await mist_wallet.get_token_price2btc(obj.symbol);
+                    console.log(result);
+
+
+       res.json({result});
+	});
+
+
+
+
     adex.get('/balances',async (req, res) => {
 					var obj = urllib.parse(req.url,true).query;
  	 				  console.log("obj=",obj);
