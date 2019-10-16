@@ -9,6 +9,8 @@ import AssetTest from './asset/AssetTest'
 import Asset from './asset/Asset'
 import { CONSTANT } from "./constant";
 
+import Erc20 from './contract/ERC20'
+
 let testWallets = {
 	"0x6619fd2d2fd1db189c075ff25800f7b98ff3205e5a":"benefit park visit oxygen supply oil pupil snack pipe decade young bracket",
 	"0x66b31cab7d9eb10cfcdb7a3c19dcd45f362e15ba8e":"federal strong comic spy real develop cave ramp equip cheap behind negative",
@@ -18,6 +20,8 @@ let testWallets = {
 let taker = '0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9';
 let taker_word = 'enhance donor garment gospel loop purse pumpkin bag oven bone decide street';
 let taker_wallet;
+let asim_address = '0x639a9f78bdaac0a33b39de17c13cf7271d86800a7d';
+
 // 避免重复创建Taker Wallet Instance
 async function getTakerWallet() {
 	if( taker_wallet ) return taker_wallet;
@@ -28,7 +32,7 @@ async function getTakerWallet() {
 let walletInst;
 async function getTestInst(){
 	if( walletInst ) return walletInst;
-	walletInst = await walletHelper.testWallet('ivory local this tooth occur glide wild wild few popular science horror','111111')
+	walletInst = await walletHelper.testWallet('disagree topic plastic edit empty inside net mushroom aim video radar element','111111')
 	return walletInst
 }
 
@@ -103,19 +107,63 @@ export default ({ config, db }) => {
 		res.json({ result:result,err:err });
 	});
 
-	wallet.get('/assetTransfer',async (req, res) => {
-
+	//这里后期是要传输入信息和加密的密闻
+	wallet.get('/assetTransfer/:address/:amount',async (req, res) => {
+		let asset = new Asset(CONSTANT.DEFAULT_ASSET)	
 		walletInst = await getTestInst();
-		let [err,result] = await to(assetTest.testTransfer(walletInst))
+		//walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
+		asset.unlock(walletInst,"111111")
+     	let [err,result] = await to(asset.transfer(req.params.address,req.params.amount));
+
 		console.log(result,err);
 
 		if( !err ){
 			// 先简单处理，Execute 前更新UTXO
 			await walletInst.queryAllBalance()
 		}
-
+		
 		res.json({ result:result,err:err });
 	});
+	
+	//钱包到币币
+	wallet.get('/deposit/:amount',async (req, res) => {
+		let erc20 = new Erc20(asim_address);
+		walletInst = await getTestInst();
+		//walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
+		erc20.unlock(walletInst,"111111")
+       let [err,result] = await to(erc20.deposit(req.params.amount));
+		console.log(result,err);
+
+		if( !err ){
+			// 先简单处理，Execute 前更新UTXO
+			await walletInst.queryAllBalance()
+		}
+		
+		res.json({ result:result,err:err });
+	});
+
+
+	//币币到钱包
+	wallet.get('/withdraw/:amount',async (req, res) => {
+		let erc20 = new Erc20(asim_address);
+		walletInst = await getTestInst();
+		//walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
+		erc20.unlock(walletInst,"111111")
+		//这里为了和deposit保持单位一致
+       let [err,result] = await to(erc20.withdraw(req.params.amount * Math.pow(10,8)));
+
+		console.log(result,err);
+
+		if( !err ){
+			// 先简单处理，Execute 前更新UTXO
+			await walletInst.queryAllBalance()
+		}
+		
+		res.json({ result:result,err:err });
+	});
+
+
+
 
 	/**
 	 * curl -X POST --data '{"id":1, "jsonrpc":"2.0","method":"asimov_searchRawTransactions",
