@@ -2,6 +2,8 @@ import { Router } from 'express'
 import Wallet from '../wallet/classes/Wallet'
 import Wallets from "../wallet/service/wallets"
 import walletHelper from '../wallet/lib/walletHelper'
+import Token from '../wallet/contract/Token'
+import mist_wallet1 from '../adex/api/mist_wallet'
 import to from 'await-to-js'
 
 var PromiseBluebird = require('bluebird')
@@ -13,9 +15,11 @@ let jwt = require('jsonwebtoken');
 let User = require("./models/user");
 
 let payPassword = 'temp-pass-227'
+let ex_address = '0x63d2007ae83b2853d85c5bd556197e09ca4d52d9c9'
 
 export default ({ config, db }) => {
 	let router = Router();
+	let mist_wallet = new mist_wallet1();
 
 	router.post('/signup', async (req, res) => {
 		if (!req.body.username || !req.body.password) {
@@ -94,6 +98,28 @@ export default ({ config, db }) => {
 			let wallet = await walletHelper.testWallet(user.mnemonic,payPassword)
 			let address = await wallet.getAddress()
 
+
+			let token_arr = await mist_wallet.list_tokens();
+			let txids =[];
+			for(let i in token_arr){
+							let token  = new Token(token_arr[i].address);
+
+							console.log("333--address",address);
+
+							 token.unlock(wallet,payPassword)
+							let [err,balance] = await to(token.balanceOf(address));
+							let [err3,allowance] = await to(token.allowance(address,ex_address));
+							if(balance != allowance){
+								await wallet.queryAllBalance()
+								let [err2,txid] = await to(token.approve(ex_address,balance));
+								txids.push(txid);
+								console.log("444--",err2,txid);
+
+							}
+							console.log("444--",balance,allowance);
+			}
+
+
 			// clear info
 			user.password = undefined;
 			user.mnemonic = undefined;
@@ -102,7 +128,8 @@ export default ({ config, db }) => {
 				success: true,
 				user: user,
 				token: 'JWT ' + token,
-				authMessage: address
+				authMessage: address,
+				approveResults:txids
 			});
 		} else {
 			res.send({
