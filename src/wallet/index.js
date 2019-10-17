@@ -10,6 +10,11 @@ import Asset from './asset/Asset'
 import { CONSTANT } from "./constant";
 
 import Erc20 from './contract/ERC20'
+import Erc20Test from './contract/ERC20Test'
+
+import mist10 from './contract/mist_ex10'
+var spawn = require('child_process').spawn;
+
 
 let testWallets = {
 	"0x6619fd2d2fd1db189c075ff25800f7b98ff3205e5a":"benefit park visit oxygen supply oil pupil snack pipe decade young bracket",
@@ -21,6 +26,7 @@ let taker = '0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9';
 let taker_word = 'enhance donor garment gospel loop purse pumpkin bag oven bone decide street';
 let taker_wallet;
 let asim_address = '0x639a9f78bdaac0a33b39de17c13cf7271d86800a7d';
+let mist10_address = '0x63f2e35430d95ae63d63f8d115c95ffc9ff5b3d68e';
 
 // 避免重复创建Taker Wallet Instance
 async function getTakerWallet() {
@@ -229,6 +235,38 @@ export default ({ config, db }) => {
 
 		res.json({result,err });
 	});
+
+	
+	 wallet.get('/orderhash',async (req, res) => {
+
+		console.log("33333");
+		let mist = new mist10(mist10_address);
+        walletInst = await getTestInst();
+		 mist.unlock(walletInst,"111111")
+		await walletInst.queryAllBalance()
+
+        let [err,result] = await to(mist.orderhash(walletInst))
+		let kkk =`curl -X POST --data '{"id":1, "jsonrpc":"2.0","method":"flow_getTransactionReceipt","params":["${result}"]}}' -H "Content-type: application/json" https://test-rpc.asimov.network`;
+
+		console.log("8888",kkk);
+        console.log(result,err);
+
+        res.json({ result:result,err:err });
+    });
+
+	  wallet.get('/matchorder',async (req, res) => {
+		
+		console.log("2222222222");
+		let mist = new mist10(mist10_address);
+        walletInst = await getTestInst();
+		 mist.unlock(walletInst,"111111")
+		await walletInst.queryAllBalance()
+        let [err,result] = await to(mist.matchorder(walletInst))
+        console.log("333333",result,"444444",err);
+
+        res.json({ result:result,err:err });
+    });
+
 
 
 	return wallet;
