@@ -33,14 +33,18 @@ export default class utils{
 
 			return create_time + '.' + milli_seconds;
 	}
-
-	sleep(numberMillis) {    
-		var now = new Date();    
-		var exitTime = now.getTime() + numberMillis;   
-		while (true) { 
-		now = new Date();       
-		if (now.getTime() > exitTime) 
-		return;    
-		} 
+	verify(id,sign,pubkey){
+		  var hashbuf=Buffer.alloc(32,id,'hex')
+		console.log('publick',publick.toString('hex'))
+		 var publick =new bitcore_lib_1.PublicKey(pubkey)
+		 var sign=new bitcore_lib_1.crypto.Signature()
+		 var r=new bitcore_lib_1.crypto.BN(sign.r,'hex')
+		 var s=new bitcore_lib_1.crypto.BN(sign.s,'hex')
+		 sign.set({
+			 r:r,
+			 s:s
+		 })
+		 console.log('签名验证==',ECDSA.verify(hashbuf,sign,publick))	
+		
 	}
 }

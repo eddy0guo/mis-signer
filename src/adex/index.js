@@ -8,6 +8,8 @@ import order1 from './api/order'
 import trades1 from './api/trades'
 import market1 from './api/market'
 import watcher1 from './cli/watcher'
+import utils1 from './api/utils'
+
 import mist_wallet1 from './api/mist_wallet'
 const urllib = require('url');
 
@@ -62,6 +64,7 @@ export default ({ config, db }) => {
     let wathcer = new watcher1();
     let mist_wallet = new mist_wallet1();
     let tokenTest = new TokenTest()
+	let utils = new utils1();
 	wathcer.start();
 
 	        
@@ -168,26 +171,56 @@ export default ({ config, db }) => {
                     }
                     res.json(txids);
                     });
-  
+ 	/****
+	
+get_order_id，获取order_id,
+did对order_id进行签名，获取rsv
+新加个接口build_order加上order_id和rs的值去传rsv和orderid，后台去验证，通过才落表。
+撮合完成之后relayer对trade信息的hash进行签名，然后合约用relayer的公钥对trade的密文rsv进行验签
+	**/ 
+	adex.get('/get_order_id', async (req, res) => {
+	   
+	     var obj = urllib.parse(req.url,true).query;
+       console.log("obj=",obj);
+       let message = {
+                      id:obj.null,
+                      trader_address: obj.trader_address,
+                      market_id: obj.marketID,
+                      side: obj.side,
+                      price: obj.price,
+                      amount: obj.amount,
+                      status:'pending',
+                      type:'limit',
+                      available_amount:obj.amount,
+                      confirmed_amount:0,
+                      canceled_amount:0,
+                      pending_amount:0,
+                      updated_at:null,
+                      created_at:null,
+       };
+	   let order_id = utils.get_hash(message);
+
+       res.json(order_id);
+	});
+
+
   
 
     adex.get('/build_order', async (req, res) => {
     	//打印键值对中的值
   		var obj = urllib.parse(req.url,true).query;
  	   console.log("obj=",obj);
+		let result = utils.verify(obj.order_id,obj.signature,obj.pubkey);
+		if(!result){
+			return res.json("verify failed");
+		}
        let message = {
-                      id:null,
+                      id:obj.order_id,
                       trader_address: obj.trader_address,
                       market_id: obj.marketID,
                       side: obj.side,
                       price: obj.price,
                       amount: obj.amount,
-//                      side: "buy",
-//                      price: 11.000000000000000,
-//                      amount: 5.00000000000000,
-//					   side: "sell",
-//                     price: 1.13000000000000000,
-//                     amount: 11.00000000000000,
                       status:'pending',
                       type:'limit',
                       available_amount:obj.amount,
@@ -199,9 +232,9 @@ export default ({ config, db }) => {
        };
 
 
-       let [err,result] = await to(order.build(message))
-       console.log(result,err);
-       res.json({ result,err });
+       let [err,result2] = await to(order.build(message))
+       console.log(result2,err);
+       res.json({ result2,err });
 	});
 
 	adex.get('/cancle_order', async (req, res) => {
