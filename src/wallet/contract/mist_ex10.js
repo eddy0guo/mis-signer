@@ -181,19 +181,23 @@ getHexData(abiInfo) {
         
         //2.验证
         //2.1私钥转公钥
-       // var publick=new bitcore_lib_1.PrivateKey(privKey).toPublicKey()
+		console.log("ssssssssssssss",privKey);
+       var publick2=new bitcore_lib_1.PrivateKey(privKey).toPublicKey()
         //027841f34e18a7c3f1d6a487134c12339b48b3c83db1b5ca7c3766fac0d30200b4
+
+		console.log("11111111,",publick2)
        // console.log('publick',publick.toString('hex'))
         //2.2直接生成公钥对象
-        // var publick =new bitcore_lib_1.PublicKey('027841f34e18a7c3f1d6a487134c12339b48b3c83db1b5ca7c3766fac0d30200b4')
-        // var sign=new bitcore_lib_1.crypto.Signature()
-        // var r=new bitcore_lib_1.crypto.BN('d368303f25cd4e1dcff9a1d7c28268893d1d2df2ca2519d472f3e288dd9813ad','hex')
-        // var s=new bitcore_lib_1.crypto.BN('282cd52f9b9d450930b4b3a8038252517d5014285198f0ea392aee9e24ee870e','hex')
-        // sign.set({
-        //     r:r,
-        //     s:s
-        // })
-        // console.log('签名验证==',ECDSA.verify(hashbuf,sign,publick))
+        var publick =new bitcore_lib_1.PublicKey('023ca293211be5a30979ac14a58e57f03ba1167d9e89e388f42abf718826979aee')
+		console.log("11111111,",publick)
+        var sign=new bitcore_lib_1.crypto.Signature()
+        var r=new bitcore_lib_1.crypto.BN('3731597097df23bc05b8e938ebc8a606e47b7c13987d6d9a04070eb049464685','hex')
+        var s=new bitcore_lib_1.crypto.BN('653a585c541dcbe2055049f12a9e3a7b58f20fb1b3de702a48855b55d31f2bd0','hex')
+        sign.set({
+            r:r,
+          s:s
+         })
+         console.log('签名验证==',ECDSA.verify(hashbuf,sign,publick))
 
         //hash:0xdcf4be30201920671a2725486eaf795eeb12b5e32a3241beb78bcf87f1f009f1
         //r:0xd368303f25cd4e1dcff9a1d7c28268893d1d2df2ca2519d472f3e288dd9813ad

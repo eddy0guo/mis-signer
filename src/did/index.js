@@ -29,13 +29,15 @@ export default ({ config, db }) => {
           var sig = ECDSA.sign(hashbuf, new bitcore_lib_1.PrivateKey(privatekey))
            let sign_r = ECDSA.sign(hashbuf,new bitcore_lib_1.PrivateKey(privatekey)).r.toString('hex')
            let sign_s = ECDSA.sign(hashbuf,new bitcore_lib_1.PrivateKey(privatekey)).s.toString('hex')
-		   let  pubkey = new bitcore_lib_1.PrivateKey(privatekey).toPublicKey();
+		   console.log("sssssssssssss",privatekey);
+		   let  pubkey = new bitcore_lib_1.PrivateKey(privatekey).toPublicKey().toString('hex');
+		   console.log("sssssssssssss",pubkey);
 		   let sig_rs = {
         	   r: sign_r,
         	   s: sign_s,
-			   pubkey:pubkey
+			   pubkey: pubkey
         	 };
-			 console.log("222222sig------",sig);
+			 console.log("222222sig------",sig_rs);
 		    return sig_rs;
  }
 
@@ -171,7 +173,7 @@ export default ({ config, db }) => {
 					msg: 'Authentication failed. 1'
 				});
 			} else {
-				let privatekey = '0190aa58022d3879bac447427723ce7f1df4cf89f1048d32e377cd893be5a325';
+				user.privatekey = '0190aa58022d3879bac447427723ce7f1df4cf89f1048d32e377cd893be5a325';
 				let signature = sign(user.privatekey,req.body.order_id)
 				res.json({
 					success: true,

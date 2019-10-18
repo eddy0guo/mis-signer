@@ -1,5 +1,7 @@
 const crypto = require('crypto');
 var date = require("silly-datetime");
+const bitcore_lib_1 = require("bitcore-lib");
+const ECDSA = bitcore_lib_1.crypto.ECDSA;
 
 export default class utils{
 	root_hash;
@@ -33,10 +35,9 @@ export default class utils{
 
 			return create_time + '.' + milli_seconds;
 	}
-	verify(id,sign,pubkey){
+	verify(id,sign){
 		  var hashbuf=Buffer.alloc(32,id,'hex')
-		console.log('publick',publick.toString('hex'))
-		 var publick =new bitcore_lib_1.PublicKey(pubkey)
+		 var publick =new bitcore_lib_1.PublicKey(sign.pubkey);
 		 var sign=new bitcore_lib_1.crypto.Signature()
 		 var r=new bitcore_lib_1.crypto.BN(sign.r,'hex')
 		 var s=new bitcore_lib_1.crypto.BN(sign.s,'hex')
