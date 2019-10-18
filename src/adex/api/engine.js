@@ -155,7 +155,7 @@ id:               null,
 				let [err4,result4] = await to(walletInst.queryAllBalance());
 				//后边改合约传结构体数据
 				let [err33,trade_hash] = await to(mist.orderhash(trade_info));
-				console.log("33333333order_hash-------",order_hash,err33);
+				console.log("33333333order_hash-------",trade_hash,err33);
 					trades_info.push(trade_info);
 					trades_hash.push(trade_hash);
 		}
