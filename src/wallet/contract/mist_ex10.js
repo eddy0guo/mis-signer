@@ -140,8 +140,7 @@ getHexData(abiInfo) {
 
 
 
-    async orderhash(){
-
+    async orderhash(trade){
             let abiInfo=
             {"constant":false,
             "inputs":[{"components":
@@ -153,8 +152,9 @@ getHexData(abiInfo) {
             {"name":"baseTokenAmount","type":"uint256"},
             {"name":"quoteTokenAmount","type":"uint256"},
             {"name":"takerSide","type":"string"}],
-            "name":"_order","type":"tuple","value":['0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9','0x66b7637198aee4fffa103fc0082e7a093f81e05a64','0x6376141c4fa5b11841f7dc186d6a9014a11efcbae6',
-            '0x63b98f4bf0360c91fec1668aafdc552d3c725f66bf','0x6611f5fa2927e607d3452753d3a41e24a23e0b947f',10,10,'buy']}],
+          //  "name":"_order","type":"tuple","value":['0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9','0x66b7637198aee4fffa103fc0082e7a093f81e05a64','0x6376141c4fa5b11841f7dc186d6a9014a11efcbae6',
+          //  '0x63b98f4bf0360c91fec1668aafdc552d3c725f66bf','0x6611f5fa2927e607d3452753d3a41e24a23e0b947f',10,10,'buy']}],
+		  	"name":"_order","type":"tuple","value":trade}],
             "name":"hashordermsg",
             "outputs":[{"name":"","type":"bytes32"}],
             "payable":false,
@@ -167,46 +167,20 @@ getHexData(abiInfo) {
 
 
 
-   async matchorder(){
-    //     const bitcore_lib_1 = require("bitcore-lib");
-    //     const ECDSA = bitcore_lib_1.crypto.ECDSA;
+   async matchorder(trades_info,order_address_set,trades_hash){
     //    //1.签名：
-
-          var privKey = '0190aa58022d3879bac447427723ce7f1df4cf89f1048d32e377cd893be5a325'
-          var hashbuf=Buffer.alloc(32,'bd9bfaca99e5fe8110178a7bc38298e961d4d544289512019e0398b124f39ebd','hex')
+      //    var privKey = '0190aa58022d3879bac447427723ce7f1df4cf89f1048d32e377cd893be5a325'
+	  //relayer_pri_key
+	  var privKey =  'd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2';
+		  for(index in trades_hash){
+          var hashbuf=Buffer.alloc(32,trades_hash[index],'hex')
           var sig = ECDSA.sign(hashbuf, new bitcore_lib_1.PrivateKey(privKey) )
-          console.log( 'r',ECDSA.sign(hashbuf,new bitcore_lib_1.PrivateKey(privKey)).r.toString('hex'))
-          console.log('s',ECDSA.sign(hashbuf,new bitcore_lib_1.PrivateKey(privKey)).s.toString('hex'))
-          console.log('6666',ECDSA.sign(hashbuf,new bitcore_lib_1.PrivateKey(privKey)))
-        
-        //2.验证
-        //2.1私钥转公钥
-		console.log("ssssssssssssss",privKey);
-       var publick2=new bitcore_lib_1.PrivateKey(privKey).toPublicKey()
-        //027841f34e18a7c3f1d6a487134c12339b48b3c83db1b5ca7c3766fac0d30200b4
 
-		console.log("11111111,",publick2)
-       // console.log('publick',publick.toString('hex'))
-        //2.2直接生成公钥对象
-        var publick =new bitcore_lib_1.PublicKey('023ca293211be5a30979ac14a58e57f03ba1167d9e89e388f42abf718826979aee')
-		console.log("11111111,",publick)
-        var sign=new bitcore_lib_1.crypto.Signature()
-        var r=new bitcore_lib_1.crypto.BN('3731597097df23bc05b8e938ebc8a606e47b7c13987d6d9a04070eb049464685','hex')
-        var s=new bitcore_lib_1.crypto.BN('653a585c541dcbe2055049f12a9e3a7b58f20fb1b3de702a48855b55d31f2bd0','hex')
-        sign.set({
-            r:r,
-          s:s
-         })
-         console.log('签名验证==',ECDSA.verify(hashbuf,sign,publick))
-
-        //hash:0xdcf4be30201920671a2725486eaf795eeb12b5e32a3241beb78bcf87f1f009f1
-        //r:0xd368303f25cd4e1dcff9a1d7c28268893d1d2df2ca2519d472f3e288dd9813ad
-        //s:0x282cd52f9b9d450930b4b3a8038252517d5014285198f0ea392aee9e24ee870e
-        
-
-        //hash:
-        //r:f6c66f85d3746e2055e6bbb4e42c3eaeabc16652c37a849ff6c0344e73691e72
-        //s:11f68a64c53ea49573fbb7747102bfd46908ffc94af9f25f225e6b0e10f909a9
+         let r = ECDSA.sign(hashbuf,new bitcore_lib_1.PrivateKey(privKey)).r.toString('hex')
+         let s = ECDSA.sign(hashbuf,new bitcore_lib_1.PrivateKey(privKey)).s.toString('hex')
+		 console.log("indexxxxxxxxx",dex)
+		 trades_info[index].push(r,s,27);
+        }
 //		asim-api
         let abiInfo=
         {"constant":false,
@@ -219,13 +193,15 @@ getHexData(abiInfo) {
         {"name":"r","type":"bytes32"},
         {"name":"s","type":"bytes32"},
         {"name":"v","type":"uint8"}],
-        "name":"TradeParams","type":"tuple[]","value":[['0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9','0x66b7637198aee4fffa103fc0082e7a093f81e05a64',10,10,
-        'buy','0x3731597097df23bc05b8e938ebc8a606e47b7c13987d6d9a04070eb049464685','0x653a585c541dcbe2055049f12a9e3a7b58f20fb1b3de702a48855b55d31f2bd0',27]]},
+    //    "name":"TradeParams","type":"tuple[]","value":[['0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9','0x66b7637198aee4fffa103fc0082e7a093f81e05a64',10,10,
+      //  'buy','0x3731597097df23bc05b8e938ebc8a606e47b7c13987d6d9a04070eb049464685','0x653a585c541dcbe2055049f12a9e3a7b58f20fb1b3de702a48855b55d31f2bd0',27]]},
+    	  "name":"TradeParams","type":"tuple[]","value":trades_info},
         {"components":
         [{"name":"baseToken","type":"address"},
         {"name":"quoteToken","type":"address"},
         {"name":"relayer","type":"address"}],
-        "name":"orderAddressSet","type":"tuple","value":['0x6376141c4fa5b11841f7dc186d6a9014a11efcbae6','0x63b98f4bf0360c91fec1668aafdc552d3c725f66bf','0x6611f5fa2927e607d3452753d3a41e24a23e0b947f']}],
+     //   "name":"orderAddressSet","type":"tuple","value":['0x6376141c4fa5b11841f7dc186d6a9014a11efcbae6','0x63b98f4bf0360c91fec1668aafdc552d3c725f66bf','0x6611f5fa2927e607d3452753d3a41e24a23e0b947f']}],
+       "name":"orderAddressSet","type":"tuple","value":order_address_set}],
         "name":"matchOrder",
         "outputs":[],
         "payable":false,
