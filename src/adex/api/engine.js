@@ -9,7 +9,7 @@ var index = require("../index");
 
 
 var ex_address = '0x63d2007ae83b2853d85c5bd556197e09ca4d52d9c9';
-var ex10_address = '0x63f2e35430d95ae63d63f8d115c95ffc9ff5b3d68e';
+var ex10_address = '0x63b2b7e3ec2d1d1b171a3c14032bd304367e538a68';
 let walletInst;
 async function getTestInst(){
 	if( walletInst ) return walletInst;
@@ -154,12 +154,13 @@ id:               null,
 
 				let [err4,result4] = await to(walletInst.queryAllBalance());
 				//后边改合约传结构体数据
-				let [err33,trade_hash] = await to(mist.orderhash(trade_info));
 				console.log("33333333order_hash-------",trade_hash,err33);
 					trades_info.push(trade_info);
-					trades_hash.push(trade_hash);
+					trades_hash.push(trade_info);
 		}
 
+		let [err33,trade_hash] = await to(mist.orderhash(trades_hash));
+		console.log("gxy---engine-call_asimov_resul4444444 = -",trade_hash,err33);
 		//更新utxo的操作放在打包交易之前，不然部分时候还是出现没更新的情况
 		let [err2,result] = await to(walletInst.queryAllBalance());
 		console.log("gxy---engine-call_asimov_result2222 = -",result,err2);

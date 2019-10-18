@@ -143,6 +143,7 @@ getHexData(abiInfo) {
 
 
     async orderhash(trade){
+		console.log("11111111114444444444--",trade);
             let abiInfo=
             {"constant":false,
             "inputs":[{"components":
@@ -156,9 +157,9 @@ getHexData(abiInfo) {
             {"name":"takerSide","type":"string"}],
           //  "name":"_order","type":"tuple","value":['0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9','0x66b7637198aee4fffa103fc0082e7a093f81e05a64','0x6376141c4fa5b11841f7dc186d6a9014a11efcbae6',
           //  '0x63b98f4bf0360c91fec1668aafdc552d3c725f66bf','0x6611f5fa2927e607d3452753d3a41e24a23e0b947f',10,10,'buy']}],
-		  	"name":"_order","type":"tuple","value":trade}],
-            "name":"hashordermsg",
-            "outputs":[{"name":"","type":"bytes32"}],
+		  	"name":"_order","type":"tuple[]","value":trade}],
+			"name":"hashordermsg",
+            "outputs":[{"name":"","type":"bytes32[]"}],
             "payable":false,
             "stateMutability":"nonpayable",
             "type":"function"}

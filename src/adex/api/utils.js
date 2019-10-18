@@ -3,6 +3,8 @@ var date = require("silly-datetime");
 const bitcore_lib_1 = require("bitcore-lib");
 const ECDSA = bitcore_lib_1.crypto.ECDSA;
 
+		var child = require('child_process');
+
 export default class utils{
 	root_hash;
 	 constructor() {
@@ -32,7 +34,7 @@ export default class utils{
 	get_current_time(){
 			let milli_seconds = new Date().getMilliseconds();
 			var create_time = date.format(new Date(),'YYYY-MM-DD HH:mm:ss');
-
+			this.get_receipt();
 			return create_time + '.' + milli_seconds;
 	}
 	verify(id,sign){
@@ -47,5 +49,16 @@ export default class utils{
 		 })
 		 console.log('签名验证==',ECDSA.verify(hashbuf,sign,publick))	
 		
+	}
+	get_receipt(){
+		child.exec('curl -X POST --data \'\{\"id\":1, \"jsonrpc\":\"2.0\",\"method\":\"flow_getTransactionReceipt\",\"params\":\[\"90d6496675ad126e6ae77af19013a8d45ac23ebf9100e862c97e97a48af48441"\]\}\}\' -H \"Content-type: application\/json\" https:\/\/test-rpc.asimov.network', function(err, sto) {
+		let logs = JSON.parse(sto).result.logs;
+		let datas = [];
+		for(var index in logs){
+			datas.push(logs[index].data);	
+		}
+    	console.log("222222222222222",logs);//sto才是真正的输出，要不要打印到控制台，由你自己啊
+    	console.log("222222222222222",datas);//sto才是真正的输出，要不要打印到控制台，由你自己啊
+		})	
 	}
 }

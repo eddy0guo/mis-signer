@@ -39,7 +39,7 @@ var    PAI = '0x63429bfcfdfbfa0048d1aeaa471be84675f1324a02';
 var XRP = '0x6388e9a82e400a5da6ce837a045d812baea3a1f1e5';
 var BTC = '0x63b543f99847bd77bb378a77ca216cdc749ebf8494';
 var VLS = '0x6386db063e10ef893138e560c55eb42bb9e13ac7dc';
-var ex_address = '0x63d2007ae83b2853d85c5bd556197e09ca4d52d9c9';
+var ex_address = '0x63b2b7e3ec2d1d1b171a3c14032bd304367e538a68';
 var relayer = '0x66edd03c06441f8c2da19b90fcc42506dfa83226d3';
 
 
