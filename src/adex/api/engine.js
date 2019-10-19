@@ -153,16 +153,16 @@ id:               null,
 			];
 
 
-				let [err4,result4] = await to(walletInst.queryAllBalance());
 				//后边改合约传结构体数据
 					trades_info.push(trade_info);
 					trades_hash.push(trade_info);
 		}
 
+		let [err4,result4] = await to(walletInst.queryAllBalance());
 		let [err33,trade_hash] = await to(mist.orderhash(trades_hash));
 		console.log("gxy---engine-call_asimov_resul4444444 = -",trade_hash,err33);
 		//需要根据返回值落表，先sleep,
-//		setTimeout(async ()=>{
+	//	setTimeout(async ()=>{
 		this.utils.sleep(10000);
             let datas = this.utils.get_receipt(trade_hash);
 					console.log("datas_resul5555 = -",datas);
@@ -175,8 +175,9 @@ id:               null,
 
 		console.log("gxy---engine-call_asimov_result33333 = -",txid,err);
 
+
 //        }, 10000);
-		return trade_hash;;
+		return txid;;
 	}
 
 

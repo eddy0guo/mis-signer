@@ -216,11 +216,11 @@ did对order_id进行签名，获取rsv
     	//打印键值对中的值
   		var obj = urllib.parse(req.url,true).query;
  	   console.log("obj=",obj);
-/*		let result = utils.verify(obj.order_id,obj.signature);
+/*		let result = utils.verify(obj.order_id,JSON.parse(obj.signature));
 		if(!result){
 			return res.json("verify failed");
 		}
-		*/
+*/		
        let message = {
                       id:obj.order_id,
                       trader_address: obj.trader_address,

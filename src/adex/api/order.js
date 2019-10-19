@@ -50,12 +50,7 @@ export default class order{
 
             let amount = 0;
             for(var i in trades){
-                trades[i].transaction_id = id + 1;
-                trades[i].transaction_hash = txid;
-
                 amount += trades[i].amount;
-                console.log("trades[i]=",trades[i]);
-                await this.db.insert_trades(this.utils.arr_values(trades[i]));
             }
 
             //插入之前直接计算好额度,防止orderbook出现买一大于卖一的情况
@@ -76,6 +71,17 @@ export default class order{
 
            //匹配订单后，同时更新taker和maker的order信息
           let txid = await this.exchange.call_asimov(trades)
+
+		
+		 for(var i in trades){
+                trades[i].transaction_id = id + 1;
+                trades[i].transaction_hash = txid;
+
+                console.log("trades[i]=",trades[i]);
+                await this.db.insert_trades(this.utils.arr_values(trades[i]));
+            }
+
+
                 console.log("trades[i]=22222222222222",trades);
             let TXinfo = [id+1,txid,message.market_id,"pending",create_time,create_time];
            this.db.insert_transactions(TXinfo);
