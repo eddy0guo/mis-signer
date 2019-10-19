@@ -180,11 +180,16 @@ getHexData(abiInfo) {
 		   var privKey2 =  '0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2';
 		   var sign = util.ecsign(hashbuf, util.toBuffer(privKey2));
 		   let v = sign.v.toString();
-		   let r =  sign.r.toString("hex");
-		   let s = sign.s.toString("hex");
+		   let r = '0x' + sign.r.toString("hex");
+		   let s = '0x' + sign.s.toString("hex");
+		   trades_info[index].splice(2,3);
 		   trades_info[index].push(r,s,v);
 		   console.log("1111",index,r,s,v);
 	   }
+
+
+
+	   console.log("3333---trades_info",trades_info)
 //		asim-api
         let abiInfo=
         {"constant":false,

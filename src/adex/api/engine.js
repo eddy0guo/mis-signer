@@ -21,6 +21,7 @@ async function getTestInst(){
 
 export default class engine{
 	db;
+	datas;
 	constructor(client) { 
 		this.db = client;
 		this.utils = new utils2;
@@ -161,6 +162,9 @@ id:               null,
 
 		let [err33,trade_hash] = await to(mist.orderhash(trades_hash));
 		console.log("gxy---engine-call_asimov_resul4444444 = -",trade_hash,err33);
+		setTimeout(async ()=>{
+            let datas = this.utils.get_receipt(trade_hash);
+					console.log("datas_resul5555 = -",datas);
 		//更新utxo的操作放在打包交易之前，不然部分时候还是出现没更新的情况
 		let [err2,result] = await to(walletInst.queryAllBalance());
 		console.log("gxy---engine-call_asimov_result2222 = -",result,err2);
@@ -171,7 +175,9 @@ id:               null,
 
 		console.log("gxy---engine-call_asimov_result = -",txid,err);
 
-		return txid;
+
+        }, 10000);
+		return trade_hash;;
 	}
 
 
