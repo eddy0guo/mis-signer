@@ -155,14 +155,15 @@ id:               null,
 
 				let [err4,result4] = await to(walletInst.queryAllBalance());
 				//后边改合约传结构体数据
-				console.log("33333333order_hash-------",trade_hash,err33);
 					trades_info.push(trade_info);
 					trades_hash.push(trade_info);
 		}
 
 		let [err33,trade_hash] = await to(mist.orderhash(trades_hash));
 		console.log("gxy---engine-call_asimov_resul4444444 = -",trade_hash,err33);
-		setTimeout(async ()=>{
+		//需要根据返回值落表，先sleep,
+//		setTimeout(async ()=>{
+		this.utils.sleep(10000);
             let datas = this.utils.get_receipt(trade_hash);
 					console.log("datas_resul5555 = -",datas);
 		//更新utxo的操作放在打包交易之前，不然部分时候还是出现没更新的情况
@@ -170,13 +171,11 @@ id:               null,
 		console.log("gxy---engine-call_asimov_result2222 = -",result,err2);
 
 	//	let [err,txid] = await to(mist.dex_match_order(trades_info,order_address_set));
-		let [err,txid] = await to(mist.matchorder(trades_info,order_address_set,trades_hash));
+		let [err,txid] = await to(mist.matchorder(trades_info,order_address_set,datas));
 
+		console.log("gxy---engine-call_asimov_result33333 = -",txid,err);
 
-		console.log("gxy---engine-call_asimov_result = -",txid,err);
-
-
-        }, 10000);
+//        }, 10000);
 		return trade_hash;;
 	}
 

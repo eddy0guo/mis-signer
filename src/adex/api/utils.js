@@ -65,4 +65,14 @@ export default class utils{
     	console.log("222222222222222",datas);//sto才是真正的输出，要不要打印到控制台，由你自己啊
 		return datas;
 	}
+
+	sleep(numberMillis) {    
+               var now = new Date();    
+               var exitTime = now.getTime() + numberMillis;   
+               while (true) { 
+               now = new Date();       
+               if (now.getTime() > exitTime) 
+               return;    
+               } 
+	}
 }

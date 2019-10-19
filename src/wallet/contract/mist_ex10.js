@@ -155,8 +155,6 @@ getHexData(abiInfo) {
             {"name":"baseTokenAmount","type":"uint256"},
             {"name":"quoteTokenAmount","type":"uint256"},
             {"name":"takerSide","type":"string"}],
-          //  "name":"_order","type":"tuple","value":['0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9','0x66b7637198aee4fffa103fc0082e7a093f81e05a64','0x6376141c4fa5b11841f7dc186d6a9014a11efcbae6',
-          //  '0x63b98f4bf0360c91fec1668aafdc552d3c725f66bf','0x6611f5fa2927e607d3452753d3a41e24a23e0b947f',10,10,'buy']}],
 		  	"name":"_order","type":"tuple[]","value":trade}],
 			"name":"hashordermsg",
             "outputs":[{"name":"","type":"bytes32[]"}],
@@ -171,12 +169,11 @@ getHexData(abiInfo) {
 
 
    async matchorder(trades_info,order_address_set,trades_hash){
-    //    //1.签名：
-      //    var privKey = '0190aa58022d3879bac447427723ce7f1df4cf89f1048d32e377cd893be5a325'
 	  //relayer_pri_key
 	   var privKey =  'd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2';
 	   for(var index in trades_hash){
-		   var hashbuf=Buffer.alloc(32,trades_hash[index],'hex');
+		   console.log("1111i44444444",trades_hash[index].slice(2,66));
+		   var hashbuf=Buffer.alloc(32,trades_hash[index].slice(2,66),'hex');
 		   var privKey2 =  '0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2';
 		   var sign = util.ecsign(hashbuf, util.toBuffer(privKey2));
 		   let v = sign.v.toString();
@@ -185,11 +182,20 @@ getHexData(abiInfo) {
 		   trades_info[index].splice(2,3);
 		   trades_info[index].push(r,s,v);
 		   console.log("1111",index,r,s,v);
+			/**var sign2=new bitcore_lib_1.crypto.Signature()
+			 sign2.set({
+             r:sign.r.toString("hex"),
+             s:sign.s.toString("hex")
+         })
+		  var publick=new bitcore_lib_1.PrivateKey(privKey).toPublicKey();
+		   console.log('签名验证==',ECDSA.verify(hashbuf,sign2,publick))
+		   **/
 	   }
 
 
-
+	 
 	   console.log("3333---trades_info",trades_info)
+	   console.log("4444---order_address_setinfo",order_address_set)
 //		asim-api
         let abiInfo=
         {"constant":false,

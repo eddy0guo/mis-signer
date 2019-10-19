@@ -40,7 +40,6 @@ var XRP = '0x6388e9a82e400a5da6ce837a045d812baea3a1f1e5';
 var BTC = '0x63b543f99847bd77bb378a77ca216cdc749ebf8494';
 var VLS = '0x6386db063e10ef893138e560c55eb42bb9e13ac7dc';
 var ex_address = '0x63b2b7e3ec2d1d1b171a3c14032bd304367e538a68';
-var ex10 = '0x63b2b7e3ec2d1d1b171a3c14032bd304367e538a68';
 var relayer = '0x66edd03c06441f8c2da19b90fcc42506dfa83226d3';
 
 
@@ -71,7 +70,7 @@ export default ({ config, db }) => {
 	        
    	adex.get('/list_market_quotations', async (req, res) => {
 					 let result = await market.list_market_quotations();
-                    console.log(result);
+                    console.log(result)
 
 
        res.json({result});
@@ -112,10 +111,13 @@ export default ({ config, db }) => {
  	 				  console.log("obj111111111=",token_arr[i]);
                     	    let token = new Token(token_arr[i].address);
                             let [err,result] = await to(token.balanceOf(obj.address));
+							let [err3,allowance] = await to(token.allowance(obj.address,ex_address));
+
 							let balance_info ={
 								token_symbol: token_arr[i].symbol,   
 								token_name: token_arr[i].name,   
 								balance:result,
+								allowance_ex:allowance
 							};
 							balances.push(balance_info);
                             console.log(balance_info);
@@ -163,8 +165,11 @@ export default ({ config, db }) => {
                                     let [err3,allowance] = await to(token.allowance(address,ex_address));
                                     if(balance != allowance){
                                         await wallet.queryAllBalance()
-                                        let [err2,txid] = await to(token.approve(ex_address,balance));
-                                        txids.push(result2)
+                                        let [err2,txid] = await to(token.approve(ex_address,9999999));
+
+                                    console.log("333--address---",err2,txid);
+
+                                        txids.push(txid);
                                         console.log("444--",err2,txid);
 
                                     }

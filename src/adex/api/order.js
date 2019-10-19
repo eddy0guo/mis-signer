@@ -40,7 +40,6 @@ export default class order{
 
             let trades = await this.exchange.make_trades(find_orders,message);
 
-//           目前先做打包交易完成后更新transaction的交易，launcher的暂时没必要做
             let transactions = await this.db.list_transactions();
             console.log("transactions=",transactions);
             let id = 0;
@@ -76,10 +75,10 @@ export default class order{
             let result = await this.db.insert_order(arr_message);
 
            //匹配订单后，同时更新taker和maker的order信息
-            let txid = await this.exchange.call_asimov(trades)
+          let txid = await this.exchange.call_asimov(trades)
                 console.log("trades[i]=22222222222222",trades);
             let TXinfo = [id+1,txid,message.market_id,"pending",create_time,create_time];
-            this.db.insert_transactions(TXinfo);
+           this.db.insert_transactions(TXinfo);
 
 
             return result;
