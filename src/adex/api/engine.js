@@ -136,7 +136,6 @@ id:               null,
 		mist.unlock(walletInst,"111111");
 
 		//结构体数组转换成二维数组,代币精度目前写死为7,18的会报错和合约类型u256不匹配
-		let trades_info  =[];
 		let trades_hash  =[];
 		for(var i in trades){
 			let trade_info = [
@@ -154,30 +153,43 @@ id:               null,
 
 
 				//后边改合约传结构体数据
-					trades_info.push(trade_info);
 					trades_hash.push(trade_info);
 		}
 
 		let [err4,result4] = await to(walletInst.queryAllBalance());
 		let [err33,trade_hash] = await to(mist.orderhash(trades_hash));
 		console.log("gxy---engine-call_asimov_resul4444444 = -",trade_hash,err33);
-		//需要根据返回值落表，先sleep,
-	//	setTimeout(async ()=>{
-		this.utils.sleep(10000);
+		//刚打包的交易，要等一段时间才能拿到后期设置个合理时间暂时设置10s,
+		setTimeout(async ()=>{
             let datas = this.utils.get_receipt(trade_hash);
 					console.log("datas_resul5555 = -",datas);
 		//更新utxo的操作放在打包交易之前，不然部分时候还是出现没更新的情况
 		let [err2,result] = await to(walletInst.queryAllBalance());
 		console.log("gxy---engine-call_asimov_result2222 = -",result,err2);
-
-	//	let [err,txid] = await to(mist.dex_match_order(trades_info,order_address_set));
-		let [err,txid] = await to(mist.matchorder(trades_info,order_address_set,datas));
-
+		let [err,txid] = await to(mist.matchorder(trades_hash,order_address_set,datas));
 		console.log("gxy---engine-call_asimov_result33333 = -",txid,err);
+		    let transactions = await this.db.list_transactions();
+            console.log("transactions=",transactions);
+            let id = 0;
+
+            if(transactions.length != 0){
+                id = transactions[0].id;
+            }
 
 
-//        }, 10000);
-		return txid;;
+         for(var i in trades){
+                trades[i].transaction_id = id + 1;
+                trades[i].transaction_hash = txid;
+                await this.db.insert_trades(this.utils.arr_values(trades[i]));
+            }
+
+                console.log("trades[i]=22222222222222",trades);
+            let TXinfo = [id+1,txid,trades[0].market_id,"pending",trades[0].created_at,trades[0].created_at];
+           this.db.insert_transactions(TXinfo);
+
+
+      }, 10000);
+	//	return txid;;
 	}
 
 

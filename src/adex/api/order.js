@@ -69,9 +69,9 @@ export default class order{
             console.log("string222=",arr_message.join("-"));
             let result = await this.db.insert_order(arr_message);
 
-           //匹配订单后，同时更新taker和maker的order信息
-          let txid = await this.exchange.call_asimov(trades)
-
+           //settimeout 的原因暂时不返回txid
+          await this.exchange.call_asimov(trades,id);
+/**
 		
 		 for(var i in trades){
                 trades[i].transaction_id = id + 1;
@@ -85,7 +85,7 @@ export default class order{
                 console.log("trades[i]=22222222222222",trades);
             let TXinfo = [id+1,txid,message.market_id,"pending",create_time,create_time];
            this.db.insert_transactions(TXinfo);
-
+**/
 
             return result;
     }
