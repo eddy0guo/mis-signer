@@ -5,6 +5,8 @@ import walletHelper from '../wallet/lib/walletHelper'
 import Token from '../wallet/contract/Token'
 import mist_wallet1 from '../adex/api/mist_wallet'
 import to from 'await-to-js'
+var bip39 = require('bip39');
+import { HDPrivateKey, crypto } from "bitcore-lib";
 
 var PromiseBluebird = require('bluebird')
 
@@ -24,7 +26,13 @@ export default ({ config, db }) => {
 	let router = Router();
 	let mist_wallet = new mist_wallet1();
 
-	function sign(privatekey,order_id){
+	function sign(mnemonic,order_id){
+			const seed = bip39.mnemonicToSeedHex(mnemonic);
+			const hdPrivateKey = HDPrivateKey.fromSeed(seed).derive(
+      `m/44'/10003'/0'/0/0`);
+			let privatekey = hdPrivateKey.privateKey.toString();
+		    console.log("111111-prikey---22",privatekey);
+
            var hashbuf=Buffer.alloc(32,order_id,'hex')
           var sig = ECDSA.sign(hashbuf, new bitcore_lib_1.PrivateKey(privatekey))
            let sign_r = ECDSA.sign(hashbuf,new bitcore_lib_1.PrivateKey(privatekey)).r.toString('hex')
@@ -173,8 +181,7 @@ export default ({ config, db }) => {
 					msg: 'Authentication failed. 1'
 				});
 			} else {
-				user.privatekey = '0190aa58022d3879bac447427723ce7f1df4cf89f1048d32e377cd893be5a325';
-				let signature = sign(user.privatekey,req.body.order_id)
+				let signature = sign(user.mnemonic,req.body.order_id)
 				res.json({
 					success: true,
 					user: user,

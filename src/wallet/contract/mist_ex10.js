@@ -6,8 +6,12 @@ import { btc2sts, isArrayType, callParamsConvert,signature,getWalletPubKey} from
 const bitcore_lib_1 = require("bitcore-lib");
 const ECDSA = bitcore_lib_1.crypto.ECDSA;
 var util =require('ethereumjs-util');
-
-
+var bip39 = require('bip39');
+var bip32 = require('bip32');
+var bitcoin = require('bitcoinjs-lib');
+var ethers = require('ethers');
+let hdkey = require('ethereumjs-wallet/hdkey');
+import { HDPrivateKey, crypto } from "bitcore-lib";
 
 
 export default class Token {
@@ -170,6 +174,60 @@ getHexData(abiInfo) {
 
    async matchorder(trades_info,order_address_set,trades_hash){
 	  //relayer_pri_key
+/*
+//let mnemonic = bip39.generateMnemonic()
+let mnemonic = 'ivory local this tooth occur glide wild wild few popular science horror';
+	  const network = bitcoin.networks.bitcoin
+// 计算seed:
+//const seed = bip39.mnemonicToSeed(mnemonic,'')
+const seed = bip39.mnemonicToSeedHex(mnemonic);
+console.log('seed:' + util.bufferToHex(seed), "\n");
+const root = bip32.fromSeed(seed,network)
+const path = "m/44'/0'/0'/0/0";
+const keyPair = root.derivePath(path)
+const privateKey = keyPair.toWIF()
+console.log("BTC私钥：", privateKey)
+const publicKey = keyPair.publicKey.toString("hex")
+console.log("BTC公钥：", publicKey)
+let address = bitcoin.payments.p2pkh({ pubkey: keyPair.publicKey , network:network})
+console.log("BTC普通地址：", address.address, "\n")
+
+let mnemonic2 = 'ivory local this tooth occur glide wild wild few popular science horror';
+let Wallet = ethers.Wallet.fromMnemonic(mnemonic2);
+    let privateKey2 = Wallet.privateKey;
+    console.log('ETH私钥：',privateKey2)
+	console.log("11111111222-privatekey=",privateKey2);
+	let address_eth = Wallet.address;
+    console.log('ETH地址：',address_eth);
+
+
+	let hdwallet = hdkey.fromMasterSeed(seed);
+
+    for (let i = 0; i < 3; i++) {
+    //    let path = "m/44'/60'/0'/0/" + i;
+        let path ="m/44'/10003'/0'";
+        console.log(path);
+
+        let keypair = hdwallet.derivePath(path);
+
+        let privateKey = util.bufferToHex(keypair._hdkey._privateKey);
+        console.log('私钥：', privateKey);
+        let publicKey = util.bufferToHex(keypair._hdkey._publicKey);
+        console.log('公钥：', publicKey);
+
+        let address = util.pubToAddress(keypair._hdkey._publicKey, true);
+        console.log('地址：', address.toString('hex'))
+}
+
+const hdPrivateKey = HDPrivateKey.fromSeed(seed).derive(
+      `m/44'/10003'/0'/0/0`);
+console.log("111111-prikey---22",hdPrivateKey.privateKey);
+console.log("111111-prikey---22",hdPrivateKey.privateKey.toString());
+
+console.log("111111-prikey---22",hdPrivateKey.privateKey.slice(13,78));
+**/
+
+
 	   var privKey =  'd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2';
 	   for(var index in trades_hash){
 		   console.log("1111i44444444",trades_hash[index].slice(2,66));
