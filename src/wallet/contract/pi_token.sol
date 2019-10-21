@@ -5055,11 +5055,11 @@ contract Mist is Operations,Template {
         state.exchange.discountConfig = 0x043c000027106400004e205a000075305000009c404600000000000000000000;
     }
 }
-contract TokenGXY is StandardToken,Template {
-    string public name = "GXY TEST  Token 1";
-    string public symbol = "GXYTEST1";
+contract TokenPI is StandardToken,Template {
+    string public name = "PI TOKEN";
+    string public symbol = "PI";
     uint8 public decimals = 18;
-    uint256 public totalSupply = 1561000000 * 10**18;
+    uint256 public totalSupply = 2561000000 * 10**18;
 
     constructor() public {
         balances[msg.sender] = totalSupply;

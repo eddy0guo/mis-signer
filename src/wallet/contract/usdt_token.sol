@@ -5055,9 +5055,9 @@ contract Mist is Operations,Template {
         state.exchange.discountConfig = 0x043c000027106400004e205a000075305000009c404600000000000000000000;
     }
 }
-contract TokenXRP is StandardToken,Template {
-    string public name = "PAI TOKEN BY GXY";
-    string public symbol = "XRP";
+contract TokenUSDT is StandardToken,Template {
+    string public name = "USD  TOKEN";
+    string public symbol = "USDT";
     uint8 public decimals = 18;
     uint256 public totalSupply = 2561000000 * 10**18;
 
