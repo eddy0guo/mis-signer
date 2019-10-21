@@ -13,6 +13,8 @@ import Erc20 from './contract/ERC20'
 import Erc20Test from './contract/ERC20Test'
 
 import mist10 from './contract/mist_ex10'
+import cdp from './contract/cdp'
+
 var spawn = require('child_process').spawn;
 
 
@@ -27,6 +29,7 @@ let taker_word = 'enhance donor garment gospel loop purse pumpkin bag oven bone 
 let taker_wallet;
 let asim_address = '0x639a9f78bdaac0a33b39de17c13cf7271d86800a7d';
 let mist10_address = '0x63f2e35430d95ae63d63f8d115c95ffc9ff5b3d68e';
+let cdp_address = '0x6367f3c53e65cce5769166619aa15e7da5acf9623d';
 
 // 避免重复创建Taker Wallet Instance
 async function getTakerWallet() {
@@ -39,6 +42,7 @@ let walletInst;
 async function getTestInst(){
 	if( walletInst ) return walletInst;
 	walletInst = await walletHelper.testWallet('disagree topic plastic edit empty inside net mushroom aim video radar element','111111')
+	//walletInst = await walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
 	return walletInst
 }
 
@@ -253,6 +257,23 @@ export default ({ config, db }) => {
 
         res.json({ result:result,err:err });
     });
+
+	//充btc 借pai
+	wallet.get('/createDepositBorrow',async (req, res) => {
+
+		console.log("33333");
+		let cdp_obj = new cdp(cdp_address);
+        walletInst = await getTestInst();
+		 cdp_obj.unlock(walletInst,"111111")
+		await walletInst.queryAllBalance()
+
+        let [err,result] = await to(cdp_obj.createDepositBorrow(1000000000,1));
+        console.log(result,err);
+
+        res.json({ result:result,err:err });
+    });
+
+
 
 	  wallet.get('/matchorder',async (req, res) => {
 		
