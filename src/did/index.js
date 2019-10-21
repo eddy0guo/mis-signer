@@ -6,7 +6,11 @@ import Token from '../wallet/contract/Token'
 import mist_wallet1 from '../adex/api/mist_wallet'
 import to from 'await-to-js'
 var bip39 = require('bip39');
+var bip32 = require('bip32');
 import { HDPrivateKey, crypto } from "bitcore-lib";
+var bitcoin = require('bitcoinjs-lib');
+let hdkey = require('ethereumjs-wallet/hdkey');
+var util =require('ethereumjs-util');
 
 var PromiseBluebird = require('bluebird')
 
@@ -21,6 +25,9 @@ let User = require("./models/user");
 
 let payPassword = 'temp-pass-227'
 let ex_address = '0x63d2007ae83b2853d85c5bd556197e09ca4d52d9c9'
+const eth_seed_word = 0x649f1f2d874fbba7f298f5227f23f08bbad4791c366d68a74275b47f0bdb9a3b78777d17020d7621bd0c5f321d764ad9e7a7f3fd597eea39f94e72fea1aeb28f;
+const seed_word = 'wing safe foster choose wisdom myth quality own gallery logic imitate pink';
+let btc_seed =1;
 
 export default ({ config, db }) => {
 	let router = Router();
@@ -58,8 +65,6 @@ export default ({ config, db }) => {
 		} else {
 			// create wallet
 			let wallet = new Wallet();
-//			await Wallets.addWallet(wallet,true)
-//			let address = await wallet.getAddress()
 //这里直接创建会报错assert 为定义，在库里注释掉了generate address的代码规避
 			await wallet.create({
 				walletName: "My First Wallet",
@@ -67,36 +72,58 @@ export default ({ config, db }) => {
 				mnemonicLength: 12,
 				pwd: payPassword
 			});
-//			await Wallets.addWallet(wallet,true)
-//			let address = await wallet.getAddress()
-
 		 	console.log("signup444---mnemonic",mnemonic);
 			let mnemonic = await wallet.getMnemonic(payPassword);
 			let  walletInst = await walletHelper.testWallet(mnemonic,payPassword);
 			let address = await walletInst.getAddress();
 		 	console.log("signup-3333333333333333---address=",address);
 
-			let newUser = new User({
-				username: req.body.username,
-				password: req.body.password,
-				mnemonic: mnemonic,
-				address: address,
-			});
-			// save the user
-			newUser.save(function(err) {
-				if (err) {
-					return res.json({
-						success: false,
-						msg: 'Username already exists.'
-					});
-				}
+			
+				User.find({}).sort({'id':-1}).limit(1).exec(function(err,docs){
+				//path是btc和eth同时更新共用
+				const path = "m/0/0/0/0/" + (docs[0].id+1);
+
+				const network = bitcoin.networks.bitcoin;
+				const btc_seed = bip39.mnemonicToSeed(seed_word,'');
+				const root = bip32.fromSeed(btc_seed,network)
+				const btc_keyPair = root.derivePath(path)
+				let btc_address = bitcoin.payments.p2pkh({ pubkey: btc_keyPair.publicKey , network:network})
+				console.log("BTC普通地址：", btc_address.address, "id=",path,"\n")
+
+				const eth_seed = bip39.mnemonicToSeedHex(seed_word);
+				let hdwallet = hdkey.fromMasterSeed(eth_seed);
+				let eth_keypair = hdwallet.derivePath(path);
+        		let eth_address = util.pubToAddress(eth_keypair._hdkey._publicKey, true);
+        		console.log('eth地址：', eth_address.toString('hex'))
+				console.log("111112222222",docs[0].id);
 				
-				res.json({
-					success: true,
-					msg: 'Successful created new user.',
-					address: address
+
+				let newUser = new User({
+					username: req.body.username,
+					password: req.body.password,
+					mnemonic: mnemonic,
+					address: address,
+					id: docs[0].id+1,
+					btc_address: btc_address.address,
+					eth_address: eth_address.toString('hex')
 				});
-			});
+				// save the user
+				newUser.save(function(err) {
+					if (err) {
+						return res.json({
+							success: false,
+							msg: 'Username already exists.'
+						});
+					}
+					
+					res.json({
+						success: true,
+						msg: 'Successful created new user.',
+						address: address
+					});
+				  });
+				}
+			);
 		}
 	});
 
