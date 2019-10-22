@@ -37,7 +37,41 @@ export const CONSTANT = {
       asset: '000000000000000001010101',
       unit: "fee",
       balance: 0
-    }
+    },
+	{
+      name: "fbtc2",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000000300000001',
+      unit: "fee",
+      balance: 0
+    },
+	{
+      name: "pai",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000000500000001',
+      unit: "fee",
+      balance: 0
+    }/*,
+	{
+      name: "pai",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000000700000001',
+      unit: "fee",
+      balance: 0
+    }*/
+
   ],
 
   DEPLOY_CONTRACT_SENDAMOUNT: 0,

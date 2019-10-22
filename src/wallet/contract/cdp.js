@@ -20,14 +20,14 @@ unlock(wallet, password) {
     this.password = password
 }
 // 池逐妙招尺储带番陕剪滨津
-async callContract(abiInfo) {
+async callContract(abiInfo,asset_id,amount) {
     let params = {
         to: this.address,
-        amount: 100,
+        amount: amount,
        // CONSTANT.DEFAULT_ASST
        //fbtc:300000001
        // pai:500000001
-        assetId:'000000000000000500000001',
+        assetId:asset_id,
         data: this.getHexData(abiInfo)
       };
       console.log('params.data',params)
@@ -132,33 +132,34 @@ getHexData(abiInfo) {
 }
 
 //充btc 借pai
-async createDepositBorrow(amount,type){
+async createDepositBorrow(borrow_amount,borrow_type,deposit_assetID,deposit_amount){
     let abiInfo=
         {"constant":false,
         "inputs":
-        [{"name":"amount","type":"uint256","value":amount},
-        {"name":"_type","type":"uint8","value":type}],
+        [{"name":"amount","type":"uint256","value":borrow_amount},
+        {"name":"_type","type":"uint8","value":borrow_type}],
         "name":"createDepositBorrow",
         "outputs":[{"name":"","type":"uint256"}],
         "payable":true,
         "stateMutability":"payable",
         "type":"function"}
 
-    return this.callContract(abiInfo);
+    return this.callContract(abiInfo,deposit_assetID,deposit_amount);
 }
 
 //还pai
-async repay(){
+async repay(borrow_id,repay_assetID,amount){
+	console.log("4444",borrow_id,repay_assetID,amount)
     let abiInfo=
     {"constant":false,
     "inputs":
-    [{"name":"record","type":"uint256","value":5}],
+    [{"name":"record","type":"uint256","value":borrow_id}],
     "name":"repay",
     "outputs":[],
     "payable":true,
     "stateMutability":"payable",
     "type":"function"}
-    return this.callContract(abiInfo)
+    return this.callContract(abiInfo,repay_assetID,amount)
 }
 
 

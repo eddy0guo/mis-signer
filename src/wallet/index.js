@@ -14,6 +14,7 @@ import Erc20Test from './contract/ERC20Test'
 
 import mist10 from './contract/mist_ex10'
 import cdp from './contract/cdp'
+import adex_utils from '../adex/api/utils'
 
 var spawn = require('child_process').spawn;
 
@@ -41,8 +42,12 @@ async function getTakerWallet() {
 let walletInst;
 async function getTestInst(){
 	if( walletInst ) return walletInst;
-	walletInst = await walletHelper.testWallet('disagree topic plastic edit empty inside net mushroom aim video radar element','111111')
-	//walletInst = await walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
+//chenfei
+//	walletInst = await walletHelper.testWallet('wonder snap ripple scare salon luxury best narrow daring hen brief pet','111111')
+//xuweiwei
+//	walletInst = await walletHelper.testWallet('disagree topic plastic edit empty inside net mushroom aim video radar element','111111')
+//test
+	walletInst = await walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
 	return walletInst
 }
 
@@ -259,7 +264,7 @@ export default ({ config, db }) => {
     });
 
 	//充btc 借pai
-	wallet.get('/createDepositBorrow',async (req, res) => {
+	wallet.get('/createDepositBorrow/:borrow_amount/:borrow_time/:deposit_assetID/:deposit_amount',async (req, res) => {
 
 		console.log("33333");
 		let cdp_obj = new cdp(cdp_address);
@@ -267,11 +272,41 @@ export default ({ config, db }) => {
 		 cdp_obj.unlock(walletInst,"111111")
 		await walletInst.queryAllBalance()
 
-        let [err,result] = await to(cdp_obj.createDepositBorrow(1000000000,1));
+        //let [err,txid] = await to(cdp_obj.createDepositBorrow(3000000000000,1,'000000000000000300000001',1));
+		console.log("4444",req.params.borrow_amount*100000000,req.params.borrow_time/30);
+        let [err,txid] = await to(cdp_obj.createDepositBorrow(req.params.borrow_amount*100000000,req.params.borrow_time/30,req.params.deposit_assetID,req.params.deposit_amount));
+        console.log(txid,err);
+
+		let utils = new adex_utils();
+		setTimeout(async ()=>{
+			let datas = utils.get_receipt(txid);	
+			let borrow_id  = parseInt(datas[3],16);
+			console.log("444444444",borrow_id);
+			//return res.json(datas);
+
+        	res.json({ result:txid,borrow_id:borrow_id});
+		}, 10000);
+
+    });
+
+
+		//充btc 借pai
+	wallet.get('/repay/:borrow_id/:asset_id/:amount',async (req, res) => {
+
+		console.log("33333");
+		let cdp_obj = new cdp(cdp_address);
+        walletInst = await getTestInst();
+		 cdp_obj.unlock(walletInst,"111111")
+		await walletInst.queryAllBalance()
+	
+        let [err,result] = await to(cdp_obj.repay(req.params.borrow_id,req.params.asset_id,req.params.amount));
         console.log(result,err);
 
         res.json({ result:result,err:err });
     });
+
+
+
 
 
 
