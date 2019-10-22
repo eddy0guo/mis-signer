@@ -320,4 +320,39 @@ export default class db{
 			return result.rows;
 
         } 
+		/**
+		*cdp
+		*/
+
+		async list_borrows(address) {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_borrows  where address=$1 order by updated_at desc limit 30',address)); 
+			if(err) {
+				return console.error('list_transactions_查询失败', err);
+			}
+			return result.rows;
+
+		}
+
+		 async update_borrows(update_info) {
+			let [err,result] = await to(this.clientDB
+				.query('UPDATE mist_borrows SET (status,updated_at)=($1,$2) WHERE  address=$3 and  cdp_id=$4',update_info)); 
+
+			if(err) {
+				return console.error('update_order_查询失败', err);
+			}
+			console.log('update_order_成功',JSON.stringify(result.rows)); 
+			return result.rows;
+
+        } 
+
+		 async insert_borrows(borrow_info) {
+			let [err,result] = await to(this.clientDB.query('insert into mist_borrows values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)',borrow_info));
+			if(err) {
+				return console.error('insert_traders_查询失败', err);
+			}
+			console.log('insert_order_成功',JSON.stringify(result.rows)); 
+			return JSON.stringify(result.rows);
+        } 
+
+
 }

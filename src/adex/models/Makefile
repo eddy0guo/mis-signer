@@ -10,6 +10,10 @@ seed: initdb
 test:
 	psql postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable < ./test.sql
 
+borrow_up:
+	psql postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable < ./borrow.up.sql
+borrow_down:
+	psql postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable < ./borrow.down.sql
 clean:
 	go clean
 

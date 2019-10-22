@@ -15,6 +15,7 @@ import Erc20Test from './contract/ERC20Test'
 import mist10 from './contract/mist_ex10'
 import cdp from './contract/cdp'
 import adex_utils from '../adex/api/utils'
+import psql from '../adex/models/db'
 
 var spawn = require('child_process').spawn;
 
@@ -55,6 +56,8 @@ export default ({ config, db }) => {
 	let wallet = Router();
 	let tokenTest = new TokenTest()
 	let assetTest = new AssetTest()
+	let psql_db = new psql();
+	let utils = new adex_utils();
 
 	wallet.get('/', async (req, res) => {
 		walletInst = await getTestInst();
@@ -264,7 +267,7 @@ export default ({ config, db }) => {
     });
 
 	//充btc 借pai
-	wallet.get('/createDepositBorrow/:borrow_amount/:borrow_time/:deposit_assetID/:deposit_amount',async (req, res) => {
+	wallet.get('/createDepositBorrow/:borrow_amount/:borrow_time/:deposit_assetID/:deposit_amount/:address',async (req, res) => {
 
 		console.log("33333");
 		let cdp_obj = new cdp(cdp_address);
@@ -277,21 +280,42 @@ export default ({ config, db }) => {
         let [err,txid] = await to(cdp_obj.createDepositBorrow(req.params.borrow_amount*100000000,req.params.borrow_time/30,req.params.deposit_assetID,req.params.deposit_amount));
         console.log(txid,err);
 
-		let utils = new adex_utils();
 		setTimeout(async ()=>{
 			let datas = utils.get_receipt(txid);	
 			let borrow_id  = parseInt(datas[3],16);
 			console.log("444444444",borrow_id);
-			//return res.json(datas);
+		//return res.json(datas);
+			let current_time = utils.get_current_time();
+			let borrow_info = {
+				 id:null,
+				 //addrss:req.params.address,          
+				 address:req.params.address,
+				 deposit_assetid:req.params.deposit_assetID,   
+				 deposit_amount:req.params.deposit_amount,
+				 deposit_token_name:"BTC",
+				 deposit_price:60000,
+				 interest_rate:0.0148,  
+				 cdp_id:borrow_id,            
+				 status:"borrowing",            
+				 zhiya_rate:0.6,              
+				 usage:"炒币",             
+				 borrow_amount:req.params.borrow_amount,     
+				 borrow_time:req.params.borrow_time,       
+				 updated_at: current_time,
+				 created_at: current_time
+			};
 
+			borrow_info.id = utils.get_hash(borrow_info);
+
+			let result = await psql_db.insert_borrows(utils.arr_values(borrow_info));
         	res.json({ result:txid,borrow_id:borrow_id});
 		}, 10000);
 
     });
 
 
-		//充btc 借pai
-	wallet.get('/repay/:borrow_id/:asset_id/:amount',async (req, res) => {
+		//还pai，得btc
+	wallet.get('/repay/:borrow_id/:asset_id/:amount/:address',async (req, res) => {
 
 		console.log("33333");
 		let cdp_obj = new cdp(cdp_address);
@@ -302,13 +326,22 @@ export default ({ config, db }) => {
         let [err,result] = await to(cdp_obj.repay(req.params.borrow_id,req.params.asset_id,req.params.amount));
         console.log(result,err);
 
+
+			let current_time = utils.get_current_time();
+
+			let update_info = ["finished",current_time,req.params.address,req.params.borrow_id];
+			let [err2,result2] = await to(psql_db.update_borrows(update_info));
+
         res.json({ result:result,err:err });
     });
 
 
 
-
-
+	  wallet.get('/list_borrows/:address',async (req, res) => {
+			let address = [req.params.address];
+			let [err,result] = await to(psql_db.list_borrows(address));
+			res.json({ result:result,err:err });
+	  });
 
 	  wallet.get('/matchorder',async (req, res) => {
 		
