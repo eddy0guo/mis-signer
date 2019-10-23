@@ -10,11 +10,11 @@ module.exports = function (passport) {
     opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
     opts.secretOrKey = config.secret;
     passport.use(new JwtStrategy(opts, function (jwt_payload, done) {
-        // console.log('--------------------------------');
-        // console.log(jwt_payload._doc)
-        // console.log('--------------------------------');
+        console.log('----------------JWT----------------');
+        console.log(jwt_payload)
+        console.log('----------------JWT----------------');
         // 创建实际的Mongoose对象，便于后续处理
-        User.findOne({_id: jwt_payload._doc._id}, function (err, user) {
+        User.findOne({_id: jwt_payload._id}, function (err, user) {
             if (err) {
                 return done(err, false);
             }

@@ -8,9 +8,11 @@
 
 # mangodb for did
 brew install mongodb
-mongod --dbpath '~/data/db'
+mongod --dbpath '/Users/xxx/data/db'
 
 # postgres db for engine
+docker stop mist-dex-pg
+docker rm mist-dex-pg
 docker-compose up db
 
 # Install dependencies

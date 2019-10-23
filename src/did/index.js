@@ -80,8 +80,11 @@ export default ({ config, db }) => {
 
 			
 				User.find({}).sort({'id':-1}).limit(1).exec(function(err,docs){
-				//path是btc和eth同时更新共用
-				const path = "m/0/0/0/0/" + (docs[0].id+1);
+				// path是btc和eth同时更新共用
+				let index = 0
+				if(docs&&docs[0]) index = docs[0].id + 1
+				// 这里处理第一个用户的容错
+				const path = "m/0/0/0/0/" + index;
 
 				const network = bitcoin.networks.bitcoin;
 				const btc_seed = bip39.mnemonicToSeed(seed_word,'');
@@ -95,15 +98,14 @@ export default ({ config, db }) => {
 				let eth_keypair = hdwallet.derivePath(path);
         		let eth_address = util.pubToAddress(eth_keypair._hdkey._publicKey, true);
         		console.log('eth地址：', eth_address.toString('hex'))
-				console.log("111112222222",docs[0].id);
-				
+				console.log("path:",path);
 
 				let newUser = new User({
 					username: req.body.username,
 					password: req.body.password,
 					mnemonic: mnemonic,
 					address: address,
-					id: docs[0].id+1,
+					id: index,
 					btc_address: btc_address.address,
 					eth_address: eth_address.toString('hex')
 				});
@@ -148,7 +150,8 @@ export default ({ config, db }) => {
 
 		if (isMatch && !err ) {
 			// if user is found and password is right create a token
-			let token = jwt.sign(user.toJSON(), dbConfig.secret);
+			var jwt_payload = {_id: user._id};
+			let jwt_token = jwt.sign(jwt_payload, dbConfig.secret);
 			// return the information including token as JSON
 			let wallet = await walletHelper.testWallet(user.mnemonic,payPassword)
 			let address = await wallet.getAddress()
@@ -182,7 +185,7 @@ export default ({ config, db }) => {
 			res.json({
 				success: true,
 				user: user,
-				token: 'JWT ' + token,
+				token: jwt_token,
 				authMessage: address,
 				approveResults:txids
 			});
@@ -193,7 +196,6 @@ export default ({ config, db }) => {
 			});
 		}
 	});
-
 
 	router.post('/order_sign', function(req, res) {
 		console.log("111111",req.body);
@@ -216,6 +218,13 @@ export default ({ config, db }) => {
 				});
 			}
 		});
+	});
+
+	router.get("/secret", passport.authenticate('jwt', { session: false }), function(req, res){
+		console.log('--------------jwt test------------------')
+		console.log(req.user)
+		console.log('--------------jwt test------------------')
+		res.json("Success! You can not see this without a token");
 	});
 
 	return router;
