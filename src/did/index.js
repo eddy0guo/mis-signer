@@ -19,6 +19,15 @@ let passport = require('passport');
 const bitcore_lib_1 = require("bitcore-lib");
 const ECDSA = bitcore_lib_1.crypto.ECDSA;
 
+
+import cdp from '../wallet/contract/cdp'
+import adex_utils from '../adex/api/utils'
+import psql from '../adex/models/db'
+let cdp_address = '0x6367f3c53e65cce5769166619aa15e7da5acf9623d';
+
+
+
+
 require('./config/passport')(passport);
 let jwt = require('jsonwebtoken');
 let User = require("./models/user");
@@ -29,9 +38,15 @@ const eth_seed_word = 0x649f1f2d874fbba7f298f5227f23f08bbad4791c366d68a74275b47f
 const seed_word = 'wing safe foster choose wisdom myth quality own gallery logic imitate pink';
 let btc_seed =1;
 
+async function my_wallet(word){
+                return await walletHelper.testWallet(word,'111111')
+}
+
 export default ({ config, db }) => {
 	let router = Router();
 	let mist_wallet = new mist_wallet1();
+	 let psql_db = new psql();
+    let utils = new adex_utils();
 
 	function sign(mnemonic,order_id){
 			const seed = bip39.mnemonicToSeedHex(mnemonic);
@@ -220,6 +235,25 @@ export default ({ config, db }) => {
 		});
 	});
 
+	router.get('/createDepositBorrow/:borrow_amount/:borrow_time/:deposit_assetID/:deposit_amount/:username',async (req, res) => {
+		User.findOne({
+            username: req.params.username
+        }, async (err, user) => {
+        console.log("33333",req.params,"user",user,err);
+        let cdp_obj = new cdp(cdp_address);
+        let walletInst = await my_wallet(user.mnemonic);
+		let address = await walletInst.getAddress();
+         cdp_obj.unlock(walletInst,"111111")
+        await walletInst.queryAllBalance()
+
+        //let [err,txid] = await to(cdp_obj.createDepositBorrow(3000000000000,1,'000000000000000300000001',1));
+        console.log("4444",req.params.borrow_amount*100000000,req.params.borrow_time/30);
+        let [err2,row] = await to(cdp_obj.createDepositBorrow(req.params.borrow_amount*100000000,req.params.borrow_time/30,req.params.deposit_assetID,req.params.deposit_amount));
+            res.json({ result:row});
+		});
+
+    });	
+
 	router.get("/secret", passport.authenticate('jwt', { session: false }), function(req, res){
 		console.log('--------------jwt test------------------')
 		console.log(req.user)
@@ -227,5 +261,69 @@ export default ({ config, db }) => {
 		res.json("Success! You can not see this without a token");
 	});
 
+	
+        //还pai，得btc
+    router.get('/repay/:borrow_id/:asset_id/:amount/:username',async (req, res) => {
+		console.log("111111",req.params);
+        User.findOne({
+            username: req.params.username
+        }, async (err, user) => {
+
+        console.log("33333");
+        let cdp_obj = new cdp(cdp_address);
+		    let walletInst = await my_wallet(user.mnemonic);
+        let address = await walletInst.getAddress();
+
+         cdp_obj.unlock(walletInst,"111111")
+        await walletInst.queryAllBalance()
+
+        let [err2,row] = await to(cdp_obj.repay(req.params.borrow_id,req.params.asset_id,req.params.amount));
+        res.json({ result:row });
+		});
+    });
+
+//加仓
+  	router.get('/cdp_deposit/:borrow_id/:asset_id/:amount/:username',async (req, res) => {
+
+        console.log("33333");
+		 User.findOne({
+            username: req.params.username
+        }, async (err, user) => {
+
+        let cdp_obj = new cdp(cdp_address);
+		    let walletInst = await my_wallet(user.mnemonic);
+        let address = await walletInst.getAddress();
+
+         cdp_obj.unlock(walletInst,"111111")
+        await walletInst.queryAllBalance()
+
+        let [err2,row]  = await to(cdp_obj.deposit(req.params.borrow_id,req.params.asset_id,req.params.amount));
+       res.json({ result:row});
+		});
+    });
+
+
+//清仓
+    router.get('/cdp_liquidate/:borrow_id/:asset_id/:username',async (req, res) => {
+
+        console.log("33333");
+		 User.findOne({
+            username: req.params.username
+        }, async (err, user) => {
+
+        let cdp_obj = new cdp(cdp_address);
+  		  let walletInst = await my_wallet(user.mnemonic);
+        let address = await walletInst.getAddress();
+
+
+
+         cdp_obj.unlock(walletInst,"111111")
+        await walletInst.queryAllBalance()
+
+        let [err2,row] = await to(cdp_obj.liquidate(req.params.borrow_id,req.params.asset_id));
+        console.log(row,err2);
+        res.json({ result:row});
+		});
+    });
 	return router;
 }

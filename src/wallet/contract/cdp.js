@@ -83,7 +83,8 @@ async executeContract(params) {
         }
 
         console.log("executeContract Success:", params, ins, outs);
-        return chain.sendrawtransaction([rawtx]);
+        //return chain.sendrawtransaction([rawtx]);
+		return rawtx;
     } catch (e) {
         console.log("executeContract TX Error", e)
     }

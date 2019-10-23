@@ -16,6 +16,7 @@ import mist10 from './contract/mist_ex10'
 import cdp from './contract/cdp'
 import adex_utils from '../adex/api/utils'
 import psql from '../adex/models/db'
+//import { btc_start,eth_start,asim_asset_start} from "../deposit";
 
 var spawn = require('child_process').spawn;
 
@@ -266,98 +267,6 @@ export default ({ config, db }) => {
         res.json({ result:result,err:err });
     });
 
-	//充btc 借pai
-	wallet.get('/createDepositBorrow/:borrow_amount/:borrow_time/:deposit_assetID/:deposit_amount/:address',async (req, res) => {
-
-		console.log("33333",req.params);
-		let cdp_obj = new cdp(cdp_address);
-        walletInst = await getTestInst();
-		 cdp_obj.unlock(walletInst,"111111")
-		await walletInst.queryAllBalance()
-
-        //let [err,txid] = await to(cdp_obj.createDepositBorrow(3000000000000,1,'000000000000000300000001',1));
-		console.log("4444",req.params.borrow_amount*100000000,req.params.borrow_time/30);
-        let [err,txid] = await to(cdp_obj.createDepositBorrow(req.params.borrow_amount*100000000,req.params.borrow_time/30,req.params.deposit_assetID,req.params.deposit_amount));
-        console.log(txid,err);
-
-		setTimeout(async ()=>{
-			let datas = utils.get_receipt(txid);	
-			let borrow_id  = parseInt(datas[3],16);
-			console.log("444444444",borrow_id);
-		//return res.json(datas);
-			let current_time = utils.get_current_time();
-			let borrow_info = {
-				 id:null,
-				 //addrss:req.params.address,          
-				 address:req.params.address,
-				 deposit_assetid:req.params.deposit_assetID,   
-				 deposit_amount:req.params.deposit_amount,
-				 deposit_token_name:"BTC",
-				 deposit_price:60000,
-				 interest_rate:0.0148,  
-				 cdp_id:borrow_id,            
-				 status:"borrowing",            
-				 zhiya_rate:0.6,              
-				 usage:"炒币",             
-				 borrow_amount:req.params.borrow_amount,     
-				 borrow_time:req.params.borrow_time,       
-				 repaid_amount:0,       
-				 updated_at: current_time,
-				 created_at: current_time
-			};
-
-			borrow_info.id = utils.get_hash(borrow_info);
-
-			let result = await psql_db.insert_borrows(utils.arr_values(borrow_info));
-        	res.json({ result:txid,borrow_id:borrow_id});
-		}, 10000);
-
-    });
-
-
-		//还pai，得btc
-	wallet.get('/repay/:borrow_id/:asset_id/:amount/:address',async (req, res) => {
-
-		console.log("33333");
-		let cdp_obj = new cdp(cdp_address);
-        walletInst = await getTestInst();
-		 cdp_obj.unlock(walletInst,"111111")
-		await walletInst.queryAllBalance()
-	
-        let [err,result] = await to(cdp_obj.repay(req.params.borrow_id,req.params.asset_id,req.params.amount));
-        console.log(result,err);
-
-
-			let current_time = utils.get_current_time();
-		
-			//为了复用接口,加仓量为0，还钱量为输入值
-			let update_info = ["finished",0,req.params.amount,current_time,req.params.address,req.params.borrow_id];
-			let [err2,result2] = await to(psql_db.update_borrows(update_info));
-
-        res.json({ result:result,err:err });
-    });
-
-	//加仓
-	wallet.get('/cdp_deposit/:borrow_id/:asset_id/:amount/:address',async (req, res) => {
-
-		console.log("33333");
-		let cdp_obj = new cdp(cdp_address);
-        walletInst = await getTestInst();
-		 cdp_obj.unlock(walletInst,"111111")
-		await walletInst.queryAllBalance()
-	
-        let [err,result] = await to(cdp_obj.deposit(req.params.borrow_id,req.params.asset_id,req.params.amount));
-        console.log(result,err);
-
-
-			let current_time = utils.get_current_time();
-			//加仓量为输入值，还钱量为0
-			let update_info = ["finished",req.params.amount,0,current_time,req.params.address,req.params.borrow_id];
-			let [err2,result2] = await to(psql_db.update_borrows(update_info));
-
-        res.json({ result:result,err:err });
-    });
-
 	//清仓
 	wallet.get('/cdp_liquidate/:borrow_id/:asset_id/:address',async (req, res) => {
 
@@ -397,9 +306,91 @@ export default ({ config, db }) => {
 		await walletInst.queryAllBalance()
         let [err,result] = await to(mist.matchorder(walletInst))
         console.log("333333",result,"444444",err);
+        console.log("333333",result,"444444",err);
 
         res.json({ result:result,err:err });
     });
+
+	  wallet.get('/sendrawtransaction/createDepositBorrow/:borrow_amount/:borrow_time/:deposit_assetID/:deposit_amount/:address/:row',async (req, res) => {
+            let rowtx = [req.params.row];
+            let [err,txid] = await to(chain.sendrawtransaction(rowtx));
+			
+
+
+		setTimeout(async ()=>{
+			let datas = utils.get_receipt(txid);	
+			let borrow_id  = parseInt(datas[3],16);
+			console.log("444444444",borrow_id);
+		//return res.json(datas);
+			let current_time = utils.get_current_time();
+			let borrow_info = {
+				 id:null,
+				 //addrss:req.params.address,          
+				 address:req.params.address,
+				 deposit_assetid:req.params.deposit_assetID,   
+				 deposit_amount:req.params.deposit_amount,
+				 deposit_token_name:"BTC",
+				 deposit_price:60000,
+				 interest_rate:0.0148,  
+				 cdp_id:borrow_id,            
+				 status:"borrowing",            
+				 zhiya_rate:0.6,              
+				 usage:"炒币",             
+				 borrow_amount:req.params.borrow_amount,     
+				 borrow_time:req.params.borrow_time,       
+				 repaid_amount:0,       
+				 updated_at: current_time,
+				 created_at: current_time
+			};
+
+			borrow_info.id = utils.get_hash(borrow_info);
+
+			let result = await psql_db.insert_borrows(utils.arr_values(borrow_info));
+        	res.json({ result:txid,borrow_id:borrow_id});
+		}, 10000);
+      });
+
+	  wallet.get('/sendrawtransaction/repay/:borrow_id/:asset_id/:amount/:address/:row',async (req, res) => {
+            let rowtx = [req.params.row];
+            let [err,result] = await to(chain.sendrawtransaction(rowtx));
+
+			 let current_time = utils.get_current_time();
+
+            //为了复用接口,加仓量为0，还钱量为输入值
+            let update_info = ["finished",0,req.params.amount,current_time,req.params.address,req.params.borrow_id];
+			console.log("333333333",update_info)
+            let [err2,result2] = await to(psql_db.update_borrows(update_info));
+
+            res.json({ result:result,err:err});
+      });
+
+
+	  wallet.get('/sendrawtransaction/cdp_deposit/:borrow_id/:asset_id/:amount/:address/:row',async (req, res) => {
+            let rowtx = [req.params.row];
+            let [err,result] = await to(chain.sendrawtransaction(rowtx));
+
+			 let current_time = utils.get_current_time();
+            //加仓量为输入值，还钱量为0
+            let update_info = ["finished",req.params.amount,0,current_time,req.params.address,req.params.borrow_id];
+            let [err2,result2] = await to(psql_db.update_borrows(update_info));
+
+            res.json({ result:result,err:err});
+      });
+
+
+
+	  wallet.get('/sendrawtransaction/cdp_liquidate/:borrow_id/:asset_id/:address/:row',async (req, res) => {
+            let rowtx = [req.params.row];
+            let [err,result] = await to(chain.sendrawtransaction(rowtx));
+
+			let current_time = utils.get_current_time();
+            //加仓量为输入值，还钱量为0
+            let update_info = ["liquidated",0,0,current_time,req.params.address,req.params.borrow_id];
+            let [err2,result2] = await to(psql_db.update_borrows(update_info));
+
+            res.json({ result:result,err:err});
+      });
+
 
 
 
