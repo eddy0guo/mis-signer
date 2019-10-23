@@ -269,7 +269,7 @@ export default ({ config, db }) => {
 	//充btc 借pai
 	wallet.get('/createDepositBorrow/:borrow_amount/:borrow_time/:deposit_assetID/:deposit_amount/:address',async (req, res) => {
 
-		console.log("33333");
+		console.log("33333",req.params);
 		let cdp_obj = new cdp(cdp_address);
         walletInst = await getTestInst();
 		 cdp_obj.unlock(walletInst,"111111")
@@ -301,6 +301,7 @@ export default ({ config, db }) => {
 				 usage:"炒币",             
 				 borrow_amount:req.params.borrow_amount,     
 				 borrow_time:req.params.borrow_time,       
+				 repaid_amount:0,       
 				 updated_at: current_time,
 				 created_at: current_time
 			};
@@ -328,12 +329,56 @@ export default ({ config, db }) => {
 
 
 			let current_time = utils.get_current_time();
-
-			let update_info = ["finished",current_time,req.params.address,req.params.borrow_id];
+		
+			//为了复用接口,加仓量为0，还钱量为输入值
+			let update_info = ["finished",0,req.params.amount,current_time,req.params.address,req.params.borrow_id];
 			let [err2,result2] = await to(psql_db.update_borrows(update_info));
 
         res.json({ result:result,err:err });
     });
+
+	//加仓
+	wallet.get('/cdp_deposit/:borrow_id/:asset_id/:amount/:address',async (req, res) => {
+
+		console.log("33333");
+		let cdp_obj = new cdp(cdp_address);
+        walletInst = await getTestInst();
+		 cdp_obj.unlock(walletInst,"111111")
+		await walletInst.queryAllBalance()
+	
+        let [err,result] = await to(cdp_obj.deposit(req.params.borrow_id,req.params.asset_id,req.params.amount));
+        console.log(result,err);
+
+
+			let current_time = utils.get_current_time();
+			//加仓量为输入值，还钱量为0
+			let update_info = ["finished",req.params.amount,0,current_time,req.params.address,req.params.borrow_id];
+			let [err2,result2] = await to(psql_db.update_borrows(update_info));
+
+        res.json({ result:result,err:err });
+    });
+
+	//清仓
+	wallet.get('/cdp_liquidate/:borrow_id/:asset_id/:address',async (req, res) => {
+
+		console.log("33333");
+		let cdp_obj = new cdp(cdp_address);
+        walletInst = await getTestInst();
+		 cdp_obj.unlock(walletInst,"111111")
+		await walletInst.queryAllBalance()
+	
+        let [err,result] = await to(cdp_obj.liquidate(req.params.borrow_id,req.params.asset_id));
+        console.log(result,err);
+
+
+			let current_time = utils.get_current_time();
+			//加仓量为输入值，还钱量为0
+			let update_info = ["liquidated",0,0,current_time,req.params.address,req.params.borrow_id];
+			let [err2,result2] = await to(psql_db.update_borrows(update_info));
+
+        res.json({ result:result,err:err });
+    });
+
 
 
 

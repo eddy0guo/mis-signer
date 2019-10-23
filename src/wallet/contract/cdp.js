@@ -162,6 +162,32 @@ async repay(borrow_id,repay_assetID,amount){
     return this.callContract(abiInfo,repay_assetID,amount)
 }
 
+//加仓
+ async deposit(borrow_id,deposit_assetID,amount){
+     let abiInfo=
+     {"constant":false,
+     "inputs":[{"name":"record","type":"uint256","value":borrow_id}],
+     "name":"deposit",
+     "outputs":[],
+     "payable":true,
+     "stateMutability":"payable",
+     "type":"function"}
+    return  this.callContract(abiInfo,deposit_assetID,amount)
+ }
+
+//平仓
+ async liquidate(borrow_id,deposit_assetID){
+     let abiInfo=
+    {"constant":false,
+    "inputs":[{"name":"record","type":"uint256","value":borrow_id}],
+    "name":"liquidate",
+    "outputs":[],
+    "payable":false,
+    "stateMutability":"nonpayable",
+    "type":"function"}
+    return this.callContract(abiInfo,deposit_assetID,0)
+ }
+
 
 async debtOfCDP(){
     let abiInfo=
