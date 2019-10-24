@@ -91,3 +91,21 @@ create table mist_launch_logs(
 );
 create index idx_mist_created_at on mist_launch_logs (created_at);
 create unique index idx_mist_launch_logs_transaction_hash on mist_launch_logs (transaction_hash);
+
+create table mist_users(
+  address text  PRIMARY KEY,
+  PI numeric(32,18) default 0,
+  ASIM numeric(32,18) default 0,  
+  USDT numeric(32,18) default 0,    
+  ETH numeric(32,18) default 0,     
+  MT numeric(32,18) default 0,    
+  BTC numeric(32,18) default 0,
+  total_value_1day numeric(32,18) default 0,
+  total_value_2day numeric(32,18) default 0,
+  total_value_3day numeric(32,18) default 0,
+  total_value_4day numeric(32,18) default 0,
+  total_value_5day numeric(32,18) default 0,
+  total_value_6day numeric(32,18) default 0,
+  total_value_7day numeric(32,18) default 0,
+  created_at  timestamp default now()
+);

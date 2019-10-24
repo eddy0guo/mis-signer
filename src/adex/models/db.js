@@ -364,6 +364,39 @@ export default class db{
 			console.log('insert_order_成功',JSON.stringify(result.rows)); 
 			return JSON.stringify(result.rows);
         } 
+		/*
+		*
+		*users
+		*
+		*
+		*/
+	 async update_users(update_info) {
+			let [err,result] = await to(this.clientDB
+				.query('UPDATE mist_users SET (status,deposit_amount,repaid_amount,zhiya_rate,updated_at)=($1,$2,$3,$4,$5,$6,$7,$8) WHERE  address=$10',update_info)); 
+			if(err) {
+				return console.error('update_order_查询失败', err);
+			}
+			console.log('update_order_成功',JSON.stringify(result.rows)); 
+			return result.rows;
 
+        } 
+
+		 async insert_users(address_info) {
+			let [err,result] = await to(this.clientDB.query('insert into mist_users values($1)',address_info));
+			if(err) {
+				return console.error('insert_traders_查询失败', err);
+			}
+			console.log('insert_order_成功',JSON.stringify(result.rows)); 
+			return JSON.stringify(result.rows);
+        }
+
+
+		async find_user(address) {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_users  where address=$1',address)); 
+			if(err) {
+				return console.error('list_transactions_查询失败', err);
+			}
+			return result.rows;
+		}
 
 }

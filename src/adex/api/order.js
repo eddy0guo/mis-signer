@@ -20,7 +20,20 @@ export default class order{
     async build(message) {
 
 		 let create_time = this.utils.get_current_time();
-            let hash = this.utils.get_hash(message);
+		 //新订单创建后去users表匹配，找不到就插入新地址，这里偷懒其他字段都默认值让后台程序去更新
+		let mist_user = await this.db.find_user([message.trader_address]);
+		console.log("1111988888888",mist_user);
+			if(!mist_user[0]){
+				let address_info = {
+					address:message.trader_address, 
+				}
+		console.log("11119999999999999",mist_user);
+				let result = await this.db.insert_users(this.utils.arr_values(address_info));
+				
+			}
+
+
+         let hash = this.utils.get_hash(message);
 
             message.id = hash;
             message.created_at= create_time;
