@@ -33,7 +33,7 @@ let jwt = require('jsonwebtoken');
 let User = require("./models/user");
 
 let payPassword = 'temp-pass-227'
-let ex_address = '0x63d2007ae83b2853d85c5bd556197e09ca4d52d9c9'
+let ex_address = '0x63b2b7e3ec2d1d1b171a3c14032bd304367e538a68'
 const eth_seed_word = 0x649f1f2d874fbba7f298f5227f23f08bbad4791c366d68a74275b47f0bdb9a3b78777d17020d7621bd0c5f321d764ad9e7a7f3fd597eea39f94e72fea1aeb28f;
 const seed_word = 'wing safe foster choose wisdom myth quality own gallery logic imitate pink';
 let btc_seed =1;

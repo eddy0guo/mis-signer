@@ -8,6 +8,7 @@ import TokenTest from './contract/TokenTest'
 import AssetTest from './asset/AssetTest'
 import Asset from './asset/Asset'
 import { CONSTANT } from "./constant";
+import Token from '../wallet/contract/Token'
 
 import Erc20 from './contract/ERC20'
 import Erc20Test from './contract/ERC20Test'
@@ -16,6 +17,7 @@ import mist10 from './contract/mist_ex10'
 import cdp from './contract/cdp'
 import adex_utils from '../adex/api/utils'
 import psql from '../adex/models/db'
+import mist_wallet1 from '../adex/api/mist_wallet'
 //import { btc_start,eth_start,asim_asset_start} from "../deposit";
 
 var spawn = require('child_process').spawn;
@@ -31,7 +33,7 @@ let taker = '0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9';
 let taker_word = 'enhance donor garment gospel loop purse pumpkin bag oven bone decide street';
 let taker_wallet;
 let asim_address = '0x639a9f78bdaac0a33b39de17c13cf7271d86800a7d';
-let mist10_address = '0x63f2e35430d95ae63d63f8d115c95ffc9ff5b3d68e';
+let mist10_address = '0x63b2b7e3ec2d1d1b171a3c14032bd304367e538a68';
 let cdp_address = '0x6367f3c53e65cce5769166619aa15e7da5acf9623d';
 
 // 避免重复创建Taker Wallet Instance
@@ -59,6 +61,7 @@ export default ({ config, db }) => {
 	let assetTest = new AssetTest()
 	let psql_db = new psql();
 	let utils = new adex_utils();
+	let mist_wallet = new mist_wallet1();
 
 	wallet.get('/', async (req, res) => {
 		walletInst = await getTestInst();
@@ -66,7 +69,7 @@ export default ({ config, db }) => {
 		res.json({ wallet:address })
 	});
 
-	wallet.get('/faucet/:token/:address',async (req, res) => {
+	wallet.get('/faucet2/:token/:address',async (req, res) => {
 		console.log(req.params)
 		let token = new StandardToken(req.params.token)
 		let takerWallet = await getTakerWallet();
@@ -76,6 +79,39 @@ export default ({ config, db }) => {
 		console.log(result,err);
 		res.json({ result:result,err:err });
 	});
+
+	wallet.get('/faucet/:address',async (req, res) => {
+		console.log(req.params)
+		let wallet = await getTestInst();
+		let address = req.params.address; 
+		let erc20_token_arr = await mist_wallet.list_tokens();
+		let asset_token_arr = ['000000000000000000000000','000000000000000300000001','000000000000000500000001']
+		for(let i in erc20_token_arr){
+				  setTimeout(async ()=>{
+					let token  = new Token(erc20_token_arr[i].address);
+					console.log("333--address",address);
+					await wallet.queryAllBalance()
+					token.unlock(wallet,'111111')
+					let [err,result] = await to(token.transfer(req.params.address,10000))
+					console.log("---------erc20_token_arr--i=",i,"err-result",err,result,"\n\n\n\n")
+				  },i*10000)
+		}
+
+		 for(let i in  asset_token_arr){
+			 setTimeout(async ()=>{
+			let asset = new Asset(asset_token_arr[i])	
+			asset.unlock(wallet,"111111")
+			await wallet.queryAllBalance()
+			let [err,result] = await to(asset.transfer(address,100));
+
+			console.log("---------erc20_token_arr--i=",i,"err-result",err,result,"\n\n\n\n")
+			 },i*10000 + 60000);
+		}
+		console.log(result,err);
+		res.json({ result:result,err:err });
+	});
+
+
 
 	wallet.get('/balanceOf/:token/:address',async (req, res) => {
 		console.log(req.params)
