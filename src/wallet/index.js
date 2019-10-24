@@ -32,7 +32,7 @@ let testWallets = {
 let taker = '0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9';
 let taker_word = 'enhance donor garment gospel loop purse pumpkin bag oven bone decide street';
 let taker_wallet;
-let asim_address = '0x639a9f78bdaac0a33b39de17c13cf7271d86800a7d';
+let asim_address = '0x638f6ee4c805bc7a8558c1cf4df074a38089f6fbfe';
 let mist10_address = '0x63b2b7e3ec2d1d1b171a3c14032bd304367e538a68';
 let cdp_address = '0x6367f3c53e65cce5769166619aa15e7da5acf9623d';
 
@@ -179,47 +179,6 @@ export default ({ config, db }) => {
 		
 		res.json({ result:result,err:err });
 	});
-	
-	//钱包到币币
-	wallet.get('/deposit/:amount',async (req, res) => {
-		let erc20 = new Erc20(asim_address);
-		walletInst = await getTestInst();
-		//walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
-		erc20.unlock(walletInst,"111111")
-       let [err,result] = await to(erc20.deposit(req.params.amount));
-		console.log(result,err);
-
-		if( !err ){
-			// 先简单处理，Execute 前更新UTXO
-			await walletInst.queryAllBalance()
-		}
-		
-		res.json({ result:result,err:err });
-	});
-
-
-	//币币到钱包
-	wallet.get('/withdraw/:amount',async (req, res) => {
-		let erc20 = new Erc20(asim_address);
-		walletInst = await getTestInst();
-		//walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
-		erc20.unlock(walletInst,"111111")
-		//这里为了和deposit保持单位一致
-       let [err,result] = await to(erc20.withdraw(req.params.amount * Math.pow(10,8)));
-
-		console.log(result,err);
-
-		if( !err ){
-			// 先简单处理，Execute 前更新UTXO
-			await walletInst.queryAllBalance()
-		}
-		
-		res.json({ result:result,err:err });
-	});
-
-
-
-
 	/**
 	 * curl -X POST --data '{"id":1, "jsonrpc":"2.0","method":"asimov_searchRawTransactions",
 	 * "params":["0x666e55294d0ee2b7306b9a765b576df9c8ed73a877",true,0,1,false,false,[]]}' 
@@ -341,8 +300,6 @@ export default ({ config, db }) => {
 		 mist.unlock(walletInst,"111111")
 		await walletInst.queryAllBalance()
         let [err,result] = await to(mist.matchorder(walletInst))
-        console.log("333333",result,"444444",err);
-        console.log("333333",result,"444444",err);
 
         res.json({ result:result,err:err });
     });
@@ -371,7 +328,7 @@ export default ({ config, db }) => {
 				 address:req.params.address,
 				 deposit_assetid:req.params.deposit_assetID,   
 				 deposit_amount:req.params.deposit_amount,
-				 deposit_token_name:"BTC",
+				 deposit_token_name:"FBTC",
 				 deposit_price:60000,
 				 interest_rate:interest_rate,
 				 cdp_id:borrow_id,            
@@ -447,6 +404,11 @@ export default ({ config, db }) => {
       });
 
 
+	  wallet.get('/sendrawtransaction/:row',async (req, res) => {
+	   let rowtx = [req.params.row];
+            let [err,result] = await to(chain.sendrawtransaction(rowtx));
+            res.json({ result:result,err:err});
+		});
 
 
 	return wallet;

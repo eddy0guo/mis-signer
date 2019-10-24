@@ -5,6 +5,7 @@ import walletHelper from '../wallet/lib/walletHelper'
 import Token from '../wallet/contract/Token'
 import mist_wallet1 from '../adex/api/mist_wallet'
 import to from 'await-to-js'
+import Erc20 from '../wallet/contract/ERC20_did'
 var bip39 = require('bip39');
 var bip32 = require('bip32');
 import { HDPrivateKey, crypto } from "bitcore-lib";
@@ -24,6 +25,7 @@ import cdp from '../wallet/contract/cdp'
 import adex_utils from '../adex/api/utils'
 import psql from '../adex/models/db'
 let cdp_address = '0x6367f3c53e65cce5769166619aa15e7da5acf9623d';
+let asim_address = '0x638f6ee4c805bc7a8558c1cf4df074a38089f6fbfe';
 
 
 
@@ -325,5 +327,49 @@ export default ({ config, db }) => {
         res.json({ result:row});
 		});
     });
+
+
+ //钱包到币币
+   router.get('/deposit/:amount/:username',async (req, res) => {
+	     console.log("33333");
+         User.findOne({
+            username: req.params.username
+        }, async (err, user) => {
+
+        let erc20 = new Erc20(asim_address);
+          let walletInst = await my_wallet(user.mnemonic);
+        //walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
+        erc20.unlock(walletInst,"111111")
+        await walletInst.queryAllBalance()
+       let [err2,result] = await to(erc20.deposit(req.params.amount));
+        console.log(result,err);
+
+    
+        res.json({ result:result,err:err2 }); 
+  		 });
+    }); 
+
+
+    //币币到钱包
+   router.get('/withdraw/:amount/:username',async (req, res) => {
+		User.findOne({
+            username: req.params.username
+        }, async (err, user) => {
+
+        let erc20 = new Erc20(asim_address);
+          let walletInst = await my_wallet(user.mnemonic);
+        //walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
+        erc20.unlock(walletInst,"111111")
+          await walletInst.queryAllBalance()
+        //这里为了和deposit保持单位一致
+       let [err2,result] = await to(erc20.withdraw(req.params.amount * Math.pow(10,8)));
+
+        console.log(result,err2);
+    
+        res.json({ result:result,err:err }); 
+		});
+    });
+
+
 	return router;
 }
