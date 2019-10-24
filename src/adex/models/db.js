@@ -332,10 +332,21 @@ export default class db{
 			return result.rows;
 
 		}
+		
+		async find_borrow(cdp_id) {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_borrows  where cdp_id=$1',cdp_id)); 
+			if(err) {
+				return console.error('list_transactions_查询失败', err);
+			}
+			return result.rows;
+
+		}
+
+
 
 		 async update_borrows(update_info) {
 			let [err,result] = await to(this.clientDB
-				.query('UPDATE mist_borrows SET (status,deposit_amount,repaid_amount,updated_at)=($1,deposit_amount+$2,repaid_amount+$3,$4) WHERE  address=$5 and  cdp_id=$6',update_info)); 
+				.query('UPDATE mist_borrows SET (status,deposit_amount,repaid_amount,zhiya_rate,updated_at)=($1,deposit_amount+$2,repaid_amount+$3,(borrow_amount-$3)/((deposit_amount+$2)*60000) ,$4) WHERE  address=$5 and  cdp_id=$6',update_info)); 
 
 			if(err) {
 				return console.error('update_order_查询失败', err);
@@ -346,7 +357,7 @@ export default class db{
         } 
 
 		 async insert_borrows(borrow_info) {
-			let [err,result] = await to(this.clientDB.query('insert into mist_borrows values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)',borrow_info));
+			let [err,result] = await to(this.clientDB.query('insert into mist_borrows values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)',borrow_info));
 			if(err) {
 				return console.error('insert_traders_查询失败', err);
 			}

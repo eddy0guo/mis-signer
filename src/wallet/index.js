@@ -323,6 +323,12 @@ export default ({ config, db }) => {
 			console.log("444444444",borrow_id);
 		//return res.json(datas);
 			let current_time = utils.get_current_time();
+			//分别是30，60，90，180，360天的利率最后一位进一的值
+			let rate_arr = [0.0149,0.0296,0.0443,0.0896,0.1851]
+			let interest_rate = rate_arr[(req.params.borrow_time/30) - 1];
+			let mortgage_rate = req.params.borrow_amount / (req.params.deposit_amount * 60000);
+			let should_repaid_amount = req.params.borrow_amount * (1 + interest_rate);
+
 			let borrow_info = {
 				 id:null,
 				 //addrss:req.params.address,          
@@ -331,14 +337,15 @@ export default ({ config, db }) => {
 				 deposit_amount:req.params.deposit_amount,
 				 deposit_token_name:"BTC",
 				 deposit_price:60000,
-				 interest_rate:0.0148,  
+				 interest_rate:interest_rate,
 				 cdp_id:borrow_id,            
 				 status:"borrowing",            
-				 zhiya_rate:0.6,              
+				 mortgage_rate:mortgage_rate,              
 				 usage:"炒币",             
 				 borrow_amount:req.params.borrow_amount,     
 				 borrow_time:req.params.borrow_time,       
 				 repaid_amount:0,       
+				 should_repaid_amount:should_repaid_amount,       
 				 updated_at: current_time,
 				 created_at: current_time
 			};
@@ -350,20 +357,32 @@ export default ({ config, db }) => {
 		}, 10000);
       });
 
+//	还钱
 	  wallet.get('/sendrawtransaction/repay/:borrow_id/:asset_id/:amount/:address/:row',async (req, res) => {
             let rowtx = [req.params.row];
             let [err,result] = await to(chain.sendrawtransaction(rowtx));
 
 			 let current_time = utils.get_current_time();
 
+            let [err2,borrow_info] = await to(psql_db.find_borrow([req.params.borrow_id]));
+			let status = "borrowing";
+			let repay_amount = req.params.amount;
+			//这里会有点小bug-因为利率的数值最后一个是进一的,如果还钱金额正好是介于psql数据库里应还和kv数据库里之间
+			//则实际已经还款完成，psql显示还差零点几个带还款
+			
+			if(repay_amount  >= borrow_info[0].should_repaid_amount){
+				status = "finished";
+				repay_amount = borrow_info[0].should_repaid_amount;
+			}
+
             //为了复用接口,加仓量为0，还钱量为输入值
-            let update_info = ["finished",0,req.params.amount,current_time,req.params.address,req.params.borrow_id];
+            let update_info = ["finished",0,repay_amount,current_time,req.params.address,req.params.borrow_id];
 			console.log("333333333",update_info)
-            let [err2,result2] = await to(psql_db.update_borrows(update_info));
+            let [err3,result2] = await to(psql_db.update_borrows(update_info));
 
             res.json({ result:result,err:err});
       });
-
+//加仓
 
 	  wallet.get('/sendrawtransaction/cdp_deposit/:borrow_id/:asset_id/:amount/:address/:row',async (req, res) => {
             let rowtx = [req.params.row];
@@ -371,14 +390,14 @@ export default ({ config, db }) => {
 
 			 let current_time = utils.get_current_time();
             //加仓量为输入值，还钱量为0
-            let update_info = ["finished",req.params.amount,0,current_time,req.params.address,req.params.borrow_id];
+            let update_info = ["borrowing",req.params.amount,0,current_time,req.params.address,req.params.borrow_id];
             let [err2,result2] = await to(psql_db.update_borrows(update_info));
 
             res.json({ result:result,err:err});
       });
 
 
-
+//清仓
 	  wallet.get('/sendrawtransaction/cdp_liquidate/:borrow_id/:asset_id/:address/:row',async (req, res) => {
             let rowtx = [req.params.row];
             let [err,result] = await to(chain.sendrawtransaction(rowtx));

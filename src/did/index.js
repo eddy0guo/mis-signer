@@ -235,7 +235,7 @@ export default ({ config, db }) => {
 		});
 	});
 
-	router.get('/createDepositBorrow/:borrow_amount/:borrow_time/:deposit_assetID/:deposit_amount/:username',async (req, res) => {
+	router.get('/cdp_createDepositBorrow/:borrow_amount/:borrow_time/:deposit_assetID/:deposit_amount/:username',async (req, res) => {
 		User.findOne({
             username: req.params.username
         }, async (err, user) => {
@@ -263,7 +263,7 @@ export default ({ config, db }) => {
 
 	
         //还pai，得btc
-    router.get('/repay/:borrow_id/:asset_id/:amount/:username',async (req, res) => {
+    router.get('/cdp_repay/:borrow_id/:asset_id/:amount/:username',async (req, res) => {
 		console.log("111111",req.params);
         User.findOne({
             username: req.params.username

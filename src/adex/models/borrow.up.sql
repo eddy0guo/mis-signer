@@ -13,6 +13,7 @@ create table mist_borrows(
  borrow_amount numeric(32,8),
  borrow_time integer,
  repaid_amount numeric(32,8),--增加已经偿还数量
+ should_repaid_amount numeric(32,8),--到期应还
  updated_at timestamp,
  created_at timestamp
 );
