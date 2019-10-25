@@ -370,9 +370,9 @@ export default class db{
 		*
 		*
 		*/
-	 async update_users(update_info) {
+	 	async update_user_token(update_info) {
 			let [err,result] = await to(this.clientDB
-				.query('UPDATE mist_users SET (status,deposit_amount,repaid_amount,zhiya_rate,updated_at)=($1,$2,$3,$4,$5,$6,$7,$8) WHERE  address=$10',update_info)); 
+				.query('UPDATE mist_users SET (pi,asim,usdt,eth,mt,btc,updated_at)=($1,$2,$3,$4,$5,$6,$7) WHERE  address=$8',update_info)); 
 			if(err) {
 				return console.error('update_order_查询失败', err);
 			}
@@ -380,6 +380,21 @@ export default class db{
 			return result.rows;
 
         } 
+
+
+		async update_user_total(update_info) {
+			let [err,result] = await to(this.clientDB
+				.query('UPDATE mist_users SET (total_value_1day,total_value_2day,total_value_3day,total_value_4day,total_value_5day,total_value_6day,\
+				total_value_7day,updated_at)=($1,total_value_1day,total_value_2day,total_value_3day,total_value_4day,total_value_5day,total_value_6day,$2) WHERE  address=$3',update_info)); 
+			if(err) {
+				return console.error('update_order_查询失败', err);
+			}
+			console.log('update_order_成功',JSON.stringify(result.rows)); 
+			return result.rows;
+
+        } 
+
+
 
 		 async insert_users(address_info) {
 			let [err,result] = await to(this.clientDB.query('insert into mist_users values($1)',address_info));
@@ -398,5 +413,14 @@ export default class db{
 			}
 			return result.rows;
 		}
+
+		async list_users() {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_users')); 
+			if(err) {
+				return console.error('list_transactions_查询失败', err);
+			}
+			return result.rows;
+		}
+
 
 }

@@ -42,6 +42,9 @@ export default class mist_wallet{
 
 	//寻找交易对的优先级依次为，PI,USDT,MT
 	async get_token_price2pi(symbol) {
+			if(symbol == 'PI'){
+				return 1;
+			}
 			let marketID = symbol + "-PI";
 			let result = await this.db.get_market_current_price([marketID]);	
         console.log("get_token_price2pi--result=",result,marketID);

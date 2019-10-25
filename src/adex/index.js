@@ -8,6 +8,7 @@ import order1 from './api/order'
 import trades1 from './api/trades'
 import market1 from './api/market'
 import watcher1 from './cli/watcher'
+import user1 from './cli/users'
 import utils1 from './api/utils'
 
 import mist_wallet1 from './api/mist_wallet'
@@ -62,10 +63,12 @@ export default ({ config, db }) => {
     let trades = new trades1();
     let market = new market1();
     let wathcer = new watcher1();
+    let user = new user1();
     let mist_wallet = new mist_wallet1();
     let tokenTest = new TokenTest()
 	let utils = new utils1();
-//	wathcer.start();
+	wathcer.start();
+	user.start();
 
 	        
    	adex.get('/list_market_quotations', async (req, res) => {

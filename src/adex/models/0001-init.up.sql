@@ -107,5 +107,6 @@ create table mist_users(
   total_value_5day numeric(32,18) default 0,
   total_value_6day numeric(32,18) default 0,
   total_value_7day numeric(32,18) default 0,
+  updated_at  timestamp default now(),
   created_at  timestamp default now()
 );
