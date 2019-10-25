@@ -372,7 +372,7 @@ export default class db{
 		*/
 	 	async update_user_token(update_info) {
 			let [err,result] = await to(this.clientDB
-				.query('UPDATE mist_users SET (pi,asim,usdt,eth,mt,btc,updated_at)=($1,$2,$3,$4,$5,$6,$7) WHERE  address=$8',update_info)); 
+				.query('UPDATE mist_users SET (pi,asim,usdt,eth,mt,btc,pi_valuation,asim_valuation,usdt_valuation,eth_valuation,mt_valuation,btc_valuation,updated_at)=($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) WHERE  address=$14',update_info)); 
 			if(err) {
 				return console.error('update_order_查询失败', err);
 			}
