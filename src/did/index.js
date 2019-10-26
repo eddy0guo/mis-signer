@@ -5,6 +5,8 @@ import walletHelper from '../wallet/lib/walletHelper'
 import Token from '../wallet/contract/Token'
 import mist_wallet1 from '../adex/api/mist_wallet'
 import to from 'await-to-js'
+import eth from './deposit_withdraw/eth'
+
 import Erc20 from '../wallet/contract/ERC20_did'
 var bip39 = require('bip39');
 var bip32 = require('bip32');
@@ -26,13 +28,15 @@ import adex_utils from '../adex/api/utils'
 import psql from '../adex/models/db'
 let cdp_address = '0x6367f3c53e65cce5769166619aa15e7da5acf9623d';
 let asim_address = '0x638f6ee4c805bc7a8558c1cf4df074a38089f6fbfe';
-
+let fbtc_address = '0x635a32ed580f4e432e85632ac9a11c82e036e61a41';
+let pai_address = '0x6365d9706054c208aca4f133b852d1b01aa53fc79f';
 
 
 
 require('./config/passport')(passport);
 let jwt = require('jsonwebtoken');
 let User = require("./models/user");
+let user_tx_records = require("./models/user_tx_records");
 
 let payPassword = 'temp-pass-227'
 let ex_address = '0x63b2b7e3ec2d1d1b171a3c14032bd304367e538a68'
@@ -49,6 +53,7 @@ export default ({ config, db }) => {
 	let mist_wallet = new mist_wallet1();
 	 let psql_db = new psql();
     let utils = new adex_utils();
+    let ether = new eth();
 
 	function sign(mnemonic,order_id){
 			const seed = bip39.mnemonicToSeedHex(mnemonic);
@@ -121,7 +126,7 @@ export default ({ config, db }) => {
 					username: req.body.username,
 					password: req.body.password,
 					mnemonic: mnemonic,
-					address: address,
+					asim_address: address,
 					id: index,
 					btc_address: btc_address.address,
 					eth_address: eth_address.toString('hex')
@@ -214,7 +219,7 @@ export default ({ config, db }) => {
 		}
 	});
 
-	router.post('/order_sign', function(req, res) {
+	router.post('/order_sign',passport.authenticate('jwt', { session: false }), function(req, res) {
 		console.log("111111",req.body);
 		User.findOne({
 			username: req.body.username
@@ -237,7 +242,7 @@ export default ({ config, db }) => {
 		});
 	});
 
-	router.get('/cdp_createDepositBorrow/:borrow_amount/:borrow_time/:deposit_assetID/:deposit_amount/:username',async (req, res) => {
+	router.get('/cdp_createDepositBorrow/:borrow_amount/:borrow_time/:deposit_assetID/:deposit_amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
 		User.findOne({
             username: req.params.username
         }, async (err, user) => {
@@ -265,7 +270,7 @@ export default ({ config, db }) => {
 
 	
         //还pai，得btc
-    router.get('/cdp_repay/:borrow_id/:asset_id/:amount/:username',async (req, res) => {
+    router.get('/cdp_repay/:borrow_id/:asset_id/:amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
 		console.log("111111",req.params);
         User.findOne({
             username: req.params.username
@@ -285,7 +290,7 @@ export default ({ config, db }) => {
     });
 
 //加仓
-  	router.get('/cdp_deposit/:borrow_id/:asset_id/:amount/:username',async (req, res) => {
+  	router.get('/cdp_deposit/:borrow_id/:asset_id/:amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
 
         console.log("33333");
 		 User.findOne({
@@ -306,7 +311,7 @@ export default ({ config, db }) => {
 
 
 //清仓
-    router.get('/cdp_liquidate/:borrow_id/:asset_id/:username',async (req, res) => {
+    router.get('/cdp_liquidate/:borrow_id/:asset_id/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
 
         console.log("33333");
 		 User.findOne({
@@ -330,7 +335,7 @@ export default ({ config, db }) => {
 
 
  //钱包到币币
-   router.get('/deposit/:amount/:username',async (req, res) => {
+   router.get('/asim_deposit/:amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
 	     console.log("33333");
          User.findOne({
             username: req.params.username
@@ -351,7 +356,7 @@ export default ({ config, db }) => {
 
 
     //币币到钱包
-   router.get('/withdraw/:amount/:username',async (req, res) => {
+   router.get('/asim_withdraw/:amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
 		User.findOne({
             username: req.params.username
         }, async (err, user) => {
@@ -369,6 +374,49 @@ export default ({ config, db }) => {
         res.json({ result:result,err:err }); 
 		});
     });
+
+	//交易所充币
+router.get('/deposit/:username/:token_name',async (req, res) => {
+	     console.log("33333");
+        User.findOne({
+            username: req.params.username
+        }, async (err, user) => {
+
+		let token_name =  req.params.token_name;
+		if(token_name =  'ETH'){
+			ether.start_deposit(user);	
+		}else if(token_name =  'BTC'){
+			console.log("deposit btc");
+		}else if(token_name =  'USDT'){
+			console.log("deposit usdt");
+		}else{
+        	return res.json({ result:"cannot support token"}); 
+		}
+  		 });
+    }); 
+
+
+    //交易所提币
+   router.get('/withdraw/:amount/:username/to_address/token_name',async (req, res) => {
+		User.findOne({
+            username: req.params.username
+        }, async (err, user) => {
+
+        let erc20 = new Erc20(asim_address);
+          let walletInst = await my_wallet(user.mnemonic);
+        //walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
+        erc20.unlock(walletInst,"111111")
+          await walletInst.queryAllBalance()
+        //这里为了和deposit保持单位一致
+       let [err2,result] = await to(erc20.withdraw(req.params.amount * Math.pow(10,8)));
+
+        console.log(result,err2);
+    
+        res.json({ result:result,err:err }); 
+		});
+    });
+
+
 
 
 	return router;

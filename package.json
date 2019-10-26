@@ -73,7 +73,8 @@
     "scryptsy": "^2.0.0",
     "silly-datetime": "^0.1.2",
     "solc": "^0.5.11",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "web3": "^1.2.2"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

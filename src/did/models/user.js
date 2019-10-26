@@ -21,6 +21,11 @@ let UserSchema = new Schema({
         type: Number,
         required: true
     },
+	asim_address: {
+        type: String,
+        required: true
+    },
+
     btc_address: {
         type: String,
         required: true
