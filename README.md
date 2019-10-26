@@ -59,3 +59,9 @@ docker run -p 8080:8080 mist/api-service
 可定制的角色、审批流程
 批量打币、入账提醒、流水对账
 资产报告和审计追踪
+
+## TODO
+
+- [ ] JWT
+- [ ] POA Nodes
+- [ ] WebSocket
