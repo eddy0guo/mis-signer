@@ -65,3 +65,8 @@ docker run -p 8080:8080 mist/api-service
 - [ ] JWT
 - [ ] POA Nodes
 - [ ] WebSocket
+- [ ] 多币种划转
+- [ ] BTC充提币
+- [ ] ETH充提币
+- [ ] USDT（ERC20）充提币
+- [ ] DB的安全部署
