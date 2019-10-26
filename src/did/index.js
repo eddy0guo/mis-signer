@@ -6,6 +6,7 @@ import Token from '../wallet/contract/Token'
 import mist_wallet1 from '../adex/api/mist_wallet'
 import to from 'await-to-js'
 import eth from './deposit_withdraw/eth'
+import btc from './deposit_withdraw/btc'
 
 import Erc20 from '../wallet/contract/ERC20_did'
 var bip39 = require('bip39');
@@ -54,6 +55,7 @@ export default ({ config, db }) => {
 	 let psql_db = new psql();
     let utils = new adex_utils();
     let ether = new eth();
+    let btcer = new btc();
 
 	function sign(mnemonic,order_id){
 			const seed = bip39.mnemonicToSeedHex(mnemonic);
@@ -383,11 +385,12 @@ router.get('/deposit/:username/:token_name',async (req, res) => {
         }, async (err, user) => {
 
 		let token_name =  req.params.token_name;
-		if(token_name =  'ETH'){
+		if(token_name ==  'ETH'){
 			ether.start_deposit(user);	
-		}else if(token_name =  'BTC'){
+		}else if(token_name ==  'BTC'){
+			btcer.start_deposit(user);	
 			console.log("deposit btc");
-		}else if(token_name =  'USDT'){
+		}else if(token_name ==  'USDT'){
 			console.log("deposit usdt");
 		}else{
         	return res.json({ result:"cannot support token"}); 
