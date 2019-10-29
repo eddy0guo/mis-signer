@@ -21,12 +21,12 @@ unlock(wallet, password) {
     this.password = password
 }
 
-async callContract(abiInfo,value) {
+async callContract(assetID,abiInfo,value) {
 	if(!value){value = 0;};
     let params = {
         to: this.address,
         amount: value,
-        assetId: CONSTANT.DEFAULT_ASSET,
+        assetId: assetID,
         data: this.getHexData(abiInfo)
       };
       console.log('params.data',params.data)
@@ -131,7 +131,7 @@ getHexData(abiInfo) {
 }
 
     //MistToken contract
-         async deposit(amount){
+         async deposit(assetID,amount){
              let abiInfo=
              {"constant":false,
              "inputs":[],
@@ -141,10 +141,10 @@ getHexData(abiInfo) {
              "stateMutability":"payable",
              "type":"function"
              }
-             return this.callContract(abiInfo,amount);
+             return this.callContract(assetID,abiInfo,amount);
          }
 
-         async withdraw(amount){
+         async withdraw(assetID,amount){
              let abiInfo=
              {"constant":false,
              "inputs":[{"name":"wad","type":"uint256","value":amount}],
@@ -153,7 +153,7 @@ getHexData(abiInfo) {
              "payable":false,
              "stateMutability":"nonpayable",
              "type":"function"}
-             return this.callContract(abiInfo);
+             return this.callContract(assetID,abiInfo);
          }
     
 

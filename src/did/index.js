@@ -31,6 +31,7 @@ let cdp_address = '0x6367f3c53e65cce5769166619aa15e7da5acf9623d';
 let asim_address = '0x638f6ee4c805bc7a8558c1cf4df074a38089f6fbfe';
 let fbtc_address = '0x635a32ed580f4e432e85632ac9a11c82e036e61a41';
 let pai_address = '0x6365d9706054c208aca4f133b852d1b01aa53fc79f';
+let mist_fbtc_address = '0x63d8433a147e40a614811800bcbd92f7e29882fc10'
 
 
 
@@ -343,12 +344,13 @@ export default ({ config, db }) => {
             username: req.params.username
         }, async (err, user) => {
 
-        let erc20 = new Erc20(asim_address);
+       // let erc20 = new Erc20(asim_address);
+        let erc20 = new Erc20(mist_fbtc_address);
           let walletInst = await my_wallet(user.mnemonic);
         //walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
         erc20.unlock(walletInst,"111111")
         await walletInst.queryAllBalance()
-       let [err2,result] = await to(erc20.deposit(req.params.amount));
+       let [err2,result] = await to(erc20.deposit('000000000000000300000001',req.params.amount));
         console.log(result,err);
 
     
@@ -363,13 +365,14 @@ export default ({ config, db }) => {
             username: req.params.username
         }, async (err, user) => {
 
-        let erc20 = new Erc20(asim_address);
+       // let erc20 = new Erc20(asim_address);
+	    let erc20 = new Erc20(mist_fbtc_address);
           let walletInst = await my_wallet(user.mnemonic);
         //walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
         erc20.unlock(walletInst,"111111")
           await walletInst.queryAllBalance()
         //这里为了和deposit保持单位一致
-       let [err2,result] = await to(erc20.withdraw(req.params.amount * Math.pow(10,8)));
+       let [err2,result] = await to(erc20.withdraw('000000000000000300000001',req.params.amount * Math.pow(10,8)));
 
         console.log(result,err2);
     
