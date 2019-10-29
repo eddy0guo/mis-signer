@@ -59,18 +59,63 @@ export const CONSTANT = {
       asset: '000000000000000500000001',
       unit: "fee",
       balance: 0
-    }/*,
+    },
 	{
-      name: "pai",
+      name: "mpai",
       coinSlug: "fbtctoken",
       coinName: "FEE",
       coinType: 10005,
       icon: "default",
       addressPrefix: "feecoin",
-      asset: '000000000000000700000001',
+      asset: '000000000000001f00000001',
       unit: "fee",
       balance: 0
-    }*/
+    },
+	{
+      name: "musdt",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000001b00000001',
+      unit: "fee",
+      balance: 0
+    },
+	{
+      name: "meth",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000001d00000001',
+      unit: "fee",
+      balance: 0
+    },
+	{
+      name: "mbtc",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000001e00000001',
+      unit: "fee",
+      balance: 0
+    },
+	{
+      name: "mmt",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000001c00000001',
+      unit: "fee",
+      balance: 0
+    }
+
 
   ],
 

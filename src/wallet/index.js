@@ -85,7 +85,7 @@ export default ({ config, db }) => {
 		let wallet = await getTestInst();
 		let address = req.params.address; 
 		let erc20_token_arr = await mist_wallet.list_tokens();
-		let asset_token_arr = ['000000000000000000000000','000000000000000300000001','000000000000000500000001']
+		let asset_token_arr = ['000000000000000000000000','000000000000001b00000001','000000000000001c00000001','000000000000001d00000001','000000000000001e00000001','000000000000001f00000001']
 		for(let i in erc20_token_arr){
 				  setTimeout(async ()=>{
 					let token  = new Token(erc20_token_arr[i].address);
