@@ -114,7 +114,32 @@ export const CONSTANT = {
       asset: '000000000000001c00000001',
       unit: "fee",
       balance: 0
+    },
+	{
+      name: "mmt",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000001000000001',
+      unit: "fee",
+      balance: 0
+    },
+	{
+      name: "mmt",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000001700000001',
+      unit: "fee",
+      balance: 0
     }
+
+
+
 
 
   ],

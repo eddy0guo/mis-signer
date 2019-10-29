@@ -338,7 +338,7 @@ export default ({ config, db }) => {
 
 
  //钱包到币币
-   router.get('/asim_deposit/:amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
+   router.get('/asim_deposit/:amount/:username/:token_name',passport.authenticate('jwt', { session: false }),async (req, res) => {
 	     console.log("33333");
          User.findOne({
             username: req.params.username
@@ -347,10 +347,12 @@ export default ({ config, db }) => {
        // let erc20 = new Erc20(asim_address);
         let erc20 = new Erc20(mist_fbtc_address);
           let walletInst = await my_wallet(user.mnemonic);
+		let tokens = await psql_db.get_tokens([req.params.token_name])
+		console.log("7777777",tokens);
         //walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
         erc20.unlock(walletInst,"111111")
         await walletInst.queryAllBalance()
-       let [err2,result] = await to(erc20.deposit('000000000000000300000001',req.params.amount));
+       let [err2,result] = await to(erc20.deposit(tokens[0].asim_assetid,req.params.amount));
         console.log(result,err);
 
     
@@ -360,7 +362,7 @@ export default ({ config, db }) => {
 
 
     //币币到钱包
-   router.get('/asim_withdraw/:amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
+   router.get('/asim_withdraw/:amount/:username/:token_name',passport.authenticate('jwt', { session: false }),async (req, res) => {
 		User.findOne({
             username: req.params.username
         }, async (err, user) => {
@@ -369,10 +371,11 @@ export default ({ config, db }) => {
 	    let erc20 = new Erc20(mist_fbtc_address);
           let walletInst = await my_wallet(user.mnemonic);
         //walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
+		let tokens = await psql_db.get_tokens([req.params.token_name])
         erc20.unlock(walletInst,"111111")
           await walletInst.queryAllBalance()
         //这里为了和deposit保持单位一致
-       let [err2,result] = await to(erc20.withdraw('000000000000000300000001',req.params.amount * Math.pow(10,8)));
+       let [err2,result] = await to(erc20.withdraw(tokens[0].asim_assetid,req.params.amount * Math.pow(10,8)));
 
         console.log(result,err2);
     

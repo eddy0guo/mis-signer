@@ -86,6 +86,7 @@ export default ({ config, db }) => {
 		let address = req.params.address; 
 		let erc20_token_arr = await mist_wallet.list_tokens();
 		let asset_token_arr = ['000000000000000000000000','000000000000001b00000001','000000000000001c00000001','000000000000001d00000001','000000000000001e00000001','000000000000001f00000001']
+		/*
 		for(let i in erc20_token_arr){
 				  setTimeout(async ()=>{
 					let token  = new Token(erc20_token_arr[i].address);
@@ -96,7 +97,8 @@ export default ({ config, db }) => {
 					console.log("---------erc20_token_arr--i=",i,"err-result",err,result,"\n\n\n\n")
 				  },i*10000)
 		}
-
+*/
+		let results = [];	
 		 for(let i in  asset_token_arr){
 			 setTimeout(async ()=>{
 			let asset = new Asset(asset_token_arr[i])	
@@ -104,11 +106,13 @@ export default ({ config, db }) => {
 			await wallet.queryAllBalance()
 			let [err,result] = await to(asset.transfer(address,100));
 
+			 results.push[result];
 			console.log("---------erc20_token_arr--i=",i,"err-result",err,result,"\n\n\n\n")
-			 },i*10000 + 60000);
+			 },i*10000);
 		}
-		console.log(result,err);
-		res.json({ result:result,err:err });
+		
+		console.log(results);
+		res.json({ result:results});
 	});
 
 
