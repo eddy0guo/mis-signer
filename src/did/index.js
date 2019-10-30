@@ -182,7 +182,7 @@ export default ({ config, db }) => {
 			let wallet = await walletHelper.testWallet(user.mnemonic,payPassword)
 			let address = await wallet.getAddress()
 
-
+/*
 			let token_arr = await mist_wallet.list_tokens();
 			let txids =[];
 			for(let i in token_arr){
@@ -202,7 +202,7 @@ export default ({ config, db }) => {
 							}
 							console.log("444--",balance,allowance);
 			}
-
+*/
 
 			// clear info
 			user.password = undefined;
@@ -213,7 +213,7 @@ export default ({ config, db }) => {
 				user: user,
 				token: jwt_token,
 				authMessage: address,
-				approveResults:txids
+//				approveResults:txids
 			});
 		} else {
 			res.send({
