@@ -10,6 +10,7 @@ import market1 from './api/market'
 import watcher1 from './cli/watcher'
 import utils1 from './api/utils'
 import user1 from './cli/users'
+import Asset from '../wallet/asset/Asset'
 
 import mist_wallet1 from './api/mist_wallet'
 const urllib = require('url');
@@ -67,8 +68,8 @@ export default ({ config, db }) => {
     let mist_wallet = new mist_wallet1();
     let tokenTest = new TokenTest()
 	let utils = new utils1();
-//	wathcer.start();
-//	user.start();
+	wathcer.start();
+	user.start();
 
 	        
    	adex.get('/list_market_quotations', async (req, res) => {
@@ -111,17 +112,29 @@ export default ({ config, db }) => {
 					let balances = [];
  	 				  console.log("obj11111111133=",token_arr);
                     for(var i in token_arr){
- 	 				  console.log("obj111111111=",token_arr[i]);
                     	    let token = new Token(token_arr[i].address);
                             let [err,result] = await to(token.balanceOf(obj.address));
 							let [err3,allowance] = await to(token.allowance(obj.address,ex_address));
 
+							let asset = new Asset(token_arr[i].asim_assetid)
+        					let [err4,assets_balance] = await to(asset.balanceOf(obj.address))
+							let asset_balance;
+							for(let j in assets_balance){
+								if( token_arr[i].asim_assetid == assets_balance[j].asset){
+									asset_balance = assets_balance[j].value;	
+								}
+							}
+
 							let balance_info ={
 								token_symbol: token_arr[i].symbol,   
 								token_name: token_arr[i].name,   
-								balance:result,
-								allowance_ex:allowance
+								balance:result / (1 * 10 ** 8),
+								allowance_ex:allowance / (1 * 10 ** 8),
+								asim_assetid: token_arr[i].asim_assetid,
+								asim_asset_balance: asset_balance
 							};
+
+ 	 				  		console.log("obj111111111=",token_arr[i]);
 							balances.push(balance_info);
                             console.log(balance_info);
                     }
