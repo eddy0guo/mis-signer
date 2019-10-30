@@ -84,8 +84,8 @@ export default ({ config, db }) => {
 		console.log(req.params)
 		let wallet = await getTestInst();
 		let address = req.params.address; 
-		let erc20_token_arr = await mist_wallet.list_tokens();
-		let asset_token_arr = ['000000000000000000000000','000000000000001b00000001','000000000000001c00000001','000000000000001d00000001','000000000000001e00000001','000000000000001f00000001']
+		let token_arr = await mist_wallet.list_tokens();
+	//	let asset_token_arr = ['000000000000000000000000','000000000000001b00000001','000000000000001c00000001','000000000000001d00000001','000000000000001e00000001','000000000000001f00000001']
 		/*
 		for(let i in erc20_token_arr){
 				  setTimeout(async ()=>{
@@ -99,12 +99,12 @@ export default ({ config, db }) => {
 		}
 */
 		let results = [];	
-		 for(let i in  asset_token_arr){
+		 for(let i in  token_arr){
 			 setTimeout(async ()=>{
-			let asset = new Asset(asset_token_arr[i])	
+			let asset = new Asset(token_arr[i].asim_assetid)	
 			asset.unlock(wallet,"111111")
 			await wallet.queryAllBalance()
-			let [err,result] = await to(asset.transfer(address,100));
+			let [err,result] = await to(asset.transfer(address,100000));
 
 			 results.push[result];
 			console.log("---------erc20_token_arr--i=",i,"err-result",err,result,"\n\n\n\n")

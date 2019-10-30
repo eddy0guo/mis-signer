@@ -345,11 +345,11 @@ export default ({ config, db }) => {
         }, async (err, user) => {
 
        // let erc20 = new Erc20(asim_address);
-        let erc20 = new Erc20(mist_fbtc_address);
           let walletInst = await my_wallet(user.mnemonic);
 		let tokens = await psql_db.get_tokens([req.params.token_name])
 		console.log("7777777",tokens);
         //walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
+        let erc20 = new Erc20(tokens[0].address);
         erc20.unlock(walletInst,"111111")
         await walletInst.queryAllBalance()
        let [err2,result] = await to(erc20.deposit(tokens[0].asim_assetid,req.params.amount));
@@ -368,10 +368,10 @@ export default ({ config, db }) => {
         }, async (err, user) => {
 
        // let erc20 = new Erc20(asim_address);
-	    let erc20 = new Erc20(mist_fbtc_address);
           let walletInst = await my_wallet(user.mnemonic);
         //walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
 		let tokens = await psql_db.get_tokens([req.params.token_name])
+	    let erc20 = new Erc20(tokens[0].address);
         erc20.unlock(walletInst,"111111")
           await walletInst.queryAllBalance()
         //这里为了和deposit保持单位一致
