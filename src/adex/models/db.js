@@ -422,5 +422,23 @@ export default class db{
 			return result.rows;
 		}
 
+		async find_cdp_token(token_name) {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_cdp_info  where token_name=$1',token_name)); 
+			if(err) {
+				return console.error('list_transactions_查询失败', err);
+			}
+			return result.rows;
+		}
+
+		async list_cdp() {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_cdp_info')); 
+			if(err) {
+				return console.error('list_transactions_查询失败', err);
+			}
+			return result.rows;
+		}
+
+
+
 
 }

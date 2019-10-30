@@ -27,11 +27,12 @@ const ECDSA = bitcore_lib_1.crypto.ECDSA;
 import cdp from '../wallet/contract/cdp'
 import adex_utils from '../adex/api/utils'
 import psql from '../adex/models/db'
-let cdp_address = '0x6367f3c53e65cce5769166619aa15e7da5acf9623d';
+//稍后cdp相关参数存表中,各个币种的利息最小质押都和btc一样，btc价格60000，eth1400，asim666
+let cdp_btc_address = '0x631a4bf19ab8b1a49d75001283316b70cdfee04d7b';
+let cdp_eth_address = '0x6396fb6f5cf3679932520a8728f333e61237e35519';
+let cdp_asim_address = '0x6333052d2e97aca42b6b2a63e792f1fcb2b35298a2';
+
 let asim_address = '0x638f6ee4c805bc7a8558c1cf4df074a38089f6fbfe';
-let fbtc_address = '0x635a32ed580f4e432e85632ac9a11c82e036e61a41';
-let pai_address = '0x6365d9706054c208aca4f133b852d1b01aa53fc79f';
-let mist_fbtc_address = '0x63d8433a147e40a614811800bcbd92f7e29882fc10'
 
 
 
@@ -222,7 +223,8 @@ export default ({ config, db }) => {
 		}
 	});
 
-	router.post('/order_sign',passport.authenticate('jwt', { session: false }), function(req, res) {
+	//router.post('/order_sign',passport.authenticate('jwt', { session: false }), function(req, res) {
+	router.post('/order_sign', function(req, res) {
 		console.log("111111",req.body);
 		User.findOne({
 			username: req.body.username
@@ -245,11 +247,21 @@ export default ({ config, db }) => {
 		});
 	});
 
-	router.get('/cdp_createDepositBorrow/:borrow_amount/:borrow_time/:deposit_assetID/:deposit_amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
+//借钱
+/*
+let cdp_btc_address = '0x631a4bf19ab8b1a49d75001283316b70cdfee04d7b';
+let cdp_eth_address = '0x6396fb6f5cf3679932520a8728f333e61237e35519';
+let cdp_asim_address = '0x6333052d2e97aca42b6b2a63e792f1fcb2b35298a2';
+*/
+	router.get('/cdp_createDepositBorrow/:borrow_amount/:borrow_time/:deposit_token_name/:deposit_amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
 		User.findOne({
             username: req.params.username
         }, async (err, user) => {
         console.log("33333",req.params,"user",user,err);
+		let cdp_tokens = await psql_db.find_cdp_token([req.params.deposit_token_name])
+		let cdp_address =  cdp_tokens[0].cdp_address;
+		let deposit_assetID = cdp_tokens[0].token_asset_id;
+
         let cdp_obj = new cdp(cdp_address);
         let walletInst = await my_wallet(user.mnemonic);
 		let address = await walletInst.getAddress();
@@ -258,7 +270,7 @@ export default ({ config, db }) => {
 
         //let [err,txid] = await to(cdp_obj.createDepositBorrow(3000000000000,1,'000000000000000300000001',1));
         console.log("4444",req.params.borrow_amount*100000000,req.params.borrow_time/30);
-        let [err2,row] = await to(cdp_obj.createDepositBorrow(req.params.borrow_amount*100000000,req.params.borrow_time/30,req.params.deposit_assetID,req.params.deposit_amount));
+        let [err2,row] = await to(cdp_obj.createDepositBorrow(req.params.borrow_amount*100000000,req.params.borrow_time/30,deposit_assetID,req.params.deposit_amount));
             res.json({ result:row});
 		});
 
@@ -273,13 +285,22 @@ export default ({ config, db }) => {
 
 	
         //还pai，得btc
-    router.get('/cdp_repay/:borrow_id/:asset_id/:amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
+    router.get('/cdp_repay/:borrow_id/:token_name/:amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
 		console.log("111111",req.params);
         User.findOne({
             username: req.params.username
         }, async (err, user) => {
+		//先找到借贷订单信息的充值币中，然后找币的address，
+		let borrow_id_info  = await psql_db.find_borrow([req.params.borrow_id])
+		let deposit_token_name = borrow_id_info[0].deposit_token_name;
 
-        console.log("33333");
+		let cdp_tokens = await psql_db.find_cdp_token([deposit_token_name])
+		let cdp_address =  cdp_tokens[0].cdp_address;
+		 //这里找pi的信息assetid
+		let borrow_token_info = await psql_db.find_cdp_token([req.params.token_name])
+		let assetID = borrow_token_info[0].token_asset_id;
+		
+        console.log("33333----",cdp_address,assetID);
         let cdp_obj = new cdp(cdp_address);
 		    let walletInst = await my_wallet(user.mnemonic);
         let address = await walletInst.getAddress();
@@ -287,27 +308,34 @@ export default ({ config, db }) => {
          cdp_obj.unlock(walletInst,"111111")
         await walletInst.queryAllBalance()
 
-        let [err2,row] = await to(cdp_obj.repay(req.params.borrow_id,req.params.asset_id,req.params.amount));
+        //let [err2,row] = await to(cdp_obj.repay(+req.params.borrow_id,assetID,+req.params.amount));
+        let [err2,row] = await to(cdp_obj.repay(req.params.borrow_id,assetID,req.params.amount));
         res.json({ result:row });
 		});
     });
 
 //加仓
-  	router.get('/cdp_deposit/:borrow_id/:asset_id/:amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
+  	router.get('/cdp_deposit/:borrow_id/:token_name/:amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
 
         console.log("33333");
 		 User.findOne({
             username: req.params.username
         }, async (err, user) => {
 
+
+		let cdp_tokens = await psql_db.find_cdp_token([req.params.token_name])
+		let cdp_address =  cdp_tokens[0].cdp_address;
+		let assetID = cdp_tokens[0].token_asset_id;
+
         let cdp_obj = new cdp(cdp_address);
 		    let walletInst = await my_wallet(user.mnemonic);
         let address = await walletInst.getAddress();
 
          cdp_obj.unlock(walletInst,"111111")
         await walletInst.queryAllBalance()
-
-        let [err2,row]  = await to(cdp_obj.deposit(req.params.borrow_id,req.params.asset_id,req.params.amount));
+		console.log("----4444--",req.params);
+        //let [err2,row]  = await to(cdp_obj.deposit(41,'000000000000001e00000001',60));
+        let [err2,row]  = await to(cdp_obj.deposit(req.params.borrow_id,assetID,req.params.amount));
        res.json({ result:row});
 		});
     });
@@ -338,7 +366,8 @@ export default ({ config, db }) => {
 
 
  //钱包到币币
-   router.get('/asim_deposit/:amount/:username/:token_name',passport.authenticate('jwt', { session: false }),async (req, res) => {
+   //router.get('/asim_deposit/:amount/:username/:token_name',passport.authenticate('jwt', { session: false }),async (req, res) => {
+   router.get('/asim_deposit/:amount/:username/:token_name',async (req, res) => {
 	     console.log("33333");
          User.findOne({
             username: req.params.username
@@ -362,7 +391,8 @@ export default ({ config, db }) => {
 
 
     //币币到钱包
-   router.get('/asim_withdraw/:amount/:username/:token_name',passport.authenticate('jwt', { session: false }),async (req, res) => {
+   //router.get('/asim_withdraw/:amount/:username/:token_name',passport.authenticate('jwt', { session: false }),async (req, res) => {
+   router.get('/asim_withdraw/:amount/:username/:token_name',async (req, res) => {
 		User.findOne({
             username: req.params.username
         }, async (err, user) => {

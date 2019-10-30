@@ -308,39 +308,47 @@ export default ({ config, db }) => {
         res.json({ result:result,err:err });
     });
 
-	  wallet.get('/sendrawtransaction/createDepositBorrow/:borrow_amount/:borrow_time/:deposit_assetID/:deposit_amount/:address/:row',async (req, res) => {
+	  wallet.get('/sendrawtransaction/createDepositBorrow/:borrow_amount/:borrow_time/:token_name/:deposit_amount/:address/:row',async (req, res) => {
             let rowtx = [req.params.row];
             let [err,txid] = await to(chain.sendrawtransaction(rowtx));
-			
+						
 
 
 		setTimeout(async ()=>{
 			let datas = utils.get_receipt(txid);	
-			let borrow_id  = parseInt(datas[3],16);
+			console.log("444444444",datas[3].slice(194,258));
+			let borrow_id  = parseInt(datas[3].slice(194,258),16);
 			console.log("444444444",borrow_id);
+		let cdp_tokens = await psql_db.find_cdp_token([req.params.token_name])
+        let cdp_address =  cdp_tokens[0].cdp_address;
+
+        let assetID = cdp_tokens[0].token_asset_id;
+		//根据借贷时间去表中查对于的利率，临时先这么处理，4为字段的排序
+		let index = (req.params.borrow_time/30) + 3;
+		let token_info_arr = utils.arr_values(cdp_tokens[0]);
+		let interest_rate = token_info_arr[index];
+		console.log("---44444-interest_rate--",interest_rate);	
+
 		//return res.json(datas);
 			let current_time = utils.get_current_time();
-			//分别是30，60，90，180，360天的利率最后一位进一的值
-			let rate_arr = [0.0149,0.0296,0.0443,0.0896,0.1851]
-			let interest_rate = rate_arr[(req.params.borrow_time/30) - 1];
 			let mortgage_rate = req.params.borrow_amount / (req.params.deposit_amount * 60000);
-			let should_repaid_amount = req.params.borrow_amount * (1 + interest_rate);
+			let should_repaid_amount = req.params.borrow_amount * (1 + (+interest_rate));
 
 			let borrow_info = {
 				 id:null,
 				 //addrss:req.params.address,          
 				 address:req.params.address,
-				 deposit_assetid:req.params.deposit_assetID,   
+				 deposit_assetid:assetID,   
 				 deposit_amount:req.params.deposit_amount,
-				 deposit_token_name:"FBTC",
-				 deposit_price:60000,
-				 interest_rate:interest_rate,
+				 deposit_token_name:req.params.token_name,
+				 deposit_price:60000, //后边接入行情api
+				 interest_rate: interest_rate,
 				 cdp_id:borrow_id,            
 				 status:"borrowing",            
 				 mortgage_rate:mortgage_rate,              
 				 usage:"炒币",             
-				 borrow_amount:req.params.borrow_amount,     
-				 borrow_time:req.params.borrow_time,       
+				 borrow_amount: req.params.borrow_amount,     
+				 borrow_time: req.params.borrow_time,       
 				 repaid_amount:0,       
 				 should_repaid_amount:should_repaid_amount,       
 				 updated_at: current_time,
@@ -348,14 +356,15 @@ export default ({ config, db }) => {
 			};
 
 			borrow_info.id = utils.get_hash(borrow_info);
-
+		
+			console.log("--555555-interest_rate--",borrow_info);	
 			let result = await psql_db.insert_borrows(utils.arr_values(borrow_info));
         	res.json({ result:txid,borrow_id:borrow_id});
 		}, 10000);
       });
 
 //	还钱
-	  wallet.get('/sendrawtransaction/repay/:borrow_id/:asset_id/:amount/:address/:row',async (req, res) => {
+	  wallet.get('/sendrawtransaction/repay/:borrow_id/:token_name/:amount/:address/:row',async (req, res) => {
             let rowtx = [req.params.row];
             let [err,result] = await to(chain.sendrawtransaction(rowtx));
 
@@ -381,7 +390,7 @@ export default ({ config, db }) => {
       });
 //加仓
 
-	  wallet.get('/sendrawtransaction/cdp_deposit/:borrow_id/:asset_id/:amount/:address/:row',async (req, res) => {
+	  wallet.get('/sendrawtransaction/cdp_deposit/:borrow_id/:token_name/:amount/:address/:row',async (req, res) => {
             let rowtx = [req.params.row];
             let [err,result] = await to(chain.sendrawtransaction(rowtx));
 

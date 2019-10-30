@@ -10,7 +10,9 @@ seed: initdb
 test:
 	psql postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable < ./test.sql
 
-borrow_up:
+cdp_seed: borrow_up
+	psql postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable < ./cdp_seed.sql
+borrow_up: borrow_down
 	psql postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable < ./borrow.up.sql
 borrow_down:
 	psql postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable < ./borrow.down.sql
