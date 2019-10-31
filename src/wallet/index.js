@@ -325,6 +325,8 @@ export default ({ config, db }) => {
 		    if(borrow_id){
 				let cdp_tokens = await psql_db.find_cdp_token([req.params.token_name])
 				let cdp_address =  cdp_tokens[0].cdp_address;
+				//暂定初始价格位当前价格
+				let current_price =  cdp_tokens[0].init_price
 
 				let assetID = cdp_tokens[0].token_asset_id;
 				//根据借贷时间去表中查对于的利率，临时先这么处理，4为字段的排序
@@ -335,7 +337,7 @@ export default ({ config, db }) => {
 
 				//return res.json(datas);
 					let current_time = utils.get_current_time();
-					let mortgage_rate = req.params.borrow_amount / (req.params.deposit_amount * 60000);
+					let mortgage_rate = req.params.borrow_amount / (req.params.deposit_amount * current_price);
 					let should_repaid_amount = req.params.borrow_amount * (1 + (+interest_rate));
 
 					let borrow_info = {
@@ -345,7 +347,7 @@ export default ({ config, db }) => {
 						 deposit_assetid:assetID,   
 						 deposit_amount:req.params.deposit_amount,
 						 deposit_token_name:req.params.token_name,
-						 deposit_price:60000, //后边接入行情api
+						 deposit_price:current_price,
 						 interest_rate: interest_rate,
 						 cdp_id:borrow_id,            
 						 status:"borrowing",            
@@ -364,9 +366,7 @@ export default ({ config, db }) => {
 					console.log("--555555-interest_rate--",borrow_info);	
 					let result = await psql_db.insert_borrows(utils.arr_values(borrow_info));
 					res.json({ result:txid,borrow_id:borrow_id});
-			}
-			
-		    res.json({ result:"failed",borrow_id:borrow_id});
+			}else{res.json({ result:"failed",borrow_id:borrow_id})};
 		}, 10000);
       });
 
