@@ -68,8 +68,8 @@ export default ({ config, db }) => {
     let mist_wallet = new mist_wallet1();
     let tokenTest = new TokenTest()
 	let utils = new utils1();
-	wathcer.start();
-	user.start();
+//	wathcer.start();
+//	user.start();
 
 	        
    	adex.get('/list_market_quotations', async (req, res) => {
@@ -118,7 +118,7 @@ export default ({ config, db }) => {
 
 							let asset = new Asset(token_arr[i].asim_assetid)
         					let [err4,assets_balance] = await to(asset.balanceOf(obj.address))
-							let asset_balance;
+							let asset_balance=0;
 							for(let j in assets_balance){
 								if( token_arr[i].asim_assetid == assets_balance[j].asset){
 									asset_balance = assets_balance[j].value;	
@@ -232,21 +232,23 @@ did对order_id进行签名，获取rsv
     	//打印键值对中的值
   		var obj = urllib.parse(req.url,true).query;
  	   console.log("obj=",obj);
+	   //test model
+	   /*
 		let result = utils.verify(obj.order_id,JSON.parse(obj.signature));
 		if(!result){
 			return res.json("verify failed");
 		}
-		
+		*/
        let message = {
                       id:obj.order_id,
                       trader_address: obj.trader_address,
                       market_id: obj.marketID,
                       side: obj.side,
-                      price: obj.price,
-                      amount: obj.amount,
+                      price: +obj.price,
+                      amount: +obj.amount,
                       status:'pending',
                       type:'limit',
-                      available_amount:obj.amount,
+                      available_amount: +obj.amount,
                       confirmed_amount:0,
                       canceled_amount:0,
                       pending_amount:0,

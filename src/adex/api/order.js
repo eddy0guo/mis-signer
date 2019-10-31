@@ -33,9 +33,9 @@ export default class order{
 			}
 
 
-         let hash = this.utils.get_hash(message);
+          //let hash = this.utils.get_hash(message);
 
-            message.id = hash;
+          //  message.id = hash;
             message.created_at= create_time;
             message.updated_at= create_time;
 		let arr_message1 = this.utils.arr_values(message);	
@@ -69,6 +69,7 @@ export default class order{
             //插入之前直接计算好额度,防止orderbook出现买一大于卖一的情况
             message.available_amount -= amount;
             message.pending_amount  += amount;
+            console.log("string33333=",message);
 			let order_status;
 			if(message.pending_amount == 0){
 				order_status = "pending";

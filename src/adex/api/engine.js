@@ -4,6 +4,8 @@ import walletHelper from '../../wallet/lib/walletHelper'
 import mist_ex from '../../wallet/contract/mist_ex'
 import mist_ex10 from '../../wallet/contract/mist_ex10'
 import utils2 from './utils'
+import NP from 'number-precision'
+
 var date = require("silly-datetime");
 var index = require("../index");
 
@@ -78,8 +80,13 @@ export default class engine {
 			//吃单全部成交,挂单有剩余的场景,
 			if (item == find_orders.length - 1 && amount > my_order.amount) {
 
-				find_orders[item].available_amount -= (amount - my_order.amount);
+
+				console.log("gxyyy--available_amount-2222888889999-", find_orders[item].available_amount, my_order.amount,"amount=",amount);
+				//find_orders[item].available_amount -= (amount - my_order.amount);
+				let overflow_amount = NP.minus(amount, my_order.amount)
+				find_orders[item].available_amount = NP.minus(find_orders[item].available_amount,overflow_amount)
 				maker_status = 'partial_filled';
+				console.log("gxyyy--available_amount-222288888-", find_orders[item].available_amount, my_order.amount,"amount=",amount);
 			}
 
 			console.log("gxyyy--available_amount-333-", find_orders[item].available_amount, my_order.amount);
@@ -145,8 +152,8 @@ export default class engine {
 				order_address_set[0],
 				order_address_set[1],
 				order_address_set[2],
-				trades[i].amount * trades[i].price * 10 ** 8, //    uint256 baseTokenAmount;
-				trades[i].amount * 10 ** 8, // quoteTokenAmount;
+				NP.times(trades[i].amount, trades[i].price, 100000000), //    uint256 baseTokenAmount;
+				NP.times(trades[i].amount, 100000000), // quoteTokenAmount;
 				//   10,  //    uint256 baseTokenAmount;
 				//   5,  // quoteTokenAmount;
 				trades[i].taker_side
