@@ -45,13 +45,13 @@ async function getTakerWallet() {
 
 let walletInst;
 async function getTestInst(){
-	if( walletInst ) return walletInst;
 //chenfei
 //	walletInst = await walletHelper.testWallet('wonder snap ripple scare salon luxury best narrow daring hen brief pet','111111')
 //xuweiwei
 //	walletInst = await walletHelper.testWallet('disagree topic plastic edit empty inside net mushroom aim video radar element','111111')
 //test
-	walletInst = await walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
+//	walletInst = await walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
+	walletInst = await walletHelper.testWallet('tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook','111111')
 	return walletInst
 }
 
@@ -82,8 +82,7 @@ export default ({ config, db }) => {
 
 	wallet.get('/faucet/:address',async (req, res) => {
 		console.log(req.params)
-		let wallet = await getTestInst();
-		let address = req.params.address; 
+	
 		let token_arr = await mist_wallet.list_tokens();
 	//	let asset_token_arr = ['000000000000000000000000','000000000000001b00000001','000000000000001c00000001','000000000000001d00000001','000000000000001e00000001','000000000000001f00000001']
 		/*
@@ -100,6 +99,8 @@ export default ({ config, db }) => {
 */
 		let results = [];	
 		 for(let i in  token_arr){
+	let wallet = await getTestInst();
+		let address = req.params.address; 
 			 setTimeout(async ()=>{
 			let asset = new Asset(token_arr[i].asim_assetid)	
 			asset.unlock(wallet,"111111")
@@ -312,6 +313,7 @@ export default ({ config, db }) => {
             let rowtx = [req.params.row];
             let [err,txid] = await to(chain.sendrawtransaction(rowtx));
 						
+			console.log("444444444",req.params,txid);
 
 
 		setTimeout(async ()=>{
@@ -362,6 +364,8 @@ export default ({ config, db }) => {
 					let result = await psql_db.insert_borrows(utils.arr_values(borrow_info));
 					res.json({ result:txid,borrow_id:borrow_id});
 			}
+			
+		    res.json({ result:"failed",borrow_id:borrow_id});
 		}, 10000);
       });
 

@@ -145,8 +145,8 @@ export default class engine {
 				order_address_set[0],
 				order_address_set[1],
 				order_address_set[2],
-				trades[i].amount * trades[i].price, //    uint256 baseTokenAmount;
-				trades[i].amount, // quoteTokenAmount;
+				trades[i].amount * trades[i].price * 10 ** 8, //    uint256 baseTokenAmount;
+				trades[i].amount * 10 ** 8, // quoteTokenAmount;
 				//   10,  //    uint256 baseTokenAmount;
 				//   5,  // quoteTokenAmount;
 				trades[i].taker_side
