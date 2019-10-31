@@ -49,7 +49,7 @@ async function getTestInst(){
 //	walletInst = await walletHelper.testWallet('wonder snap ripple scare salon luxury best narrow daring hen brief pet','111111')
 //xuweiwei
 //	walletInst = await walletHelper.testWallet('disagree topic plastic edit empty inside net mushroom aim video radar element','111111')
-//test
+//test---mint给了10亿到账账户报废
 //	walletInst = await walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
 	walletInst = await walletHelper.testWallet('tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook','111111')
 	return walletInst
@@ -99,16 +99,17 @@ export default ({ config, db }) => {
 */
 		let results = [];	
 		 for(let i in  token_arr){
-	let wallet = await getTestInst();
 		let address = req.params.address; 
 			 setTimeout(async ()=>{
 			let asset = new Asset(token_arr[i].asim_assetid)	
+
+			let wallet = await getTestInst();
 			asset.unlock(wallet,"111111")
 			await wallet.queryAllBalance()
 			let [err,result] = await to(asset.transfer(address,100000));
 
 			 results.push[result];
-			console.log("---------erc20_token_arr--i=",i,"err-result",err,result,"\n\n\n\n")
+			console.log("---------erc20_token_arr--i=",i,asset,"err-result",err,result,"\n\n\n\n")
 			 },i*10000);
 		}
 		
