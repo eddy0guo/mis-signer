@@ -345,8 +345,9 @@ export default class db{
 
 
 		 async update_borrows(update_info) {
+			 //真正的质押比例应该是借出的价值/抵押物的价值，这里是借出的价值+利息/抵押物的价值，规避还款额度超过借出本金的时候，质押率小于零的情况
 			let [err,result] = await to(this.clientDB
-				.query('UPDATE mist_borrows SET (status,deposit_amount,repaid_amount,zhiya_rate,updated_at)=($1,deposit_amount+$2,repaid_amount+$3,(borrow_amount-$3)/((deposit_amount+$2)*60000) ,$4) WHERE  address=$5 and  cdp_id=$6',update_info)); 
+				.query('UPDATE mist_borrows SET (status,deposit_amount,repaid_amount,zhiya_rate,updated_at)=($1,deposit_amount+$2,repaid_amount+$3,(should_repaid_amount-$3)/((deposit_amount+$2)*deposit_price) ,$4) WHERE  address=$5 and  cdp_id=$6',update_info)); 
 
 			if(err) {
 				return console.error('update_order_查询失败', err);
