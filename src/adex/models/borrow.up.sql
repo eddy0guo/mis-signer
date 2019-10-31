@@ -22,6 +22,7 @@ create table mist_cdp_info(
  token_name text primary key,
  cdp_address text,
  token_asset_id text,
+ init_price numeric(32,18),
  min_zhiya_rate numeric(32,18), ---最小质押率
  day30_interest_rate  numeric(32,18),
  day60_interest_rate  numeric(32,18),
