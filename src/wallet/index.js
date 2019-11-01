@@ -385,7 +385,8 @@ export default ({ config, db }) => {
 
 				let assetID = cdp_tokens[0].token_asset_id;
 				//根据借贷时间去表中查对于的利率，临时先这么处理，4为字段的排序
-				let index = (req.params.borrow_time/30) + 3;
+				//这里数据库加字段的话index偏移量3也要对应修改
+				let index = (req.params.borrow_time/30) + 4;
 				let token_info_arr = utils.arr_values(cdp_tokens[0]);
 				let interest_rate = token_info_arr[index];
 				console.log("---44444-interest_rate--",interest_rate);	
@@ -444,8 +445,8 @@ export default ({ config, db }) => {
 				repay_amount = borrow_info[0].should_repaid_amount;
 			}
 
-            //为了复用接口,加仓量为0，还钱量为输入值
-            let update_info = ["finished",0,repay_amount,current_time,req.params.address,req.params.borrow_id];
+            //为了复用接口,加仓量为0，还钱量为输入值,token_name+id是唯一的
+            let update_info = ["finished",0,repay_amount,current_time,req.params.token_name,req.params.borrow_id];
 			console.log("333333333",update_info)
             let [err3,result2] = await to(psql_db.update_borrows(update_info));
 

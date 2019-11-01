@@ -68,8 +68,8 @@ export default ({ config, db }) => {
     let mist_wallet = new mist_wallet1();
     let tokenTest = new TokenTest()
 	let utils = new utils1();
-//	wathcer.start();
-//	user.start();
+	wathcer.start();
+	user.start();
 
 	        
    	adex.get('/list_market_quotations', async (req, res) => {
@@ -233,12 +233,12 @@ did对order_id进行签名，获取rsv
   		var obj = urllib.parse(req.url,true).query;
  	   console.log("obj=",obj);
 	   //test model
-	   /*
+	   
 		let result = utils.verify(obj.order_id,JSON.parse(obj.signature));
 		if(!result){
 			return res.json("verify failed");
 		}
-		*/
+		
        let message = {
                       id:obj.order_id,
                       trader_address: obj.trader_address,
