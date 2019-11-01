@@ -3,6 +3,7 @@ import Wallet from '../wallet/classes/Wallet'
 import Wallets from "../wallet/service/wallets"
 import walletHelper from '../wallet/lib/walletHelper'
 import Token from '../wallet/contract/Token'
+import Token_did from '../wallet/contract/Token_did'
 import mist_wallet1 from '../adex/api/mist_wallet'
 import to from 'await-to-js'
 import eth from './deposit_withdraw/eth'
@@ -253,7 +254,8 @@ let cdp_btc_address = '0x631a4bf19ab8b1a49d75001283316b70cdfee04d7b';
 let cdp_eth_address = '0x6396fb6f5cf3679932520a8728f333e61237e35519';
 let cdp_asim_address = '0x6333052d2e97aca42b6b2a63e792f1fcb2b35298a2';
 */
-	router.get('/cdp_createDepositBorrow/:borrow_amount/:borrow_time/:deposit_token_name/:deposit_amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
+	//router.get('/cdp_createDepositBorrow/:borrow_amount/:borrow_time/:deposit_token_name/:deposit_amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
+	router.get('/cdp_createDepositBorrow/:borrow_amount/:borrow_time/:deposit_token_name/:deposit_amount/:username',async (req, res) => {
 		User.findOne({
             username: req.params.username
         }, async (err, user) => {
@@ -269,7 +271,7 @@ let cdp_asim_address = '0x6333052d2e97aca42b6b2a63e792f1fcb2b35298a2';
         await walletInst.queryAllBalance()
 
         //let [err,txid] = await to(cdp_obj.createDepositBorrow(3000000000000,1,'000000000000000300000001',1));
-        console.log("4444",req.params.borrow_amount*100000000,req.params.borrow_time/30);
+        console.log("4444",req.params.borrow_amount*100000000,req.params.borrow_time/30,req.params.deposit_amount);
         let [err2,row] = await to(cdp_obj.createDepositBorrow(req.params.borrow_amount*100000000,req.params.borrow_time/30,deposit_assetID,req.params.deposit_amount));
             res.json({ result:row});
 		});
@@ -285,7 +287,8 @@ let cdp_asim_address = '0x6333052d2e97aca42b6b2a63e792f1fcb2b35298a2';
 
 	
         //还pai，得btc
-    router.get('/cdp_repay/:borrow_id/:token_name/:amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
+    //router.get('/cdp_repay/:borrow_id/:token_name/:amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
+    router.get('/cdp_repay/:borrow_id/:token_name/:amount/:username',async (req, res) => {
 		console.log("111111",req.params);
         User.findOne({
             username: req.params.username
@@ -454,6 +457,23 @@ router.get('/deposit/:username/:token_name',async (req, res) => {
         res.json({ result:result,err:err }); 
 		});
     });
+	router.get('/approve/:username/:token_name',passport.authenticate('jwt', { session: false }),async (req, res) => {
+		User.findOne({
+            username: req.params.username
+        }, async (err, user) => {
+
+			let wallet = await walletHelper.testWallet(user.mnemonic,payPassword);
+			let token_info = await psql_db.get_tokens([req.params.token_name])
+			let token  = new Token_did(token_info[0].address);
+			 token.unlock(wallet,payPassword)
+			await wallet.queryAllBalance()
+			let [err2,rawtx] = await to(token.approve(ex_address,90 * 10 ** 13));
+			console.log("444--",err2,rawtx);
+        res.json({ result:rawtx,err:err2 }); 
+		});
+    });
+
+
 
 
 
