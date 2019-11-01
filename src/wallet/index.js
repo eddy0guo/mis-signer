@@ -126,6 +126,60 @@ export default ({ config, db }) => {
 		console.log(result,err);
 		res.json({ result:result,err:err });
 	});
+	/******
+	 let token_arr = await mist_wallet.list_tokens();
+                    let balances = [];
+                      console.log("obj11111111133=",token_arr);
+                    for(var i in token_arr){
+                            let token = new Token(token_arr[i].address);
+                            let [err,result] = await to(token.balanceOf(obj.address));
+                            let [err3,allowance] = await to(token.allowance(obj.address,ex_address));
+
+                            let asset = new Asset(token_arr[i].asim_assetid)
+                            let [err4,assets_balance] = await to(asset.balanceOf(obj.address))
+                            let asset_balance=0;
+                            for(let j in assets_balance){
+                                if( token_arr[i].asim_assetid == assets_balance[j].asset){
+                                    asset_balance = assets_balance[j].value;
+                                }
+                            }
+                            let balance_info ={
+                                token_symbol: token_arr[i].symbol,
+                                token_name: token_arr[i].name,
+                                balance:result / (1 * 10 ** 8),
+                                allowance_ex:allowance / (1 * 10 ** 8),
+                                asim_assetid: token_arr[i].asim_assetid,
+                                asim_asset_balance: asset_balance
+                            };
+
+                            console.log("obj111111111=",token_arr[i]);
+                            balances.push(balance_info);
+                            console.log(balance_info);
+                    }
+	
+	*/
+	wallet.get('/get_token_balance/:token_name/:address', async (req, res) => {
+
+		   let token_info = await psql_db.get_tokens([req.params.token_name])
+
+           let token = new Token(token_info[0].address);
+           let [err,balance] = await to(token.balanceOf(req.params.address));
+           let [err2,allowance] = await to(token.allowance(req.params.address,mist10_address));
+
+		   let asset = new Asset(token_info[0].asim_assetid)
+		   let [err4,assets_balance] = await to(asset.balanceOf(req.params.address))
+
+		   let asset_balance=0;
+			for(let j in assets_balance){
+				if( token_info[0].asim_assetid == assets_balance[j].asset){
+					asset_balance = assets_balance[j].value;
+				}
+			}
+			console.log("3333333",err,err2,err4,balance,allowance,asset_balance);
+
+           res.json({erc20_balance:balance / 100000000,allowance:allowance / 100000000,asset_balance:asset_balance});
+    });
+
 
 	wallet.get('/balance',async (req, res) => {
 
@@ -435,7 +489,6 @@ export default ({ config, db }) => {
             let [err,result] = await to(psql_db.list_cdp());
             res.json({ result:result,err:err});
 		});
-
 
 
 
