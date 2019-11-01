@@ -358,7 +358,7 @@ export default class db{
         } 
 
 		 async insert_borrows(borrow_info) {
-			let [err,result] = await to(this.clientDB.query('insert into mist_borrows values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)',borrow_info));
+			let [err,result] = await to(this.clientDB.query('insert into mist_borrows values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)',borrow_info));
 			if(err) {
 				return console.error('insert_traders_查询失败', err);
 			}

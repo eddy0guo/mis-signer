@@ -379,6 +379,7 @@ export default ({ config, db }) => {
 		    if(borrow_id){
 				let cdp_tokens = await psql_db.find_cdp_token([req.params.token_name])
 				let cdp_address =  cdp_tokens[0].cdp_address;
+				console.log("-----uuuu--",cdp_address,req.params);
 				//暂定初始价格位当前价格
 				let current_price =  cdp_tokens[0].init_price
 
@@ -411,6 +412,7 @@ export default ({ config, db }) => {
 						 borrow_time: req.params.borrow_time,       
 						 repaid_amount:0,       
 						 should_repaid_amount:should_repaid_amount,       
+						 cdp_address: cdp_address,
 						 updated_at: current_time,
 						 created_at: current_time
 					};
