@@ -428,7 +428,7 @@ export default ({ config, db }) => {
       });
 
 //	还钱
-	  wallet.get('/sendrawtransaction/repay/:borrow_id/:token_name/:amount/:address/:row',async (req, res) => {
+	  wallet.get('/sendrawtransaction/repay/:borrow_id/:deposit_token_name/:amount/:address/:row',async (req, res) => {
             let rowtx = [req.params.row];
             let [err,result] = await to(chain.sendrawtransaction(rowtx));
 
@@ -446,7 +446,7 @@ export default ({ config, db }) => {
 			}
 
             //为了复用接口,加仓量为0，还钱量为输入值,token_name+id是唯一的
-            let update_info = ["finished",0,repay_amount,current_time,req.params.token_name,req.params.borrow_id];
+            let update_info = [status,0,repay_amount,current_time,req.params.deposit_token_name,req.params.borrow_id];
 			console.log("333333333",update_info)
             let [err3,result2] = await to(psql_db.update_borrows(update_info));
 
@@ -460,7 +460,7 @@ export default ({ config, db }) => {
 
 			 let current_time = utils.get_current_time();
             //加仓量为输入值，还钱量为0
-            let update_info = ["borrowing",req.params.amount,0,current_time,req.params.address,req.params.borrow_id];
+            let update_info = ["borrowing",req.params.amount,0,current_time,req.params.token_name,req.params.borrow_id];
             let [err2,result2] = await to(psql_db.update_borrows(update_info));
 
             res.json({ result:result,err:err});
