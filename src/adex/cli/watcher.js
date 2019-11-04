@@ -18,6 +18,21 @@ export default class watcher {
 		this.loop()
 	}
 
+	async restore_order(order_id,trade_amount,update_time){
+				let status;
+				let current_order = this.db.find_order(order_id);
+
+				if(current_order[0].available_amount + amount < current_order[0].amount){
+						status = 'partial_filled';	
+				}else if(current_order[0].available_amount + amount == current_order[0].amount){
+						status = 'pending';	
+				}else{console.log("status errrrrrrrrrrrrrrrrr")}
+
+            	let update_orders_info = [amount,0,0,-amount,status,update_time,order_id];
+                await this.db.update_orders(update_orders_info);		
+		
+	}
+
 	async loop() {
 	
 		let transactions = await this.db.list_successful_transactions()
@@ -71,11 +86,10 @@ export default class watcher {
 
 			let trades = await this.db.transactions_trades([id+1]);
 				console.log("have n666666666666666666",trades);			
+			//失败的交易更改可用数量和状态后重新放入交易池中
 			for(var index in trades){
-				let update_maker_orders_info = [0,+trades[index].amount,0,-+trades[index].amount,update_time,trades[index].maker_order_id];
-            	let update_taker_orders_info = [0,+trades[index].amount,0,-+trades[index].amount,update_time,trades[index].taker_order_id];
-				await this.db.update_order_confirm(update_maker_orders_info);
-                await this.db.update_order_confirm(update_taker_orders_info);
+				this.restore_order(trades[index].taker_order_id,trades[index].amount,update_time);
+				this.restore_order(trades[index].maker_order_id,trades[index].amount,update_time);
 			}
 
 			console.log("chain.getrawtransaction--err", err);

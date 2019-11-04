@@ -51,6 +51,20 @@ export default class db{
 
 		} 
 
+		async find_order(order_id) {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where id=$1 or ',order_id)); 
+			if(err) {
+				return console.error('list_order_查询失败', err);
+			}
+			//console.log('list_order_成功',JSON.stringify(result.rows)); 
+			return result.rows;
+
+		} 
+
+
+
+
+
 
 
 		async filter_orders(filter) {
