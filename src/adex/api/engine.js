@@ -169,11 +169,14 @@ export default class engine {
 		console.log("gxy---engine-call_asimov_resul4444444 = -", trade_hash, err33);
 		//刚打包的交易，要等一段时间才能拿到后期设置个合理时间暂时设置10s,
 		setTimeout(async () => {
+
 			let datas = this.utils.get_receipt(trade_hash);
 			console.log("datas_resul5555 = -", datas);
-			//更新utxo的操作放在打包交易之前，不然部分时候还是出现没更新的情况
+
+			//目前仍有打包失败，双花的情况，在这里也用新的实例，再有失败的就使用队列去打包
+			walletInst = await getTestInst();
+		    mist.unlock(walletInst, "111111");
 			let [err2, result] = await to(walletInst.queryAllBalance());
-			console.log("gxy---engine-call_asimov_result2222 = -", result, err2);
 			let [err, txid] = await to(mist.matchorder(trades_hash, order_address_set, datas));
 			console.log("gxy---engine-call_asimov_result33333 = -", txid, err);
 			let transactions = await this.db.list_transactions();
