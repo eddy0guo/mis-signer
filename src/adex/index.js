@@ -15,48 +15,13 @@ import Asset from '../wallet/asset/Asset'
 import mist_wallet1 from './api/mist_wallet'
 const urllib = require('url');
 
-let walletInst;
-let wallet_taker;
-let wallet_maker;
-async function getTestInst(){
-        if( walletInst ) return walletInst;
-                walletInst = await walletHelper.testWallet('ivory local this tooth occur glide wild wild few popular science horror','111111')
-                                return walletInst
-}
-
-async function taker_wallet(){
-        if( walletInst ) return walletInst;
-                wallet_taker = await walletHelper.testWallet('enhance donor garment gospel loop purse pumpkin bag oven bone decide street','111111')
-                                return wallet_taker
-}
-
 async function my_wallet(word){
                 return await walletHelper.testWallet(word,'111111')
 }
 
-
-
-var    GXY = '0x631f62ca646771cd0c78e80e4eaf1d2ddf8fe414bf'; //ASIM
-var    PAI = '0x63429bfcfdfbfa0048d1aeaa471be84675f1324a02';
-var XRP = '0x6388e9a82e400a5da6ce837a045d812baea3a1f1e5';
-var BTC = '0x63b543f99847bd77bb378a77ca216cdc749ebf8494';
-var VLS = '0x6386db063e10ef893138e560c55eb42bb9e13ac7dc';
 var ex_address = '0x63b2b7e3ec2d1d1b171a3c14032bd304367e538a68';
 var relayer = '0x66edd03c06441f8c2da19b90fcc42506dfa83226d3';
-
-
-let addr0 = '0x66edd03c06441f8c2da19b90fcc42506dfa83226d3';
-let word0 = 'ivory local this tooth occur glide wild wild few popular science horror';
-
-            
-let taker = '0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9';
-let taker_word = 'enhance donor garment gospel loop purse pumpkin bag oven bone decide street';
-
-let maker = '0x66b7637198aee4fffa103fc0082e7a093f81e05a64';
-let maker_word = 'one concert capable dolphin useful earth betray absurd price nerve morning danger';
-
 let addr_chenfei = '0x668191f35bcc9d4c834e06bdbcb773609c40ba4cea';
-let addr_xuwei = '0x6611f5fa2927e607d3452753d3a41e24a23e0b947f';
 
 export default ({ config, db }) => {
 	let adex  = Router();
@@ -142,24 +107,6 @@ export default ({ config, db }) => {
                     res.json(balances);
                     });
 
-    adex.get('/list_balance',async (req, res) => {
-                    
-                    let token_arr = [GXY,PAI,XRP,BTC,VLS];
-                    let tokenname_arr = ["GXY","PAI","XRP","BTC","VLS"];
-                    let addr_arr = [taker,maker,addr_xuwei];
-					let balances = [];
-                    for(var i in token_arr){
-                        let token = new Token(token_arr[i]);
-                        for(var m in addr_arr){
-                            let [err,result] = await to(token.balanceOf(addr_arr[m]));
-							let balance_info = 'tokenname:' + tokenname_arr[i] + '    useraddr:' + addr_arr[m] + '       balance:' + result;
-							balances.push(balance_info);
-                            console.log(balance_info);
-                        } 
-                    }
-
-					res.json(balances);
-                    });
 
     //所有token合约赋予所有地址权限
     adex.get('/approves',async (req, res) => {

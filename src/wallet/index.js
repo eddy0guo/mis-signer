@@ -32,7 +32,6 @@ let testWallets = {
 let taker = '0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9';
 let taker_word = 'enhance donor garment gospel loop purse pumpkin bag oven bone decide street';
 let taker_wallet;
-let asim_address = '0x638f6ee4c805bc7a8558c1cf4df074a38089f6fbfe';
 let mist10_address = '0x63b2b7e3ec2d1d1b171a3c14032bd304367e538a68';
 let cdp_address = '0x6367f3c53e65cce5769166619aa15e7da5acf9623d';
 
@@ -84,19 +83,6 @@ export default ({ config, db }) => {
 		console.log(req.params)
 	
 		let token_arr = await mist_wallet.list_tokens();
-	//	let asset_token_arr = ['000000000000000000000000','000000000000001b00000001','000000000000001c00000001','000000000000001d00000001','000000000000001e00000001','000000000000001f00000001']
-		/*
-		for(let i in erc20_token_arr){
-				  setTimeout(async ()=>{
-					let token  = new Token(erc20_token_arr[i].address);
-					console.log("333--address",address);
-					await wallet.queryAllBalance()
-					token.unlock(wallet,'111111')
-					let [err,result] = await to(token.transfer(req.params.address,10000))
-					console.log("---------erc20_token_arr--i=",i,"err-result",err,result,"\n\n\n\n")
-				  },i*10000)
-		}
-*/
 		let results = [];	
 		 for(let i in  token_arr){
 		let address = req.params.address; 
@@ -126,38 +112,7 @@ export default ({ config, db }) => {
 		console.log(result,err);
 		res.json({ result:result,err:err });
 	});
-	/******
-	 let token_arr = await mist_wallet.list_tokens();
-                    let balances = [];
-                      console.log("obj11111111133=",token_arr);
-                    for(var i in token_arr){
-                            let token = new Token(token_arr[i].address);
-                            let [err,result] = await to(token.balanceOf(obj.address));
-                            let [err3,allowance] = await to(token.allowance(obj.address,ex_address));
 
-                            let asset = new Asset(token_arr[i].asim_assetid)
-                            let [err4,assets_balance] = await to(asset.balanceOf(obj.address))
-                            let asset_balance=0;
-                            for(let j in assets_balance){
-                                if( token_arr[i].asim_assetid == assets_balance[j].asset){
-                                    asset_balance = assets_balance[j].value;
-                                }
-                            }
-                            let balance_info ={
-                                token_symbol: token_arr[i].symbol,
-                                token_name: token_arr[i].name,
-                                balance:result / (1 * 10 ** 8),
-                                allowance_ex:allowance / (1 * 10 ** 8),
-                                asim_assetid: token_arr[i].asim_assetid,
-                                asim_asset_balance: asset_balance
-                            };
-
-                            console.log("obj111111111=",token_arr[i]);
-                            balances.push(balance_info);
-                            console.log(balance_info);
-                    }
-	
-	*/
 	wallet.get('/get_token_balance/:token_name/:address', async (req, res) => {
 
 		   let token_info = await psql_db.get_tokens([req.params.token_name])

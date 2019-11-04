@@ -34,8 +34,6 @@ export default class utils{
 	get_current_time(){
 			let milli_seconds = new Date().getMilliseconds();
 			var create_time = date.format(new Date(),'YYYY-MM-DD HH:mm:ss');
-//			let datas = this.get_receipt('90d6496675ad126e6ae77af19013a8d45ac23ebf9100e862c97e97a48af48441');
-  //console.log("3333333333",datas);//sto才是真正的输出，要不要打印到控制台，由你自己啊
 			return create_time + '.' + milli_seconds;
 	}
 	verify(id,sign){
@@ -57,24 +55,13 @@ export default class utils{
 		let cmd = 'curl -X POST --data \'\{\"id\":1, \"jsonrpc\":\"2.0\",\"method\":\"flow_getTransactionReceipt\",\"params\":\[\"' + txid + '\"\]\}\}\' -H \"Content-type: application\/json\" https:\/\/test-rpc.asimov.network';
 		console.log("ssss---",cmd);
 		let sto =  child.execSync(cmd)
-    	console.log("222222222222222i5555555",JSON.parse(sto));//sto才是真正的输出，要不要打印到控制台，由你自己啊
 		let logs = JSON.parse(sto).result.logs;
 		let datas = [];
 		for(var index in logs){
 			datas.push(logs[index].data);	
 		}
-    	console.log("222222222222222",sto);//sto才是真正的输出，要不要打印到控制台，由你自己啊
     	console.log("222222222222222",datas);//sto才是真正的输出，要不要打印到控制台，由你自己啊
 		return datas;
 	}
 
-	sleep(numberMillis) {    
-               var now = new Date();    
-               var exitTime = now.getTime() + numberMillis;   
-               while (true) { 
-               now = new Date();       
-               if (now.getTime() > exitTime) 
-               return;    
-               } 
-	}
 }
