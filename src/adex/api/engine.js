@@ -52,7 +52,7 @@ export default class engine {
 			result[i].amount = +result[i].amount;
 			result[i].available_amount = +result[i].available_amount;
 			match_orders.push(result[i]);
-			amount += result[i].amount;
+			amount += result[i].available_amount;
 			if (amount >= message.amount) {
 
 				break;
