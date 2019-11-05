@@ -104,6 +104,20 @@ export default ({ config, db }) => {
 		})
 	})
 
+	 router.post('/verify_code',async (req,res)=>{
+		let mail =req.body.username;
+    	console.log("-------1111",codeObj[mail],req.body.code);
+    	if(codeObj[mail] == +req.body.code){	
+		  res.send({success:true});
+		 }else{
+  	     res.send({success:false});
+      	}
+
+	})
+
+
+
+	
 	router.post('/signup', async (req, res) => {
 		if (!req.body.username || !req.body.password) {
 			res.json({
@@ -112,12 +126,12 @@ export default ({ config, db }) => {
 			});
 		} else {
 			// create wallet
-
+/*
     let mail =req.body.username;
 
 	console.log("-------1111",codeObj[mail],req.body.code);
     if(codeObj[mail] == +req.body.code){
-
+*/
 				let wallet = new Wallet();
 	//这里直接创建会报错assert 为定义，在库里注释掉了generate address的代码规避
 				await wallet.create({
@@ -180,9 +194,9 @@ export default ({ config, db }) => {
 					  });
 					}
 				);
-			}else{
-        res.send('验证码错误')
-		}
+//			}else{
+  //      res.send('验证码错误')
+	//	}
     }
 	});
 
