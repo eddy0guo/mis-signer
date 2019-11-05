@@ -33,6 +33,7 @@ async callContract(assetID,abiInfo,value) {
     if (abiInfo.stateMutability == 'view' || abiInfo.stateMutability == 'pure') {
         return chain.callreadonlyfunction([this.address, this.address, params.data, abiInfo.name, this.abiStr])
     } else {
+
         params.from = await this.wallet.getAddress()
         params.type = CONSTANT.CONTRACT_TYPE.CALL
         return this.executeContract(params)
@@ -43,13 +44,26 @@ async executeContract(params) {
     let wallet = this.wallet;
     let password = this.password;
 
-    let { ins, changeOut } = await TranService.chooseUTXO(
+
+	  const assetObjArr = [];
+
+        assetObjArr.push({
+        amount: params.amount,
+        asset: params.assetId
+      });
+
+      assetObjArr.push({
+        amount: 0.02,
+        asset: '000000000000000000000000'
+      });
+
+      const { ins, changeOut } = await TranService.chooseUTXO(
         wallet.walletId,
-        params.amount,
-        params.assetId,
-        params.from,
-        this.fee
-    );
+        assetObjArr,
+        params.from
+      );
+	
+   
 
     let outs = [{
         amount: btc2sts(parseFloat(params.amount)),
@@ -141,6 +155,7 @@ getHexData(abiInfo) {
              "stateMutability":"payable",
              "type":"function"
              }
+			 console.log("7777771111111",assetID,amount);
              return this.callContract(assetID,abiInfo,amount);
          }
 

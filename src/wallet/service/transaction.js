@@ -245,85 +245,96 @@ export const TranService = {
         let transData = await chain.decoderawtransaction(rawTxs);
         return transData;
     },
-    async chooseUTXO(walletId, amount, asset, addr = "", fee = 0) {
-        // let fee = fee || 0;
-        // let asset = asset || CONSTANT.DEFAULT_ASSET;
-        let allUtxos = await Storage.get("walletUTXO" + walletId);
-        //let isDefaultAsset = asset == CONSTANT.DEFAULT_ASSET ? true : false;
-        let allAddrs = await AddressService.getAddrs(walletId);
 
-        let utxos = allUtxos[asset];
+  async chooseUTXO(walletId, assetObjArr, addr = "") {
+    let allUtxos = await Storage.get("walletUTXO" + walletId);
+    let allAddrs = await AddressService.getAddrs(walletId);
 
-        // console.log("chooseUTXO", allUtxos,asset,utxos )
+    let ins = [], changeOut = [], success = true;
 
-        if( !utxos ){
-            return { ins: [], changeOut:[] };
+    // Asset classification
+    const proxyAssetObjArr = [];
+    for (let assetObj of assetObjArr) {
+      let mark = false;
+      for (let proxyAssetObj of proxyAssetObjArr) {
+        if (assetObj.asset === proxyAssetObj.asset) {
+          mark = true;
+          proxyAssetObj.amount = parseFloat(proxyAssetObj.amount) + parseFloat(assetObj.amount);
+          break;
         }
+      }
+      if (!mark) {
+        proxyAssetObjArr.push(assetObj);
+      }
+    }
 
-        let otherAddrUtxos = [];
+    // multi-currency
+    // assetObj:{amount,asset}
+    for (const assetObj of proxyAssetObjArr) {
+      if (!assetObj || !assetObj.asset || !allUtxos) {
+        break;
+      }
+      let utxos = allUtxos[assetObj.asset];
+      let otherAddrUtxos = [];
 
-        if (addr) {
-            const proxy_utxos = [];
-            for (let utxo of utxos) {
-                if (utxo.address === addr) {
-                    proxy_utxos.push(utxo);
-                } else {
-                    otherAddrUtxos.push(utxo);
-                }
-            }
-            utxos = proxy_utxos;
+
+
+
+
+	if (addr) {
+        const proxy_utxos = [];
+        for (let utxo of utxos) {
+          if (utxo.address === addr) {
+            proxy_utxos.push(utxo);
+          } else {
+            otherAddrUtxos.push(utxo);
+          }
         }
+        utxos = proxy_utxos;
+      }
 
-        if (typeof amount == 'string') {
-            amount = parseFloat(amount);
-        }
+      if (typeof assetObj.amount == 'string') {
+        assetObj.amount = parseFloat(assetObj.amount);
+      }
 
-        //if (isDefaultAsset) {
-        amount += fee;
-        //}
-
-        let [willspendUTXO, totalAmount] = PickUtoxs(amount, utxos);
-        let changeOut = [];
-
-        console.log("totalAmount , amount ", totalAmount , amount)
-
-        if (totalAmount < amount) {
-            let [otherAddrWillspendUTXO, otherAddrTotalAmount] = PickUtoxs(amount - totalAmount, otherAddrUtxos);
-            if (otherAddrTotalAmount + totalAmount >= amount) {
-                changeOut.push({
-                    amount: btc2sts(totalAmount + otherAddrTotalAmount - amount),
-                    assets: asset,
-                    address: addr ? addr : allAddrs[0][0].address
-                })
-                willspendUTXO = willspendUTXO.concat(otherAddrWillspendUTXO);
-            } else {
-                willspendUTXO = [];
-            }
+      // pick utxo
+      let [willspendUTXO, totalAmount] = PickUtoxs(assetObj.amount, utxos);
+      if (totalAmount < assetObj.amount) {
+        let [otherAddrWillspendUTXO, otherAddrTotalAmount] = PickUtoxs(assetObj.amount - totalAmount, otherAddrUtxos);
+        if (otherAddrTotalAmount + totalAmount >= assetObj.amount) {
+          changeOut.push({
+            amount: btc2sts(totalAmount + otherAddrTotalAmount - assetObj.amount),
+            assets: assetObj.asset,
+            address: addr ? addr : allAddrs[0][0].address
+          })
+          willspendUTXO = willspendUTXO.concat(otherAddrWillspendUTXO);
         } else {
-            changeOut.push({
-                amount: btc2sts(totalAmount - amount),
-                assets: asset,
-                address: addr ? addr : allAddrs[0][0].address
-            })
-
-            console.log("changeOut:",changeOut);
+          success = false;
+          break;
         }
+      } else {
+        changeOut.push({
+          amount: btc2sts(totalAmount - assetObj.amount),
+          assets: assetObj.asset,
+          address: addr ? addr : allAddrs[0][0].address
+        })
+      }
 
-        // if (!isDefaultAsset) {
-        //     let [feeUtxos, feeTotalAmount] = PickUtoxs(fee, allUtxos[CONSTANT.DEFAULT_ASSET]);
-        //     willspendUTXO = willspendUTXO.concat(feeUtxos);
+      ins = ins.concat(willspendUTXO);
+    }
 
-        //     if (feeTotalAmount - fee) {
-        //         changeOut.push({
-        //             amount: btc2sts(feeTotalAmount - fee),
-        //             assets: CONSTANT.DEFAULT_ASSET,
-        //             address: allAddrs[0][0].address
-        //         })
-        //     }
-        // }
+    if (!success) {
+      ins = [], changeOut = []
+    }
+changeOut = changeOut.filter(out => out.amount > 0);
+    return { ins, changeOut };
+  },
 
-        return { ins: willspendUTXO, changeOut };
-    },
+
+
+
+  	
+
     /**
      * 暂时没用，支持多币种手续费的方法。
      * @param {*} walletId 

@@ -89,7 +89,7 @@ export const CONSTANT = {
       coinType: 10005,
       icon: "default",
       addressPrefix: "feecoin",
-      asset: '000000000000001d00000001',
+      asset: '000000000000001400000001',
       unit: "fee",
       balance: 0
     },
@@ -100,7 +100,7 @@ export const CONSTANT = {
       coinType: 10005,
       icon: "default",
       addressPrefix: "feecoin",
-      asset: '000000000000001e00000001',
+      asset: '000000000000001800000001',
       unit: "fee",
       balance: 0
     },
@@ -111,7 +111,7 @@ export const CONSTANT = {
       coinType: 10005,
       icon: "default",
       addressPrefix: "feecoin",
-      asset: '000000000000001c00000001',
+      asset: '000000000000001600000001',
       unit: "fee",
       balance: 0
     },
@@ -122,7 +122,7 @@ export const CONSTANT = {
       coinType: 10005,
       icon: "default",
       addressPrefix: "feecoin",
-      asset: '000000000000001000000001',
+      asset: '000000000000001500000001',
       unit: "fee",
       balance: 0
     },

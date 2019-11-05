@@ -12,9 +12,9 @@ export const chain = {
         return rpc('createrawtransaction', params);
     },
 
-    //marshalled:   {"jsonrpc":"1.0","method":"flow_decodeRawTransaction","params":["123"],"id":1},
+    //marshalled:   {"jsonrpc":"1.0","method":"asimov_decodeRawTransaction","params":["123"],"id":1},
     decoderawtransaction: function(params) {
-        return rpc('flow_decodeRawTransaction', params);
+        return rpc('asimov_decodeRawTransaction', params);
     },
 
     //marshalled:   {"jsonrpc":"1.0","method":"decodescript","params":["00"],"id":1},
@@ -159,10 +159,10 @@ export const chain = {
         return rpc('getrawmempool', params);
     },
 
-    //marshalled: {"jsonrpc":"1.0","method":"flow_getRawTransaction","params":["123"],"id":1},
-    //marshalled: {"jsonrpc":"1.0","method":"flow_getRawTransaction","params":["123",1],"id":1},
+    //marshalled: {"jsonrpc":"1.0","method":"asimov_getRawTransaction","params":["123"],"id":1},
+    //marshalled: {"jsonrpc":"1.0","method":"asimov_getRawTransaction","params":["123",1],"id":1},
     getrawtransaction: function(params) {
-        return rpc('flow_getRawTransaction', params);
+        return rpc('asimov_getRawTransaction', params);
     },
 
     //marshalled: {"jsonrpc":"1.0","method":"gettxout","params":["123",1],"id":1},
@@ -286,43 +286,43 @@ export const chain = {
     getallassetvalues: function(params) {
         return rpc('signrawtransaction', params);
     },
-    //marshalled: {"jsonrpc":"1.0","method":"flow_searchRawTransactions","params":["1Address"],"id":1},
-    //marshalled: {"jsonrpc":"1.0","method":"flow_searchRawTransactions","params":["1Address",0],"id":1},
-    //marshalled: {"jsonrpc":"1.0","method":"flow_searchRawTransactions","params":["1Address",0,5],"id":1},
-    //marshalled: {"jsonrpc":"1.0","method":"flow_searchRawTransactions","params":    ["1Address",0,5,10],"id":1},
-    //marshalled: {"jsonrpc":"1.0","method":"flow_searchRawTransactions","params":["1Address",0,5,10,1],"id":1},
-    //marshalled: {"jsonrpc":"1.0","method":"flow_searchRawTransactions","params":["1Address",0,5,10,1,true],"id":1},
-    //marshalled: {"jsonrpc":"1.0","method":"flow_searchRawTransactions","params":["1Address",0,5,10,1,true,["1Address"]],"id":1},
+    //marshalled: {"jsonrpc":"1.0","method":"asimov_searchRawTransactions","params":["1Address"],"id":1},
+    //marshalled: {"jsonrpc":"1.0","method":"asimov_searchRawTransactions","params":["1Address",0],"id":1},
+    //marshalled: {"jsonrpc":"1.0","method":"asimov_searchRawTransactions","params":["1Address",0,5],"id":1},
+    //marshalled: {"jsonrpc":"1.0","method":"asimov_searchRawTransactions","params":    ["1Address",0,5,10],"id":1},
+    //marshalled: {"jsonrpc":"1.0","method":"asimov_searchRawTransactions","params":["1Address",0,5,10,1],"id":1},
+    //marshalled: {"jsonrpc":"1.0","method":"asimov_searchRawTransactions","params":["1Address",0,5,10,1,true],"id":1},
+    //marshalled: {"jsonrpc":"1.0","method":"asimov_searchRawTransactions","params":["1Address",0,5,10,1,true,["1Address"]],"id":1},
     // address string, verbose bool, skip int, count int, vinExtra bool, reverse bool, filterAddress []string
     searchrawtransactions: function(params) {
-        return rpc('flow_searchRawTransactions', params);
+        return rpc('asimov_searchRawTransactions', params);
     },
 
     searchrawtransactionsbyaddrs: function(addrs) {
-        return rpc('flow_searchAllRawTransactions', [addrs, true, true, false]);
+        return rpc('asimov_searchAllRawTransactions', [addrs, true, true, false]);
     },
 
-    //marshalled: {"jsonrpc":"1.0","method":"flow_sendRawTransaction","params":["1122"],"id":1},
-    //marshalled: {"jsonrpc":"1.0","method":"flow_sendRawTransaction","params":["1122",false],"id":1},
+    //marshalled: {"jsonrpc":"1.0","method":"asimov_sendRawTransaction","params":["1122"],"id":1},
+    //marshalled: {"jsonrpc":"1.0","method":"asimov_sendRawTransaction","params":["1122",false],"id":1},
     sendrawtransaction: function(params) {
         // console.log("sendrawtransaction:",params)
-        return rpc('flow_sendRawTransaction', params);
+        return rpc('asimov_sendRawTransaction', params);
     },
     getmempooltransactions: function(params) {
-        return rpc('flow_getMempoolTransactions', params);
+        return rpc('asimov_getMempoolTransactions', params);
     },
     calculatecontractaddress(params) {
-        return rpc('flow_calculateContractAddress', params);
+        return rpc('asimov_calculateContractAddress', params);
     },
     getcontractaddressesbyassets(params) {
-        return rpc('flow_getContractAddressesByAssets', params);
+        return rpc('asimov_getContractAddressesByAssets', params);
     },
     //callerAddress string, contractAddress string, data string, name string, abi string
     callreadonlyfunction: function(params) {
         // console.log("callreadonlyfunction:",params)
-        return rpc('flow_callReadOnlyFunction', params);
+        return rpc('asimov_callReadOnlyFunction', params);
     },
     gettransactionsbyaddresses(params) {
-        return rpc('flow_getTransactionsByAddresses', params);
+        return rpc('asimov_getTransactionsByAddresses', params);
     }
 };

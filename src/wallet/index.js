@@ -269,7 +269,7 @@ export default ({ config, db }) => {
 		await walletInst.queryAllBalance()
 
         let [err,result] = await to(mist.orderhash(walletInst))
-		let kkk =`curl -X POST --data '{"id":1, "jsonrpc":"2.0","method":"flow_getTransactionReceipt","params":["${result}"]}}' -H "Content-type: application/json" https://test-rpc.asimov.network`;
+		let kkk =`curl -X POST --data '{"id":1, "jsonrpc":"2.0","method":"asimov_getTransactionReceipt","params":["${result}"]}}' -H "Content-type: application/json" https://test-rpc.asimov.network`;
 
 		console.log("8888",kkk);
         console.log(result,err);

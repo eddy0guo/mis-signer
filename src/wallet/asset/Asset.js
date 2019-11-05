@@ -29,6 +29,26 @@ export default class Asset {
         let password = this.password;
         let from = await wallet.getAddress()
 
+
+		const assetObjArr = [];
+
+		assetObjArr.push({
+        amount: amount,
+        asset: this.assetId
+      });
+
+      assetObjArr.push({
+        amount: 0.02,
+        asset: '000000000000000000000000'
+      });
+
+      const { ins, changeOut } = await TranService.chooseUTXO(
+        wallet.walletId,
+        assetObjArr,
+        from
+      );
+
+/*
         let { ins, changeOut } = await TranService.chooseUTXO(
             wallet.walletId,
             amount,
@@ -36,7 +56,7 @@ export default class Asset {
             from,
             this.fee
         );
-
+*/
         let outs = [{
             amount: btc2sts(parseFloat(amount)),
             assets: this.assetId,
