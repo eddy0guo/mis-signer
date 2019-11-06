@@ -16,8 +16,9 @@ async function getTestInst() {
 	// 暂时每次都重新创建实例，效率低点但是应该更稳定。
 	// if (walletInst) return walletInst;
 	//relayer words
-	//walletInst = await walletHelper.testWallet('ivory local this tooth occur glide wild wild few popular science horror', '111111')
-	walletInst = await walletHelper.testWallet('tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook', '111111')
+//	walletInst = await walletHelper.testWallet('ivory local this tooth occur glide wild wild few popular science horror', '111111')
+//order hash有专门另外个账户打包
+	walletInst = await walletHelper.testWallet('sound mandate urban welcome grass gospel gather shoulder hunt catch host second', '111111')
 	return walletInst
 }
 
@@ -94,7 +95,7 @@ export default class engine {
 				id: null,
 				transaction_id: null,
 				transaction_hash: null,
-				status: "pending",
+				status: "matched", //匹配完成事matched，打包带确认pending，确认ok为successful，失败为failed
 				market_id: my_order.market_id,
 				maker: find_orders[item].trader_address,
 				taker: my_order.trader_address,
@@ -173,31 +174,33 @@ export default class engine {
 			let datas = this.utils.get_receipt(trade_hash);
 			console.log("datas_resul5555 = -", datas);
 
-			//目前仍有打包失败，双花的情况，在这里也用新的实例，再有失败的就使用队列去打包
+/**			//目前仍有打包失败，双花的情况，在这里也用新的实例，再有失败的就使用队列去打包
 			walletInst = await getTestInst();
 		    mist.unlock(walletInst, "111111");
 			let [err2, result] = await to(walletInst.queryAllBalance());
 			let [err, txid] = await to(mist.matchorder(trades_hash, order_address_set, datas));
 			console.log("gxy---engine-call_asimov_result33333 = -", txid, err);
-			let transactions = await this.db.list_transactions();
+**/
+			//一次撮合的结果共享transaction_id，以mist_trades里的为准,每次id在最新生成的trades的transaction基础上+1
+			let transactions = await this.db.list_all_trades();
 			console.log("transactions=", transactions);
-			let id = 0;
+			let transaction_id = 0;
 
 			if (transactions.length != 0) {
-				id = transactions[0].id;
+				transaction_id  = transactions[0].transaction_id;
 			}
-
 
 			for (var i in trades) {
-				trades[i].transaction_id = id + 1;
-				trades[i].transaction_hash = txid;
+				trades[i].transaction_id = transaction_id + 1;
+				//用以太的hash去替代本地hash,这里下标的顺序和获得的合hash后的数据的顺序假设一致？
+				trades[i].id = datas[i];
 				await this.db.insert_trades(this.utils.arr_values(trades[i]));
 			}
-
+/**
 			console.log("trades[i]=22222222222222", trades);
 			let TXinfo = [id + 1, txid, trades[0].market_id, "pending", trades[0].created_at, trades[0].created_at];
 			this.db.insert_transactions(TXinfo);
-
+**/
 
 		}, 10000);
 		//	return txid;;

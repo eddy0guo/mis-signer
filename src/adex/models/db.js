@@ -177,7 +177,7 @@ export default class db{
         }
 		
 		async get_market_current_price(marketID) {
-			let [err,result] = await to(this.clientDB.query('select cast(price as float8) from mist_trades where (current_timestamp - created_at) < \'24 hours\' and market_id=$1 order by created_at desc limit 1',marketID)); 
+			let [err,result] = await to(this.clientDB.query('select cast(price as float8) from mist_trades where (current_timestamp - created_at) < \'3 minutes\' and market_id=$1 order by created_at desc limit 1',marketID)); 
 			if(err) {
 				return console.error('list_order_查询失败', err);
 			}
@@ -190,7 +190,7 @@ export default class db{
 
 		async get_market_quotations(marketID) {
 
-            let [err,result] = await to(this.clientDB.query('select * from (select s.market_id,s.price as current_price,t.price as old_price,(s.price-t.price)/t.price as ratio from (select * from mist_trades where market_id=$1 order by created_at desc limit 1)s left join (select * from mist_trades where market_id=$1 and (current_timestamp - created_at) > \'3 hours\' order by created_at desc limit 1)t on s.market_id=t.market_id)k left join (select base_token_symbol,quote_token_symbol,id  from    mist_markets where id=$1)l on k.market_id=l.id',marketID));
+            let [err,result] = await to(this.clientDB.query('select * from (select s.market_id,s.price as current_price,t.price as old_price,(s.price-t.price)/t.price as ratio from (select * from mist_trades where market_id=$1 order by created_at desc limit 1)s left join (select * from mist_trades where market_id=$1 and (current_timestamp - created_at) > \'3 minutes\' order by created_at desc limit 1)t on s.market_id=t.market_id)k left join (select base_token_symbol,quote_token_symbol,id  from    mist_markets where id=$1)l on k.market_id=l.id',marketID));
             if(err) {
                 return console.error('get_market_quotations_查询失败', err);
             }
@@ -246,6 +246,16 @@ export default class db{
 		} 
 
 
+		async list_all_trades() {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_trades order by transaction_id desc limit 30')); 
+			if(err) {
+				return console.error('list_trades_查询失败', err);
+			}
+			return result.rows;
+
+		} 
+
+
 
 		async sort_trades(message,sort_by) {
 			let sql = 'SELECT * FROM mist_trades where market_id=$1  and created_at>=$2 and  created_at<=$3 order by ' + sort_by + ' desc limit 30';		
@@ -269,6 +279,29 @@ export default class db{
 			return result.rows;
 
         } 
+
+		async launch_update_trades(update_info) {
+			let [err,result] = await to(this.clientDB
+				.query('UPDATE mist_trades SET (status,transaction_hash,updated_at)=($1,$2,$3) WHERE  transaction_id=$4',update_info)); 
+
+			if(err) {
+				return console.error('update_order_查询失败', err);
+			}
+			console.log('update_order_成功',JSON.stringify(result.rows)); 
+			return result.rows;
+
+        } 
+
+
+
+		async get_laucher_trades() {
+			let [err,result] = await to(this.clientDB.query('select * from mist_trades left join (SELECT transaction_id  FROM mist_trades where status=\'matched\'  order by transaction_id limit 1)s on mist_trades.transaction_id=s.transaction_id where s.transaction_id is not null')); 
+			if(err) {
+				return console.error('list_trades_查询失败', err);
+			}
+			return result.rows;
+
+		} 
 
 
          /**

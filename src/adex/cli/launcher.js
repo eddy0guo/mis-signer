@@ -1,0 +1,92 @@
+import client from '../models/db'
+import utils2 from '../api/utils'
+import { chain } from '../../wallet/api/chain'
+import walletHelper from '../../wallet/lib/walletHelper'
+import to from 'await-to-js'
+const crypto = require('crypto');
+var date = require("silly-datetime");
+var index = require("../index");
+import mist_ex10 from '../../wallet/contract/mist_ex10'
+
+import NP from 'number-precision'
+var ex10_address = '0x633ef502d57e8cf443dab8fcd9a25dbd891bc20e83';
+let walletInst;
+
+async function getTestInst() {
+    // 暂时每次都重新创建实例，效率低点但是应该更稳定。
+    walletInst = await walletHelper.testWallet('tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook', '111111')
+    return walletInst
+}
+
+
+
+export default class launcher {
+	db;
+	exchange;
+	root_hash;
+	constructor() {
+		this.db = new client();
+		this.utils = new utils2;
+	}
+
+	async start() {
+		this.loop()
+	}
+
+	
+
+	async loop() {
+	
+            let trades = await this.db.get_laucher_trades();
+            console.log("trades=", trades);
+			let current_time = this.utils.get_current_time();
+			if (trades.length == 0) {
+				console.log("111111111111-launcher--",trades)
+					   setTimeout(()=>{
+						this.loop.call(this)
+						}, 15000);
+				return
+			}
+						let token_address = await this.db.get_market([trades[0].market_id]);
+
+					//这里合约逻辑写反了。参数顺序也故意写反，使整体没问题，等下次合约更新调整过来，fixme
+					//let order_address_set = [token_address[0].base_token_address,token_address[0].quote_token_address,index.relayer];
+						let order_address_set = [token_address[0].quote_token_address, token_address[0].base_token_address, index.relayer];
+
+						 let trades_hash = [];
+						for (var i in trades) {
+							let trade_info = [
+								trades[i].id,
+								trades[i].taker,
+								trades[i].maker,
+								NP.times(+trades[i].amount, +trades[i].price, 100000000), //    uint256 baseTokenAmount;
+								NP.times(+trades[i].amount, 100000000), // quoteTokenAmount;
+								trades[i].taker_side
+							];
+							   //后边改合约传结构体数据
+							trades_hash.push(trade_info);
+						}
+
+						 let mist = new mist_ex10(ex10_address);
+						 walletInst = await getTestInst();
+						mist.unlock(walletInst, "111111");
+						let [err2, result] = await to(walletInst.queryAllBalance());
+						let [err, txid] = await to(mist.matchorder(trades_hash, order_address_set));
+						console.log("gxy---engine-call_asimov_result33333 = -", txid, err);
+
+						let update_trade_info = ['pending',txid,current_time,trades[0].transaction_id];
+						await this.db.launch_update_trades(update_trade_info);
+
+						console.log("trades[i]=22222222222222", trades);
+						let TXinfo = [trades[0].transaction_id, txid, trades[0].market_id, "pending", trades[0].created_at, trades[0].created_at];
+						this.db.insert_transactions(TXinfo);
+
+
+		setTimeout(()=>{
+			this.loop.call(this)
+		}, 15000);
+
+	}
+
+
+}
