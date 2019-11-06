@@ -11,6 +11,8 @@ var bip32 = require('bip32');
 var bitcoin = require('bitcoinjs-lib');
 var ethers = require('ethers');
 let hdkey = require('ethereumjs-wallet/hdkey');
+import {mist_config} from '../../adex/index';
+
 import { HDPrivateKey, crypto } from "bitcore-lib";
 
 
@@ -239,14 +241,13 @@ console.log("111111-prikey---22",hdPrivateKey.privateKey.slice(13,78));
 **/
 
 
-	   var privKey =  'd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2';
+	 //  var privKey =  'd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2';
 	   console.log("222trades_info--",trades_info);
 	   for(var index in trades_info){
 		   //打印trade id
 		   console.log("1111i44444444",trades_info[index][0].slice(2,66));
 		   var hashbuf=Buffer.alloc(32,trades_info[index][0].slice(2,66),'hex');
-		   var privKey2 =  '0x47c98c143179d48664dfc2f029a8583cb6a394a94037e06f0658dcf18ed6c66a';
-		   var sign = util.ecsign(hashbuf, util.toBuffer(privKey2));
+		   var sign = util.ecsign(hashbuf, util.toBuffer(mist_config.relayer_prikey));
 		   let v = sign.v.toString();
 		   let r = '0x' + sign.r.toString("hex");
 		   let s = '0x' + sign.s.toString("hex");

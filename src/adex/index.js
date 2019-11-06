@@ -20,12 +20,19 @@ async function my_wallet(word){
                 return await walletHelper.testWallet(word,'111111')
 }
 
-var ex_address = '0x633ef502d57e8cf443dab8fcd9a25dbd891bc20e83';
 
-//var relayer = '0x66edd03c06441f8c2da19b90fcc42506dfa83226d3';
-var relayer = '0x666234b6348c10fed282b95c1f1768aa3113eb96b2';
-let addr_chenfei = '0x668191f35bcc9d4c834e06bdbcb773609c40ba4cea';
-
+var mist_config = {
+	ex_address:'0x633ef502d57e8cf443dab8fcd9a25dbd891bc20e83',
+	relayer:'0x666234b6348c10fed282b95c1f1768aa3113eb96b2',
+	relayer_word:'ivory local this tooth occur glide wild wild few popular science horror',
+	relayer_prikey:'0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2',
+	//另外起服务的时候更换个orderhash打包的账户，避免和生产跑着的并发
+	order_hash_word:'one concert capable dolphin useful earth betray absurd price nerve morning danger',
+	//order_hash_word:'sound mandate urban welcome grass gospel gather shoulder hunt catch host second',
+	fauct_address:'0x666234b6348c10fed282b95c1f1768aa3113eb96b2',
+	fauct_word:'tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook',
+	fauct_prikey:'0x47c98c143179d48664dfc2f029a8583cb6a394a94037e06f0658dcf18ed6c66a'
+}
 export default ({ config, db }) => {
 	let adex  = Router();
     let order = new order1();
@@ -37,9 +44,9 @@ export default ({ config, db }) => {
     let tokenTest = new TokenTest()
 	let utils = new utils1();
 	let launcher = new launcher1();
-	wathcer.start();
-	user.start();
-	launcher.start();
+//	wathcer.start();
+//	user.start();
+//	launcher.start();
 
 	        
    	adex.get('/list_market_quotations', async (req, res) => {
@@ -84,7 +91,8 @@ export default ({ config, db }) => {
                     for(var i in token_arr){
                     	    let token = new Token(token_arr[i].address);
                             let [err,result] = await to(token.balanceOf(obj.address));
-							let [err3,allowance] = await to(token.allowance(obj.address,ex_address));
+							console.log("444444444",mist_config);
+							let [err3,allowance] = await to(token.allowance(obj.address,mist_config.ex_address));
 
 							let asset = new Asset(token_arr[i].asim_assetid)
         					let [err4,assets_balance] = await to(asset.balanceOf(obj.address))
@@ -130,10 +138,10 @@ export default ({ config, db }) => {
                                     
                                      token.unlock(wallet,"111111")
                                    let [err,balance] = await to(token.balanceOf(address));
-                                    let [err3,allowance] = await to(token.allowance(address,ex_address));
+                                    let [err3,allowance] = await to(token.allowance(address,mist_config.ex_address));
                                     if(balance != allowance){
                                         await wallet.queryAllBalance()
-                                        let [err2,txid] = await to(token.approve(ex_address,9999999));
+                                        let [err2,txid] = await to(token.approve(mist_config.ex_address,9999999));
 
                                     console.log("333--address---",err2,txid);
 
@@ -327,4 +335,4 @@ did对order_id进行签名，获取rsv
 
 	return adex;
 };
-export{relayer};
+export{mist_config};

@@ -5,16 +5,15 @@ import walletHelper from '../../wallet/lib/walletHelper'
 import to from 'await-to-js'
 const crypto = require('crypto');
 var date = require("silly-datetime");
-var index = require("../index");
+import {mist_config}  from '../index';
 import mist_ex10 from '../../wallet/contract/mist_ex10'
 
 import NP from 'number-precision'
-var ex10_address = '0x633ef502d57e8cf443dab8fcd9a25dbd891bc20e83';
 let walletInst;
 
 async function getTestInst() {
     // 暂时每次都重新创建实例，效率低点但是应该更稳定。
-    walletInst = await walletHelper.testWallet('tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook', '111111')
+    walletInst = await walletHelper.testWallet(mist_config.relayer_word, '111111')
     return walletInst
 }
 
@@ -51,7 +50,7 @@ export default class launcher {
 
 					//这里合约逻辑写反了。参数顺序也故意写反，使整体没问题，等下次合约更新调整过来，fixme
 					//let order_address_set = [token_address[0].base_token_address,token_address[0].quote_token_address,index.relayer];
-						let order_address_set = [token_address[0].quote_token_address, token_address[0].base_token_address, index.relayer];
+						let order_address_set = [token_address[0].quote_token_address, token_address[0].base_token_address, mist_config.relayer];
 
 						 let trades_hash = [];
 						for (var i in trades) {
@@ -67,7 +66,7 @@ export default class launcher {
 							trades_hash.push(trade_info);
 						}
 
-						 let mist = new mist_ex10(ex10_address);
+						 let mist = new mist_ex10(mist_config.ex_address);
 						 walletInst = await getTestInst();
 						mist.unlock(walletInst, "111111");
 						let [err2, result] = await to(walletInst.queryAllBalance());

@@ -18,6 +18,7 @@ let hdkey = require('ethereumjs-wallet/hdkey');
 var util =require('ethereumjs-util');
 
 var PromiseBluebird = require('bluebird')
+import {mist_config} from '../adex/index';
 
 let dbConfig = require('./config/database')
 let passport = require('passport');
@@ -31,10 +32,6 @@ import cdp from '../wallet/contract/cdp'
 import adex_utils from '../adex/api/utils'
 import psql from '../adex/models/db'
 //稍后cdp相关参数存表中,各个币种的利息最小质押都和btc一样，btc价格60000，eth1400，asim666
-let cdp_btc_address = '0x631a4bf19ab8b1a49d75001283316b70cdfee04d7b';
-let cdp_eth_address = '0x6396fb6f5cf3679932520a8728f333e61237e35519';
-let cdp_asim_address = '0x6333052d2e97aca42b6b2a63e792f1fcb2b35298a2';
-
 let asim_address = '0x638f6ee4c805bc7a8558c1cf4df074a38089f6fbfe';
 
 
@@ -46,9 +43,7 @@ let user_tx_records = require("./models/user_tx_records");
 
 let payPassword = 'temp-pass-227'
 let ex_address = '0x633ef502d57e8cf443dab8fcd9a25dbd891bc20e83'
-const eth_seed_word = 0x649f1f2d874fbba7f298f5227f23f08bbad4791c366d68a74275b47f0bdb9a3b78777d17020d7621bd0c5f321d764ad9e7a7f3fd597eea39f94e72fea1aeb28f;
 const seed_word = 'wing safe foster choose wisdom myth quality own gallery logic imitate pink';
-let btc_seed =1;
 
 let codeObj={};
 
@@ -534,7 +529,7 @@ router.get('/deposit/:username/:token_name',async (req, res) => {
 			let token  = new Token_did(token_info[0].address);
 			 token.unlock(wallet,payPassword)
 			await wallet.queryAllBalance()
-			let [err2,rawtx] = await to(token.approve(ex_address,90 * 10 ** 13));
+			let [err2,rawtx] = await to(token.approve(mist_config.ex_address,90 * 10 ** 13));
 			console.log("444--",err2,rawtx);
         res.json({ result:rawtx,err:err2 }); 
 		});

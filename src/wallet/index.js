@@ -12,6 +12,7 @@ import Token from '../wallet/contract/Token'
 
 import Erc20 from './contract/ERC20'
 import Erc20Test from './contract/ERC20Test'
+import {mist_config} from '../adex/index';
 
 import mist10 from './contract/mist_ex10'
 import cdp from './contract/cdp'
@@ -22,17 +23,9 @@ import mist_wallet1 from '../adex/api/mist_wallet'
 
 var spawn = require('child_process').spawn;
 
-
-let testWallets = {
-	"0x6619fd2d2fd1db189c075ff25800f7b98ff3205e5a":"benefit park visit oxygen supply oil pupil snack pipe decade young bracket",
-	"0x66b31cab7d9eb10cfcdb7a3c19dcd45f362e15ba8e":"federal strong comic spy real develop cave ramp equip cheap behind negative",
-	"0x668a4cd95f49cd3eb6639a860d4cc7e94172571e7e":"present shoe never wise ignore nuclear bring sick left kangaroo shed gold"
-}
-
 let taker = '0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9';
 let taker_word = 'enhance donor garment gospel loop purse pumpkin bag oven bone decide street';
 let taker_wallet;
-let mist10_address = '0x633ef502d57e8cf443dab8fcd9a25dbd891bc20e83';
 let cdp_address = '0x6367f3c53e65cce5769166619aa15e7da5acf9623d';
 
 // 避免重复创建Taker Wallet Instance
@@ -50,7 +43,7 @@ async function getTestInst(){
 //	walletInst = await walletHelper.testWallet('disagree topic plastic edit empty inside net mushroom aim video radar element','111111')
 //test---mint给了10亿到账账户报废
 //	walletInst = await walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
-	walletInst = await walletHelper.testWallet('tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook','111111')
+	walletInst = await walletHelper.testWallet(mist_config.fauct_word,'111111')
 	return walletInst
 }
 
@@ -119,7 +112,8 @@ export default ({ config, db }) => {
 
            let token = new Token(token_info[0].address);
            let [err,balance] = await to(token.balanceOf(req.params.address));
-           let [err2,allowance] = await to(token.allowance(req.params.address,mist10_address));
+		   console.log("gxy666---",mist_config);
+           let [err2,allowance] = await to(token.allowance(req.params.address,mist_config.ex_address));
 
 		   let asset = new Asset(token_info[0].asim_assetid)
 		   let [err4,assets_balance] = await to(asset.balanceOf(req.params.address))
@@ -263,7 +257,7 @@ export default ({ config, db }) => {
 	 wallet.get('/orderhash',async (req, res) => {
 
 		console.log("33333");
-		let mist = new mist10(mist10_address);
+		let mist = new mist10(mist_config.ex_address);
         walletInst = await getTestInst();
 		 mist.unlock(walletInst,"111111")
 		await walletInst.queryAllBalance()
@@ -310,7 +304,7 @@ export default ({ config, db }) => {
 	  wallet.get('/matchorder',async (req, res) => {
 		
 		console.log("2222222222");
-		let mist = new mist10(mist10_address);
+		let mist = new mist10(mist_config.ex_address);
         walletInst = await getTestInst();
 		 mist.unlock(walletInst,"111111")
 		await walletInst.queryAllBalance()

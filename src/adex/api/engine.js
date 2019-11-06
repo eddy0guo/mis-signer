@@ -7,10 +7,9 @@ import utils2 from './utils'
 import NP from 'number-precision'
 
 var date = require("silly-datetime");
-var index = require("../index");
+import {mist_config} from '../index';
 
 
-var ex10_address = '0x633ef502d57e8cf443dab8fcd9a25dbd891bc20e83';
 let walletInst;
 async function getTestInst() {
 	// 暂时每次都重新创建实例，效率低点但是应该更稳定。
@@ -18,7 +17,7 @@ async function getTestInst() {
 	//relayer words
 //	walletInst = await walletHelper.testWallet('ivory local this tooth occur glide wild wild few popular science horror', '111111')
 //order hash有专门另外个账户打包
-	walletInst = await walletHelper.testWallet('sound mandate urban welcome grass gospel gather shoulder hunt catch host second', '111111')
+	walletInst = await walletHelper.testWallet(mist_config.order_hash_word, '111111')
 	return walletInst
 }
 
@@ -131,7 +130,7 @@ export default class engine {
 	}
 
 	async call_asimov(trades) {
-		let mist = new mist_ex10(ex10_address);
+		let mist = new mist_ex10(mist_config.ex_address);
 		walletInst = await getTestInst();
 
 		console.log("dex_match_order----gxy---22", trades);
@@ -140,7 +139,7 @@ export default class engine {
 
 		//这里合约逻辑写反了。参数顺序也故意写反，使整体没问题，等下次合约更新调整过来，fixme
 		//let order_address_set = [token_address[0].base_token_address,token_address[0].quote_token_address,index.relayer];
-		let order_address_set = [token_address[0].quote_token_address, token_address[0].base_token_address, index.relayer];
+		let order_address_set = [token_address[0].quote_token_address, token_address[0].base_token_address, mist_config.relayer];
 
 		mist.unlock(walletInst, "111111");
 
