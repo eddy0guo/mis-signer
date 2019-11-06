@@ -45,7 +45,7 @@ let User = require("./models/user");
 let user_tx_records = require("./models/user_tx_records");
 
 let payPassword = 'temp-pass-227'
-let ex_address = '0x63b2b7e3ec2d1d1b171a3c14032bd304367e538a68'
+let ex_address = '0x633ef502d57e8cf443dab8fcd9a25dbd891bc20e83'
 const eth_seed_word = 0x649f1f2d874fbba7f298f5227f23f08bbad4791c366d68a74275b47f0bdb9a3b78777d17020d7621bd0c5f321d764ad9e7a7f3fd597eea39f94e72fea1aeb28f;
 const seed_word = 'wing safe foster choose wisdom myth quality own gallery logic imitate pink';
 let btc_seed =1;

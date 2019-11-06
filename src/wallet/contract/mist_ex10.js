@@ -171,7 +171,7 @@ getHexData(abiInfo) {
             {"name":"quoteTokenAmount","type":"uint256"},
             {"name":"takerSide","type":"string"}],
 		  	"name":"_order","type":"tuple[]","value":trade}],
-			"name":"hashordermsg",
+			"name":"hashordermsgbatch",
             "outputs":[{"name":"","type":"bytes32[]"}],
             "payable":false,
             "stateMutability":"nonpayable",

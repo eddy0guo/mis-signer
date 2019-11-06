@@ -19,8 +19,10 @@ async function my_wallet(word){
                 return await walletHelper.testWallet(word,'111111')
 }
 
-var ex_address = '0x63b2b7e3ec2d1d1b171a3c14032bd304367e538a68';
-var relayer = '0x66edd03c06441f8c2da19b90fcc42506dfa83226d3';
+var ex_address = '0x633ef502d57e8cf443dab8fcd9a25dbd891bc20e83';
+
+//var relayer = '0x66edd03c06441f8c2da19b90fcc42506dfa83226d3';
+var relayer = '0x666234b6348c10fed282b95c1f1768aa3113eb96b2';
 let addr_chenfei = '0x668191f35bcc9d4c834e06bdbcb773609c40ba4cea';
 
 export default ({ config, db }) => {
@@ -180,12 +182,12 @@ did对order_id进行签名，获取rsv
   		var obj = urllib.parse(req.url,true).query;
  	   console.log("obj=",obj);
 	   //test model
-	   
+	  /** 
 		let result = utils.verify(obj.order_id,JSON.parse(obj.signature));
 		if(!result){
 			return res.json("verify failed");
 		}
-		
+		**/
        let message = {
                       id:obj.order_id,
                       trader_address: obj.trader_address,

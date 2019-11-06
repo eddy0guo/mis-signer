@@ -10,14 +10,14 @@ var date = require("silly-datetime");
 var index = require("../index");
 
 
-var ex_address = '0x63d2007ae83b2853d85c5bd556197e09ca4d52d9c9';
-var ex10_address = '0x63b2b7e3ec2d1d1b171a3c14032bd304367e538a68';
+var ex10_address = '0x633ef502d57e8cf443dab8fcd9a25dbd891bc20e83';
 let walletInst;
 async function getTestInst() {
 	// 暂时每次都重新创建实例，效率低点但是应该更稳定。
 	// if (walletInst) return walletInst;
 	//relayer words
-	walletInst = await walletHelper.testWallet('ivory local this tooth occur glide wild wild few popular science horror', '111111')
+	//walletInst = await walletHelper.testWallet('ivory local this tooth occur glide wild wild few popular science horror', '111111')
+	walletInst = await walletHelper.testWallet('tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook', '111111')
 	return walletInst
 }
 

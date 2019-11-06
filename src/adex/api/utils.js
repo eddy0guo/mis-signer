@@ -52,7 +52,8 @@ export default class utils{
 			return result;
 	}
 	get_receipt(txid){
-		let cmd = 'curl -X POST --data \'\{\"id\":1, \"jsonrpc\":\"2.0\",\"method\":\"flow_getTransactionReceipt\",\"params\":\[\"' + txid + '\"\]\}\}\' -H \"Content-type: application\/json\" https:\/\/test-rpc.asimov.network';
+		let cmd = 'curl -X POST --data \'\{\"id\":1, \"jsonrpc\":\"2.0\",\"method\":\"asimov_getTransactionReceipt\",\"params\":\[\"' + txid + '\"\]\}\}\' -H \"Content-type: application\/json\" https:\/\/test-rpc.asimov.network';
+		
 		console.log("ssss---",cmd);
 		let sto =  child.execSync(cmd)
 		let logs = JSON.parse(sto).result.logs;

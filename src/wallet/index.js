@@ -32,7 +32,7 @@ let testWallets = {
 let taker = '0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9';
 let taker_word = 'enhance donor garment gospel loop purse pumpkin bag oven bone decide street';
 let taker_wallet;
-let mist10_address = '0x63b2b7e3ec2d1d1b171a3c14032bd304367e538a68';
+let mist10_address = '0x633ef502d57e8cf443dab8fcd9a25dbd891bc20e83';
 let cdp_address = '0x6367f3c53e65cce5769166619aa15e7da5acf9623d';
 
 // 避免重复创建Taker Wallet Instance
@@ -92,7 +92,7 @@ export default ({ config, db }) => {
 			let wallet = await getTestInst();
 			asset.unlock(wallet,"111111")
 			await wallet.queryAllBalance()
-			let [err,result] = await to(asset.transfer(address,100000));
+			let [err,result] = await to(asset.transfer(address,500000));
 
 			 results.push[result];
 			console.log("---------erc20_token_arr--i=",i,asset,"err-result",err,result,"\n\n\n\n")
