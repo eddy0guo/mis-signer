@@ -1,6 +1,6 @@
 import client from '../models/db'
 import utils2 from '../api/utils'
-import order2 from '../api/order'
+import {restore_order} from '../api/order'
 import { chain } from '../../wallet/api/chain'
 import walletHelper from '../../wallet/lib/walletHelper'
 import to from 'await-to-js'
@@ -89,8 +89,9 @@ export default class launcher {
 							//交易失败分为两种情况，transaction里的交易回滚和交易打包失败，watcher处理前者
 						//	let TXinfo = [trades[0].transaction_id, txid, trades[0].market_id, "failed", trades[0].created_at, trades[0].created_at];
 							  for(var index in trades){
-									order.restore_order(trades[index].taker_order_id,trades[index].amount,update_time);
-									order.restore_order(trades[index].maker_order_id,trades[index].amount,update_time);
+									console.log("restore_order2222222222222", trades);
+									restore_order(trades[index].taker_order_id,trades[index].amount);
+									restore_order(trades[index].maker_order_id,trades[index].amount);
 								}
 									
 						}

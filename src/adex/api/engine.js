@@ -4,7 +4,7 @@ import walletHelper from '../../wallet/lib/walletHelper'
 import mist_ex from '../../wallet/contract/mist_ex'
 import mist_ex10 from '../../wallet/contract/mist_ex10'
 import utils2 from './utils'
-import order from './order'
+import {restore_order} from './order'
 import NP from 'number-precision'
 
 var date = require("silly-datetime");
@@ -192,11 +192,12 @@ export default class engine {
 
 			console.log("gxy---engine-call_asimov_resul5555 = -", trade_hash, err33);
 			 for (var i in trades) {
+			console.log("gxy---restore_order-all_asimov_resu66666 = -", trade_hash, err33);
 				 trades[i].transaction_id = transaction_id + 1;
 				 trades[i].status  = "failed"
 				 await this.db.insert_trades(this.utils.arr_values(trades[i]));	
-				 order.restore_order(trades[i].taker_order_id,trades[i].amount,update_time);
-                 order.restore_order(trades[i].maker_order_id,trades[i].amount,update_time);
+				 restore_order(trades[i].taker_order_id,trades[i].amount);
+                 restore_order(trades[i].maker_order_id,trades[i].amount);
 			 }
 		}
 	}
