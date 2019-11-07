@@ -168,41 +168,37 @@ export default class engine {
 		let [err33, trade_hash] = await to(mist.orderhash(trades_hash));
 		console.log("gxy---engine-call_asimov_resul4444444 = -", trade_hash, err33);
 		//刚打包的交易，要等一段时间才能拿到后期设置个合理时间暂时设置10s,
-		setTimeout(async () => {
+		if(!err33){
+			setTimeout(async () => {
 
-			let datas = this.utils.get_receipt(trade_hash);
-			console.log("datas_resul5555 = -", datas);
+				let datas = this.utils.get_receipt(trade_hash);
+				console.log("datas_resul5555 = -", datas);
+				//一次撮合的结果共享transaction_id，以mist_trades里的为准,每次id在最新生成的trades的transaction基础上+1
+				let transactions = await this.db.list_all_trades();
+				console.log("transactions=", transactions);
+				let transaction_id = 0;
 
-/**			//目前仍有打包失败，双花的情况，在这里也用新的实例，再有失败的就使用队列去打包
-			walletInst = await getTestInst();
-		    mist.unlock(walletInst, "111111");
-			let [err2, result] = await to(walletInst.queryAllBalance());
-			let [err, txid] = await to(mist.matchorder(trades_hash, order_address_set, datas));
-			console.log("gxy---engine-call_asimov_result33333 = -", txid, err);
-**/
-			//一次撮合的结果共享transaction_id，以mist_trades里的为准,每次id在最新生成的trades的transaction基础上+1
-			let transactions = await this.db.list_all_trades();
-			console.log("transactions=", transactions);
-			let transaction_id = 0;
+				if (transactions.length != 0) {
+					transaction_id  = transactions[0].transaction_id;
+				}
 
-			if (transactions.length != 0) {
-				transaction_id  = transactions[0].transaction_id;
-			}
+				for (var i in trades) {
+					trades[i].transaction_id = transaction_id + 1;
+					//用以太的hash去替代本地hash,这里下标的顺序和获得的合hash后的数据的顺序假设一致？
+					trades[i].id = datas[i];
+					await this.db.insert_trades(this.utils.arr_values(trades[i]));
+				}
+			}, 10000);
+		}else{
+			//错误订单有wathcer回退订单信息
 
-			for (var i in trades) {
-				trades[i].transaction_id = transaction_id + 1;
-				//用以太的hash去替代本地hash,这里下标的顺序和获得的合hash后的数据的顺序假设一致？
-				trades[i].id = datas[i];
-				await this.db.insert_trades(this.utils.arr_values(trades[i]));
-			}
-/**
-			console.log("trades[i]=22222222222222", trades);
-			let TXinfo = [id + 1, txid, trades[0].market_id, "pending", trades[0].created_at, trades[0].created_at];
-			this.db.insert_transactions(TXinfo);
-**/
-
-		}, 10000);
-		//	return txid;;
+			console.log("gxy---engine-call_asimov_resul5555 = -", trade_hash, err33);
+			 for (var i in trades) {
+				 trades[i].transaction_id = transaction_id + 1;
+				 trades[i].status  = "failed"
+				 await this.db.insert_trades(this.utils.arr_values(trades[i]));	
+			 }
+		}
 	}
 
 

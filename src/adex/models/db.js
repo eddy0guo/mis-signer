@@ -42,9 +42,9 @@ export default class db{
 		} 
 
 		async my_orders(address) {
-			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where trader_address=$1 order by created_at desc limit 30',address)); 
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where trader_address=$1 order by updated_at desc limit 30',address)); 
 			if(err) {
-				return console.error('list_order_查询失败', err);
+				return console.error('my_order_查询失败', err);
 			}
 			//console.log('list_order_成功',JSON.stringify(result.rows)); 
 			return result.rows;
@@ -54,7 +54,7 @@ export default class db{
 		async find_order(order_id) {
 			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where id=$1 or ',order_id)); 
 			if(err) {
-				return console.error('list_order_查询失败', err);
+				return console.error('find_order_查询失败', err);
 			}
 			//console.log('list_order_成功',JSON.stringify(result.rows)); 
 			return result.rows;
@@ -78,7 +78,7 @@ export default class db{
 				[err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where price>=$1 and side=$2 and available_amount>0 and market_id=$3 order by price desc',filter)); 
 			}
 			if(err) {
-				return console.error('insert_order_查询失败11', err);
+				return console.error('filter_orders_查询失败11',filter);
 			}
 			//console.log('insert_order',JSON.stringify(result.rows)); 
 			return result.rows;
@@ -94,7 +94,7 @@ export default class db{
 			if(err) {
 				return console.error('update_order_查询失败', err);
 			}
-			console.log('update_order_成功',JSON.stringify(result.rows)); 
+			console.log('update_order_成功',JSON.stringify(result),"info",update_info); 
 			return result.rows;
 
         } 
@@ -107,9 +107,9 @@ export default class db{
 				pending_amount,updated_at)=(available_amount+$1,confirmed_amount+$2,canceled_amount+$3,pending_amount+$4,$5) WHERE id=$6',update_info)); 
 
 			if(err) {
-				return console.error('update_order_查询失败', err);
+				return console.error('update_order_confirm_查询失败', err);
 			}
-			console.log('update_order_成功',JSON.stringify(result.rows)); 
+			console.log('update_order_confirm成功',JSON.stringify(result),"info",update_info); 
 			return result.rows;
 
         } 
@@ -121,7 +121,7 @@ export default class db{
 			let [err,result] = await to(this.clientDB.query('select s.* from  (SELECT price,sum(available_amount) as amount FROM mist_orders\
 			where available_amount>0  and side=$1 and market_id=$2 group by price)s order by s.price desc limit 100',filter_info)); 
 			if(err) {
-				return console.error('list_order_查询失败', err);
+				return console.error('order_book_查询失败', err);
 			}
 			//console.log('list_order_成功',JSON.stringify(result.rows)); 
 			return result.rows;
@@ -134,7 +134,7 @@ export default class db{
         async list_tokens(tradeid) {
 			let [err,result] = await to(this.clientDB.query('select * from mist_tokens')); 
 			if(err) {
-				return console.error('list_order_查询失败', err);
+				return console.error('list_tokens_查询失败', err);
 			}
 			return result.rows;
 
@@ -143,9 +143,8 @@ export default class db{
 	  async get_tokens(symbol) {
 			let [err,result] = await to(this.clientDB.query('select * from mist_tokens where symbol=$1',symbol)); 
 			if(err) {
-				return console.error('list_order_查询失败', err);
+				return console.error('get_tokens_查询失败', err);
 			}
-			console.log('list_order_成功',JSON.stringify(result.rows)); 
 			return result.rows;
 
         }
@@ -160,7 +159,7 @@ export default class db{
         async list_markets() {
 			let [err,result] = await to(this.clientDB.query('select * from mist_markets')); 
 			if(err) {
-				return console.error('list_order_查询失败', err);
+				return console.error('list_markets_查询失败', err);
 			}
 			return result.rows;
 
@@ -169,19 +168,17 @@ export default class db{
 		async get_market(marketID) {
 			let [err,result] = await to(this.clientDB.query('select * from mist_markets where id=$1',marketID)); 
 			if(err) {
-				return console.error('list_order_查询失败', err);
+				return console.error('get_market_查询失败', err);
 			}
-			console.log('list_order_成功',JSON.stringify(result.rows)); 
 			return result.rows;
 
         }
 		
 		async get_market_current_price(marketID) {
-			let [err,result] = await to(this.clientDB.query('select cast(price as float8) from mist_trades where (current_timestamp - created_at) < \'3 minutes\' and market_id=$1 order by created_at desc limit 1',marketID)); 
+			let [err,result] = await to(this.clientDB.query('select cast(price as float8) from mist_trades where (current_timestamp - created_at) < \'12 hours\' and market_id=$1 order by created_at desc limit 1',marketID)); 
 			if(err) {
-				return console.error('list_order_查询失败', err);
+				return console.error('get_market_current_price_查询失败', err);
 			}
-			console.log('list_order_成功',JSON.stringify(result.rows)); 
 			return result.rows;
 
         }
@@ -190,7 +187,7 @@ export default class db{
 
 		async get_market_quotations(marketID) {
 
-            let [err,result] = await to(this.clientDB.query('select * from (select s.market_id,s.price as current_price,t.price as old_price,(s.price-t.price)/t.price as ratio from (select * from mist_trades where market_id=$1 order by created_at desc limit 1)s left join (select * from mist_trades where market_id=$1 and (current_timestamp - created_at) > \'3 minutes\' order by created_at desc limit 1)t on s.market_id=t.market_id)k left join (select base_token_symbol,quote_token_symbol,id  from    mist_markets where id=$1)l on k.market_id=l.id',marketID));
+            let [err,result] = await to(this.clientDB.query('select * from (select s.market_id,s.price as current_price,t.price as old_price,(s.price-t.price)/t.price as ratio from (select * from mist_trades where market_id=$1 order by created_at desc limit 1)s left join (select * from mist_trades where market_id=$1 and (current_timestamp - created_at) > \'12 hours\' order by created_at desc limit 1)t on s.market_id=t.market_id)k left join (select base_token_symbol,quote_token_symbol,id  from    mist_markets where id=$1)l on k.market_id=l.id',marketID));
             if(err) {
                 return console.error('get_market_quotations_查询失败', err);
             }
@@ -211,7 +208,7 @@ export default class db{
 			if(err) {
 				return console.error('insert_traders_查询失败', err);
 			}
-			console.log('insert_order_成功',JSON.stringify(result.rows)); 
+			console.log('insert_trades_成功',JSON.stringify(result),"info",trade_info); 
 			return JSON.stringify(result.rows);
 
 
@@ -229,7 +226,7 @@ export default class db{
 		async my_trades(address) {
 			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_trades where taker=$1 or maker=$1 order by created_at desc limit 30',address)); 
 			if(err) {
-				return console.error('list_order_查询失败', err);
+				return console.error('my_trades_查询失败', err);
 			}
 			return result.rows;
 
@@ -240,16 +237,15 @@ export default class db{
 			if(err) {
 				return console.error('transactions_trades_查询失败', err);
 			}
-			console.log('list_order_成功',JSON.stringify(result.rows)); 
 			return result.rows;
 
 		} 
 
 
 		async list_all_trades() {
-			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_trades order by transaction_id desc limit 30')); 
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_trades order by transaction_id desc limit 100')); 
 			if(err) {
-				return console.error('list_trades_查询失败', err);
+				return console.error('list_all_trades_查询失败', err);
 			}
 			return result.rows;
 
@@ -261,7 +257,7 @@ export default class db{
 			let sql = 'SELECT * FROM mist_trades where market_id=$1  and created_at>=$2 and  created_at<=$3 order by ' + sort_by + ' desc limit 30';		
 			let [err,result] = await to(this.clientDB.query(sql,message)); 
 			if(err) {
-				return console.error('list_order_查询失败', err);
+				return console.error('sort_trades_查询失败', err);
 			}
 			return result.rows;
 
@@ -273,9 +269,9 @@ export default class db{
 				.query('UPDATE mist_trades SET (status,updated_at)=($1,$2) WHERE  transaction_id=$3',update_info)); 
 
 			if(err) {
-				return console.error('update_order_查询失败', err);
+				return console.error('update_trades_查询失败', err);
 			}
-			console.log('update_order_成功',JSON.stringify(result.rows)); 
+			console.log('update_trades_成功',JSON.stringify(result),"info",update_info); 
 			return result.rows;
 
         } 
@@ -285,9 +281,9 @@ export default class db{
 				.query('UPDATE mist_trades SET (status,transaction_hash,updated_at)=($1,$2,$3) WHERE  transaction_id=$4',update_info)); 
 
 			if(err) {
-				return console.error('update_order_查询失败', err);
+				return console.error('launch_update_trades_查询失败', err);
 			}
-			console.log('update_order_成功',JSON.stringify(result.rows)); 
+			console.log('launch_update_trades_成功',JSON.stringify(result),"info",update_info); 
 			return result.rows;
 
         } 
@@ -295,9 +291,9 @@ export default class db{
 
 
 		async get_laucher_trades() {
-			let [err,result] = await to(this.clientDB.query('select * from mist_trades left join (SELECT transaction_id  FROM mist_trades where status=\'matched\'  order by transaction_id limit 1)s on mist_trades.transaction_id=s.transaction_id where s.transaction_id is not null')); 
+			let [err,result] = await to(this.clientDB.query('select * from mist_trades left join (SELECT transaction_id as right_id  FROM mist_trades where status=\'matched\'  order by transaction_id limit 1)s on mist_trades.transaction_id=s.right_id where s.right_id is not null')); 
 			if(err) {
-				return console.error('list_trades_查询失败', err);
+				return console.error('get_laucher_trades_查询失败', err);
 			}
 			return result.rows;
 
@@ -324,7 +320,7 @@ export default class db{
 			if(err) {
 				return console.error('insert_transactions_查询失败', err);
 			}
-			console.log('insert_transactions_成功',JSON.stringify(result.rows)); 
+			console.log('insert_transactions_成功',JSON.stringify(result),"info",TXinfo); 
 			return JSON.stringify(result.rows);
         } 
 
@@ -351,7 +347,6 @@ export default class db{
 			if(err) {
 				return console.error('get_transaction_查询失败', err);
 			}
-			console.log('get_transaction_成功',JSON.stringify(result.rows)); 
 			return result.rows;
 
 		} 
@@ -361,9 +356,9 @@ export default class db{
 				.query('UPDATE mist_transactions SET (status,updated_at)=($1,$2) WHERE  id=$3',update_info)); 
 
 			if(err) {
-				return console.error('update_order_查询失败', err);
+				return console.error('update_transactions_查询失败', err);
 			}
-			console.log('update_order_成功',JSON.stringify(result.rows)); 
+			console.log('update_transactions_成功',JSON.stringify(result),update_info); 
 			return result.rows;
 
         } 
@@ -374,7 +369,7 @@ export default class db{
 		async list_borrows(address) {
 			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_borrows  where address=$1 order by updated_at desc limit 30',address)); 
 			if(err) {
-				return console.error('list_transactions_查询失败', err);
+				return console.error('list_borrows_查询失败', err);
 			}
 			return result.rows;
 
@@ -383,7 +378,7 @@ export default class db{
 		async find_borrow(cdp_id) {
 			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_borrows  where cdp_id=$1',cdp_id)); 
 			if(err) {
-				return console.error('list_transactions_查询失败', err);
+				return console.error('find_borrow_查询失败', err);
 			}
 			return result.rows;
 
@@ -399,7 +394,7 @@ export default class db{
 			if(err) {
 				return console.error('update_order_查询失败', err);
 			}
-			console.log('update_order_成功',JSON.stringify(result.rows)); 
+			console.log('update_borrows_成功',JSON.stringify(result),"info",update_info); 
 			return result.rows;
 
         } 
@@ -409,7 +404,7 @@ export default class db{
 			if(err) {
 				return console.error('insert_traders_查询失败', err);
 			}
-			console.log('insert_order_成功',JSON.stringify(result.rows)); 
+			console.log('insert_borrows_成功',JSON.stringify(result),"info",borrow_info); 
 			return JSON.stringify(result.rows);
         } 
 		/*
@@ -422,9 +417,9 @@ export default class db{
 			let [err,result] = await to(this.clientDB
 				.query('UPDATE mist_users SET (pi,asim,usdt,eth,mt,btc,pi_valuation,asim_valuation,usdt_valuation,eth_valuation,mt_valuation,btc_valuation,updated_at)=($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) WHERE  address=$14',update_info)); 
 			if(err) {
-				return console.error('update_order_查询失败', err);
+				return console.error('update_user_token_查询失败', err);
 			}
-			console.log('update_order_成功',JSON.stringify(result.rows)); 
+			console.log('update_update_user_token_成功',JSON.stringify(result),"info",update_info); 
 			return result.rows;
 
         } 
@@ -435,9 +430,9 @@ export default class db{
 				.query('UPDATE mist_users SET (total_value_1day,total_value_2day,total_value_3day,total_value_4day,total_value_5day,total_value_6day,\
 				total_value_7day,updated_at)=($1,total_value_1day,total_value_2day,total_value_3day,total_value_4day,total_value_5day,total_value_6day,$2) WHERE  address=$3',update_info)); 
 			if(err) {
-				return console.error('update_order_查询失败', err);
+				return console.error('update_user_total_查询失败', err);
 			}
-			console.log('update_order_成功',JSON.stringify(result.rows)); 
+			console.log('update_user_total_成功',JSON.stringify(result),update_info); 
 			return result.rows;
 
         } 
@@ -447,9 +442,9 @@ export default class db{
 		 async insert_users(address_info) {
 			let [err,result] = await to(this.clientDB.query('insert into mist_users values($1)',address_info));
 			if(err) {
-				return console.error('insert_traders_查询失败', err);
+				return console.error('insert_users_查询失败', err);
 			}
-			console.log('insert_order_成功',JSON.stringify(result.rows)); 
+			console.log('insert_users_成功',JSON.stringify(result),"info",address_info); 
 			return JSON.stringify(result.rows);
         }
 
@@ -457,7 +452,7 @@ export default class db{
 		async find_user(address) {
 			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_users  where address=$1',address)); 
 			if(err) {
-				return console.error('list_transactions_查询失败', err);
+				return console.error('find_user_查询失败', err);
 			}
 			return result.rows;
 		}
@@ -465,7 +460,7 @@ export default class db{
 		async list_users() {
 			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_users')); 
 			if(err) {
-				return console.error('list_transactions_查询失败', err);
+				return console.error('list_users_查询失败', err);
 			}
 			return result.rows;
 		}
@@ -473,7 +468,7 @@ export default class db{
 		async find_cdp_token(token_name) {
 			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_cdp_info  where token_name=$1',token_name)); 
 			if(err) {
-				return console.error('list_transactions_查询失败', err);
+				return console.error('find_cdp_token_查询失败', err);
 			}
 			return result.rows;
 		}
@@ -481,7 +476,7 @@ export default class db{
 		async list_cdp() {
 			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_cdp_info')); 
 			if(err) {
-				return console.error('list_transactions_查询失败', err);
+				return console.error('list_cdp_查询失败', err);
 			}
 			return result.rows;
 		}

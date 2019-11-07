@@ -23,7 +23,7 @@ async function my_wallet(word){
 
 var mist_config = {
 	ex_address:'0x633ef502d57e8cf443dab8fcd9a25dbd891bc20e83',
-	relayer:'0x666234b6348c10fed282b95c1f1768aa3113eb96b2',
+	relayer:'0x66edd03c06441f8c2da19b90fcc42506dfa83226d3',
 	relayer_word:'ivory local this tooth occur glide wild wild few popular science horror',
 	relayer_prikey:'0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2',
 	//另外起服务的时候更换个orderhash打包的账户，避免和生产跑着的并发
