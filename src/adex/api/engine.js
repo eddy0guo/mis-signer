@@ -168,14 +168,16 @@ export default class engine {
 		let [err4, result4] = await to(walletInst.queryAllBalance());
 		let [err33, trade_hash] = await to(mist.orderhash(trades_hash));
 		console.log("gxy---engine-call_asimov_resul4444444 = -", trade_hash, err33);
-		let transactions = await this.db.list_all_trades();
-		console.log("transactions=", transactions);
-		let transaction_id = transactions.length == 0 ?  0 : transactions[0].transaction_id;
+	
 		//刚打包的交易，要等一段时间才能拿到后期设置个合理时间暂时设置10s,
 		if(!err33){
 			setTimeout(async () => {
+				let transactions = await this.db.list_all_trades();
+					console.log("transactions=", transactions);
+					let transaction_id = transactions.length == 0 ?  0 : transactions[0].transaction_id;
 
 				let datas = this.utils.get_receipt(trade_hash);
+				//这里即使交易成功但是合约执行失败也要处理？fixme
 				console.log("datas_resul5555 = -", datas);
 				//一次撮合的结果共享transaction_id，以mist_trades里的为准,每次id在最新生成的trades的transaction基础上+1
 	
@@ -186,9 +188,12 @@ export default class engine {
 					trades[i].id = datas[i];
 					await this.db.insert_trades(this.utils.arr_values(trades[i]));
 				}
-			}, 10000);
+			}, 20000);
 		}else{
 			//错误订单有wathcer回退订单信息
+		let transactions = await this.db.list_all_trades();
+		console.log("transactions=", transactions);
+		let transaction_id = transactions.length == 0 ?  0 : transactions[0].transaction_id;
 
 			console.log("gxy---engine-call_asimov_resul5555 = -", trade_hash, err33);
 			 for (var i in trades) {
