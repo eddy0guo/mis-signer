@@ -1,5 +1,6 @@
 import client from '../models/db'
 import utils2 from '../api/utils'
+import order2 from '../api/order'
 import { chain } from '../../wallet/api/chain'
 import to from 'await-to-js'
 const crypto = require('crypto');
@@ -9,29 +10,17 @@ export default class watcher {
 	db;
 	exchange;
 	root_hash;
+	order;
 	constructor() {
 		this.db = new client();
 		this.utils = new utils2;
+		this.order = new order2;
 	}
 
 	async start() {
 		this.loop()
 	}
 
-	async restore_order(order_id,trade_amount,update_time){
-				let status;
-				let current_order = this.db.find_order(order_id);
-
-				if(current_order[0].available_amount + amount < current_order[0].amount){
-						status = 'partial_filled';	
-				}else if(current_order[0].available_amount + amount == current_order[0].amount){
-						status = 'pending';	
-				}else{console.log("status errrrrrrrrrrrrrrrrr")}
-
-            	let update_orders_info = [amount,0,0,-amount,status,update_time,order_id];
-                await this.db.update_orders(update_orders_info);		
-		
-	}
 
 	async loop() {
 	
@@ -88,8 +77,8 @@ export default class watcher {
 				console.log("have n666666666666666666",trades);			
 			//失败的交易更改可用数量和状态后重新放入交易池中
 			for(var index in trades){
-				this.restore_order(trades[index].taker_order_id,trades[index].amount,update_time);
-				this.restore_order(trades[index].maker_order_id,trades[index].amount,update_time);
+				this.order.restore_order(trades[index].taker_order_id,trades[index].amount,update_time);
+				this.order.restore_order(trades[index].maker_order_id,trades[index].amount,update_time);
 			}
 
 			console.log("chain.getrawtransaction--err", err);

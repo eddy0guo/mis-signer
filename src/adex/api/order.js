@@ -158,6 +158,15 @@ export default class order{
         console.log("order_book--result=",order_book);
         return order_book;
     }
+
+	//回滚没有打包成功的交易,不过吃单变成了挂单，等别人吃
+	async restore_order(order_id,amout,update_time){
+				let db =  new client();
+                let current_order = this.db.find_order(order_id);
+                let status =  current_order[0].available_amount + amount < current_order[0].amount ? 'partial_filled' : 'pending';
+                let update_orders_info = [amount,0,0,-amount,status,update_time,order_id];
+                await db.update_orders(update_orders_info);
+    }
  
 
  
