@@ -16,22 +16,14 @@ export default class watcher {
 	}
 
 	async start() {
+		console.log("watche222 running11111111");
 		this.loop()
 	}
 
 
 	async loop() {
-	
-		let transactions = await this.db.list_successful_transactions()
-		
-		let id = 0;
-		if (transactions.length != 0) {
-			id = transactions[0].id;
-		}
-
-		let id_arr = [id + 1];
-		let transaction = await this.db.get_transaction(id_arr);
-
+		console.log("watche running11111111");
+		let transaction = await this.db.get_pending_transactions()
 		//全部都是成功的,就睡眠1s
 		if (transaction.length == 0) {
 			console.log("have not pending transaction");
@@ -41,8 +33,11 @@ export default class watcher {
 
 			return;
 		}
+		
+		let id =  transaction[0].id;
+		
+		console.log("watche running11111111",transaction);
 
-			console.log("have n555555555555555555",id_arr);
 		let [err, result] = await to(chain.getrawtransaction([transaction[0].transaction_hash, true, true]))
 
 		//          console.log("chain.getrawtransaction",result,err);
@@ -52,11 +47,11 @@ export default class watcher {
 		let update_time = this.utils.get_current_time();
 		if (!err && result.confirmations >= 8) {
 			let status = 'successful';
-			let info = [status, update_time, id + 1]
+			let info = [status, update_time, id]
 			await this.db.update_transactions(info);
 			await this.db.update_trades(info);
 
-			let trades = await this.db.transactions_trades([id+1]);
+			let trades = await this.db.transactions_trades([id]);
 				console.log("have n666666666666666666",trades);			
 			for(var index in trades){
 				let update_maker_orders_info = [0,+trades[index].amount,0,-+trades[index].amount,update_time,trades[index].maker_order_id];
@@ -67,11 +62,11 @@ export default class watcher {
 
 		} else if (err) {
 			let status = 'failed';
-			let info = [status, update_time, id + 1]
+			let info = [status, update_time, id]
 			await this.db.update_transactions(info);
 			await this.db.update_trades(info);
 
-			let trades = await this.db.transactions_trades([id+1]);
+			let trades = await this.db.transactions_trades([id]);
 				console.log("have n666666666666666666",trades);			
 			//失败的交易更改可用数量和状态后重新放入交易池中
 			for(var index in trades){
@@ -82,7 +77,7 @@ export default class watcher {
 
 			console.log("chain.getrawtransaction--err", err);
 		} else {
-			console.log("have n66666",id_arr);
+			console.log("have n66666",id);
 			console.log("pending transaction", transaction[0].transaction_hash);
 		}
 

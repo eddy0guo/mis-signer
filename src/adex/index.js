@@ -27,10 +27,12 @@ var mist_config = {
 	relayer_word:'ivory local this tooth occur glide wild wild few popular science horror',
 	relayer_prikey:'0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2',
 	//另外起服务的时候更换个orderhash打包的账户，避免和生产跑着的并发
+	//take
+	order_hash_word:'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
 	//maker
 //	order_hash_word:'one concert capable dolphin useful earth betray absurd price nerve morning danger',
 	//order_hash
-	order_hash_word:'sound mandate urban welcome grass gospel gather shoulder hunt catch host second',
+//	order_hash_word:'sound mandate urban welcome grass gospel gather shoulder hunt catch host second',
 	fauct_address:'0x666234b6348c10fed282b95c1f1768aa3113eb96b2',
 	fauct_word:'tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook',
 	fauct_prikey:'0x47c98c143179d48664dfc2f029a8583cb6a394a94037e06f0658dcf18ed6c66a'
