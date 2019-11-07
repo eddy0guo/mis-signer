@@ -121,12 +121,12 @@ export default ({ config, db }) => {
 			});
 		} else {
 			// create wallet
-/*
+
     let mail =req.body.username;
 
 	console.log("-------1111",codeObj[mail],req.body.code);
     if(codeObj[mail] == +req.body.code){
-*/
+
 				let wallet = new Wallet();
 	//这里直接创建会报错assert 为定义，在库里注释掉了generate address的代码规避
 				await wallet.create({
@@ -189,9 +189,12 @@ export default ({ config, db }) => {
 					  });
 					}
 				);
-//			}else{
-  //      res.send('验证码错误')
-	//	}
+			}else{
+        res.send({
+				success: false,
+				msg: 'verify mail\'s code fail',
+			});
+		}
     }
 	});
 
