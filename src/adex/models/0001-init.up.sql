@@ -25,6 +25,7 @@ create table mist_markets(
 -- trades table
 create table mist_trades(
   id text PRIMARY KEY,
+  trade_hash text,
   transaction_id integer ,
   transaction_hash text,
 
@@ -39,6 +40,7 @@ create table mist_trades(
   taker_side text ,
   maker_order_id  text ,
   taker_order_id text ,
+
   updated_at timestamp ,
   created_at timestamp
 );

@@ -56,7 +56,7 @@ export default class launcher {
 						 let trades_hash = [];
 						for (var i in trades) {
 							let trade_info = [
-								trades[i].id,
+								trades[i].trade_hash,
 								trades[i].taker,
 								trades[i].maker,
 								NP.times(+trades[i].amount, +trades[i].price, 100000000), //    uint256 baseTokenAmount;

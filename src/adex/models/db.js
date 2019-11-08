@@ -204,7 +204,7 @@ export default class db{
          *trades
          */
         async insert_trades(trade_info) {
-			let [err,result] = await to(this.clientDB.query('insert into mist_trades values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)',trade_info));
+			let [err,result] = await to(this.clientDB.query('insert into mist_trades values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)',trade_info));
 			if(err) {
 				return console.error('insert_traders_查询失败', err);
 			}

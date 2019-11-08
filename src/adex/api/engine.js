@@ -93,6 +93,7 @@ export default class engine {
 			console.log("gxyyy--available_amount-333-", find_orders[item].available_amount, my_order.amount);
 			let trade = {
 				id: null,
+				trade_hash:null,
 				transaction_id: null,
 				transaction_hash: null,
 				status: "matched", //匹配完成事matched，打包带确认pending，确认ok为successful，失败为failed
@@ -131,80 +132,40 @@ export default class engine {
 	}
 
 	async call_asimov(trades) {
-		let mist = new mist_ex10(mist_config.ex_address);
-		walletInst = await getTestInst();
-
 		console.log("dex_match_order----gxy---22", trades);
 		let token_address = await this.db.get_market([trades[0].market_id]);
-		console.log("dex_match_order----gxy---333333", token_address[0].base_token_address, token_address[0].quote_token_address);
 
 		//这里合约逻辑写反了。参数顺序也故意写反，使整体没问题，等下次合约更新调整过来，fixme
 		//let order_address_set = [token_address[0].base_token_address,token_address[0].quote_token_address,index.relayer];
 		let order_address_set = [token_address[0].quote_token_address, token_address[0].base_token_address, mist_config.relayer];
 
-		mist.unlock(walletInst, "111111");
 
-		//结构体数组转换成二维数组,代币精度目前写死为7,18的会报错和合约类型u256不匹配
-		let trades_hash = [];
-		for (var i in trades) {
-			let trade_info = [
-				trades[i].taker,
-				trades[i].maker,
-				order_address_set[0],
-				order_address_set[1],
-				order_address_set[2],
-				NP.times(trades[i].amount, trades[i].price, 100000000), //    uint256 baseTokenAmount;
-				NP.times(trades[i].amount, 100000000), // quoteTokenAmount;
-				//   10,  //    uint256 baseTokenAmount;
-				//   5,  // quoteTokenAmount;
-				trades[i].taker_side
-			];
-
-
-			//后边改合约传结构体数据
-			trades_hash.push(trade_info);
-		}
-
-		let [err4, result4] = await to(walletInst.queryAllBalance());
-		let [err33, trade_hash] = await to(mist.orderhash(trades_hash));
-		console.log("gxy---engine-call_asimov_resul4444444 = -", trade_hash, err33);
-	
-		//刚打包的交易，要等一段时间才能拿到后期设置个合理时间暂时设置10s,
-		if(!err33){
-			setTimeout(async () => {
-				let transactions = await this.db.list_all_trades();
-					console.log("transactions=", transactions);
-					let transaction_id = transactions.length == 0 ?  0 : transactions[0].transaction_id;
-
-				let datas = this.utils.get_receipt(trade_hash);
-				//这里即使交易成功但是合约执行失败也要处理？fixme
-				console.log("datas_resul5555 = -", datas);
-				//一次撮合的结果共享transaction_id，以mist_trades里的为准,每次id在最新生成的trades的transaction基础上+1
-	
-
-				for (var i in trades) {
-					trades[i].transaction_id = transaction_id + 1;
-					//用以太的hash去替代本地hash,这里下标的顺序和获得的合hash后的数据的顺序假设一致？
-					trades[i].id = datas[i];
-					await this.db.insert_trades(this.utils.arr_values(trades[i]));
-				}
-			}, 20000);
-		}else{
-			//错误订单有wathcer回退订单信息
 		let transactions = await this.db.list_all_trades();
 		console.log("transactions=", transactions);
 		let transaction_id = transactions.length == 0 ?  0 : transactions[0].transaction_id;
 
-			console.log("gxy---engine-call_asimov_resul5555 = -", trade_hash, err33);
-			 for (var i in trades) {
-			console.log("gxy---restore_order-all_asimov_resu66666 = -", trade_hash, err33);
-				 trades[i].transaction_id = transaction_id + 1;
-				 trades[i].status  = "failed"
-				 await this.db.insert_trades(this.utils.arr_values(trades[i]));	
-				 restore_order(trades[i].taker_order_id,trades[i].amount);
-                 restore_order(trades[i].maker_order_id,trades[i].amount);
-			 }
+
+		for (var i in trades) {
+
+			let trade_info ={
+			taker: trades[i].taker,
+			maker: trades[i].maker,
+			baseToken: order_address_set[0],
+			quoteToken: order_address_set[1],
+			relayer: order_address_set[2],
+			baseTokenAmount: NP.times(trades[i].amount, trades[i].price, 100000000), //    uint256 baseTokenAmount;
+			quoteTokenAmount: NP.times(trades[i].amount, 100000000), // quoteTokenAmount;
+			takerSide:	trades[i].taker_side
+			};
+
+			trades[i].trade_hash = await this.utils.orderhashbytes(trade_info);
+			trades[i].transaction_id = transaction_id + 1;
+
+			await this.db.insert_trades(this.utils.arr_values(trades[i]));
+
+			console.log("dex_match_order----gxy---333333",trades[i]);
 		}
+
 	}
 
 
