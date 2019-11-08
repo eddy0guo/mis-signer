@@ -33,3 +33,23 @@ create table mist_cdp_info(
  updated_at timestamp,
  created_at timestamp
 );
+
+create table mist_token_convert(
+ id text primary key,
+ address text,
+ asim_token text,
+ erc20_totken text,
+
+ side text,--asim2mist,mist2asim
+
+ asim_token_contract text,
+ erc20_token_contract text,
+ asim_token_id text,
+
+ status text,--failed,success
+ amount numeric(32,18),
+ updated_at timestamp,
+ created_at timestamp
+);
+
+
