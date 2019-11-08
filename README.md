@@ -70,3 +70,9 @@ docker run -p 8080:8080 mist/api-service
 - [ ] ETH充提币
 - [ ] USDT（ERC20）充提币
 - [ ] DB的安全部署
+
+##running mode
+##test mode
+source mist_test.env 
+##product mode
+source mist_product.env 

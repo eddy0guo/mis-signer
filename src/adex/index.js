@@ -23,16 +23,17 @@ async function my_wallet(word){
 
 var mist_config = {
 	ex_address:'0x633ef502d57e8cf443dab8fcd9a25dbd891bc20e83',
-	relayer:'0x66edd03c06441f8c2da19b90fcc42506dfa83226d3',
-	relayer_word:'ivory local this tooth occur glide wild wild few popular science horror',
-	relayer_prikey:'0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2',
+	//product
+	//relayer:'0x66edd03c06441f8c2da19b90fcc42506dfa83226d3',
+	//relayer_word:'ivory local this tooth occur glide wild wild few popular science horror',
+	//relayer_prikey:'0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2',
+	//testmod
+	relayer:'0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9',
+	relayer_word:'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
+	relayer_prikey:'0xcf238d72a2d82f3b0f4085fbfe926ec69ea739c43af2690b846f195c60337c49',
 	//另外起服务的时候更换个orderhash打包的账户，避免和生产跑着的并发
 	//take
 	order_hash_word:'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
-	//maker
-//	order_hash_word:'one concert capable dolphin useful earth betray absurd price nerve morning danger',
-	//order_hash
-//	order_hash_word:'sound mandate urban welcome grass gospel gather shoulder hunt catch host second',
 	fauct_address:'0x666234b6348c10fed282b95c1f1768aa3113eb96b2',
 	fauct_word:'tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook',
 	fauct_prikey:'0x47c98c143179d48664dfc2f029a8583cb6a394a94037e06f0658dcf18ed6c66a'
@@ -48,13 +49,15 @@ export default ({ config, db }) => {
     let tokenTest = new TokenTest()
 	let utils = new utils1();
 	let launcher = new launcher1();
+//	因为共享数据库，自己测试的阶段必须关掉，不然影响生产的数据
 	wathcer.start();
 	user.start();
 	launcher.start();
 
 	        
    	adex.get('/list_market_quotations', async (req, res) => {
-					 let result = await market.list_market_quotations();
+					 let result = await utils.orderhashbytes(1);
+                    console.log(result)
                     console.log(result)
 
 
@@ -89,6 +92,8 @@ export default ({ config, db }) => {
 					var obj = urllib.parse(req.url,true).query;
  	 				  console.log("obj=",obj);
                     let token_arr = await mist_wallet.list_tokens();
+					console.log("---env",process.env.MIST_MODE);
+					console.log("---env",process.env);
 
 					let balances = [];
  	 				  console.log("obj11111111133=",token_arr);

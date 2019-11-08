@@ -3,8 +3,9 @@ import to from 'await-to-js'
 export default class db{
         clientDB;
         constructor() {
+				let db = process.env.MIST_MODE;
                 const pg=require('pg')
-                        var conString = "postgres://postgres:postgres@127.0.0.1/postgres?sslmode=disable";
+                var conString = "postgres://postgres:postgres@127.0.0.1/" + db + "?sslmode=disable";
                 let client = new pg.Client(conString);
                 client.connect(function(err) {
                                 if(err) {
@@ -375,8 +376,8 @@ export default class db{
 
 		}
 		
-		async find_borrow(cdp_id) {
-			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_borrows  where cdp_id=$1',cdp_id)); 
+		async find_borrow(info) {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_borrows  where cdp_id=$1 and deposit_token_name=$2',info)); 
 			if(err) {
 				return console.error('find_borrow_查询失败', err);
 			}
