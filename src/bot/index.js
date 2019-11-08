@@ -2,6 +2,53 @@ import http from 'http';
 import express from 'express';
 import morgan from 'morgan';
 
+// start price oracle
+// start bot
+import Price from './Price'
+import Bot from './Bot'
+
+let markets = {
+	"ASIM-PI":15,
+	"USDT-PI":7,
+	"MT-PI":50,
+	"BTC-PI":63861,
+	"ETH-PI":1290,
+
+	"ASIM-USDT":2,
+	"ETH-USDT":185,
+	"BTC-USDT":9163,
+
+	"BTC-MT":63861/50,
+	"ETH-MT":1290/50,
+}
+
+let amounts = {
+	"ASIM-PI":0,
+	"USDT-PI":0,
+	"MT-PI":0,
+	"BTC-PI":100,
+	"ETH-PI":0,
+
+	"ASIM-USDT":0,
+	"ETH-USDT":0,
+	"BTC-USDT":100,
+
+	"BTC-MT":100,
+	"ETH-MT":0,
+}
+
+let priceOracle = new Price(markets)
+priceOracle.start()
+
+for(let i in markets ){
+	let amount = amounts[i]
+	// console.log(i,markets[i],amount)
+	let bot = new Bot(i,priceOracle,amount)
+	bot.start(5000+i*1000)
+}
+
+// start cli server
+
 let app = express();
 
 app.server = http.createServer(app);
@@ -21,6 +68,7 @@ app.all("*",function(req,res,next){
     else
         next();
 });
+
 // 
 import cli from './cli'
 app.use('/cli',cli())

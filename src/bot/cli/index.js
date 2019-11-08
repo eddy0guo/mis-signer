@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 export default (options) => {
-	console.log(options)
+	if(options)console.log(options)
 
 	let api = Router();
 	// perhaps expose some API metadata at the root
