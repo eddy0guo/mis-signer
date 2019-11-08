@@ -1,5 +1,6 @@
 import client from '../models/db'
 import utils2 from '../api/utils'
+import {restore_order} from '../api/order'
 import { chain } from '../../wallet/api/chain'
 import walletHelper from '../../wallet/lib/walletHelper'
 import to from 'await-to-js'
@@ -55,7 +56,7 @@ export default class launcher {
 						 let trades_hash = [];
 						for (var i in trades) {
 							let trade_info = [
-								trades[i].id,
+								trades[i].trade_hash,
 								trades[i].taker,
 								trades[i].maker,
 								NP.times(+trades[i].amount, +trades[i].price, 100000000), //    uint256 baseTokenAmount;
@@ -73,12 +74,27 @@ export default class launcher {
 						let [err, txid] = await to(mist.matchorder(trades_hash, order_address_set));
 						console.log("gxy---engine-call_asimov_result33333 = -", txid, err);
 
+						if(!err){
 						let update_trade_info = ['pending',txid,current_time,trades[0].transaction_id];
 						await this.db.launch_update_trades(update_trade_info);
 
 						console.log("trades[i]=22222222222222", trades);
 						let TXinfo = [trades[0].transaction_id, txid, trades[0].market_id, "pending", trades[0].created_at, trades[0].created_at];
 						this.db.insert_transactions(TXinfo);
+						}else{
+							let update_trade_info = ['failed',txid,current_time,trades[0].transaction_id];
+							await this.db.launch_update_trades(update_trade_info);
+
+							console.log("trades[i]=22222222222222", trades);
+							//交易失败分为两种情况，transaction里的交易回滚和交易打包失败，watcher处理前者
+						//	let TXinfo = [trades[0].transaction_id, txid, trades[0].market_id, "failed", trades[0].created_at, trades[0].created_at];
+							  for(var index in trades){
+									console.log("restore_order2222222222222", trades);
+									restore_order(trades[index].taker_order_id,trades[index].amount);
+									restore_order(trades[index].maker_order_id,trades[index].amount);
+								}
+									
+						}
 
 
 		setTimeout(()=>{

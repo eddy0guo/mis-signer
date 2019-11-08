@@ -52,7 +52,7 @@ export default class db{
 		} 
 
 		async find_order(order_id) {
-			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where id=$1 or ',order_id)); 
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where id=$1',order_id)); 
 			if(err) {
 				return console.error('find_order_查询失败', err);
 			}
@@ -204,7 +204,7 @@ export default class db{
          *trades
          */
         async insert_trades(trade_info) {
-			let [err,result] = await to(this.clientDB.query('insert into mist_trades values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)',trade_info));
+			let [err,result] = await to(this.clientDB.query('insert into mist_trades values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)',trade_info));
 			if(err) {
 				return console.error('insert_traders_查询失败', err);
 			}
@@ -333,8 +333,8 @@ export default class db{
 
 		} 
 
-		async list_successful_transactions() {
-			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_transactions where status !=\'pending\' order by id desc limit 30')); 
+		async get_pending_transactions() {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_transactions where status=\'pending\' order by id  limit 1')); 
 			if(err) {
 				return console.error('list_successful_transactions_查询失败', err);
 			}
