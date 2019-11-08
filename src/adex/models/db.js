@@ -376,8 +376,8 @@ export default class db{
 
 		}
 		
-		async find_borrow(cdp_id) {
-			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_borrows  where cdp_id=$1',cdp_id)); 
+		async find_borrow(info) {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_borrows  where cdp_id=$1 and deposit_token_name=$2',info)); 
 			if(err) {
 				return console.error('find_borrow_查询失败', err);
 			}

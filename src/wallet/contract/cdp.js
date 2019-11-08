@@ -44,13 +44,25 @@ async executeContract(params) {
     let wallet = this.wallet;
     let password = this.password;
 
-    let { ins, changeOut } = await TranService.chooseUTXO(
+      const assetObjArr = [];
+
+        assetObjArr.push({
+        amount: params.amount,
+        asset: params.assetId
+      });
+
+      assetObjArr.push({
+        amount: 0.02,
+        asset: '000000000000000000000000'
+      });
+
+      const { ins, changeOut } = await TranService.chooseUTXO(
         wallet.walletId,
-        params.amount,
-        params.assetId,
-        params.from,
-        this.fee
-    );
+        assetObjArr,
+        params.from
+      );
+
+
     console.log('ins=====',ins)
     let outs = [{
         amount: btc2sts(parseFloat(params.amount)),

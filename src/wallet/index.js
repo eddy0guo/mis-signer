@@ -383,7 +383,7 @@ export default ({ config, db }) => {
 
 			 let current_time = utils.get_current_time();
 
-            let [err2,borrow_info] = await to(psql_db.find_borrow([req.params.borrow_id]));
+            let [err2,borrow_info] = await to(psql_db.find_borrow([req.params.borrow_id,req.params.deposit_token_name]));
 			let status = "borrowing";
 			let repay_amount = req.params.amount;
 			//这里会有点小bug-因为利率的数值最后一个是进一的,如果还钱金额正好是介于psql数据库里应还和kv数据库里之间

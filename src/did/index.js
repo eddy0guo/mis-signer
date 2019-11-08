@@ -353,19 +353,19 @@ let cdp_asim_address = '0x6333052d2e97aca42b6b2a63e792f1fcb2b35298a2';
 	
         //还pai，得btc
     //router.get('/cdp_repay/:borrow_id/:token_name/:amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
-    router.get('/cdp_repay/:borrow_id/:token_name/:amount/:username',async (req, res) => {
+    router.get('/cdp_repay/:borrow_id/:deposit_token_name/:amount/:username',async (req, res) => {
 		console.log("111111",req.params);
         User.findOne({
             username: req.params.username
         }, async (err, user) => {
 		//先找到借贷订单信息的充值币中，然后找币的address，
-		let borrow_id_info  = await psql_db.find_borrow([req.params.borrow_id])
-		let deposit_token_name = borrow_id_info[0].deposit_token_name;
+	//	let borrow_id_info  = await psql_db.find_borrow([req.params.borrow_id])
+	//	let deposit_token_name = borrow_id_info[0].deposit_token_name;
 
-		let cdp_tokens = await psql_db.find_cdp_token([deposit_token_name])
+		let cdp_tokens = await psql_db.find_cdp_token([req.params.deposit_token_name])
 		let cdp_address =  cdp_tokens[0].cdp_address;
 		 //这里找pi的信息assetid
-		let borrow_token_info = await psql_db.find_cdp_token([req.params.token_name])
+		let borrow_token_info = await psql_db.find_cdp_token(['PI'])
 		let assetID = borrow_token_info[0].token_asset_id;
 		
         console.log("33333----",cdp_address,assetID);
