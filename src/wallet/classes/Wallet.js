@@ -454,8 +454,9 @@ export default class Wallet {
       }
     });
   
-  
-    if (newAssets.length) {
+    // 暂时屏蔽新资产检测
+    let checkNewAssets = false
+    if (checkNewAssets && newAssets.length) {
   
       let walletAddrs = await Storage.get("walletAddrs");
       let activeWltId = await Storage.get("activeWltId");
@@ -465,8 +466,6 @@ export default class Wallet {
       let contractAddrs = await chain.getcontractaddressesbyassets([
         newAssets
       ])
-  
-  
   
       for (let i = 0, len = newAssets.length; i < len; i++) {
   

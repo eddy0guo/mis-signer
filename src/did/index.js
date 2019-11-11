@@ -141,7 +141,9 @@ export default ({
 			console.log("-------1111", codeObj[mail], req.body.code);
 			if (codeObj[mail] == +req.body.code) {
 
-				let wallet = new Wallet();
+				let wallet = new Wallet()
+				// 需要激活这个wallet，否则create逻辑有错误
+				await Wallets.addWallet(wallet,true)
 				//这里直接创建会报错assert 为定义，在库里注释掉了generate address的代码规避
 				await wallet.create({
 					walletName: "My First Wallet",
