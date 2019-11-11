@@ -1,5 +1,4 @@
 import mongoose from 'mongoose'
-import db from './db'
 const Schema = mongoose.Schema;
 
 let DataSchema = new Schema({
@@ -42,4 +41,4 @@ let DataSchema = new Schema({
     },
 });
 
-module.exports = mongoose.model('Deposit', DataSchema)
+export default mongoose.model('Deposit', DataSchema)

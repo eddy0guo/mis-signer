@@ -1,6 +1,5 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
-import db from './db'
+import mongoose from 'mongoose'
+const Schema = mongoose.Schema
 
 //交易所地址的用户地址永远是to，提币有另外的账户负责
 let UserSchema = new Schema({
@@ -41,4 +40,4 @@ let UserSchema = new Schema({
     txid: String,
 });
 
-module.exports = mongoose.model('user_tx_records', UserSchema);
+export default mongoose.model('user_tx_records', UserSchema);

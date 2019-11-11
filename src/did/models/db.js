@@ -6,4 +6,4 @@ const db = mongoose.connect(DBConfig.database, {
     useUnifiedTopology: true
 })
 
-module.exports = db
+export default db
