@@ -1,7 +1,8 @@
 import to from 'await-to-js'
+import axios from 'axios'
 import walletHelper from '../../wallet/lib/walletHelper'
 import Asset from '../../wallet/asset/Asset'
-import axios from 'axios'
+import DepositModel from '../models/deposit'
 
 axios.defaults.baseURL = 'https://api.bitcore.io/api/BTC/testnet'
 
@@ -52,14 +53,14 @@ export default class BTCBridge {
 	async checkBlockTip() {
 		let [err,res] = await to(axios.get(`block/tip`))
         if( err ) return
-		console.log('checkBlockTip:',res.data)
+		// console.log('checkBlockTip:',res.data)
         return res.data.height
 	}
 
 	async checkAddress() {
 		let [err,res] = await to(axios.get(`address/${this.btcAddress}/coins`))
         if( err ) return
-		console.log('checkAddress',res.data)
+		// console.log('checkAddress',res.data)
 		let fundingTxOutputs = res.data.fundingTxOutputs
 		let blockTip = await this.checkBlockTip()
 
@@ -67,17 +68,49 @@ export default class BTCBridge {
 			let tx = fundingTxOutputs[i]
 			if( tx.address == this.btcAddress ){
 				// check minted
-				let minted = false
-				if ( minted ) continue
+				let record = await this.getFundingRecord(tx)
+				if ( record.status == 'success' ) continue
 				if( blockTip - tx.mintHeight >= 6 ){
 					// >= 6 confirmed
 					console.log('TX >= 6 confirmed',tx)
-					this.mintAsimBTC(tx.value/100000000)
+					// UTXO的问题，不能在一个循环里进行多次增发
+					let res = await this.mintAsimBTC(tx.value/100000000)
+					if( res ) {
+						await record.update({
+							asim_tx:res,
+							status:'success'
+						})
+						console.log('Update Record:',res)
+					}
 				}
 			}
 		}
 
         return fundingTxOutputs
+	}
+	
+	async getFundingRecord(txinfo){
+		let txid = txinfo.mintTxid
+		let tx = await DepositModel.findOne({txid})
+		if( !tx ){
+			tx = new DepositModel({
+				txid,
+				chain: 'BTC',
+				network: txinfo.network,
+				address: txinfo.address,
+				height: txinfo.mintHeight,
+				value: txinfo.value,
+				asim_address: this.asimAddress,
+				asim_tx: 'pending',
+				status: 'pending',
+				created_time: new Date().getTime(),
+			});
+			// save the user
+			let err = await tx.save()
+			if( err ) console.log(err)
+		}
+
+		return tx
 	}
 
 	async checkTX(tx) {
@@ -99,7 +132,7 @@ export default class BTCBridge {
 		console.log(balance)
 
 		let [err,res] = await to(asset.transfer(this.asimAddress,amount))
-		console.log(res,err)
+		console.log("Transfer:",res,err)
 		return res
 	}
 

@@ -78,17 +78,17 @@ export default class Asset {
         try {
             let rawtx = TranService.generateRawTx(ins, outs, keys);
 
-            console.log("RAWTX:",rawtx)
+            // console.log("RAWTX:",rawtx)
 
             if (!rawtx) {
-                console.log("executeContract Raw TX Error")
+                console.log("execute Transfer generateRawTx Error")
                 return;
             }
 
-            console.log("executeContract Success:",ins, outs);
+            console.log("execute Transfer sendrawtransaction");
             return chain.sendrawtransaction([rawtx]);
         } catch (e) {
-            console.log("executeContract TX Error", e)
+            console.log("execute Transfer TX Error", e)
         }
     }
 

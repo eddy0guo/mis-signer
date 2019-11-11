@@ -1,44 +1,45 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+import mongoose from 'mongoose'
 import db from './db'
+const Schema = mongoose.Schema;
 
-//交易所地址的用户地址永远是to，提币有另外的账户负责
-let UserSchema = new Schema({
-    username: {
-        type: String,
-        unique: true,
-        required: true
-    },
-    tx_type: {
+let DataSchema = new Schema({
+    txid: String,
+	chain: {
         type: String,
         required: true
     },
-	token_name: {
+	network: {
         type: String,
         required: true
     },
-	amount: {
+    address: {
+        type: String,
+        required: true
+    },
+    height: {
         type: Number,
         required: true
     },
-//转账后的余额
-    balance: {
+    value: {
         type: Number,
         required: true
     },
-    from_address: {
+    asim_address: {
         type: String,
         required: true
     },
-    to_address: {
+    asim_tx: {
         type: String,
+        required: true
+    },
+    status: {
+        type:String,
         required: true
     },
 	created_time: {
-        type: String,
+        type: Date,
         required: true
     },
-    txid: String,
 });
 
-module.exports = mongoose.model('user_tx_records', UserSchema);
+module.exports = mongoose.model('Deposit', DataSchema)

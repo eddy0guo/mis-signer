@@ -452,8 +452,8 @@ changeOut = changeOut.filter(out => out.amount > 0);
         }
 
         try {
-            console.log("KEYS:",keys)
-            console.log("TX:",tx.toHex())
+            // console.log("KEYS:",keys)
+            // console.log("TX:",tx.toHex())
             tx.sign(keys)
         } catch (e) {
             console.log('签名错误，请检查密码',e);

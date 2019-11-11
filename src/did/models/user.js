@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const bcrypt = require('bcrypt-nodejs');
-const config = require('../config/database')
+import db from './db'
 
 let UserSchema = new Schema({
     username: {
@@ -72,7 +72,4 @@ UserSchema.methods.comparePassword = function (passw, cb) {
     });
 };
 
-
-global.db = mongoose.createConnection(config.database);
-
-module.exports = db.model('User', UserSchema);
+module.exports = mongoose.model('User', UserSchema);
