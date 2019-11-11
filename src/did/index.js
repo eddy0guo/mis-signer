@@ -165,7 +165,8 @@ export default ({
 					// 这里处理第一个用户的容错
 					const path = "m/0/0/0/0/" + index;
 
-					const network = bitcoin.networks.bitcoin;
+					//const network = bitcoin.networks.bitcoin;
+					const network = bitcoin.networks.testnet;
 					const btc_seed = bip39.mnemonicToSeed(seed_word, '');
 					const root = bip32.fromSeed(btc_seed, network)
 					const btc_keyPair = root.derivePath(path)
