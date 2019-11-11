@@ -9,7 +9,8 @@
     "start": "node dist",
     "prestart": "npm run -s build",
     "test": "eslint src",
-    "bot": "nodemon -w src/bot --exec \"babel-node src/bot --presets es2015,stage-0\""
+    "bot": "nodemon -w src/bot --exec \"babel-node src/bot --presets es2015,stage-0\"",
+    "bridge": "nodemon -w src/did/bridge --exec \"babel-node src/did/bridge --presets es2015,stage-0\""
   },
   "eslintConfig": {
     "extends": "eslint:recommended",

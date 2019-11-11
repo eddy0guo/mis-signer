@@ -16,6 +16,8 @@ async function getTestInst(){
 
 //curl https://api.blockcypher.com/v1/btc/main/addrs/1DEP8i3QJCsomS4BSMY2RpU1upv62aGvhD
 
+// https://api.bitcore.io/api/BTC/testnet/address/n2h3AZzCWdWc2z5NEjYJVtDmR7vBn1eq9z/coins
+
 export default class btc{
 	time;
 	balance;

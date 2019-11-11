@@ -104,7 +104,7 @@ export default class Bot {
         await this.main()
         this.timer = setTimeout(() => {
             this.loop.call(this)
-        }, 30*1000);
+        }, 90*1000);
     }
 
     async main() {
