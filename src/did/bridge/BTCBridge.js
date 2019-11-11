@@ -137,7 +137,7 @@ export default class BTCBridge {
 	}
 
 	async withdraw(amount) {
-
+		console.log(amount)
 	}
 
 }

@@ -372,7 +372,7 @@ export default ({ config, db }) => {
 					console.log("--555555-interest_rate--",borrow_info);	
 					let result = await psql_db.insert_borrows(utils.arr_values(borrow_info));
 					res.json({ result:txid,borrow_id:borrow_id});
-			}else{res.json({ result:"failed",borrow_id:borrow_id})};
+			}else{res.json({ result:"failed",borrow_id:borrow_id})}
 		}, 10000);
       });
 
