@@ -115,6 +115,7 @@ export default class utils{
 
 
     async orderhashbytes(order){
+ 		console.log("111111144444",order);
         return new Promise((resolve,rejects) => {
             this.orderTobytes(order).then(res => {
                 let reshash = ethutil.keccak256(res)
@@ -128,4 +129,16 @@ export default class utils{
         })
     }
 
+	judge_legal_num(num){
+		let result = true;
+		if(num <= 0 ){	
+			console.error("abnormaled num");	
+			result = false;
+		}else if ( num * 10000 !=  Math.floor(num * 10000)){
+			console.error("cannt support this decimal");	
+			result = false;
+		}else{}
+		return result;
+	}	
+	
 }

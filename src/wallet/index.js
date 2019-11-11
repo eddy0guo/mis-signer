@@ -428,6 +428,95 @@ export default ({ config, db }) => {
 
             res.json({ result:result,err:err});
       });
+// id text primary key,
+/**
+ address text,
+ asim_token_name text,
+ erc20_totken_name text,
+
+ side text,--coin2asset,asset2coin
+
+ asim_token_contract text,
+ asim_token_id text,
+ erc20_token_contract text,
+
+ status text,--failed,success
+ txid text,
+ amount numeric(32,8),
+ created_at timestamp
+ *///
+//资产转币币
+wallet.get('/sendrawtransaction/asset2coin/:amount/:address/:token_name/:row',async (req, res) => {
+            let rowtx = [req.params.row];
+            let [err,result] = await to(chain.sendrawtransaction(rowtx));
+				let token_info = await psql_db.get_tokens([req.params.token_name]);
+				console.log("sss--",token_info);
+				let current_time = utils.get_current_time();
+				let info = {
+					 id:null,
+					 address:req.params.address,
+					 asim_token_name:req.params.token_name,
+					 erc20_totken_name:req.params.token_name,
+					 //side: coin2asset,asset2coin
+					 side:"asset2coin",
+					 asim_token_contract:token_info[0].asim_address,
+					 asim_token_id:token_info[0].asim_assetid,
+					 erc20_token_contract:token_info[0].address,
+					 status:"successful",
+					 txid:result,
+					 amount:req.params.amount,
+					 fee_token:"ASIM",
+					 fee_token_amount:0.2,
+					 created_at:current_time	
+					
+				}
+				if(err){info.status = "failed"}
+				info.id = utils.get_hash(info);
+				let arr_info = utils.arr_values(info);
+				let [err2,result2] = await to(psql_db.insert_converts(arr_info));
+            res.json({ result:result,err:err});
+      });
+//币币转资产
+wallet.get('/sendrawtransaction/coin2asset/:amount/:address/:token_name/:row',async (req, res) => {
+            let rowtx = [req.params.row];
+            let [err,result] = await to(chain.sendrawtransaction(rowtx));
+				let token_info = await psql_db.get_tokens([req.params.token_name]);
+				
+
+				let current_time = utils.get_current_time();
+				let info = {
+					 id:null,
+					 address:req.params.address,
+					 asim_token_name:req.params.token_name,
+					 erc20_totken_name:req.params.token_name,
+					 //side: coin2asset,asset2coin
+					 side:"coin2asset",
+					 asim_token_contract:token_info[0].asim_address,
+					 asim_token_id:token_info[0].asim_assetid,
+					 erc20_token_contract:token_info[0].address,
+					 status:"successful",
+					 txid:result,
+					 amount:req.params.amount,
+					 fee_token:"ASIM",
+					 fee_token_amount:0.2,
+					 created_at:current_time	
+					
+				}
+				if(err){info.status = "failed"}
+				info.id = utils.get_hash(info);
+				let arr_info = utils.arr_values(info);
+				let [err2,result2] = await to(psql_db.insert_converts(arr_info));
+            res.json({ result:result,err:err});
+      });
+//划转记录
+wallet.get('/my_converts/:address',async (req, res) => {
+
+            let [err,result] = await to(psql_db.my_converts([req.params.address]));
+            res.json({ result:result,err:err});
+		});
+
+
+
 
 
 	  wallet.get('/sendrawtransaction/:row',async (req, res) => {

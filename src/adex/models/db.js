@@ -482,7 +482,29 @@ export default class db{
 			}
 			return result.rows;
 		}
+		/*
+			coin convert
+		*/
 
+
+
+		async my_converts(address) {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_token_convert  where address=$1 order by created_at desc limit 30',address)); 
+			if(err) {
+				return console.error('list_borrows_查询失败', err);
+			}
+			return result.rows;
+
+		}
+		
+		 async insert_converts(info) {
+			let [err,result] = await to(this.clientDB.query('insert into mist_token_convert values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)',info));
+			if(err) {
+				return console.error('insert_traders_查询失败', err);
+			}
+			console.log('insert_borrows_成功',JSON.stringify(result),"info",borrow_info); 
+			return JSON.stringify(result.rows);
+        } 
 
 
 

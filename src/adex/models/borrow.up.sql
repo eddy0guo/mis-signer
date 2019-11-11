@@ -37,18 +37,20 @@ create table mist_cdp_info(
 create table mist_token_convert(
  id text primary key,
  address text,
- asim_token text,
- erc20_totken text,
+ asim_token_name text,
+ erc20_totken_name text,
 
- side text,--asim2mist,mist2asim
+ side text,--coin2asset,asset2coin
 
  asim_token_contract text,
- erc20_token_contract text,
  asim_token_id text,
+ erc20_token_contract text,
 
  status text,--failed,success
- amount numeric(32,18),
- updated_at timestamp,
+ txid text,
+ amount numeric(32,8),
+ fee_token text,
+ fee_token_amount numeric(32,8),
  created_at timestamp
 );
 

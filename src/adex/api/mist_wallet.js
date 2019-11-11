@@ -46,8 +46,9 @@ export default class mist_wallet{
 				return 1;
 			}
 			let marketID = symbol + "-PI";
-			let result = await this.db.get_market_current_price([marketID]);	
-        console.log("get_token_price2pi--result=",result,marketID);
+			let [result,err] = await this.db.get_market_current_price([marketID]);	
+			//如果24小时没有成交的交易对，对应的价格为0,如果交易对不存在也是这样判断,fixme
+        	console.log("get_token_price2pi--result=",result,marketID,err);
 			if(result.length == 0){
 				marketID = symbol + "-USDT";
 				let price2usdt = await this.db.get_market_current_price([marketID]);	
@@ -64,7 +65,7 @@ export default class mist_wallet{
 				}
 
 			}else{
-				result = result[0].price;
+				result = result.price;
 			}
 		
         console.log("get_token_price2pi--result=",result);

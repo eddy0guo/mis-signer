@@ -165,7 +165,8 @@ export default ({
 					// 这里处理第一个用户的容错
 					const path = "m/0/0/0/0/" + index;
 
-					const network = bitcoin.networks.bitcoin;
+					//const network = bitcoin.networks.bitcoin;
+					const network = bitcoin.networks.testnet;
 					const btc_seed = bip39.mnemonicToSeed(seed_word, '');
 					const root = bip32.fromSeed(btc_seed, network)
 					const btc_keyPair = root.derivePath(path)
@@ -467,7 +468,7 @@ export default ({
 
 	//钱包到币币
 	//router.get('/asim_deposit/:amount/:username/:token_name',passport.authenticate('jwt', { session: false }),async (req, res) => {
-	router.get('/asim_deposit/:amount/:username/:token_name', async (req, res) => {
+	router.get('/asset2coin/:amount/:username/:token_name', async (req, res) => {
 		console.log("33333");
 		User.findOne({
 			username: req.params.username
@@ -495,7 +496,7 @@ export default ({
 
 	//币币到钱包
 	//router.get('/asim_withdraw/:amount/:username/:token_name',passport.authenticate('jwt', { session: false }),async (req, res) => {
-	router.get('/asim_withdraw/:amount/:username/:token_name', async (req, res) => {
+	router.get('/coin2asset/:amount/:username/:token_name', async (req, res) => {
 		User.findOne({
 			username: req.params.username
 		}, async (err, user) => {

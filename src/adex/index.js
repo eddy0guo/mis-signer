@@ -56,7 +56,7 @@ export default ({ config, db }) => {
 
 	        
    	adex.get('/list_market_quotations', async (req, res) => {
-					 let result = await utils.orderhashbytes(1);
+					 let result = await market.list_market_quotations();
                     console.log(result)
                     console.log(result)
 
@@ -208,6 +208,10 @@ did对order_id进行签名，获取rsv
 			return res.json("verify failed");
 		}
 		**/
+		if(!(judge_legal_num(+obj.amount) && judge_legal_num(+obj.price))){
+			return res.json("amount or price is cannt support");
+		}
+
        let message = {
                       id:obj.order_id,
                       trader_address: obj.trader_address,
