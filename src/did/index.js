@@ -467,7 +467,7 @@ export default ({
 
 	//钱包到币币
 	//router.get('/asim_deposit/:amount/:username/:token_name',passport.authenticate('jwt', { session: false }),async (req, res) => {
-	router.get('/asim_deposit/:amount/:username/:token_name', async (req, res) => {
+	router.get('/asset2coin/:amount/:username/:token_name', async (req, res) => {
 		console.log("33333");
 		User.findOne({
 			username: req.params.username
@@ -495,7 +495,7 @@ export default ({
 
 	//币币到钱包
 	//router.get('/asim_withdraw/:amount/:username/:token_name',passport.authenticate('jwt', { session: false }),async (req, res) => {
-	router.get('/asim_withdraw/:amount/:username/:token_name', async (req, res) => {
+	router.get('/coin2asset/:amount/:username/:token_name', async (req, res) => {
 		User.findOne({
 			username: req.params.username
 		}, async (err, user) => {
