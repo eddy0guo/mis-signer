@@ -6,19 +6,17 @@ import walletHelper from '../../wallet/lib/walletHelper'
 import to from 'await-to-js'
 const crypto = require('crypto');
 var date = require("silly-datetime");
-import {mist_config}  from '../index';
+import {mist_config,relayers}  from '../index';
 import mist_ex10 from '../../wallet/contract/mist_ex10'
 
 import NP from 'number-precision'
 let walletInst;
 
-async function getTestInst() {
+async function getTestInst(word) {
     // 暂时每次都重新创建实例，效率低点但是应该更稳定。
-    walletInst = await walletHelper.testWallet(mist_config.relayer_word, '111111')
+    walletInst = await walletHelper.testWallet(word, '111111')
     return walletInst
 }
-
-
 
 export default class launcher {
 	db;
@@ -44,14 +42,15 @@ export default class launcher {
 				console.log("111111111111-launcher--",trades)
 					   setTimeout(()=>{
 						this.loop.call(this)
-						}, 15000);
+						}, 5000);
 				return
 			}
 						let token_address = await this.db.get_market([trades[0].market_id]);
 
 					//这里合约逻辑写反了。参数顺序也故意写反，使整体没问题，等下次合约更新调整过来，fixme
 					//let order_address_set = [token_address[0].base_token_address,token_address[0].quote_token_address,index.relayer];
-						let order_address_set = [token_address[0].quote_token_address, token_address[0].base_token_address, mist_config.relayer];
+					    let index = trades[0].transaction_id % 3;
+						let order_address_set = [token_address[0].quote_token_address, token_address[0].base_token_address, relayers[index].address];
 
 						 let trades_hash = [];
 						for (var i in trades) {
@@ -68,10 +67,13 @@ export default class launcher {
 						}
 
 						 let mist = new mist_ex10(mist_config.ex_address);
-						 walletInst = await getTestInst();
+						 walletInst = await getTestInst(relayers[index].word);
 						mist.unlock(walletInst, "111111");
 						let [err2, result] = await to(walletInst.queryAllBalance());
-						let [err, txid] = await to(mist.matchorder(trades_hash, order_address_set));
+
+						//let [err, txid] = await to(mist.matchorder(trades_hash, order_address_set));
+						console.log("relayers------",relayers[index]);
+						let [err, txid] = await to(mist.matchorder(trades_hash, order_address_set,relayers[index].prikey));
 						console.log("gxy---engine-call_asimov_result33333 = -", txid, err);
 
 						if(!err){
@@ -100,7 +102,7 @@ export default class launcher {
 
 		setTimeout(()=>{
 			this.loop.call(this)
-		}, 15000);
+		}, 5000);
 
 	}
 
