@@ -12,6 +12,7 @@ import utils1 from './api/utils'
 import user1 from './cli/users'
 import Asset from '../wallet/asset/Asset'
 import launcher1 from './cli/launcher'
+import NP from 'number-precision'
 
 import mist_wallet1 from './api/mist_wallet'
 const urllib = require('url');
@@ -49,7 +50,6 @@ export default ({ config, db }) => {
     let tokenTest = new TokenTest()
 	let utils = new utils1();
 	let launcher = new launcher1();
-//	因为共享数据库，自己测试的阶段必须关掉，不然影响生产的数据
 	wathcer.start();
 	user.start();
 	launcher.start();
@@ -135,8 +135,7 @@ export default ({ config, db }) => {
                     
                    var obj = urllib.parse(req.url,true).query;
                       console.log("obj=",obj);
-
-                    let token_arr = await mist_wallet.list_tokens();
+					let token_arr = await mist_wallet.list_tokens();
                     let txids =[];
                     for(let i in token_arr){
                                     let token  = new Token(token_arr[i].address);
@@ -208,9 +207,19 @@ did对order_id进行签名，获取rsv
 			return res.json("verify failed");
 		}
 		**/
-		if(!(judge_legal_num(+obj.amount) && judge_legal_num(+obj.price))){
+		if(!(utils.judge_legal_num(+obj.amount) && utils.judge_legal_num(+obj.price))){
 			return res.json("amount or price is cannt support");
 		}
+		/*
+		var arr = obj.market.toString().split("-");
+		let token_info = mist_wallet.get_token(arr[1]);
+		let token = new Token(token_info[0].address);
+        let balance = await token.balanceOf(obj.address);
+		if(NP.times(+obj.amount, +obj.price) > balance){
+			return res.json("balance is not enoungh");
+		}
+		*/
+
 
        let message = {
                       id:obj.order_id,

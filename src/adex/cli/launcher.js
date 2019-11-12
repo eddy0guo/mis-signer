@@ -82,9 +82,10 @@ export default class launcher {
 						let TXinfo = [trades[0].transaction_id, txid, trades[0].market_id, "pending", trades[0].created_at, trades[0].created_at];
 						this.db.insert_transactions(TXinfo);
 						}else{
-							let update_trade_info = ['failed',txid,current_time,trades[0].transaction_id];
-							await this.db.launch_update_trades(update_trade_info);
-
+							//失败了不做任何处理，等待下次被laucher打包
+						//	let update_trade_info = ['failed',txid,current_time,trades[0].transaction_id];
+						//	await this.db.launch_update_trades(update_trade_info);
+							/*
 							console.log("trades[i]=22222222222222", trades);
 							//交易失败分为两种情况，transaction里的交易回滚和交易打包失败，watcher处理前者
 						//	let TXinfo = [trades[0].transaction_id, txid, trades[0].market_id, "failed", trades[0].created_at, trades[0].created_at];
@@ -93,7 +94,7 @@ export default class launcher {
 									restore_order(trades[index].taker_order_id,trades[index].amount);
 									restore_order(trades[index].maker_order_id,trades[index].amount);
 								}
-									
+							*/		
 						}
 
 

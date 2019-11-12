@@ -61,6 +61,7 @@ export default class watcher {
 			}
 
 		} else if (err) {
+			/**
 			let status = 'failed';
 			let info = [status, update_time, id]
 			await this.db.update_transactions(info);
@@ -73,7 +74,10 @@ export default class watcher {
 				restore_order(trades[index].taker_order_id,trades[index].amount);
 				restore_order(trades[index].maker_order_id,trades[index].amount);
 			console.log("chain.getrawtransaction-------restore_order--err",trades[index]);
-			}
+			}**/
+			//失败了订单状态重新改为matched，等待下次打包,此failed为中间状态
+			await this.db.update_transactions(["failed", update_time, id]);
+			await this.db.update_trades(["matched", update_time, id]);
 
 			console.log("chain.getrawtransaction--err", err);
 		} else {
