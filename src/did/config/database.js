@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   'secret':'didAuthSecret',
-  'database': 'mongodb://119.23.181.166/did'
+  'database': 'mongodb://localhost/did'
 };

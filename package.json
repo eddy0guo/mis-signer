@@ -8,6 +8,7 @@
     "build": "babel src -s -D -d dist --presets es2015,stage-0",
     "start": "node dist",
     "prestart": "npm run -s build",
+    "lint": "eslint --fix --ext .js,.ts src",
     "test": "eslint src",
     "bot": "nodemon -w src/bot --exec \"babel-node src/bot --presets es2015,stage-0\"",
     "ws": "nodemon -w src/ws --exec \"babel-node src/ws --presets es2015,stage-0\"",

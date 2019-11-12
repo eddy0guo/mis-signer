@@ -43,7 +43,10 @@ let asim_address = '0x638f6ee4c805bc7a8558c1cf4df074a38089f6fbfe';
 
 
 
-require('./config/passport')(passport);
+// require('./config/passport')(passport);
+import PassportPlugin from './config/passport'
+PassportPlugin(passport)
+
 let jwt = require('jsonwebtoken');
 let User = require("./models/user");
 let user_tx_records = require("./models/user_tx_records");

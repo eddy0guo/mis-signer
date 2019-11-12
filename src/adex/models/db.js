@@ -177,7 +177,7 @@ export default class db{
         }
 		
 		async get_market_current_price(marketID) {
-			let [err,result] = await to(this.clientDB.query('select cast(price as float8) from mist_trades where (current_timestamp - created_at) < \'12 hours\' and market_id=$1 order by created_at desc limit 1',marketID)); 
+			let [err,result] = await to(this.clientDB.query('select cast(price as float8) from mist_trades where (current_timestamp - created_at) < \'120 hours\' and market_id=$1 order by created_at desc limit 1',marketID)); 
 			if(err) {
 				return console.error('get_market_current_price_查询失败', err);
 			}

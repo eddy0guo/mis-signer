@@ -1,14 +1,19 @@
-let JwtStrategy = require('passport-jwt').Strategy,
-    ExtractJwt = require('passport-jwt').ExtractJwt;
+// let JwtStrategy = require('passport-jwt').Strategy,
+//     ExtractJwt = require('passport-jwt').ExtractJwt;
+
+import PJWT from 'passport-jwt'
 
 // load up the user model
-let User = require('../models/user');
-let config = require('./database'); // get db config file
+import User from '../models/user'
+import DBConfig from './database'
 
-module.exports = function (passport) {
+const JwtStrategy = PJWT.Strategy
+const ExtractJwt = PJWT.ExtractJwt
+
+export default (passport) => {
     let opts = {};
     opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
-    opts.secretOrKey = config.secret;
+    opts.secretOrKey = DBConfig.secret;
     passport.use(new JwtStrategy(opts, function (jwt_payload, done) {
         console.log('----------------JWT----------------');
         console.log(jwt_payload)
@@ -27,4 +32,4 @@ module.exports = function (passport) {
         });
 
     }));
-};
+}
