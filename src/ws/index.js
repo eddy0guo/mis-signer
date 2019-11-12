@@ -1,9 +1,7 @@
-import axios from 'axios'
-import to from 'await-to-js'
-
-export default class WSMananger {
+class WSMananger {
     constructor() {
-        
+        this.clients = {}
+        this.init()
     }
 
     init() {
@@ -19,7 +17,7 @@ export default class WSMananger {
             console.log((new Date()) + 'WebSocket Server is listening on port 9696');
         });
 
-        wsServer = new WebSocketServer({
+        let wsServer = new WebSocketServer({
             httpServer: server,
             // You should not use autoAcceptConnections for production
             // applications, as it defeats all standard cross-origin protection
@@ -43,7 +41,8 @@ export default class WSMananger {
             }
 
             var connection = request.accept('echo-protocol', request.origin);
-            console.log((new Date()) + ' Connection accepted.');
+            console.log((new Date()) + ' Connection accepted.',request.origin)
+
             connection.on('message', function (message) {
                 if (message.type === 'utf8') {
                     console.log('Received Message: ' + message.utf8Data);
@@ -56,7 +55,10 @@ export default class WSMananger {
             });
             connection.on('close', function (reasonCode, description) {
                 console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
+                
             });
         });
     }
 }
+
+export default new WSMananger()
