@@ -73,7 +73,7 @@ export default class BTCBridge {
 				if( blockTip - tx.mintHeight >= 6 ){
 					// >= 6 confirmed
 					console.log('TX >= 6 confirmed',tx)
-					// UTXO的问题，不能在一个循环里进行多次增发
+					
 					let res = await this.mintAsimBTC(tx.value/100000000)
 					if( res ) {
 						await record.update({
@@ -82,6 +82,8 @@ export default class BTCBridge {
 						})
 						console.log('Update Record:',res)
 					}
+					// TODO : UTXO的问题，不能在一个循环里进行多次增发，暂时一次只发送一个
+					break
 				}
 			}
 		}
