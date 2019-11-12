@@ -9,7 +9,6 @@ import walletHelper from '../../wallet/lib/walletHelper'
 const crypto = require('crypto');
 var date = require("silly-datetime");
 
-let btc_price = 58000;
 let walletInst;
 async function getTestInst(){
         if( walletInst ) return walletInst;
@@ -72,10 +71,20 @@ export default class mist_wallet{
         return result;
     }
 
+
+
+
+
+
 	async get_token_price2btc(symbol) {
-		 let price2pi = await this.get_token_price2pi(symbol);	
-		 let price2btc = price2pi/btc_price;
+		 let price2pi = await this.get_token_price2pi(symbol);
+
+		 let btc2pi = await this.get_token_price2pi("BTC");	
+
+		 let price2btc = price2pi / btc2pi;
+
 		 let result = price2btc.toFixed(6)
+		 console.log("get_token_price2btc33---",result);
         return result;
     }
  
