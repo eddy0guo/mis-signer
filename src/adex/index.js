@@ -39,6 +39,26 @@ var mist_config = {
 	fauct_word:'tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook',
 	fauct_prikey:'0x47c98c143179d48664dfc2f029a8583cb6a394a94037e06f0658dcf18ed6c66a'
 }
+
+var relayers = [
+    {
+        prikey:"0xbbb56da9edd3cac9e7c1e9f991d4bc51f5c9dde9a6e3122fbd53b5f8cce6799b",
+        word:"eyebrow quantum rebel century just athlete rough chicken segment control scene obscure",
+		address:"0x66f65201237e2a72c0414062cbfe3b161f20216c19"
+    },
+    {
+        prikey:"0x68b6c5c8848b11cb3d9abc0bac5fd567812865f59522fba471c69e688991b3cd",
+        word:"cream expire roof family input area ecology bench divert siege goat movie",
+		address:"0x6649aaed990397e5c3add1b83f034e4e05349e92eb"
+    },
+    {
+        prikey:"0x8a7135917364bfce158b44b68e7e67ab10bb02c852e0303d376003281cc5e0bd",
+        word:"toss uniform manage bar circle shine project method danger replace capable bicycle",
+		address:"0x66ac76c2aea20aafb807fa2ac7fbeba44507d0e4a0"
+    }
+]; 
+
+
 export default ({ config, db }) => {
 	let adex  = Router();
     let order = new order1();
@@ -50,8 +70,8 @@ export default ({ config, db }) => {
     let tokenTest = new TokenTest()
 	let utils = new utils1();
 	let launcher = new launcher1();
-	wathcer.start();
-	user.start();
+//	wathcer.start();
+//	user.start();
 	launcher.start();
 
 	        
@@ -357,4 +377,4 @@ did对order_id进行签名，获取rsv
 
 	return adex;
 };
-export{mist_config};
+export{mist_config,relayers};

@@ -8,7 +8,7 @@ import {restore_order} from './order'
 import NP from 'number-precision'
 
 var date = require("silly-datetime");
-import {mist_config} from '../index';
+import {mist_config,relayers} from '../index';
 
 
 let walletInst;
@@ -137,12 +137,16 @@ export default class engine {
 
 		//这里合约逻辑写反了。参数顺序也故意写反，使整体没问题，等下次合约更新调整过来，fixme
 		//let order_address_set = [token_address[0].base_token_address,token_address[0].quote_token_address,index.relayer];
-		let order_address_set = [token_address[0].quote_token_address, token_address[0].base_token_address, mist_config.relayer];
-
 
 		let transactions = await this.db.list_all_trades();
 		console.log("transactions=", transactions);
 		let transaction_id = transactions.length == 0 ?  0 : transactions[0].transaction_id;
+
+		//为了保证relayer的轮番顺序打包，这里和transaction_id关联
+		let index = transaction_id % 3;
+		let order_address_set = [token_address[0].quote_token_address, token_address[0].base_token_address, relayers[index].address];
+
+
 
 
 		for (var i in trades) {

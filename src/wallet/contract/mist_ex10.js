@@ -185,7 +185,7 @@ getHexData(abiInfo) {
 
 
 
-   async matchorder(trades_info,order_address_set){
+   async matchorder(trades_info,order_address_set,prikey){
 	  //relayer_pri_key
 /*
 //let mnemonic = bip39.generateMnemonic()
@@ -247,7 +247,7 @@ console.log("111111-prikey---22",hdPrivateKey.privateKey.slice(13,78));
 		   //打印trade id
 		   console.log("1111i44444444",trades_info[index][0].slice(2,66));
 		   var hashbuf=Buffer.alloc(32,trades_info[index][0].slice(2,66),'hex');
-		   var sign = util.ecsign(hashbuf, util.toBuffer(mist_config.relayer_prikey));
+		   var sign = util.ecsign(hashbuf, util.toBuffer(prikey));
 		   let v = sign.v.toString();
 		   let r = '0x' + sign.r.toString("hex");
 		   let s = '0x' + sign.s.toString("hex");

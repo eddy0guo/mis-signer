@@ -67,30 +67,6 @@ export default class utils{
 	}
 
 	async orderTobytes(order){
-/*
-        var order = {
-            taker:"0x668191f35bcc9d4c834e06bdbcb773609c40ba4cea",
-            maker:"0x668191f35bcc9d4c834e06bdbcb773609c40ba4cea",
-            baseToken:"0x636062cabe31391dccd23eb7a43d3afc2b535f3f1e",
-            quoteToken:"0x6330ddba6a9f84291d6e1aef688ca4461ec12c54e6",
-            relayer:"0x668191f35bcc9d4c834e06bdbcb773609c40ba4cea",
-            baseTokenAmount:"10",
-            quoteTokenAmount:"10",
-            takerSide:"buy"
-        }
-		
-	 var order = {
-            taker:"0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
-            maker:"0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
-            baseToken:"0x639142ebdd7ecb2d35d946ef370e66557bc45e461c",
-            quoteToken:"0x63d05a3e439066e4850fd7f8973dbb5820f00427cb",
-            relayer:"0x66edd03c06441f8c2da19b90fcc42506dfa83226d3",
-            baseTokenAmount:"6600000000",
-            quoteTokenAmount:"300000000",
-            takerSide:"sell"
-        }*/
-
-
 
         order.taker = order.taker.substr(0,2) + order.taker.substr(4,44)
         order.maker = order.maker.substr(0,2) + order.maker.substr(4,44)
