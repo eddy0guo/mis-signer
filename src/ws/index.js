@@ -5,11 +5,84 @@ import Trades from '../adex/api/trades'
 
 class WSMananger {
     constructor() {
-        this.clients = {}
         this.init()
         this.order = new Order()
         this.market = new Market()
         this.trades = new Trades()
+
+        this.start()
+    }
+
+    start() {
+        this.loop()
+    }
+
+    stop() {
+        if (this.timer > 0) {
+            clearTimeout(this.timer)
+            this.timer = -1
+        }
+    }
+
+    async loop() {
+        this.stop()
+
+        let markets = await this.listMarkets()
+        let data = {
+            type:'markets',
+            markets
+        }
+
+        this.broadcast(data)
+
+        // 暂时只更新2个交易对测试用。
+        await this.updateMarket('ASIM-PI')
+        await this.updateMarket('BTC-PI')
+        
+        this.timer = setTimeout(() => {
+            this.loop.call(this)
+        }, 5*1000);
+    }
+
+    async updateMarket(marketID){
+        let orderbook = await this.listOrderBook(marketID)
+        let data = {
+            type:'orderbook',
+            market:marketID,
+            orderbook
+        }
+
+        this.broadcastMarket(marketID,data)
+
+        // data = {
+        //     type:"newMarketTrade",
+        //     market,
+        //     trade:{
+        //         price:100,
+        //         amount:Math.random()*100,
+        //         updateAt:new Date().getTime(),
+        //         taker_side:Math.random()>0.5?'buy':'sell'
+        //     }
+        //   }
+        
+        // this.broadcastMarket('ASIM-PI',data)
+    }
+
+    broadcast(msg) {
+        this.wsServer.connections.forEach( (connection)=> {
+            let json = JSON.stringify(msg)
+            connection.sendUTF(json);
+        });
+    }
+
+    broadcastMarket(marketID,msg) {
+        console.log("broadcastMarket",marketID)
+        this.wsServer.connections.forEach( (connection)=> {
+            if( connection.marketID == marketID ){
+                let json = JSON.stringify(msg)
+                connection.sendUTF(json);
+            }
+        });
     }
 
     async listOrderBook(marketID) {
@@ -49,7 +122,7 @@ class WSMananger {
             console.log((new Date()) + 'WebSocket Server is listening on port 9696');
         });
 
-        let wsServer = new WebSocketServer({
+        this.wsServer = new WebSocketServer({
             httpServer: server,
             // You should not use autoAcceptConnections for production
             // applications, as it defeats all standard cross-origin protection
@@ -64,7 +137,7 @@ class WSMananger {
             return true;
         }
 
-        wsServer.on('request',  (request) => {
+        this.wsServer.on('request',  (request) => {
             if (!originIsAllowed(request.origin)) {
                 // Make sure we only accept requests from an allowed origin
                 request.reject();
@@ -77,9 +150,13 @@ class WSMananger {
 
             connection.on('message', async (message) => {
                 if (message.type === 'utf8') {
-                    console.log('Received Message: ' + message.utf8Data);
-                    connection.sendUTF(message.utf8Data);
-                    await this.updateClientInfo(message.utf8Data,connection)
+                    let marketID = message.utf8Data
+                    connection.marketID = marketID
+                    console.log('Received Message: ' + marketID);
+                    
+                    // this.broadcastMarket(marketID)
+                    // connection.sendUTF(marketID)
+                    // await this.updateClientInfo(marketID,connection)
                 }
                 else if (message.type === 'binary') {
                     console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
