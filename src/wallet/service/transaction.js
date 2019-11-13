@@ -17,7 +17,6 @@ import {
   CONSTANT
 } from "../constant";
 import to from 'await-to-js';
-import BigNumber from 'bignumber.js';
 
 
 function formateTransactionData(raw, addrs) {
@@ -324,7 +323,7 @@ export const TranService = {
         let [otherAddrWillspendUTXO, otherAddrTotalAmount] = PickUtoxs(assetObj.amount - totalAmount, otherAddrUtxos);
         if (otherAddrTotalAmount + totalAmount >= assetObj.amount) {
           changeOut.push({
-            amount: new BigNumber(btc2sts(totalAmount + otherAddrTotalAmount - assetObj.amount)),
+            amount: btc2sts(totalAmount + otherAddrTotalAmount - assetObj.amount),
             assets: assetObj.asset,
             address: addr ? addr : allAddrs[0][0].address
           })
@@ -335,7 +334,7 @@ export const TranService = {
         }
       } else {
         changeOut.push({
-          amount: new BigNumber(btc2sts(totalAmount - assetObj.amount)),
+          amount: btc2sts(totalAmount - assetObj.amount),
           assets: assetObj.asset,
           address: addr ? addr : allAddrs[0][0].address
         })
