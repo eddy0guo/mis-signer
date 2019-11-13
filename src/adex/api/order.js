@@ -152,7 +152,7 @@ export default class order{
          }
 	
 		let order_book={
-				asks:asks_arr,
+				asks:asks_arr.reverse(),
 				bids:bids_arr,
 			};
         console.log("order_book--result=",order_book);
