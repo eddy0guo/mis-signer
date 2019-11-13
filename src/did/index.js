@@ -27,7 +27,8 @@ import {
 	mist_config
 } from '../adex/index';
 
-let dbConfig = require('./config/database')
+import dbConfig from './config/database'
+
 let passport = require('passport');
 const bitcore_lib_1 = require("bitcore-lib");
 const ECDSA = bitcore_lib_1.crypto.ECDSA;
@@ -40,8 +41,6 @@ import adex_utils from '../adex/api/utils'
 import psql from '../adex/models/db'
 //稍后cdp相关参数存表中,各个币种的利息最小质押都和btc一样，btc价格60000，eth1400，asim666
 let asim_address = '0x638f6ee4c805bc7a8558c1cf4df074a38089f6fbfe';
-
-
 
 // require('./config/passport')(passport);
 import PassportPlugin from './config/passport'
