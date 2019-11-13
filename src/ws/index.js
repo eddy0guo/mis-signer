@@ -1,7 +1,39 @@
+import to from 'await-to-js'
+import Order from '../adex/api/order'
+import Market from '../adex/api/market'
+import Trades from '../adex/api/trades'
+
 class WSMananger {
     constructor() {
         this.clients = {}
         this.init()
+        this.order = new Order()
+        this.market = new Market()
+        this.trades = new Trades()
+    }
+
+    async listOrderBook(marketID) {
+       let [err,result] = await to(this.order.order_book(marketID));
+       if(err) console.log('listOrderBook',err)
+       return result
+	}
+
+	async listMarkets () {
+       let [err,result] = await to(this.market.list_markets());
+       if(err) console.log('listMarkets',err)
+       return result
+	}
+
+	async listTrades(marketID) {
+       let [err,result] = await to(this.trades.list_trades(marketID));
+       if(err) console.log('listTrades',err)
+       return result
+    }
+    
+    async updateClientInfo(marketID,connection) {
+        console.log('updateClientInfo',connection.remoteAddress,marketID)
+        let trades = await this.listTrades(marketID)
+        console.log(trades)
     }
 
     init() {
@@ -32,7 +64,7 @@ class WSMananger {
             return true;
         }
 
-        wsServer.on('request', function (request) {
+        wsServer.on('request',  (request) => {
             if (!originIsAllowed(request.origin)) {
                 // Make sure we only accept requests from an allowed origin
                 request.reject();
@@ -43,19 +75,20 @@ class WSMananger {
             var connection = request.accept('echo-protocol', request.origin);
             console.log((new Date()) + ' Connection accepted.',request.origin)
 
-            connection.on('message', function (message) {
+            connection.on('message', async (message) => {
                 if (message.type === 'utf8') {
                     console.log('Received Message: ' + message.utf8Data);
                     connection.sendUTF(message.utf8Data);
+                    await this.updateClientInfo(message.utf8Data,connection)
                 }
                 else if (message.type === 'binary') {
                     console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
                     connection.sendBytes(message.binaryData);
                 }
             });
-            connection.on('close', function (reasonCode, description) {
+            connection.on('close',  (reasonCode, description)=> {
                 console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
-                
+                console.log(reasonCode, description)
             });
         });
     }
