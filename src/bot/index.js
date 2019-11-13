@@ -26,14 +26,14 @@ let amounts = {
 	"ASIM-PI":0,
 	"USDT-PI":0,
 	"MT-PI":0,
-	"BTC-PI":100,
+	"BTC-PI":0,
 	"ETH-PI":0,
 
 	"ASIM-USDT":0,
 	"ETH-USDT":0,
-	"BTC-USDT":100,
+	"BTC-USDT":0,
 
-	"BTC-MT":100,
+	"BTC-MT":0,
 	"ETH-MT":0,
 }
 
