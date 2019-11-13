@@ -36,13 +36,13 @@ export default class launcher {
 	async loop() {
 	
             let trades = await this.db.get_laucher_trades();
-            console.log("trades=", trades);
+            console.log("launchertrades=", trades);
 			let current_time = this.utils.get_current_time();
 			if (trades.length == 0) {
 				console.log("111111111111-launcher--",trades)
 					   setTimeout(()=>{
 						this.loop.call(this)
-						}, 5000);
+						}, 30000);
 				return
 			}
 						let token_address = await this.db.get_market([trades[0].market_id]);
@@ -51,6 +51,7 @@ export default class launcher {
 					//let order_address_set = [token_address[0].base_token_address,token_address[0].quote_token_address,index.relayer];
 					    let index = trades[0].transaction_id % 3;
 						let order_address_set = [token_address[0].quote_token_address, token_address[0].base_token_address, relayers[index].address];
+						console.log("gxyrelayers-launcher111",trades[0].transaction_id,index,relayers[index]);
 
 						 let trades_hash = [];
 						for (var i in trades) {
@@ -74,6 +75,7 @@ export default class launcher {
 						//let [err, txid] = await to(mist.matchorder(trades_hash, order_address_set));
 						console.log("relayers------",relayers[index]);
 						let [err, txid] = await to(mist.matchorder(trades_hash, order_address_set,relayers[index].prikey));
+						console.log("gxyrelayers---launcher2",trades[0].transaction_id,index,relayers[index]);
 						console.log("gxy---engine-call_asimov_result33333 = -", txid, err);
 
 						if(!err){
@@ -102,7 +104,7 @@ export default class launcher {
 
 		setTimeout(()=>{
 			this.loop.call(this)
-		}, 5000);
+		}, 30000);
 
 	}
 
