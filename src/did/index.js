@@ -142,7 +142,7 @@ export default ({
 			let mail = req.body.username;
 
 			console.log("-------1111", codeObj[mail], req.body.code);
-			if (codeObj[mail] == +req.body.code) {
+//			if (codeObj[mail] == +req.body.code) {
 
 				let wallet = new Wallet()
 				// 需要激活这个wallet，否则create逻辑有错误
@@ -213,12 +213,12 @@ export default ({
 						});
 					});
 				});
-			} else {
+		/*	} else {
 				res.send({
 					success: false,
 					msg: 'verify mail\'s code fail',
 				});
-			}
+			}*/
 		}
 	});
 
@@ -474,6 +474,7 @@ export default ({
 	//钱包到币币
 	//router.get('/asim_deposit/:amount/:username/:token_name',passport.authenticate('jwt', { session: false }),async (req, res) => {
 	router.get('/asset2coin/:amount/:username/:token_name', async (req, res) => {
+	//router.get('/asim_deposit/:amount/:username/:token_name', async (req, res) => {
 		console.log("33333");
 		User.findOne({
 			username: req.params.username
@@ -502,6 +503,7 @@ export default ({
 	//币币到钱包
 	//router.get('/asim_withdraw/:amount/:username/:token_name',passport.authenticate('jwt', { session: false }),async (req, res) => {
 	router.get('/coin2asset/:amount/:username/:token_name', async (req, res) => {
+	//router.get('/asim_withdraw/:amount/:username/:token_name', async (req, res) => {
 		User.findOne({
 			username: req.params.username
 		}, async (err, user) => {
