@@ -11,6 +11,7 @@ import { CONSTANT } from "./constant";
 import Token from '../wallet/contract/Token'
 
 import Erc20 from './contract/ERC20'
+import fake_token from './contract/AssetToken'
 import Erc20Test from './contract/ERC20Test'
 import {mist_config} from '../adex/index';
 
@@ -59,6 +60,17 @@ export default ({ config, db }) => {
 		walletInst = await getTestInst();
 		let address = await walletInst.getAddress()
 		res.json({ wallet:address })
+	});
+
+	wallet.get('/get_asset_info/:token_name',async (req, res) => {
+		let tokens = await psql_db.get_tokens([req.params.token_name])
+		let assetToken = new fake_token(tokens[0].asim_address);
+		walletInst = await getTestInst();
+		assetToken.unlock(walletInst,'111111')
+		let [err,result] = await to(assetToken.getAssetInfo())
+		console.log(result,err);
+
+		res.json({ result:result,err:err });
 	});
 
 	wallet.get('/faucet2/:token/:address',async (req, res) => {
