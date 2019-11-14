@@ -1,4 +1,5 @@
 import to from 'await-to-js'
+import hash from 'object-hash'
 import Order from '../adex/api/order'
 import Market from '../adex/api/market'
 import Trades from '../adex/api/trades'
@@ -9,6 +10,8 @@ class WSMananger {
         this.order = new Order()
         this.market = new Market()
         this.trades = new Trades()
+
+        this.depthHash = {}
 
         this.start()
     }
@@ -33,11 +36,23 @@ class WSMananger {
             markets
         }
 
+        // 判断数据hash后再推送
+
         this.broadcast(data)
 
         // 测试时暂时只更新2个交易对。也可以每个交易对启动一个进程
         await this.updateMarket('ASIM-PI')
+        await this.updateMarket('MT-PI')
+        await this.updateMarket('USDT-PI')
         await this.updateMarket('BTC-PI')
+        await this.updateMarket('ETH-PI')
+
+        await this.updateMarket('BTC-USDT')
+        await this.updateMarket('ASIM-USDT')
+        await this.updateMarket('ETH-USDT')
+
+        await this.updateMarket('BTC-MT')
+        await this.updateMarket('ETH-MT')
         
         this.timer = setTimeout(() => {
             this.loop.call(this)
@@ -51,6 +66,13 @@ class WSMananger {
             market:marketID,
             orderbook
         }
+        
+        // check data hash
+        let dataHash = hash(data)
+        if( this.depthHash[marketID] == dataHash ){
+            return
+        }
+        this.depthHash[marketID] = dataHash
 
         this.broadcastMarket(marketID,data)
 

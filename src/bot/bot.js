@@ -104,7 +104,7 @@ export default class Bot {
         await this.main()
         this.timer = setTimeout(() => {
             this.loop.call(this)
-        }, 60*1000);
+        }, 5*60*1000);
     }
 
     async main() {
@@ -118,7 +118,7 @@ export default class Bot {
         addPrice = buy ? -addPrice : addPrice
         let price = this.price() + addPrice
 
-        let amount = 20000 / this.price() * Math.random()
+        let amount = 500 / this.price() * Math.random()
         if( this.amount > 0 ){
             amount = this.amount * Math.random()
             amount = Number(amount.toFixed(4))
