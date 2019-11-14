@@ -25,13 +25,13 @@ async function my_wallet(word){
 var mist_config = {
 	ex_address:'0x633ef502d57e8cf443dab8fcd9a25dbd891bc20e83',
 	//product
-	relayer:'0x66edd03c06441f8c2da19b90fcc42506dfa83226d3',
-	relayer_word:'ivory local this tooth occur glide wild wild few popular science horror',
-	relayer_prikey:'0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2',
+//	relayer:'0x66edd03c06441f8c2da19b90fcc42506dfa83226d3',
+//	relayer_word:'ivory local this tooth occur glide wild wild few popular science horror',
+//	relayer_prikey:'0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2',
 	//testmod
-//	relayer:'0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9',
-//	relayer_word:'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
-//	relayer_prikey:'0xcf238d72a2d82f3b0f4085fbfe926ec69ea739c43af2690b846f195c60337c49',
+	relayer:'0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9',
+	relayer_word:'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
+	relayer_prikey:'0xcf238d72a2d82f3b0f4085fbfe926ec69ea739c43af2690b846f195c60337c49',
 	//另外起服务的时候更换个orderhash打包的账户，避免和生产跑着的并发
 	//take
 	order_hash_word:'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
@@ -56,24 +56,24 @@ var relayers = [
         word:"toss uniform manage bar circle shine project method danger replace capable bicycle",
 		address:"0x66ac76c2aea20aafb807fa2ac7fbeba44507d0e4a0"
     }
-];*/ 
+]; 
 
-
+*/
 var relayers = [
     {
-        prikey:"0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2",
-        word:"ivory local this tooth occur glide wild wild few popular science horror",
-		address:"0x66edd03c06441f8c2da19b90fcc42506dfa83226d3"
+        prikey:"0xcf238d72a2d82f3b0f4085fbfe926ec69ea739c43af2690b846f195c60337c49",
+        word:"enhance donor garment gospel loop purse pumpkin bag oven bone decide street",
+		address:"0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9"
     },
     {
-		prikey:"0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2",
-        word:"ivory local this tooth occur glide wild wild few popular science horror",
-		address:"0x66edd03c06441f8c2da19b90fcc42506dfa83226d3"
+		prikey:"0xcf238d72a2d82f3b0f4085fbfe926ec69ea739c43af2690b846f195c60337c49",
+        word:"enhance donor garment gospel loop purse pumpkin bag oven bone decide street",
+		address:"0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9"
     },
     {
-		prikey:"0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2",
-        word:"ivory local this tooth occur glide wild wild few popular science horror",
-		address:"0x66edd03c06441f8c2da19b90fcc42506dfa83226d3"
+		prikey:"0xcf238d72a2d82f3b0f4085fbfe926ec69ea739c43af2690b846f195c60337c49",
+        word:"enhance donor garment gospel loop purse pumpkin bag oven bone decide street",
+		address:"0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9"
        
     }
 ]; 
@@ -95,6 +95,13 @@ export default ({ config, db }) => {
 	wathcer.start();
 	user.start();
 	launcher.start();
+
+	adex.get('/mist_engine_info', async (req, res) => {
+					 let result = await trades.get_engine_info();
+                    console.log(result)
+       res.json({result});
+	});
+
 
 	        
    	adex.get('/list_market_quotations', async (req, res) => {
@@ -284,12 +291,6 @@ did对order_id进行签名，获取rsv
 	});
 
 	adex.get('/cancle_order', async (req, res) => {
-/**
-       let message = {
-			 amount: 0.233300000000000000,
-			 id: "67d4259b990f1a0f36543a04142e8126bc92c3d1263d0b0435364d4c06749a65",
-		   };
-**/
 	    var obj = urllib.parse(req.url,true).query;
        console.log("cancled_obj=",obj);
 		let message = {
@@ -301,6 +302,21 @@ did对order_id进行签名，获取rsv
        let [err,result] = await to(order.cancle_order(message));
        res.json({result,err });
 	});
+
+	adex.get('/cancle_order', async (req, res) => {
+	    var obj = urllib.parse(req.url,true).query;
+       console.log("cancled_obj=",obj);
+		let message = {
+			 amount: obj.amount,
+			 id: obj.orderID,
+		   };
+
+
+       let [err,result] = await to(order.cancle_order(message));
+       res.json({result,err });
+	});
+
+
 
 	adex.get('/list_orders', async (req, res) => {
        
