@@ -62,6 +62,14 @@ export default ({ config, db }) => {
 		res.json({ wallet:address })
 	});
 
+	wallet.get('/list_assets_info',async (req, res) => {
+		let [err,info] = await to(psql_db.list_assets_info());
+		console.log("list_assets_info-2222",err,info);
+		res.json({ result:info,err:err });
+	});
+
+
+
 	wallet.get('/get_asset_info/:token_name',async (req, res) => {
 		let tokens = await psql_db.get_tokens([req.params.token_name])
 		let assetToken = new fake_token(tokens[0].asim_address);

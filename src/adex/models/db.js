@@ -521,7 +521,24 @@ export default class db{
 			}
 			return JSON.stringify(result.rows);
         } 
+		/*
+		assets
+		*/
+		async list_assets_info(){
+			let [err,result] = await to(this.clientDB.query('select s.*,m.circulation_amount as old_circulation_amount   from (select * from asim_assets_info order by created_at desc limit 5)s left join (select * from asim_assets_info where created_at - current_timestamp < \'24 minutes\' order by created_at limit 5)m on s.asset_id=m.asset_id'));
+			if(err) {
+				return console.error('errlist_assets_info_查询失败', err);
+			}
+			return JSON.stringify(result.rows);
+			
+		}
 
-
+		 async insert_assets_info(info) {
+			let [err,result] = await to(this.clientDB.query('insert into asim_assets_info  values($1,$2,$3,$4,$5,$6,$7,$8)',info));
+			if(err) {
+				return console.error('insert__assets_info_查询失败', err,info);
+			}
+			return JSON.stringify(result.rows);
+        }
 
 }

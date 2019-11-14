@@ -120,3 +120,15 @@ create table mist_users(
   updated_at  timestamp default now(),
   created_at  timestamp default now()
 );
+
+create table asim_assets_info(
+  id text PRIMARY KEY,
+  asset_id text default '',
+  asset_name text default '',
+  producer text default '',
+  total text default '',
+  producer_amount text default '' ,
+  circulation_amount text default '' ,--circulation_amount + producer_amount = total
+  created_at  timestamp default now()
+);
+
