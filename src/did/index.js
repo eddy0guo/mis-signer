@@ -10,6 +10,9 @@ import mist_wallet1 from '../adex/api/mist_wallet'
 import to from 'await-to-js'
 import eth from './deposit_withdraw/eth'
 import btc from './deposit_withdraw/btc'
+import ETHBridge from './bridge/ETHBridge'
+import USDTBridge from './bridge/USDTBridge'
+import BTCBridge from './bridge/BTCBridge'
 
 import Erc20 from '../wallet/contract/ERC20_did'
 var bip39 = require('bip39');
@@ -527,6 +530,7 @@ export default ({
 	});
 
 	//交易所充币
+	//展示二维码之后1分钟后开始监控，1分钟之内要完成充值,暂时不支持连续充值
 	router.get('/deposit/:username/:token_name', async (req, res) => {
 		console.log("33333");
 		User.findOne({
@@ -535,12 +539,19 @@ export default ({
 
 			let token_name = req.params.token_name;
 			if (token_name == 'ETH') {
-				ether.start_deposit(user);
+				//ether.start_deposit(user);
+				console.log("txs----------------",user);
+				let ethBridge = new ETHBridge(user.asim_address,"0x" + user.eth_address);
+				ethBridge.start(60*1000);
 			} else if (token_name == 'BTC') {
-				btcer.start_deposit(user);
+				let btcBridge = new BTCBridge(user.asim_address,"0x" + user.btc_address);
+				btcBridge.start(60*1000);
 				console.log("deposit btc");
 			} else if (token_name == 'USDT') {
 				console.log("deposit usdt");
+				console.log("txs----------------",user);
+				let usdtBridge = new USDTBridge(user.asim_address,"0x" + user.eth_address);
+				usdtBridge.start(60*1000);
 			} else {
 				return res.json({
 					result: "cannot support token"
