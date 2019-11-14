@@ -12,6 +12,15 @@ export default class trades{
          this.utils = new utils2;
     }
 
+
+	async get_engine_info() {
+
+		let result = await this.db.get_engine_info();
+        return result;
+    }
+
+
+
 	async list_trades(marketID) {
 
         console.log("list_trades--result=",[marketID]);

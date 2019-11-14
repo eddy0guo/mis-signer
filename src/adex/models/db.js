@@ -514,5 +514,14 @@ export default class db{
         } 
 
 
+		 async get_engine_info() {
+			let [err,result] = await to(this.clientDB.query('select status,count(1) from mist_trades group by status'));
+			if(err) {
+				return console.error('insert_traders_查询失败', err);
+			}
+			return JSON.stringify(result.rows);
+        } 
+
+
 
 }
