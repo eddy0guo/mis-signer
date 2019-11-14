@@ -51,7 +51,7 @@ initializeDb( db => {
 	app.use('/adex',adex({ config, db }));
 	app.use('/did',did({config,db}))
 
-	app.server.listen(process.env.PORT || config.port, () => {
+	app.server.listen(process.env.PORT || process.env.MIST_SERVER_PORT, () => {
 		console.log(`Started on port ${app.server.address().port}`);
 	});
 });
