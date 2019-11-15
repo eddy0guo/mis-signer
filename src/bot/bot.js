@@ -56,13 +56,13 @@ export default class Bot {
 
         this.accounts = [
             "13682471710",
-            "13682471711"]
+            "13682471714"]
         this.password = [
 
         ]
         this.addresses = [
             "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
-            "0x66b7637198aee4fffa103fc0082e7a093f81e05a64"]
+            "0x66fb54e73b1ea0a40ca95c5a514500902dc19f2d61"]
         this.sides = ["buy", "sell"]
     }
 
