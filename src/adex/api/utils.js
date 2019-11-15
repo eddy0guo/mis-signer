@@ -5,6 +5,7 @@ const ECDSA = bitcore_lib_1.crypto.ECDSA;
 var child = require('child_process');
 const ethutil = require('ethereumjs-util')
 const ethabi = require('ethereumjs-abi')
+import NP from 'number-precision'
 
 export default class utils{
 	root_hash;
@@ -108,10 +109,10 @@ export default class utils{
 	judge_legal_num(num){
 		let result = true;
 		if(num <= 0 ){	
-			console.error("abnormaled num");	
+			console.error("112233abnormaled num",num);	
 			result = false;
-		}else if ( num * 10000 !=  Math.floor(num * 10000)){
-			console.error("cannt support this decimal");	
+		}else if (NP.times(num,10000) !=  Math.floor(NP.times(num,10000))){
+			console.error("112233cannt support this decimal",num,NP.times(num,10000),num * 10000);	
 			result = false;
 		}else{}
 		return result;
