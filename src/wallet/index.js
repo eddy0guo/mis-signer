@@ -93,8 +93,25 @@ export default ({ config, db }) => {
 				}
 				infos.push(mist_user);
             }
-			mist_user = infos;
+			mist_user={
+			address:infos[0].address,
+			pi:infos[0].balance,
+			asim:infos[1].balance,
+			usdt:infos[3].balance,
+			eth:infos[4].balance,
+			mt:infos[5].balance,
+			btc:infos[2].balance,
+			pi_valuation:infos[0].valuation,
+			asim_valuation:infos[1].valuation,
+			usdt_valuation:infos[3].valuation,
+			eth_valuation:infos[4].valuation,
+			mt_valuation:infos[5].valuation,
+			btc_valuation:infos[2].valuation
+			};
 		}
+
+		//PI,ASIM,BTC.USDT,ETH,MT
+		
 		console.log("aabobj1234588888=",mist_user);
 		res.json({ result:mist_user});
 	});
