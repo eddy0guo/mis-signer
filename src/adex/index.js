@@ -14,6 +14,7 @@ import asset1 from './cli/asset_info'
 import Asset from '../wallet/asset/Asset'
 import launcher1 from './cli/launcher'
 import NP from 'number-precision'
+import client1 from './models/db'
 
 import mist_wallet1 from './api/mist_wallet'
 const urllib = require('url');
@@ -84,16 +85,17 @@ var relayers = [
 
 export default ({ config, db }) => {
 	let adex  = Router();
-    let order = new order1();
-    let trades = new trades1();
+	let client = new client1();
+    let order = new order1(client);
+    let trades = new trades1(client);
     let market = new market1();
-    let wathcer = new watcher1();
-    let user = new user1();
+    let wathcer = new watcher1(client);
+    let user = new user1(client);
     let asset = new asset1();
     let mist_wallet = new mist_wallet1();
     let tokenTest = new TokenTest()
 	let utils = new utils1();
-	let launcher = new launcher1();
+	let launcher = new launcher1(client);
 	wathcer.start();
 	user.start();
 	asset.status_flushing();
@@ -343,6 +345,16 @@ did对order_id进行签名，获取rsv
        res.json({result,err });
 	});
 
+	adex.get('/my_orders2/:address/:page/:perpage/:status1/:status2', async (req, res) => {
+		//pending,partial_filled,当前委托
+		//cancled，full_filled，历史委托
+	   let {address,page,perpage,status1,status2} = req.params;
+       let [err,result] = await to(order.my_orders2(address,page,perpage,status1,status2));
+       res.json({result,err });
+	});
+
+
+
 
 
 	adex.get('/order_book', async (req, res) => {
@@ -372,17 +384,25 @@ did对order_id进行签名，获取rsv
 	});
 
 
-	adex.get('/my_trades', async (req, res) => {
-      /** 
-		let message = {address:"0x66b7637198aee4fffa103fc0082e7a093f81e05a64"}
+    adex.get('/my_trades', async (req, res) => {
+      /**
+        let message = {address:"0x66b7637198aee4fffa103fc0082e7a093f81e05a64"}
 **/
-	    var obj = urllib.parse(req.url,true).query;
+        var obj = urllib.parse(req.url,true).query;
        console.log("obj=",obj);
-		let message = {address:obj.address};
+        let message = {address:obj.address};
        let [err,result] = await to(trades.my_trades(message));
 
        res.json({result,err });
+    });
+
+
+	adex.get('/my_trades2/address/page/perpage', async (req, res) => {
+       let [err,result] = await to(trades.my_trades2(req.params.address,req.params.page,req.params.per_page));
+
+       res.json({result,err });
 	});
+
 
 
 

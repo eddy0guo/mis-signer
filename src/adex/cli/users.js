@@ -14,8 +14,8 @@ export default class users{
 	exchange;
 	root_hash;
 	mist_wallet;
-	constructor() {
-		this.db = new client();
+	constructor(client) {
+		this.db = client;
 		this.utils = new utils2;
 		this.mist_wallet = new mist_wallet1();
 	}
@@ -72,7 +72,7 @@ export default class users{
 		setTimeout(()=>{
 			this.loop_token.call(this)
 		//间隔时间随着用户量的增长而降低
-		},1000 * 2);
+		},1000 * 10);
 
 	}
 
@@ -101,7 +101,7 @@ export default class users{
 		setTimeout(()=>{
 			this.loop_total.call(this)
 	//	}, 1000 * 60 * 60 * 24);
-		}, 1000 * 60 * 60);
+		}, 1000 * 60 * 60 * 12);
 
 	}
 
