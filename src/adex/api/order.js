@@ -10,8 +10,8 @@ export default class order{
     db;
     exchange;
     root_hash;
-    constructor() {
-         this.db =  new client();
+    constructor(client) {
+         this.db = client;
          this.exchange = new engine(this.db);
          this.utils = new utils2;
     }

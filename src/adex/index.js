@@ -14,6 +14,7 @@ import asset1 from './cli/asset_info'
 import Asset from '../wallet/asset/Asset'
 import launcher1 from './cli/launcher'
 import NP from 'number-precision'
+import client1 from './models/db'
 
 import mist_wallet1 from './api/mist_wallet'
 const urllib = require('url');
@@ -84,16 +85,17 @@ var relayers = [
 
 export default ({ config, db }) => {
 	let adex  = Router();
-    let order = new order1();
-    let trades = new trades1();
+	let client = new client1();
+    let order = new order1(client);
+    let trades = new trades1(client);
     let market = new market1();
-    let wathcer = new watcher1();
-    let user = new user1();
+    let wathcer = new watcher1(client);
+    let user = new user1(client);
     let asset = new asset1();
     let mist_wallet = new mist_wallet1();
     let tokenTest = new TokenTest()
 	let utils = new utils1();
-	let launcher = new launcher1();
+	let launcher = new launcher1(client);
 	wathcer.start();
 	user.start();
 	asset.status_flushing();

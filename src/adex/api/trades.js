@@ -7,8 +7,8 @@ export default class trades{
     db;
     exchange;
     root_hash;
-    constructor() {
-         this.db =  new client();
+    constructor(client) {
+         this.db = client;
          this.utils = new utils2;
     }
 

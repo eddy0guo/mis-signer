@@ -14,8 +14,8 @@ export default class users{
 	exchange;
 	root_hash;
 	mist_wallet;
-	constructor() {
-		this.db = new client();
+	constructor(client) {
+		this.db = client;
 		this.utils = new utils2;
 		this.mist_wallet = new mist_wallet1();
 	}

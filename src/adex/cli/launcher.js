@@ -22,8 +22,8 @@ export default class launcher {
 	db;
 	exchange;
 	root_hash;
-	constructor() {
-		this.db = new client();
+	constructor(client) {
+		this.db = client;
 		this.utils = new utils2;
 	}
 
@@ -42,16 +42,18 @@ export default class launcher {
 				console.log("111111111111-launcher--",trades)
 					   setTimeout(()=>{
 						this.loop.call(this)
-						}, 30000);
+						}, 10000);
 				return
 			}
+
+						console.log("gxyrelayers-aa--launcher0000",relayers);
 						let token_address = await this.db.get_market([trades[0].market_id]);
 
 					//这里合约逻辑写反了。参数顺序也故意写反，使整体没问题，等下次合约更新调整过来，fixme
 					//let order_address_set = [token_address[0].base_token_address,token_address[0].quote_token_address,index.relayer];
 					    let index = trades[0].transaction_id % 3;
 						let order_address_set = [token_address[0].quote_token_address, token_address[0].base_token_address, relayers[index].address];
-						console.log("gxyrelayers-launcher111",trades[0].transaction_id,index,relayers[index]);
+						console.log("gxyrelayers---aa--launcher111",trades[0].transaction_id,index,relayers[index]);
 
 						 let trades_hash = [];
 						for (var i in trades) {
@@ -75,7 +77,7 @@ export default class launcher {
 						//let [err, txid] = await to(mist.matchorder(trades_hash, order_address_set));
 						console.log("relayers------",relayers[index]);
 						let [err, txid] = await to(mist.matchorder(trades_hash, order_address_set,relayers[index].prikey));
-						console.log("gxyrelayers---launcher2",trades[0].transaction_id,index,relayers[index]);
+						console.log("gxyrelayers-aaa--launcher2",trades[0].transaction_id,index,relayers[index]);
 						console.log("gxy---engine-call_asimov_result33333 = -", txid, err);
 
 						if(!err){
@@ -104,7 +106,7 @@ export default class launcher {
 
 		setTimeout(()=>{
 			this.loop.call(this)
-		}, 30000);
+		}, 10000);
 
 	}
 
