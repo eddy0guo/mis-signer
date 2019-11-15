@@ -20,6 +20,8 @@ import cdp from './contract/cdp'
 import adex_utils from '../adex/api/utils'
 import psql from '../adex/models/db'
 import mist_wallet1 from '../adex/api/mist_wallet'
+import NP from 'number-precision'
+import users from '../adex/cli/users'
 //import { btc_start,eth_start,asim_asset_start} from "../deposit";
 
 var spawn = require('child_process').spawn;
@@ -61,6 +63,42 @@ export default ({ config, db }) => {
 		let address = await walletInst.getAddress()
 		res.json({ wallet:address })
 	});
+
+	wallet.get('/get_user_info/:address',async (req, res) => {
+		 let token_arr = await mist_wallet.list_tokens();
+		 let mist_user = await psql_db.find_user([req.params.address]);
+		 let users_obj = new users();
+        console.log("1111988888888b",mist_user);
+		if(!mist_user[0]){
+		    let balances = [];
+            let valuations  = [];
+			let infos = [];
+            for(let i in token_arr){
+                console.log("aabobj1234=",token_arr[i]);
+				let total_balance = await users_obj.get_total_balance(token_arr[i],req.params.address);
+
+				console.log("aabobj123---",req.params.address,total_balance);
+
+
+				let price = await mist_wallet.get_token_price2pi(token_arr[i].symbol);
+				console.log("aabobj123456=",token_arr[i]);
+				let valuation = NP.times(price,total_balance);
+				mist_user = {
+					address:req.params.address,
+					token_symbol:token_arr[i].symbol,
+					balance:total_balance,
+					valuation:valuation
+				}
+				infos.push(mist_user);
+            }
+			mist_user = infos;
+		}
+		console.log("aabobj1234588888=",mist_user);
+		res.json({ result:mist_user});
+	});
+
+
+
 
 	wallet.get('/list_assets_info',async (req, res) => {
 		let [err,info] = await to(psql_db.list_assets_info());

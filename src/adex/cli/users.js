@@ -4,6 +4,8 @@ import { chain } from '../../wallet/api/chain'
 import to from 'await-to-js'
 import mist_wallet1 from '../api/mist_wallet'
 import Token from '../../wallet/contract/Token'
+import Asset from '../../wallet/asset/Asset'
+import NP from 'number-precision'
 const crypto = require('crypto');
 var date = require("silly-datetime");
 
@@ -23,9 +25,28 @@ export default class users{
 		this.loop_total();
 	}
 
+	async get_total_balance(token_info,user_address){
+		
+		let token = new Token(token_info.address);
+		let [err,balance] = await to(token.balanceOf(user_address));
+
+		let asset = new Asset(token_info.asim_assetid)
+		let [err4,assets_balance] = await to(asset.balanceOf(user_address))
+		let asset_balance=0;
+		for(let j in assets_balance){
+			if( token_info.asim_assetid == assets_balance[j].asset){
+				asset_balance = assets_balance[j].value;
+			}
+		}
+		let total_balance = NP.divide(+balance,100000000) + (+asset_balance);	
+		console.log("aaobj123---",user_address,balance / 100000000,asset_balance,total_balance);
+		return total_balance;
+		
+	}
+
+
 	async loop_token() {
 	
-
 		let users = await this.db.list_users();	
 		let create_time = this.utils.get_current_time();
 		let token_arr = await this.mist_wallet.list_tokens();
@@ -34,18 +55,11 @@ export default class users{
 			let address = users[i].address;	
 			let balances = [];
 			let valuations  = [];
-			
-			console.log("77777",token_arr);
 			for(let j in token_arr){
-                      console.log("obj1234=",token_arr[j]);
-                            let token = new Token(token_arr[j].address);
-                            let [err,balance] = await to(token.balanceOf(address));
-                            balances.push(balance);
-
-                      console.log("obj12345=",token_arr[j]);
+						let total_balance = await this.get_total_balance(token_arr[j],address);
+                       balances.push(total_balance);
 					 		let price = await this.mist_wallet.get_token_price2pi(token_arr[j].symbol);
-                      console.log("obj123456=",token_arr[j]);
-							let valuation = price * balance;
+							let valuation = NP.times(price,total_balance);
 							valuations.push(valuation);
             }
 
@@ -75,20 +89,19 @@ export default class users{
 					 let token_symbol = token_arr[j].symbol;
 
 					 let price = await this.mist_wallet.get_token_price2pi(token_symbol);
-
-                      console.log("obj111111111=",token_arr[j]);
-                            let token = new Token(token_arr[j].address);
-                            let [err,balance] = await to(token.balanceOf(address));
-							let current_total = price * balance;
-                            totals += current_total;
+					let total_balance = await this.get_total_balance(token_arr[j],address);
+                      totals = NP.plus(totals,NP.times(price,total_balance));
+					  console.log("aaaaa-",total_balance,price,NP.times(price,total_balance));
             }
+
+					  console.log("aaaaa-",totals);
 			let update_info = [totals,create_time,address];
 			await this.db.update_user_total(update_info);
 		}
 		setTimeout(()=>{
 			this.loop_total.call(this)
 	//	}, 1000 * 60 * 60 * 24);
-		}, 1000 * 60 * 5);
+		}, 1000 * 60 * 60);
 
 	}
 
