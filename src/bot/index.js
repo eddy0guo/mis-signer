@@ -5,7 +5,7 @@ import morgan from 'morgan';
 // start price oracle
 // start bot
 import Price from './Price'
-import Bot from './Bot'
+import CloudBot from './CloudBot'
 
 let markets = {
 	"ASIM-PI":15,
@@ -43,7 +43,7 @@ priceOracle.start()
 for(let i in markets ){
 	let amount = amounts[i]
 	// console.log(i,markets[i],amount)
-	let bot = new Bot(i,priceOracle,amount)
+	let bot = new CloudBot(i,priceOracle,amount)
 	bot.start(5000+i*1000)
 }
 
