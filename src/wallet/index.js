@@ -49,6 +49,8 @@ async function getTestInst(){
 	walletInst = await walletHelper.testWallet(mist_config.fauct_word,'111111')
 	return walletInst
 }
+//PI,ASIM,BTC.USDT,ETH,MT
+let faucet_amount = [6000,100,0.1,1000,5,1000]
 
 export default ({ config, db }) => {
 	let wallet = Router();
@@ -143,7 +145,7 @@ export default ({ config, db }) => {
 			let wallet = await getTestInst();
 			asset.unlock(wallet,"111111")
 			await wallet.queryAllBalance()
-			let [err,result] = await to(asset.transfer(address,500000));
+			let [err,result] = await to(asset.transfer(address,faucet_amount[i]));
 
 			 results.push[result];
 			console.log("---------erc20_token_arr--i=",i,asset,"err-result",err,result,"\n\n\n\n")
