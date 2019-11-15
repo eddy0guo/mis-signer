@@ -72,7 +72,7 @@ export default class users{
 		setTimeout(()=>{
 			this.loop_token.call(this)
 		//间隔时间随着用户量的增长而降低
-		},1000 * 2);
+		},1000 * 10);
 
 	}
 
@@ -101,7 +101,7 @@ export default class users{
 		setTimeout(()=>{
 			this.loop_total.call(this)
 	//	}, 1000 * 60 * 60 * 24);
-		}, 1000 * 60 * 60);
+		}, 1000 * 60 * 60 * 12);
 
 	}
 
