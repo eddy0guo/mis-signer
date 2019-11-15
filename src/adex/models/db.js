@@ -53,6 +53,18 @@ export default class db{
 
 		} 
 
+		async my_orders2(filter_info) {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where trader_address=$1 and (status=$4 or status=$5)order by updated_at desc limit $3 offset $2',filter_info)); 
+			if(err) {
+				return console.error('my_order_查询失败', err);
+			}
+			//console.log('list_order_成功',JSON.stringify(result.rows)); 
+			return result.rows;
+
+		} 
+
+
+
 		async find_order(order_id) {
 			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where id=$1',order_id)); 
 			if(err) {
@@ -241,6 +253,17 @@ export default class db{
 
 		} 
 
+		async my_trades2(filter_info) {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_trades where taker=$1 or maker=$1 order by created_at desc limit $3 offset $2',filter_info)); 
+			if(err) {
+				return console.error('my_trades_查询失败', err);
+			}
+			return result.rows;
+
+		} 
+
+
+
 		async transactions_trades(id) {
 			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_trades where transaction_id=$1',id)); 
 			if(err) {
@@ -383,6 +406,17 @@ export default class db{
 			return result.rows;
 
 		}
+
+
+		async my_borrows2(filter_info) {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_borrows  where address=$1 order by updated_at desc limit $3 offset $2',filter_info)); 
+			if(err) {
+				return console.error('list_borrows_查询失败', err);
+			}
+			return result.rows;
+
+		}
+
 		
 		async find_borrow(info) {
 			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_borrows  where cdp_id=$1 and deposit_token_name=$2',info)); 
@@ -503,9 +537,22 @@ export default class db{
 			return result.rows;
 
 		}
+
+		async my_converts2(filter_info) {
+			console.log("11223344",filter_info);
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_token_convert  where address=$1 order by created_at desc limit $3 offset $2',filter_info)); 
+			if(err) {
+				return console.error('list_borrows_查询失败', err);
+			}
+
+			console.log("1122334455",result.rows);
+			return result.rows;
+
+		}
+
 		
 		 async insert_converts(info) {
-			let [err,result] = await to(this.clientDB.query('insert into mist_token_convert values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)',info));
+			let [err,result] = await to(this.clientDB.query('insert into asim_token_convert values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)',info));
 			if(err) {
 				return console.error('insert_traders_查询失败', err);
 			}

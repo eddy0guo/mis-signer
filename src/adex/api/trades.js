@@ -29,13 +29,21 @@ export default class trades{
         return result;
     }
 
-
-    async my_trades(message) {
+	async my_trades(message) {
 
             console.log("cancle_order--message=",message);
         let filter_info = [message.address];
         let result = await this.db.my_trades(filter_info);
 
+            console.log("cancle_order--result=",result);
+        return result;
+    }
+
+
+
+    async my_trades2(address,page,perpage) {
+		let offset = (+page - 1) * perpage;
+        let result = await this.db.my_trades2([address,offset,perpage]);
             console.log("cancle_order--result=",result);
         return result;
     }

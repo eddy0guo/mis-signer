@@ -378,6 +378,15 @@ export default ({ config, db }) => {
 			res.json({ result:result,err:err });
 	  });
 
+
+	 wallet.get('/my_borrows2/:address/:page/:perpage',async (req, res) => {
+		 	let {address,page,perpage} = req.params;
+			let offset = (+page - 1) * +perpage;
+			let [err,result] = await to(psql_db.my_borrows2([address,offset,+perpage]));
+			res.json({ result:result,err:err });
+	  });
+
+
 	  wallet.get('/matchorder',async (req, res) => {
 		
 		console.log("2222222222");
@@ -591,11 +600,20 @@ wallet.get('/sendrawtransaction/coin2asset/:amount/:address/:token_name/:row',as
             res.json({ result:result,err:err});
       });
 //划转记录
-wallet.get('/my_converts/:address',async (req, res) => {
+		wallet.get('/my_converts/:address',async (req, res) => {
 
             let [err,result] = await to(psql_db.my_converts([req.params.address]));
             res.json({ result:result,err:err});
 		});
+
+		wallet.get('/my_converts2/:address/:page/:perpage',async (req, res) => {
+			let {address,page,perpage} = req.params;
+			let offset = (+page - 1) * +perpage;
+            let [err,result] = await to(psql_db.my_converts2([address,offset,perpage]));
+            res.json({ result:result,err:err});
+		});
+
+
 
 
 
