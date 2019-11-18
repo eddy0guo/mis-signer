@@ -88,8 +88,60 @@ var mist_config_product = {
 
 }
 
+var mist_config_hqtn = {
+    ex_address:'0x633ef502d57e8cf443dab8fcd9a25dbd891bc20e83',
+    order_hash_word:'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
+    fauct_address:'0x666234b6348c10fed282b95c1f1768aa3113eb96b2',
+    fauct_word:'tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook',
+    fauct_prikey:'0x47c98c143179d48664dfc2f029a8583cb6a394a94037e06f0658dcf18ed6c66a',
+	relayers:[
+    {
+        prikey:"0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2",
+        word:"ivory local this tooth occur glide wild wild few popular science horror",
+        address:"0x66edd03c06441f8c2da19b90fcc42506dfa83226d3"
+    },
+    {
+        prikey:"0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2",
+        word:"ivory local this tooth occur glide wild wild few popular science horror",
+        address:"0x66edd03c06441f8c2da19b90fcc42506dfa83226d3"
+    },
+    {
+        prikey:"0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2",
+        word:"ivory local this tooth occur glide wild wild few popular science horror",
+        address:"0x66edd03c06441f8c2da19b90fcc42506dfa83226d3"
 
+    }],
+	//0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c
+	bridge_fauct_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
+	wallet_default_passwd:"111111",
+	did_seed_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
+	asimov_chain_rpc:"http://119.23.215.121:8545",
+	mist_server_port:21000,
+	eth_explorer_rpc:"http://119.23.215.121:8030",
+	btc_explorer_rpc:"https://api.bitcore.io/api/BTC/testnet"
 
-var mist_config = (process.env.MIST_MODE == 'mist_test' ? mist_config_test : mist_config_product)
+}
+var mist_config_hqpd = {};
+
+var mist_config;
+switch (process.env.MIST_MODE) {
+	case 'mist_test':
+		mist_config = mist_config_test;
+		break;
+	//old product
+	case 'postgres':
+		mist_config = mist_config_product;
+		break;
+	//hongqiaotestnet
+	case 'mist_hqtn':
+		mist_config = mist_config_hqtn;
+		break;
+	//reserved for future use,hongqiaoproduct
+	case 'mist_hqpd':
+		mist_config = mist_config_hqpd;
+		break;
+	default:
+		mist_config = mist_config_test;
+}
 //var mist_config = mist_config_test;
 export default mist_config

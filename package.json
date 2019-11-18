@@ -15,6 +15,7 @@
     "bridge": "nodemon -w src/did/bridge --exec \"babel-node src/did/bridge --presets es2015,stage-0\"",
     "server-dev": "source ./mist_test.env && babel-node src --presets es2015,stage-0",
     "server-product": "source ./mist_product.env && babel-node src --presets es2015,stage-0",
+    "server-hqtn": "source ./mist_hqtn.env && babel-node src --presets es2015,stage-0",
     "pm2": "npm run -s build && source ./mist_product.env && pm2 start dist"
   },
   "eslintConfig": {

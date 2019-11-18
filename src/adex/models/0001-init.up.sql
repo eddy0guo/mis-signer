@@ -132,3 +132,19 @@ create table asim_assets_info(
   created_at  timestamp default now()
 );
 
+create table asim_assets_convert(
+  id text PRIMARY KEY,
+  address  text default '',
+  base_asset_id text default '',
+  base_asset_name text default '',
+  base_asset_address text default '',
+  base_amount numeric(32,8) default 0,
+  quote_asset_id text default '',
+  quote_asset_name text default '' ,
+  quote_asset_address text default '' ,--circulation_amount + producer_amount = total
+  quote_amount numeric(32,8) default 0,
+  fee_base_amount  numeric(32,8) default 0,
+  created_at  timestamp default now()
+);
+
+
