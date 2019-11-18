@@ -57,6 +57,14 @@ export default ({ config, db }) => {
        res.json({result});
 	});
 
+adex.get('/list_tokens', async (req, res) => {
+					 let result = await mist_wallet.list_tokens();
+                    console.log(result)
+       res.json({result});
+	});
+
+
+
 
  	adex.get('/get_token_price', async (req, res) => {
 				var obj = urllib.parse(req.url,true).query;
