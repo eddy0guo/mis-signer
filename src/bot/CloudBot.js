@@ -129,14 +129,14 @@ export default class CloudBot {
         let address = this.addresses[index]
         let account = this.accounts[index]
 
-        console.log("BOT:", this.market, this.price())
-        console.log(side, price.toFixed(2), amount.toFixed(4))
-
         let order_id = await this.buildOrder(side,price,amount,address)
         let signature = await this.signOrder(account,order_id)
         let res = await this.confirmOrder(side,price,amount,address,signature,order_id)
 
-        console.log(res?"success":"failed")
+        console.log(
+            "BOT:", this.market, this.price(), 
+            side, price.toFixed(2), amount.toFixed(4),
+            res?"success":"failed")
 
     }
 

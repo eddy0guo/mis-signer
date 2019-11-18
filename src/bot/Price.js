@@ -52,22 +52,22 @@ export default class Price {
         usdt*=1+(Math.random()-0.5)/100
         mt*=1+(Math.random()-0.3)/100*5
 
-        let eth = this.prices["ETH-USDT"]
-        let btc = this.prices["BTC-USDT"]
+        let eth_usdt = this.prices["ETH-USDT"]
+        let btc_usdt = this.prices["BTC-USDT"]
 
         let markets = {
-            "BTC-PI":btc*usdt,
-            "ETH-PI":eth*usdt,
+            "BTC-PI":btc_usdt*usdt,
+            "ETH-PI":eth_usdt*usdt,
             "ASIM-PI":asim,
             "USDT-PI":usdt,
             "MT-PI":mt,
             
-            "BTC-USDT":btc,
-            "ETH-USDT":eth,
+            "BTC-USDT":btc_usdt,
+            "ETH-USDT":eth_usdt,
             "ASIM-USDT":asim/usdt,
         
-            "BTC-MT":btc*usdt/mt,
-            "ETH-MT":eth*usdt/mt,
+            "BTC-MT":btc_usdt*usdt/mt,
+            "ETH-MT":eth_usdt*usdt/mt,
         }
 
         this.prices = markets;
