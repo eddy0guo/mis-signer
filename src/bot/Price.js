@@ -48,9 +48,9 @@ export default class Price {
         let usdt = this.prices["USDT-PI"]
         let mt = this.prices["MT-PI"]
 
-        asim*=1+(Math.random()-0.4)/100*3
+        asim*=1+(Math.random()-0.5)/100*3
         usdt*=1+(Math.random()-0.5)/100
-        mt*=1+(Math.random()-0.3)/100*5
+        mt*=1+(Math.random()-0.5)/100*5
 
         let eth_usdt = this.prices["ETH-USDT"]
         let btc_usdt = this.prices["BTC-USDT"]
