@@ -5,7 +5,7 @@ import to from 'await-to-js'
 import mist_wallet1 from '../api/mist_wallet'
 import Token from '../../wallet/contract/Token'
 const crypto = require('crypto');
-import {mist_config} from '../index';
+import mist_config from '../../cfg'
 import Asset from '../../wallet/asset/Asset'
 import fake_token from '../../wallet/contract/AssetToken'
 import walletHelper from '../../wallet/lib/walletHelper'

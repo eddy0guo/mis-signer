@@ -26,9 +26,7 @@ let hdkey = require('ethereumjs-wallet/hdkey');
 var util = require('ethereumjs-util');
 
 var PromiseBluebird = require('bluebird')
-import {
-	mist_config
-} from '../adex/index';
+import mist_config from '../cfg';
 
 import dbConfig from './config/database'
 
@@ -42,8 +40,6 @@ const bcrypt = require('bcrypt-nodejs');
 import cdp from '../wallet/contract/cdp'
 import adex_utils from '../adex/api/utils'
 import psql from '../adex/models/db'
-//稍后cdp相关参数存表中,各个币种的利息最小质押都和btc一样，btc价格60000，eth1400，asim666
-let asim_address = '0x638f6ee4c805bc7a8558c1cf4df074a38089f6fbfe';
 
 // require('./config/passport')(passport);
 import PassportPlugin from './config/passport'
@@ -54,14 +50,13 @@ let User = require("./models/user");
 let user_tx_records = require("./models/user_tx_records");
 
 let payPassword = 'temp-pass-227'
-let ex_address = '0x633ef502d57e8cf443dab8fcd9a25dbd891bc20e83'
-const seed_word = 'wing safe foster choose wisdom myth quality own gallery logic imitate pink';
+//const seed_word = mist_config.did_seed_word;
 
 let codeObj = {};
 
 
 async function my_wallet(word) {
-	return await walletHelper.testWallet(word, '111111')
+	return await walletHelper.testWallet(word,mist_conf.wallet_default_passwd)
 }
 
 export default ({
@@ -174,7 +169,7 @@ export default ({
 
 					//const network = bitcoin.networks.bitcoin;
 					const network = bitcoin.networks.testnet;
-					const btc_seed = bip39.mnemonicToSeed(seed_word, '');
+					const btc_seed = bip39.mnemonicToSeed(mist_config.did_seed_word, '');
 					const root = bip32.fromSeed(btc_seed, network)
 					const btc_keyPair = root.derivePath(path)
 					let btc_address = bitcoin.payments.p2pkh({
@@ -183,7 +178,7 @@ export default ({
 					})
 					console.log("BTC普通地址：", btc_address.address, "id=", path, "\n")
 
-					const eth_seed = bip39.mnemonicToSeedHex(seed_word);
+					const eth_seed = bip39.mnemonicToSeedHex(mist_config.did_seed_word);
 					let hdwallet = hdkey.fromMasterSeed(eth_seed);
 					let eth_keypair = hdwallet.derivePath(path);
 					let eth_address = util.pubToAddress(eth_keypair._hdkey._publicKey, true);
@@ -595,6 +590,7 @@ export default ({
 			let token = new Token_did(token_info[0].address);
 			token.unlock(wallet, payPassword)
 			await wallet.queryAllBalance()
+			//手动赋权目前只能赋值这么多，fixme
 			let [err2, rawtx] = await to(token.approve(mist_config.ex_address, 90 * 10 ** 13));
 			console.log("444--", err2, rawtx);
 			res.json({

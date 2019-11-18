@@ -8,7 +8,7 @@ import {restore_order} from './order'
 import NP from 'number-precision'
 
 var date = require("silly-datetime");
-import {mist_config,relayers} from '../index';
+import mist_config from '../../cfg';
 
 
 let walletInst;
@@ -144,8 +144,8 @@ export default class engine {
 
 		//为了保证relayer的轮番顺序打包，这里和transaction_id关联
 		let index = transaction_id % 3;
-		console.log("gxyrelayers-engine-1",transaction_id,index,relayers[index]);
-		let order_address_set = [token_address[0].quote_token_address, token_address[0].base_token_address, relayers[index].address];
+		console.log("gxyrelayers-engine-1",transaction_id,index,mist_config.relayers[index]);
+		let order_address_set = [token_address[0].quote_token_address, token_address[0].base_token_address, mist_config.relayers[index].address];
 
 
 

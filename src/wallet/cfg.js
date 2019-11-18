@@ -2,14 +2,14 @@ let env = process.env.NODE_ENV
 var cfg = {
 	env: (env == 'development' ? 0 : 1), // 0测试  1正式
 	RateDomain: 'http://webforex.hermes.hexun.com',
-	chainRPC: 'https://test-rpc.asimov.network',
+	chainRPC: process.env.ASIMOV_CHAIN_RPC,
 	activeURL: '*',
 	devnet: {
-		rpc: 'https://test-rpc.asimov.network'
+		rpc: process.env.ASIMOV_CHAIN_RPC,
 	},
 
 	testnet: {
-		rpc: 'https://test-rpc.asimov.network'
+		rpc: process.env.ASIMOV_CHAIN_RPC,
 	}
 }
 if (env == 'production') {

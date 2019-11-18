@@ -18,69 +18,11 @@ import client1 from './models/db'
 
 import mist_wallet1 from './api/mist_wallet'
 const urllib = require('url');
+import mist_config from '../cfg'
 
 async function my_wallet(word){
                 return await walletHelper.testWallet(word,'111111')
 }
-
-
-var mist_config = {
-	ex_address:'0x633ef502d57e8cf443dab8fcd9a25dbd891bc20e83',
-	//product
-//	relayer:'0x66edd03c06441f8c2da19b90fcc42506dfa83226d3',
-//	relayer_word:'ivory local this tooth occur glide wild wild few popular science horror',
-//	relayer_prikey:'0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2',
-	//testmod
-	relayer:'0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9',
-	relayer_word:'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
-	relayer_prikey:'0xcf238d72a2d82f3b0f4085fbfe926ec69ea739c43af2690b846f195c60337c49',
-	//另外起服务的时候更换个orderhash打包的账户，避免和生产跑着的并发
-	//take
-	order_hash_word:'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
-	fauct_address:'0x666234b6348c10fed282b95c1f1768aa3113eb96b2',
-	fauct_word:'tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook',
-	fauct_prikey:'0x47c98c143179d48664dfc2f029a8583cb6a394a94037e06f0658dcf18ed6c66a'
-}
-/*
-var relayers = [
-    {
-        prikey:"0xbbb56da9edd3cac9e7c1e9f991d4bc51f5c9dde9a6e3122fbd53b5f8cce6799b",
-        word:"eyebrow quantum rebel century just athlete rough chicken segment control scene obscure",
-		address:"0x66f65201237e2a72c0414062cbfe3b161f20216c19"
-    },
-    {
-        prikey:"0x68b6c5c8848b11cb3d9abc0bac5fd567812865f59522fba471c69e688991b3cd",
-        word:"cream expire roof family input area ecology bench divert siege goat movie",
-		address:"0x6649aaed990397e5c3add1b83f034e4e05349e92eb"
-    },
-    {
-        prikey:"0x8a7135917364bfce158b44b68e7e67ab10bb02c852e0303d376003281cc5e0bd",
-        word:"toss uniform manage bar circle shine project method danger replace capable bicycle",
-		address:"0x66ac76c2aea20aafb807fa2ac7fbeba44507d0e4a0"
-    }
-]; 
-
-*/
-var relayers = [
-    {
-        prikey:"0xcf238d72a2d82f3b0f4085fbfe926ec69ea739c43af2690b846f195c60337c49",
-        word:"enhance donor garment gospel loop purse pumpkin bag oven bone decide street",
-		address:"0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9"
-    },
-    {
-		prikey:"0xcf238d72a2d82f3b0f4085fbfe926ec69ea739c43af2690b846f195c60337c49",
-        word:"enhance donor garment gospel loop purse pumpkin bag oven bone decide street",
-		address:"0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9"
-    },
-    {
-		prikey:"0xcf238d72a2d82f3b0f4085fbfe926ec69ea739c43af2690b846f195c60337c49",
-        word:"enhance donor garment gospel loop purse pumpkin bag oven bone decide street",
-		address:"0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9"
-       
-    }
-]; 
-
-
 
 
 export default ({ config, db }) => {
@@ -435,4 +377,3 @@ did对order_id进行签名，获取rsv
 
 	return adex;
 };
-export{mist_config,relayers};

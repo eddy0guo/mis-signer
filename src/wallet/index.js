@@ -13,7 +13,8 @@ import Token from '../wallet/contract/Token'
 import Erc20 from './contract/ERC20'
 import fake_token from './contract/AssetToken'
 import Erc20Test from './contract/ERC20Test'
-import {mist_config} from '../adex/index';
+//import {mist_config} from '../adex/index';
+import mist_config from '../cfg'
 
 import mist10 from './contract/mist_ex10'
 import cdp from './contract/cdp'
@@ -189,7 +190,6 @@ export default ({ config, db }) => {
 
            let token = new Token(token_info[0].address);
            let [err,balance] = await to(token.balanceOf(req.params.address));
-		   console.log("gxy666---",mist_config);
            let [err2,allowance] = await to(token.allowance(req.params.address,mist_config.ex_address));
 
 		   let asset = new Asset(token_info[0].asim_assetid)
@@ -336,7 +336,7 @@ export default ({ config, db }) => {
 		console.log("33333");
 		let mist = new mist10(mist_config.ex_address);
         walletInst = await getTestInst();
-		 mist.unlock(walletInst,"111111")
+		 mist.unlock(walletInst,mist_config.wallet_default_passwd)
 		await walletInst.queryAllBalance()
 
         let [err,result] = await to(mist.orderhash(walletInst))

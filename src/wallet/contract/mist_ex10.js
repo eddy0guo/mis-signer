@@ -11,7 +11,6 @@ var bip32 = require('bip32');
 var bitcoin = require('bitcoinjs-lib');
 var ethers = require('ethers');
 let hdkey = require('ethereumjs-wallet/hdkey');
-import {mist_config} from '../../adex/index';
 
 import { HDPrivateKey, crypto } from "bitcore-lib";
 

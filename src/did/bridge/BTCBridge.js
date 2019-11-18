@@ -2,9 +2,11 @@ import to from 'await-to-js'
 import axios from 'axios'
 import walletHelper from '../../wallet/lib/walletHelper'
 import Asset from '../../wallet/asset/Asset'
+import mist_config from '../../cfg'
 import DepositModel from '../models/deposit'
 
-axios.defaults.baseURL = 'https://api.bitcore.io/api/BTC/testnet'
+axios.defaults.baseURL = process.env.BTC_EXPLORER_RPC
+//axios.defaults.baseURL = 'https://api.bitcore.io/api/BTC/testnet'
 
 // https://api.bitcore.io/api/BTC/testnet/block/tip
 // https://api.bitcore.io/api/BTC/testnet/address/n2h3AZzCWdWc2z5NEjYJVtDmR7vBn1eq9z/coins
@@ -19,8 +21,7 @@ export default class BTCBridge {
 
 	async faucetWallet() {
 		let wallet = await walletHelper.testWallet(
-			'wing safe foster choose wisdom myth quality own gallery logic imitate pink',
-			'111111')
+			mist_confifg.bridge_fauct_word,mist_config.wallet_default_passwd)
 		return wallet
 	}
 
