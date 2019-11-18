@@ -1,3 +1,4 @@
+// npm run build
 // pm2 start pm2-mist.config.js --only mist --env production
 
 module.exports = {
