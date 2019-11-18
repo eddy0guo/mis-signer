@@ -6,7 +6,7 @@ import DepositModel from '../models/deposit'
 import mist_config from '../../cfg'
 
 //axios.defaults.baseURL = 'https://api.bitcore.io/api/BTC/testnet'
-axios.defaults.baseURL = process.env.ETH_EXPLORER_RPC
+axios.defaults.baseURL = mist_config.eth_explorer_rpc
 
 // https://api.bitcore.io/api/BTC/testnet/block/tip
 // https://api.bitcore.io/api/BTC/testnet/address/n2h3AZzCWdWc2z5NEjYJVtDmR7vBn1eq9z/coins
