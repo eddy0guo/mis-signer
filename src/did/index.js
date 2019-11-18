@@ -56,7 +56,7 @@ let codeObj = {};
 
 
 async function my_wallet(word) {
-	return await walletHelper.testWallet(word,mist_conf.wallet_default_passwd)
+	return await walletHelper.testWallet(word,mist_config.wallet_default_passwd)
 }
 
 export default ({

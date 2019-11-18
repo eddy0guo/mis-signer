@@ -552,7 +552,7 @@ export default class db{
 
 		
 		 async insert_converts(info) {
-			let [err,result] = await to(this.clientDB.query('insert into asim_token_convert values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)',info));
+			let [err,result] = await to(this.clientDB.query('insert into mist_token_convert values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)',info));
 			if(err) {
 				return console.error('insert_traders_查询失败', err);
 			}
