@@ -21,6 +21,7 @@ export default class users{
 	}
 
 	async start() {
+		NP.enableBoundaryChecking(false); 
 		this.loop_token();
 		this.loop_total();
 	}
