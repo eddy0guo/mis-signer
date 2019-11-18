@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import bodyParser from 'body-parser';
+import consola from 'consola'
 import initializeDb from './db';
 import middleware from './middleware';
 import api from './api';
@@ -56,5 +57,10 @@ initializeDb( db => {
 		console.log(`Started on port ${app.server.address().port}`);
 	});
 });
+
+
+console.log = ()=>{}
+consola.info('test consola')
+
 
 export default app;

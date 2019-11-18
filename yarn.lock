@@ -222,6 +222,11 @@ anymatch@^2.0.0:
     micromatch "^3.1.4"
     normalize-path "^2.1.1"
 
+apicache@^1.5.2:
+  version "1.5.2"
+  resolved "https://registry.npm.taobao.org/apicache/download/apicache-1.5.2.tgz#2cb0697d9b1b612b505b1a44face66d48b1d1404"
+  integrity sha1-LLBpfZsbYStQWxpE+s5m1IsdFAQ=
+
 aproba@^1.0.3:
   version "1.2.0"
   resolved "https://registry.npm.taobao.org/aproba/download/aproba-1.2.0.tgz#6802e6264efd18c790a1b0d517f0f2627bf2c94a"
@@ -1875,6 +1880,11 @@ configstore@^3.0.0:
     unique-string "^1.0.0"
     write-file-atomic "^2.0.0"
     xdg-basedir "^3.0.0"
+
+consola@^2.11.0:
+  version "2.11.0"
+  resolved "https://registry.npm.taobao.org/consola/download/consola-2.11.0.tgz#9bb35d850d8cecde894ce2eb4d792fa6b90d9013"
+  integrity sha1-m7NdhQ2M7N6JTOLrTXkvprkNkBM=
 
 console-control-strings@^1.0.0, console-control-strings@~1.1.0:
   version "1.1.0"

@@ -20,6 +20,9 @@ import mist_wallet1 from './api/mist_wallet'
 const urllib = require('url');
 import mist_config from '../cfg'
 
+import apicache from 'apicache'
+let cache = apicache.middleware
+
 async function my_wallet(word){
                 return await walletHelper.testWallet(word,'111111')
 }
@@ -355,8 +358,8 @@ did对order_id进行签名，获取rsv
 
 
 
-
-	adex.get('/trading_view', async (req, res) => {
+	// add 10 second memory cache ( change to redis later )
+	adex.get('/trading_view',cache('10 second'), async (req, res) => {
 		let current_time = Math.floor(new Date().getTime() / 1000);
 /**
 		let message = {
