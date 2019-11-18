@@ -1,15 +1,16 @@
+import mist_config from '../cfg'
 let env = process.env.NODE_ENV
 var cfg = {
 	env: (env == 'development' ? 0 : 1), // 0测试  1正式
 	RateDomain: 'http://webforex.hermes.hexun.com',
-	chainRPC: process.env.ASIMOV_CHAIN_RPC,
+	chainRPC: mist_config.asimov_chain_rpc,
 	activeURL: '*',
 	devnet: {
-		rpc: process.env.ASIMOV_CHAIN_RPC,
+		rpc: mist_config.asimov_chain_rpc,
 	},
 
 	testnet: {
-		rpc: process.env.ASIMOV_CHAIN_RPC,
+		rpc: mist_config.asimov_chain_rpc,
 	}
 }
 if (env == 'production') {

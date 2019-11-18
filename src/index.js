@@ -10,6 +10,7 @@ import wallet from './wallet';
 import adex  from './adex';
 import config from './config.json';
 import did from './did'
+import mist_config from './cfg'
 
 let app = express();
 
@@ -51,7 +52,7 @@ initializeDb( db => {
 	app.use('/adex',adex({ config, db }));
 	app.use('/did',did({config,db}))
 
-	app.server.listen(process.env.PORT || process.env.MIST_SERVER_PORT, () => {
+	app.server.listen(process.env.PORT || mist_config.mist_server_port, () => {
 		console.log(`Started on port ${app.server.address().port}`);
 	});
 });
