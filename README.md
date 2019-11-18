@@ -62,17 +62,28 @@ docker run -p 8080:8080 mist/api-service
 
 ## TODO
 
-- [ ] JWT
-- [ ] POA Nodes
-- [ ] WebSocket
-- [ ] 多币种划转
+- [x] JWT
+- [x] POA Nodes
+- [x] WebSocket
+- [x] 多币种划转
 - [ ] BTC充提币
 - [ ] ETH充提币
 - [ ] USDT（ERC20）充提币
 - [ ] DB的安全部署
 
-##running mode
-##test mode
-source mist_test.env 
-##product mode
-source mist_product.env 
+## Deploy
+
+```bash
+npm run build
+pm2 start pm2-mist.config.js --only mist --env production
+```
+
+## running mode
+
+### test mode
+
+source mist_test.env
+
+### product mode
+
+source mist_product.env
