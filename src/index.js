@@ -52,6 +52,7 @@ initializeDb( db => {
 	app.use('/wallet', wallet({ config, db }));
 	app.use('/adex',adex({ config, db }));
 	app.use('/did',did({config,db}))
+	app.use('/light',did({config,db}))
 
 	app.server.listen(process.env.PORT || mist_config.mist_server_port, () => {
 		console.log(`Started on port ${app.server.address().port}`);
