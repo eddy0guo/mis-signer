@@ -1,6 +1,7 @@
 create table asim_express_records(
   trade_id text PRIMARY KEY,
 
+  address text default '',
   base_asset_name text default '',
   base_amount numeric(32,8) default 0,
 
@@ -10,7 +11,7 @@ create table asim_express_records(
   quote_amount numeric(32,8) default 0,
 
   fee_rate numeric(32,8) default 0,
-  fee_token numeric(32,8) default 0,
+  fee_token text default '',
   fee_amount  numeric(32,8) default 0,
 
   base_txid text default '',

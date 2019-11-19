@@ -1,2 +1,2 @@
-drop table if exists asim_light_info;
-drop table if exists asim_light_records;
+drop table if exists asim_express_info;
+drop table if exists asim_express_records;

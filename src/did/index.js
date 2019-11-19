@@ -43,11 +43,13 @@ import psql from '../adex/models/db'
 
 // require('./config/passport')(passport);
 import PassportPlugin from './config/passport'
+import Asset from '../wallet/asset/AssetDid'
 PassportPlugin(passport)
 
 let jwt = require('jsonwebtoken');
 let User = require("./models/user");
 let user_tx_records = require("./models/user_tx_records");
+
 
 let payPassword = 'temp-pass-227'
 //const seed_word = mist_config.did_seed_word;
@@ -599,6 +601,33 @@ export default ({
 			});
 		});
 	});
+
+	//express
+	//router.get('/asim_withdraw/:amount/:username/:token_name',passport.authenticate('jwt', { session: false }),async (req, res) => {
+	router.get('/build_express/:username/:base_token_name/:amount', async (req, res) => {
+	//router.get('/asim_withdraw/:amount/:username/:token_name', async (req, res) => {
+		User.findOne({
+			username: req.params.username
+		}, async (err, user) => {
+
+			let walletInst = await my_wallet(user.mnemonic);
+			let tokens = await psql_db.get_tokens([req.params.base_token_name])
+
+
+			let asset = new Asset(tokens[0].asim_assetid)
+            asset.unlock(walletInst,mist_config.wallet_default_passwd)
+            await walletInst.queryAllBalance()
+            let [err2,result] = await to(asset.transfer(mist_config.express_address,req.params.amount));
+			console.log(result, err2);
+
+			res.json({
+				result: result,
+				err: err2
+			});
+		});
+	});
+
+
 
 
 
