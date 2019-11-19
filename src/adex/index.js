@@ -96,9 +96,6 @@ adex.get('/list_tokens', async (req, res) => {
 					var obj = urllib.parse(req.url,true).query;
  	 				  console.log("obj=",obj);
                     let token_arr = await mist_wallet.list_tokens();
-					console.log("---env",process.env.MIST_MODE);
-					console.log("---env",process.env);
-
 					let balances = [];
  	 				  console.log("obj11111111133=",token_arr);
                     for(var i in token_arr){

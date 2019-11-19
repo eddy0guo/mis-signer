@@ -45,7 +45,7 @@ export default class watcher {
 		//无论是失败还是成功，都会更新orders的confirm_amount,一个transaction确认成功，去更新一个taker和多个maker的order
 		//多个进程同时走的话可能多次更新表信息，对于做了加减运算的地方，可能会导致出现负值
 		let update_time = this.utils.get_current_time();
-		if (!err && result.confirmations >= 8) {
+		if (!err && result.confirmations >= 1) {
 			let status = 'successful';
 			let info = [status, update_time, id]
 			await this.db.update_transactions(info);

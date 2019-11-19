@@ -41,7 +41,7 @@ do
 		pubkey=`echo ${sign} | awk -F ' ' '{print $3}' `
 		curl -v http://119.23.181.166:21000/adex/build_order?marketID=$marketID\&side="buy"\&price=${price}\&amount=${amount}\&trader_address="0x66bb0fb407455e22ad2ea7d90db2b0fc41c4540675"\&signature="\{\"r\":\"${r}\",\"s\":\"${s}\",\"pubkey\":\"${pubkey}\"\}"\&order_id=${order_id}
 		echo -e "==================\n\n\n\n";
-		sleep 1;
+		sleep 20;
 
 
 		price=$(($(($(($RANDOM % 30)) + 1)) + init_price));
@@ -55,7 +55,7 @@ do
 		pubkey=`echo ${sign} | awk -F ' ' '{print $3}' `
 		curl -v http://119.23.181.166:21000/adex/build_order?marketID=$marketID\&side="sell"\&price=${price}\&amount=${amount}\&trader_address="0x66202fab701a58b4b622ee07ac8ac11b872d727ced"\&signature="\{\"r\":\"${r}\",\"s\":\"${s}\",\"pubkey\":\"${pubkey}\"\}"\&order_id=${order_id}
 		echo -e "==================\n\n\n\n";
-		sleep 1;
+		sleep 20;
 
 
 
@@ -70,7 +70,7 @@ do
 		pubkey=`echo ${sign} | awk -F ' ' '{print $3}' `
 		curl -v http://119.23.181.166:21000/adex/build_order?marketID=$marketID\&side="sell"\&price=${price}\&amount=${amount}\&trader_address="0x66bb0fb407455e22ad2ea7d90db2b0fc41c4540675"\&signature="\{\"r\":\"${r}\",\"s\":\"${s}\",\"pubkey\":\"${pubkey}\"\}"\&order_id=${order_id}
 		echo -e "==================\n\n\n\n";
-		sleep 1;
+		sleep 20;
 
 
 
@@ -86,7 +86,7 @@ do
 		pubkey=`echo ${sign} | awk -F ' ' '{print $3}' `
 		curl -v http://119.23.181.166:21000/adex/build_order?marketID=$marketID\&side="buy"\&price=${price}\&amount=${amount}\&trader_address="0x66202fab701a58b4b622ee07ac8ac11b872d727ced"\&signature="\{\"r\":\"${r}\",\"s\":\"${s}\",\"pubkey\":\"${pubkey}\"\}"\&order_id=${order_id}
 		echo -e "==================\n\n\n\n";
-		sleep 1;
+		sleep 20;
 
 	done
 done
