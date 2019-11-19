@@ -174,6 +174,31 @@ export default ({ config, db }) => {
 		res.json({ result:results});
 	});
 
+	wallet.get('/faucet3/:address',async (req, res) => {
+		console.log(req.params)
+	
+		let token_arr = await mist_wallet.list_tokens();
+		let results = [];	
+		 for(let i in  token_arr){
+		let address = req.params.address; 
+			 setTimeout(async ()=>{
+			let asset = new Asset(token_arr[i].asim_assetid)	
+
+			let wallet = await getTestInst();
+			asset.unlock(wallet,"111111")
+			await wallet.queryAllBalance()
+			let [err,result] = await to(asset.transfer(address,100000));
+
+			 results.push[result];
+			console.log("---------erc20_token_arr--i=",i,asset,"err-result",err,result,"\n\n\n\n")
+			 },i*10000);
+		}
+		
+		console.log(results);
+		res.json({ result:results});
+	});
+
+
 
 
 	wallet.get('/balanceOf/:token/:address',async (req, res) => {
@@ -403,7 +428,7 @@ export default ({ config, db }) => {
             let rowtx = [req.params.row];
             let [err,result] = await to(chain.sendrawtransaction(rowtx));
 						
-			console.log("444444444",req.params,result);
+			console.log("555444444444",req.params,result);
 
 			if(!err){	
 					setTimeout(async ()=>{
