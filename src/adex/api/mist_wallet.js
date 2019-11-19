@@ -80,6 +80,9 @@ export default class mist_wallet{
 		 let price2pi = await this.get_token_price2pi(symbol);
 
 		 let btc2pi = await this.get_token_price2pi("BTC");	
+		 if(price2pi == 0 || btc2pi == 0){
+			return 0;	 
+		}
 
 		 let price2btc = price2pi / btc2pi;
 

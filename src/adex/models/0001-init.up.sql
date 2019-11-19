@@ -132,7 +132,7 @@ create table asim_assets_info(
   created_at  timestamp default now()
 );
 
-create table mist_assets_convert(
+create table asim_assets_convert(
   id text PRIMARY KEY,
   address  text default '',
   base_asset_id text default '',
@@ -143,7 +143,10 @@ create table mist_assets_convert(
   quote_asset_name text default '' ,
   quote_asset_address text default '' ,--circulation_amount + producer_amount = total
   quote_amount numeric(32,8) default 0,
-  fee_base_amount  numeric(32,8) default 0,
+  fee_rate numeric(32,8) default 0,
+  fee_token numeric(32,8) default 0,
+  fee_amount  numeric(32,8) default 0,
+  updated_at  timestamp default now(),
   created_at  timestamp default now()
 );
 
