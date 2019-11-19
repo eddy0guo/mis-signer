@@ -132,7 +132,7 @@ create table asim_assets_info(
   created_at  timestamp default now()
 );
 
-create table asim_assets_convert(
+create table mist_assets_convert(
   id text PRIMARY KEY,
   address  text default '',
   base_asset_id text default '',

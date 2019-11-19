@@ -89,7 +89,7 @@ var mist_config_product = {
 }
 
 var mist_config_hqtn = {
-    ex_address:'0x633ef502d57e8cf443dab8fcd9a25dbd891bc20e83',
+    ex_address:'0x631ef05f0d170c7ac2cbbfaf5062edfbbb5eedb5fe',
     order_hash_word:'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
     fauct_address:'0x666234b6348c10fed282b95c1f1768aa3113eb96b2',
     fauct_word:'tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook',
