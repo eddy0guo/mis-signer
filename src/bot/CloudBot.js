@@ -2,6 +2,7 @@ import axios from 'axios'
 import to from 'await-to-js'
 import cfg from '../cfg'
 import consola from 'consola'
+import botConfig from './config'
 
 let localStorage = {}
 axios.headers = 'Access-Control-Allow-Methods:POST, GET, OPTIONS'
@@ -56,15 +57,9 @@ export default class CloudBot {
 
         this.$axios = axios
 
-        this.accounts = [
-            "13682471710",
-            "13682471714"]
-        this.password = [
-
-        ]
-        this.addresses = [
-            "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
-            "0x66fb54e73b1ea0a40ca95c5a514500902dc19f2d61"]
+        this.accounts = botConfig.accounts
+        this.password = botConfig.password
+        this.addresses = botConfig.addresses
         this.sides = ["buy", "sell"]
     }
 
