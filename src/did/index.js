@@ -372,6 +372,7 @@ export default ({
 			console.log("4444", req.params.borrow_amount * 100000000, req.params.borrow_time / 30, req.params.deposit_amount);
 			let [err2, row] = await to(cdp_obj.createDepositBorrow(req.params.borrow_amount * 100000000, req.params.borrow_time / 30, deposit_assetID, req.params.deposit_amount));
 			res.json({
+				success: row == undefined ? "failed":"success",
 				result: row
 			});
 		});
@@ -416,6 +417,7 @@ export default ({
 			//let [err2,row] = await to(cdp_obj.repay(+req.params.borrow_id,assetID,+req.params.amount));
 			let [err2, row] = await to(cdp_obj.repay(req.params.borrow_id, assetID, req.params.amount));
 			res.json({
+				success: row == undefined ? "failed":"success",
 				result: row
 			});
 		});
@@ -443,6 +445,7 @@ export default ({
 			//let [err2,row]  = await to(cdp_obj.deposit(41,'000000000000001e00000001',60));
 			let [err2, row] = await to(cdp_obj.deposit(req.params.borrow_id, assetID, req.params.amount));
 			res.json({
+				 success: row == undefined ? "failed":"success",
 				result: row
 			});
 		});
@@ -465,7 +468,9 @@ export default ({
 			let [err2, row] = await to(cdp_obj.liquidate(req.params.borrow_id, req.params.asset_id));
 			console.log(row, err2);
 			res.json({
-				result: row
+				 success: row == undefined ? "failed":"success",
+				result: row,
+				err:err2
 			});
 		});
 
@@ -492,6 +497,7 @@ export default ({
 
 
 			res.json({
+				 success: result == undefined ? "failed":"success",
 				result: result,
 				err: err2
 			});
@@ -520,8 +526,9 @@ export default ({
 			console.log(result, err2);
 
 			res.json({
+				 success: result == undefined ? "failed":"success",
 				result: result,
-				err: err
+				err: err2
 			});
 		});
 	});
@@ -540,6 +547,7 @@ export default ({
 				console.log("txs----------------",user);
 				let ethBridge = new ETHBridge(user.asim_address,"0x" + user.eth_address);
 				ethBridge.start(60*1000);
+
 			} else if (token_name == 'BTC') {
 				let btcBridge = new BTCBridge(user.asim_address,"0x" + user.btc_address);
 				btcBridge.start(60*1000);
@@ -551,9 +559,14 @@ export default ({
 				usdtBridge.start(60*1000);
 			} else {
 				return res.json({
+					 success: "failed",
 					result: "cannot support token"
 				});
 			}
+			 return res.json({
+                     success: "success",
+                    result: "start listenting"
+                });
 		});
 	});
 
@@ -575,8 +588,9 @@ export default ({
 			console.log(result, err2);
 
 			res.json({
+				success: result == undefined ? "failed":"success",
 				result: result,
-				err: err
+				err: err2
 			});
 		});
 	});
@@ -596,6 +610,7 @@ export default ({
 			let [err2, rawtx] = await to(token.approve(mist_config.ex_address, 90 * 10 ** 13));
 			console.log("444--", err2, rawtx);
 			res.json({
+				success: rawtx == undefined ? "failed":"success",
 				result: rawtx,
 				err: err2
 			});
@@ -621,6 +636,7 @@ export default ({
 			console.log(result, err2);
 
 			res.json({
+				success: result == undefined ? "failed":"success",
 				result: result,
 				err: err2
 			});
