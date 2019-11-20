@@ -55,6 +55,8 @@ export default class CloudBot {
         this.timer = -1
         this.amount = amount
 
+        this.maxOrderPrice = 5000
+
         this.$axios = axios
 
         this.accounts = botConfig.accounts
@@ -115,7 +117,7 @@ export default class CloudBot {
         addPrice = buy ? -addPrice : addPrice
         let price = this.price() + addPrice
 
-        let amount = 500 / this.price() * Math.random()
+        let amount = this.maxOrderPrice / this.price() * Math.random()
         if( this.amount > 0 ){
             amount = this.amount * Math.random()
             amount = Number(amount.toFixed(4))
