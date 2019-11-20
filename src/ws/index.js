@@ -3,13 +3,15 @@ import hash from 'object-hash'
 import Order from '../adex/api/order'
 import Market from '../adex/api/market'
 import Trades from '../adex/api/trades'
+import DB from '../adex/models/db'
 
 class WSMananger {
     constructor() {
         this.init()
-        this.order = new Order()
+        this.db = new DB();
+        this.order = new Order(this.db)
         this.market = new Market()
-        this.trades = new Trades()
+        this.trades = new Trades(this.db)
 
         this.depthHash = {}
 
@@ -108,6 +110,7 @@ class WSMananger {
     }
 
     async listOrderBook(marketID) {
+    // TODO: FIMME : order这里挂了，检查下相关逻辑
        let [err,result] = await to(this.order.order_book(marketID));
        if(err) console.log('listOrderBook',err)
        return result
