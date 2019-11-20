@@ -274,20 +274,13 @@ export default ({ config, db }) => {
 	});
 
 	//这里后期是要传输入信息和加密的密闻
-	wallet.get('/assetTransfer/:address/:amount',async (req, res) => {
-		let asset = new Asset(CONSTANT.DEFAULT_ASSET)	
+	wallet.get('/assetTransfer/:address/:symbol/:amount',async (req, res) => {
+		let tokens = await psql_db.get_tokens([req.params.symbol])
+		let asset = new Asset(tokens[0].asim_assetid)
 		walletInst = await getTestInst();
-		//walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
-		asset.unlock(walletInst,"111111")
+		asset.unlock(walletInst,"")
      	let [err,result] = await to(asset.transfer(req.params.address,req.params.amount));
-
 		console.log(result,err);
-
-		if( !err ){
-			// 先简单处理，Execute 前更新UTXO
-			await walletInst.queryAllBalance()
-		}
-		
 		res.json({ result:result,err:err });
 	});
 	/**
