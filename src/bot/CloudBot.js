@@ -1,6 +1,7 @@
 import axios from 'axios'
 import to from 'await-to-js'
 import cfg from '../cfg'
+import consola from 'consola'
 
 let localStorage = {}
 axios.headers = 'Access-Control-Allow-Methods:POST, GET, OPTIONS'
@@ -22,17 +23,17 @@ axios.interceptors.request.use(config => {
 //返回状态判断(添加响应拦截器)
 axios.interceptors.response.use(res => {
     // 可以对响应数据做些事
-    // console.log(res)
+    // consola.info(res)
     // save jwt,虽然没必要每次数据都检查，但是统一在这里处理逻辑更简洁点
     if (res.data && res.data.token) {
         // 储存 token
         localStorage.token = res.data.token
-        console.log("Save JWT:", localStorage.token)
+        consola.info("Save JWT:", localStorage.token)
     }
 
     return res
 }, error => {
-    console.log(error)
+    consola.info(error)
     if (error.response.status === 401) {
         // 401 说明 token 验证失败
         // 可以直接跳转到登录页面，重新登录获取 token
@@ -84,7 +85,7 @@ export default class CloudBot {
               password: 'this.password'
             }
           })
-        console.log(res)
+        consola.info(res)
     }
 
     start(delay) {
@@ -134,7 +135,7 @@ export default class CloudBot {
         let signature = await this.signOrder(account,order_id)
         let res = await this.confirmOrder(side,price,amount,address,signature,order_id)
 
-        console.log(
+        consola.info(
             "BOT:", this.market, this.price(), 
             side, price.toFixed(2), amount.toFixed(4),
             res?"success":"failed")
@@ -157,7 +158,7 @@ export default class CloudBot {
             }
         }))
         if( err ){
-            console.log("confirmOrder err")
+            consola.info("confirmOrder err")
             return
         }
         return res
@@ -174,7 +175,7 @@ export default class CloudBot {
             }
         }))
         if( err ){
-            console.log("signOrder err")
+            consola.info("signOrder err")
             return
         }
 
@@ -196,7 +197,7 @@ export default class CloudBot {
             }
         }))
         if( err ){
-            console.log("buildOrder err")
+            consola.info("buildOrder err")
             return
         }
         

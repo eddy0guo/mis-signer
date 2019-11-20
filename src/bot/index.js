@@ -1,11 +1,12 @@
 import http from 'http';
 import express from 'express';
 import morgan from 'morgan';
-
 // start price oracle
 // start bot
 import Price from './Price'
 import CloudBot from './CloudBot'
+
+console.log = ()=>{}
 
 let markets = {
 	"ASIM-PI":15,
@@ -73,8 +74,10 @@ app.all("*",function(req,res,next){
 import cli from './cli'
 app.use('/cli',cli())
 
-app.server.listen(8686, () => {
-	console.log(`Started on port ${app.server.address().port}`);
-});
+// not start cli for now
+
+// app.server.listen(8686, () => {
+// 	console.log(`Started on port ${app.server.address().port}`);
+// });
 
 export default app;
