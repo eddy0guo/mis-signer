@@ -41,8 +41,17 @@ var mist_config_test = {
         address:"0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9"
 
     }],
-	//0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c
 	bridge_fauct_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
+    bridge_fauct_asim_address:"0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c",
+    
+    bridge_fauct_eth_address:"0xF7aD9e873Ed1c6D257c7D497D78272e7F3574Aa4",
+    bridge_facut_eth_prikey:"8647e5b7175f8d05786dcb9b8bb5260674b33c1ad8ab401471d909681bce49f9",
+    bridge_fauct_usdt_address:"0xF7aD9e873Ed1c6D257c7D497D78272e7F3574Aa4",
+    
+    bridge_fauct_btc_address:"2Mv1JX1d5jvwz5bgLjwr82hsoKFFbXqDbZs",
+    bridge_fauct_btc_prikey:"cVyua8EAoys6qXpT6HfieYNk2fyNFETJE3K7syuszDn3WQ5NxcTx",
+
+
 	express_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
 	express_address:"0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c",
 
@@ -52,6 +61,7 @@ var mist_config_test = {
     mist_server_port:19300,
     websocket_port:19301,
 	eth_explorer_rpc:"http://119.23.215.121:8030",
+	eth_explorer_rpc:"http://119.23.215.121:29842",
 	btc_explorer_rpc:"https://api.bitcore.io/api/BTC/testnet"
 
 
@@ -81,8 +91,17 @@ var mist_config_product = {
         address:"0x66edd03c06441f8c2da19b90fcc42506dfa83226d3"
 
     }],
-	//0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c
 	bridge_fauct_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
+    bridge_fauct_asim_address:"0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c",
+    
+    bridge_fauct_eth_address:"0xF7aD9e873Ed1c6D257c7D497D78272e7F3574Aa4",
+    bridge_facut_eth_prikey:"8647e5b7175f8d05786dcb9b8bb5260674b33c1ad8ab401471d909681bce49f9",
+    bridge_fauct_usdt_address:"0xF7aD9e873Ed1c6D257c7D497D78272e7F3574Aa4",
+    
+    bridge_fauct_btc_address:"2Mv1JX1d5jvwz5bgLjwr82hsoKFFbXqDbZs",
+    bridge_fauct_btc_prikey:"cVyua8EAoys6qXpT6HfieYNk2fyNFETJE3K7syuszDn3WQ5NxcTx",
+
+
 	express_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
 	express_address:"0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c",
 
@@ -93,6 +112,7 @@ var mist_config_product = {
     mist_server_port:18000,
     websocket_port:28000,
 	eth_explorer_rpc:"http://119.23.215.121:8030",
+	eth_chain_rpc:"http://119.23.215.121:29842",
 	btc_explorer_rpc:"https://api.bitcore.io/api/BTC/testnet"
 
 }
@@ -122,6 +142,15 @@ var mist_config_hqtn = {
     }],
 	//0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c
 	bridge_fauct_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
+	bridge_fauct_asim_address:"0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c",
+
+	bridge_fauct_eth_address:"0xF7aD9e873Ed1c6D257c7D497D78272e7F3574Aa4",
+	bridge_facut_eth_prikey:"8647e5b7175f8d05786dcb9b8bb5260674b33c1ad8ab401471d909681bce49f9",
+	bridge_fauct_usdt_address:"0xF7aD9e873Ed1c6D257c7D497D78272e7F3574Aa4",
+
+	bridge_fauct_btc_address:"2Mv1JX1d5jvwz5bgLjwr82hsoKFFbXqDbZs",
+	bridge_fauct_btc_prikey:"cVyua8EAoys6qXpT6HfieYNk2fyNFETJE3K7syuszDn3WQ5NxcTx",
+
 	express_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
 	express_address:"0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c",
 
@@ -131,6 +160,7 @@ var mist_config_hqtn = {
     mist_server_port:21000,
     websocket_port:21001,
 	eth_explorer_rpc:"http://119.23.215.121:8030",
+	eth_chain_rpc:"http://119.23.215.121:29842",
 	btc_explorer_rpc:"https://api.bitcore.io/api/BTC/testnet"
 
 }

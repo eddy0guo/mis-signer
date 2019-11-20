@@ -559,12 +559,12 @@ export default ({
 				usdtBridge.start(60*1000);
 			} else {
 				return res.json({
-					 success: "failed",
+					 success: false,
 					result: "cannot support token"
 				});
 			}
 			 return res.json({
-                     success: "success",
+                     success: true,
                     result: "start listenting"
                 });
 		});
@@ -572,28 +572,41 @@ export default ({
 
 
 	//交易所提币
-	router.get('/withdraw/:amount/:username/to_address/token_name', async (req, res) => {
+	router.get('/withdraw/:username/:to_address/:token_name/:amount', async (req, res) => {
+		let {username,to_address,token_name,amount} = req.params;
 		User.findOne({
-			username: req.params.username
+			username: username
 		}, async (err, user) => {
 
-			let erc20 = new Erc20(asim_address);
-			let walletInst = await my_wallet(user.mnemonic);
-			//walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
-			erc20.unlock(walletInst, "111111")
-			await walletInst.queryAllBalance()
-			//这里为了和deposit保持单位一致
-			let [err2, result] = await to(erc20.withdraw(req.params.amount * Math.pow(10, 8)));
+			if (token_name == 'ETH') {
+				//ether.start_deposit(user);
+				console.log("txs----------------",user);
+				let ethBridge = new ETHBridge(user.asim_address,to_address);
+				await ethBridge.withdraw(user.mnemonic,amount);
 
-			console.log(result, err2);
+			} else if (token_name == 'BTC') {
+				let btcBridge = new BTCBridge(user.asim_address,to_address);
+				await btcBridge.withdraw(user.mnemonic,amount);
+				console.log("deposit btc");
+			} else if (token_name == 'USDT') {
+				console.log("deposit usdt");
+				console.log("txs----------------",user);
+				let usdtBridge = new USDTBridge(user.asim_address,to_address);
+				await usdtBridge.withdraw(user.mnemonic,amount);
+			} else {
+				return res.json({
+					 success: false,
+					result: "cannot support token"
+				});
+			}
+			 return res.json({
+                     success: true,
+                    result: "start listenting"
+                });
 
-			res.json({
-				success: result == undefined ? false:true,
-				result: result,
-				err: err2
-			});
 		});
 	});
+
 	router.get('/approve/:username/:token_name', passport.authenticate('jwt', {
 		session: false
 	}), async (req, res) => {

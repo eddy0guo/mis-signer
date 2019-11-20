@@ -5,6 +5,12 @@ import Asset from '../../wallet/asset/Asset'
 import DepositModel from '../models/deposit'
 import mist_config from '../../cfg'
 
+
+const Web3 = require('web3')
+const EthereumTx = require('ethereumjs-tx').Transaction
+//var EthereumTx = require('ethereumjs-tx').Transaction
+let web3 = new Web3(new Web3.providers.HttpProvider("http://119.23.215.121:29842"));
+
 //axios.defaults.baseURL = 'https://api.bitcore.io/api/BTC/testnet'
 axios.defaults.baseURL = mist_config.eth_explorer_rpc
 
@@ -25,6 +31,12 @@ export default class ETHBridge {
 			mist_config.bridge_fauct_word,mist_config.wallet_default_passwd)
 		return wallet
 	}
+
+	async userWallet(userWord) {
+		let wallet = await walletHelper.testWallet(userWord,mist_config.wallet_default_passwd)
+		return wallet
+	}
+
 
 	start(delay) {
 		console.log("txs--000-");
@@ -155,8 +167,72 @@ curl -X POST -H "Content-Type: application/json" -d '{"jsonrpc": "2.0", "method"
 		return res
 	}
 
-	async withdraw(amount) {
+
+	async ethTransfer(from,to,amount){
+		
+		console.log("ethTransfer111",from,to,amount);
+		var number = await web3.eth.getTransactionCount(from);
+		let id = await web3.eth.net.getId();
+		console.log("rrrrrid",id);
+/*
+		let details = {
+			"to": '0x5cf83df52a32165a7f392168ac009b168c9e8915',                                               
+			"value":12300000000000000 ,                                                                              
+			"gas": 51000,                                                                                     
+			"gasPrice": 2 * 1000000000,                                                       
+			"gasLimit": '0x420710',
+			"nonce": number,                                                                      
+			"data":'',                                                 
+			"chainId": 0x03
+		  }                                                                                   
+		  */
+		var details = {
+  nonce: number,
+  gasPrice: '0x09184e72a0',
+  gasLimit: '0x27100',
+  to: '0x0000000000000000000000000000000000000000',
+  value: '0x00',
+  data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057'
+}
+		console.log("numberrrrrrrr",number)
+		var tx = new EthereumTx(details)
+		let prikey =  mist_config.bridge_facut_eth_prikey;
+		tx.sign( Buffer.from(prikey, 'hex'))
+		console.log("txssssxxx",tx);
+		var serializedTx = tx.serialize();
+		console.log("rrrrrrr",serializedTx)
+		//let [err,result] =  web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex')).on('receipt', console.error);
+		web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), (err,txHash) => {
+    		console.log('txHash : ',txHash,err)
+		})
+	//	console.error("rrrrrr22",result,err)
+	//	return result;
+		
+
+		
+		
+	}
+
+	async withdraw(word,amount) {
 		console.log(amount)
+		let asset = new Asset('000000000000001800000001');
+		let wallet = await this.userWallet(word);
+        asset.unlock(wallet,"111111")
+
+        let address = await wallet.getAddress()
+        console.log("user address:",address)
+
+        let balance = await asset.balanceOf(address)
+        console.log(balance);
+        let [err,res] = await to(asset.transfer(mist_config.bridge_fauct_asim_address,amount))
+		console.log("22222",res);
+		if(res){
+			let result = await this.ethTransfer(mist_config.bridge_fauct_eth_address,this.ethAddress,amount);	
+			if(result){
+				//insert mongo	
+			}
+			
+		}
 	}
 
 }
