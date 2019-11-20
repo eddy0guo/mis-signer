@@ -1,5 +1,6 @@
 // npm run build
 // pm2 start pm2-mist.config.js --only mist --env production
+// pm2 start pm2-mist.config.js --only mist --env env_poa_production
 
 module.exports = {
   apps: [{
@@ -12,8 +13,12 @@ module.exports = {
     env_production: {
       NODE_ENV: "production",
       MIST_MODE: "postgres",
+    },
+    env_poa_production: {
+      NODE_ENV: "production",
+      MIST_MODE: "mist_hqtn",
     }
-  },
+  }
     // {
     //   name: 'bot',
     //   script: './dist/bot'
