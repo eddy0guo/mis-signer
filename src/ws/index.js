@@ -19,6 +19,8 @@ class WSMananger {
 
         this.depthHash = {}
 
+        this.loopDelay = 3 * 1000
+
         this.start()
     }
 
@@ -62,7 +64,7 @@ class WSMananger {
         
         this.timer = setTimeout(() => {
             this.loop.call(this)
-        }, 5*1000);
+        }, this.loopDelay);
     }
 
     async updateMarket(marketID){
