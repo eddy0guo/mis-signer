@@ -1,10 +1,13 @@
 import to from 'await-to-js'
 import hash from 'object-hash'
+import consola from 'consola'
 import Order from '../adex/api/order'
 import Market from '../adex/api/market'
 import Trades from '../adex/api/trades'
 import DB from '../adex/models/db'
 import cfg from '../cfg'
+
+console.log = ()=>{}
 
 class WSMananger {
     constructor() {
@@ -101,7 +104,7 @@ class WSMananger {
     }
 
     broadcastMarket(marketID,msg) {
-        console.log("broadcastMarket",marketID)
+        consola.info("broadcastMarket",marketID)
         this.wsServer.connections.forEach( (connection)=> {
             if( connection.marketID == marketID ){
                 let json = JSON.stringify(msg)
@@ -113,26 +116,25 @@ class WSMananger {
     async listOrderBook(marketID) {
     // TODO: FIMME : order这里挂了，检查下相关逻辑
        let [err,result] = await to(this.order.order_book(marketID));
-       if(err) console.log('listOrderBook',err)
+       if(err) consola.info('listOrderBook',err)
        return result
 	}
 
 	async listMarkets () {
        let [err,result] = await to(this.market.list_markets());
-       if(err) console.log('listMarkets',err)
+       if(err) consola.info('listMarkets',err)
        return result
 	}
 
 	async listTrades(marketID) {
        let [err,result] = await to(this.trades.list_trades(marketID));
-       if(err) console.log('listTrades',err)
+       if(err) consola.info('listTrades',err)
        return result
     }
     
     async updateClientInfo(marketID,connection) {
-        console.log('updateClientInfo',connection.remoteAddress,marketID)
-        let trades = await this.listTrades(marketID)
-        console.log(trades)
+        consola.info('updateClientInfo',connection.remoteAddress,marketID)
+        await this.listTrades(marketID)
     }
 
     init() {
@@ -140,12 +142,12 @@ class WSMananger {
         var http = require('http');
 
         var server = http.createServer(function (request, response) {
-            console.log((new Date()) + ' Received request for ' + request.url);
+            consola.info((new Date()) + ' Received request for ' + request.url);
             response.writeHead(404);
             response.end();
         });
         server.listen(cfg.websocket_port, function () {
-            console.log((new Date()) + 'WebSocket Server is listening on port:',cfg.websocket_port);
+            consola.info((new Date()) + 'WebSocket Server is listening on port:',cfg.websocket_port);
         });
 
         this.wsServer = new WebSocketServer({
@@ -167,31 +169,31 @@ class WSMananger {
             if (!originIsAllowed(request.origin)) {
                 // Make sure we only accept requests from an allowed origin
                 request.reject();
-                console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected.');
+                consola.info((new Date()) + ' Connection from origin ' + request.origin + ' rejected.');
                 return;
             }
 
             var connection = request.accept('echo-protocol', request.origin);
-            console.log((new Date()) + ' Connection accepted.',request.origin)
+            consola.info((new Date()) + ' Connection accepted.',request.origin)
 
             connection.on('message', async (message) => {
                 if (message.type === 'utf8') {
                     let marketID = message.utf8Data
                     connection.marketID = marketID
-                    console.log('Received Message: ' + marketID);
+                    consola.info('Received Message: ' + marketID);
                     
                     // this.broadcastMarket(marketID)
                     // connection.sendUTF(marketID)
                     // await this.updateClientInfo(marketID,connection)
                 }
                 else if (message.type === 'binary') {
-                    console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
+                    consola.info('Received Binary Message of ' + message.binaryData.length + ' bytes');
                     connection.sendBytes(message.binaryData);
                 }
             });
             connection.on('close',  (reasonCode, description)=> {
-                console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
-                console.log(reasonCode, description)
+                consola.info((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
+                consola.info(reasonCode, description)
             });
         });
     }
