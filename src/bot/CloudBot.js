@@ -113,7 +113,7 @@ export default class CloudBot {
     }
 
     async trade(buy) {
-        let addPrice = (this.price() / 1000) * Math.random() * 5
+        let addPrice = (this.price() / 1000) * Math.random() * 50
         addPrice = buy ? -addPrice : addPrice
         let price = this.price() + addPrice
 
