@@ -49,7 +49,8 @@ var mist_config_test = {
 	wallet_default_passwd:"111111",
 	did_seed_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
 	asimov_chain_rpc:"https://test-rpc.asimov.network",
-	mist_server_port:19300,
+    mist_server_port:19300,
+    websocket_port:29300,
 	eth_explorer_rpc:"http://119.23.215.121:8030",
 	btc_explorer_rpc:"https://api.bitcore.io/api/BTC/testnet"
 
@@ -89,7 +90,8 @@ var mist_config_product = {
 	wallet_default_passwd:"111111",
 	did_seed_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
 	asimov_chain_rpc:"https://test-rpc.asimov.network",
-	mist_server_port:18000,
+    mist_server_port:18000,
+    websocket_port:28000,
 	eth_explorer_rpc:"http://119.23.215.121:8030",
 	btc_explorer_rpc:"https://api.bitcore.io/api/BTC/testnet"
 
@@ -126,7 +128,8 @@ var mist_config_hqtn = {
 	wallet_default_passwd:"111111",
 	did_seed_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
 	asimov_chain_rpc:"http://119.23.215.121:8545",
-	mist_server_port:21000,
+    mist_server_port:21000,
+    websocket_port:31000,
 	eth_explorer_rpc:"http://119.23.215.121:8030",
 	btc_explorer_rpc:"https://api.bitcore.io/api/BTC/testnet"
 

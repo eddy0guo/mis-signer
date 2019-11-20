@@ -1,10 +1,11 @@
 import axios from 'axios'
 import to from 'await-to-js'
+import cfg from '../cfg'
 
 let localStorage = {}
 axios.headers = 'Access-Control-Allow-Methods:POST, GET, OPTIONS'
 axios.defaults.headers.post['Content-Type'] = 'application/json'
-axios.defaults.baseURL = 'http://119.23.181.166:18000'
+axios.defaults.baseURL = 'http://119.23.181.166:' + cfg.mist_server_port
 
 // JWT support
 axios.interceptors.request.use(config => {

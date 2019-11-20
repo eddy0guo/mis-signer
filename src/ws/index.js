@@ -4,6 +4,7 @@ import Order from '../adex/api/order'
 import Market from '../adex/api/market'
 import Trades from '../adex/api/trades'
 import DB from '../adex/models/db'
+import cfg from '../cfg'
 
 class WSMananger {
     constructor() {
@@ -143,8 +144,8 @@ class WSMananger {
             response.writeHead(404);
             response.end();
         });
-        server.listen(9696, function () {
-            console.log((new Date()) + 'WebSocket Server is listening on port 9696');
+        server.listen(cfg.websocket_port, function () {
+            console.log((new Date()) + 'WebSocket Server is listening on port:',cfg.websocket_port);
         });
 
         this.wsServer = new WebSocketServer({
