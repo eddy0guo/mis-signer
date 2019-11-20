@@ -29,7 +29,7 @@ module.exports = {
     }
   },
   {
-    name: "mist",
+    name: "mist-ws",
     script: "./dist/ws",
     env: {
       NODE_ENV: "development",
