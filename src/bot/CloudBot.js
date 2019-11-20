@@ -56,6 +56,7 @@ export default class CloudBot {
         this.amount = amount
 
         this.maxOrderPrice = 5000
+        this.loopDepay = 60 * 1000
 
         this.$axios = axios
 
@@ -103,7 +104,7 @@ export default class CloudBot {
         await this.main()
         this.timer = setTimeout(() => {
             this.loop.call(this)
-        }, 5*60*1000);
+        }, this.loopDepay);
     }
 
     async main() {
