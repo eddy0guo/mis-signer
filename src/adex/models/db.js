@@ -198,7 +198,7 @@ export default class db{
 		async get_market_current_price(marketID) {
 			//数据后期数据上来了，sql会卡，fixme
 			
-			let [err,result] = await to(this.clientDB.query('select cast(price as float8) from mist_trades where (current_timestamp - created_at) > \'24 hours\' and market_id=$1 order by created_at limit 1',marketID)); 
+			let [err,result] = await to(this.clientDB.query('select cast(price as float8) from mist_trades where (current_timestamp - created_at) < \'24 hours\' and market_id=$1 order by created_at desc limit 1',marketID)); 
 			if(err) {
 				return console.error('get_market_current_price_查询失败', err);
 			}
@@ -463,7 +463,7 @@ export default class db{
 		*/
 	 	async update_user_token(update_info) {
 			let [err,result] = await to(this.clientDB
-				.query('UPDATE mist_users SET (pi,asim,usdt,eth,mt,btc,pi_valuation,asim_valuation,usdt_valuation,eth_valuation,mt_valuation,btc_valuation,updated_at)=($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) WHERE  address=$14',update_info)); 
+				.query('UPDATE mist_users SET (pi,asim,btc,usdt,eth,mt,pi_valuation,asim_valuation,btc_valuation,usdt_valuation,eth_valuation,mt_valuation,updated_at)=($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) WHERE  address=$14',update_info)); 
 			if(err) {
 				return console.error('update_user_token_查询失败', err);
 			}
