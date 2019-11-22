@@ -326,6 +326,27 @@ export default class db{
 
 		} 
 
+		async get_matched_trades() {
+			let [err,result] = await to(this.clientDB.query('SELECT *  FROM mist_trades where status=\'matched\'')); 
+			if(err) {
+				return console.error('get_laucher_trades_查询失败', err);
+			}
+			return result.rows;
+
+		} 
+
+		//DELETE FROM  launch_logs WHERE item_id = 2880;;
+		async delete_matched_trades() {
+            let [err,result] = await to(this.clientDB.query('delete FROM mist_trades where status=\'matched\''));    
+            if(err) {
+                return console.error('get_laucher_trades_查询失败', err);
+            }
+            return result.rows;
+
+        }
+
+
+
 
 
          /**

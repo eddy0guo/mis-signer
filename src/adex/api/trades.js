@@ -2,6 +2,7 @@ import client from '../models/db'
 import utils2 from './utils'
 const crypto = require('crypto');
 var date = require("silly-datetime");
+import {restore_order} from './order'
 
 export default class trades{
     db;
@@ -91,4 +92,16 @@ export default class trades{
     }
 
 
+	//应该先停laucher的线程，再回滚，否则可能出现已经launched的也回滚了
+	async rollback_trades(){
+		let trades = await this.db.get_matched_trades();
+		for(var index in trades){
+			console.log("restore_order2222222222222", trades);
+			restore_order(trades[index].taker_order_id,trades[index].amount);
+			restore_order(trades[index].maker_order_id,trades[index].amount);
+	   }
+
+       await this.db.delete_matched_trades();
+	}
 }
+

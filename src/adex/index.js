@@ -322,6 +322,20 @@ did对order_id进行签名，获取rsv
        res.json({result,err });
 	});
 
+
+	adex.get('/rollback_trades', async (req, res) => {
+       
+		
+		var obj = urllib.parse(req.url,true).query;
+       console.log("obj=",obj);
+
+       let [err,result] = await to(trades.rollback_trades());
+
+       res.json({result,err });
+	});
+
+
+
 	adex.get('/list_trades', async (req, res) => {
        
 		
