@@ -270,13 +270,24 @@ export default class db{
 
 
 		async list_all_trades() {
-			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_trades order by transaction_id desc limit 100')); 
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_trades where status!=\'matched\' order by transaction_id desc limit 100')); 
 			if(err) {
 				return console.error('list_all_trades_查询失败', err);
 			}
 			return result.rows;
 
 		} 
+
+		async list_matched_trades() {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_trades where status=\'matched\' order by created_at  desc')); 
+			if(err) {
+				return console.error('list_all_trades_查询失败', err);
+			}
+			return result.rows;
+
+		} 
+
+
 
 
 

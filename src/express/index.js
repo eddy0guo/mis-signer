@@ -10,6 +10,7 @@ import Asset from '../wallet//asset/Asset'
 import client1 from './models/db'
 
 import mist_wallet1 from '../adex/api/mist_wallet'
+import order1 from '../adex/api/order'
 import utils1 from '../adex/api/utils'
 import psql from './models/db'
 
@@ -20,7 +21,7 @@ import mist_config from '../cfg'
 
 import apicache from 'apicache'
 let cache = apicache.middleware
-
+let price;
 async function my_wallet(word){
                 return await walletHelper.testWallet(word,'111111')
 }
@@ -31,6 +32,7 @@ export default ({ config, db }) => {
 	let mist_wallet = new mist_wallet1();
 	let psql_db = new psql();
 	let utils = new utils1();
+	let order = new order1(psql_db);
 
 
 	express.get('/my_records/:address/:page/:perpage', async (req, res) => {
@@ -39,6 +41,56 @@ export default ({ config, db }) => {
 			 let [err,result] = await to(psql_db.my_express([address,offset,perpage]));
             res.json({ result:result,err:err});
 	});
+
+	express.get('/get_price/:base_token_name/:quote_token_name/:amount', async (req, res) => {
+		  let {base_token_name,quote_token_name,amount} = req.params;
+		  let base_book = await order.order_book(base_token_name + '-PI');
+		  //let [err,result] = await to(order.order_book(base_token_name + '-PI'));
+		  //console.log("123123----",result,err);
+		  let quote_book = await order.order_book(quote_token_name + '-PI');
+		  let base_bids = base_book.bids;
+		  let quote_asks = quote_book.asks.reverse();
+
+		  
+		  //模拟先卖掉所有base，再全部买quote
+		  let base_value = 0;
+		  let base_amount = 0;
+		  for(let index in base_bids){
+			  let tmp_amount = base_amount; 
+			  base_amount += (+base_bids[index][1]);
+			  if(base_amount >= amount){
+				base_value += NP.times(amount - tmp_amount,base_bids[index][0])
+				break;
+			  }else{
+			    //amount * price
+			     base_value += NP.times(base_bids[index][1],base_bids[index][0]) 	  
+			  }
+
+		  }
+
+			console.log("123123-base_value-",base_value);
+		  let quote_value = 0;
+		  let quote_amount = 0;
+		  for(let index in quote_asks){
+			  let tmp_value = quote_value; 
+				quote_value += NP.times(quote_asks[index][1],quote_asks[index][0])
+
+			  if(quote_value >= base_value){
+			  	quote_amount += NP.divide(base_value - tmp_value,quote_asks[index][0]);
+				break;
+			  }else{
+			    //amount * price
+			  	quote_amount += (+quote_asks[index][1]);
+			  }
+
+		  }
+		  price = NP.divide(quote_amount,amount);
+		  console.log("123123-quote_amount,price----",quote_amount,price)
+		  return price;
+
+	});
+
+
 
 
 	express.get('/sendrawtransaction/build_express/:base_token_name/:quote_token_name/:amount/:address/:row',async (req, res) => {

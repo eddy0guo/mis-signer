@@ -139,8 +139,14 @@ export default class engine {
 		//let order_address_set = [token_address[0].base_token_address,token_address[0].quote_token_address,index.relayer];
 
 		let transactions = await this.db.list_all_trades();
-		console.log("transactions=", transactions);
-		let transaction_id = transactions.length == 0 ?  0 : transactions[0].transaction_id;
+		let matched_trades = await this.db.list_matched_trades();
+
+		let add_queue_num  = Math.floor(matched_trades.length / 4000 ) + 1;
+
+		let transaction_id = transactions.length == 0 ?  0 : transactions[0].transaction_id + add_queue_num;
+
+		console.log("index,transaction_id,=", add_queue_num,transaction_id);
+
 
 		//为了保证relayer的轮番顺序打包，这里和transaction_id关联
 		let index = transaction_id % 3;
@@ -164,7 +170,7 @@ export default class engine {
 			};
 
 			trades[i].trade_hash = await this.utils.orderhashbytes(trade_info);
-			trades[i].transaction_id = transaction_id + 1;
+			trades[i].transaction_id = transaction_id;
 
 			await this.db.insert_trades(this.utils.arr_values(trades[i]));
 

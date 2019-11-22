@@ -48,4 +48,23 @@ export default class db{
 			return JSON.stringify(result.rows);
         } 
 
+		async order_book(filter) {
+            let err;
+            let result;
+            if(filter[0] == 'sell'){
+                [err,result] = await to(this.clientDB.query('select s.* from  (SELECT price,sum(available_amount) as amount FROM mist_orders\
+            where available_amount>0  and side=$1 and market_id=$2 group by price)s order by s.price asc limit 100',filter));
+            }else{
+
+                [err,result] = await to(this.clientDB.query('select s.* from  (SELECT price,sum(available_amount) as amount FROM mist_orders\
+            where available_amount>0  and side=$1 and market_id=$2 group by price)s order by s.price desc limit 100',filter));
+            }
+            if(err) {
+                return console.error('filter_orders_查询失败11',err,filter);
+            }
+            return result.rows;
+        }
+
+
+
 }

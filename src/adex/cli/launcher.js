@@ -42,7 +42,7 @@ export default class launcher {
 				console.log("111111111111-launcher--",trades)
 					   setTimeout(()=>{
 						this.loop.call(this)
-						}, 10000);
+						}, 9000);
 				return
 			}
 
@@ -104,7 +104,8 @@ export default class launcher {
 
 		setTimeout(()=>{
 			this.loop.call(this)
-		}, 10000);
+		//}, 12000);
+		}, 6000000);
 
 	}
 
