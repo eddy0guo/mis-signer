@@ -28,14 +28,14 @@ async function my_wallet(word){
 }
 
 
-export default ({ config, db }) => {
+export default ({ config, db,logger}) => {
 	let adex  = Router();
 	let client = new client1();
     let order = new order1(client);
     let trades = new trades1(client);
     let market = new market1();
     let wathcer = new watcher1(client);
-    let user = new user1(client);
+    let user = new user1(client,logger);
     let asset = new asset1();
     let mist_wallet = new mist_wallet1();
     let tokenTest = new TokenTest()

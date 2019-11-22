@@ -60,6 +60,9 @@ export default class utils{
 		console.log("ssss---",cmd);
 		let sto =  child.execSync(cmd)
 		let logs = JSON.parse(sto).result.logs;
+		if(logs){
+			console.error(`${cmd} result  have no logs`);
+		}
 		let datas = [];
 		for(var index in logs){
 			datas.push(logs[index].data);	

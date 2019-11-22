@@ -13,6 +13,8 @@ import config from './config.json';
 import did from './did'
 import express1 from './express'
 import mist_config from './cfg'
+const log4js = require('log4js');
+
 
 let app = express();
 
@@ -42,6 +44,54 @@ app.all("*",function(req,res,next){
     else
         next();
 });
+
+
+log4js.configure({
+ appenders: {
+ // everything: { type: 'file', filename: 'mist_ex.log' }
+ 	stdout: {//控制台输出
+            type: 'console'
+        },
+		req: {  //请求转发日志
+            type: 'dateFile',    //指定日志文件按时间打印
+            filename: 'logs/reqlog/req',  //指定输出文件路径
+            pattern: 'yyyy-MM-dd.log',
+            alwaysIncludePattern: true
+        },
+	err: {  //错误日志
+            type: 'dateFile',
+            filename: 'logs/errlog/err',
+            pattern: 'yyyy-MM-dd.log',
+            alwaysIncludePattern: true
+        },
+        oth: {  //其他日志
+            type: 'dateFile',
+            filename: 'logs/othlog/oth',
+            pattern: 'yyyy-MM-dd.log',
+            alwaysIncludePattern: true
+        }
+
+ },
+ categories: {
+  default: { appenders:['stdout', 'req'], level: 'info' },
+    err: { appenders: ['stdout', 'err'], level: 'error' }
+ }
+});
+let info_log = function (info) {
+    return log4js.getLogger().info(info);
+};
+
+let err_log = function (info) {//name取categories项
+    return log4js.getLogger('err').error(info);
+};
+
+const logger = {
+		error:err_log,
+		info:info_log
+	}
+logger.error('I will be error logged in mist_ex.log');
+logger.info('I will be info logged in mist_ex.log');
+
 // connect to db
 initializeDb( db => {
 
@@ -51,9 +101,9 @@ initializeDb( db => {
 	// api router
 	app.use('/api', api({ config, db }));
 	app.use('/wallet', wallet({ config, db }));
-	app.use('/adex',adex({ config, db }));
+	app.use('/adex',adex({ config, db,logger}));
 	app.use('/did',did({config,db}))
-	app.use('/express',express1({config,db}))
+	app.use('/express',express1({config,db,}))
 
 	app.server.listen(process.env.PORT || mist_config.mist_server_port, () => {
 		console.log(`Started on port ${app.server.address().port}`);

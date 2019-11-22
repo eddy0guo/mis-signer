@@ -7,6 +7,7 @@ import Token from '../../wallet/contract/Token'
 import Asset from '../../wallet/asset/Asset'
 import NP from 'number-precision'
 const crypto = require('crypto');
+
 var date = require("silly-datetime");
 
 export default class users{
@@ -14,10 +15,12 @@ export default class users{
 	exchange;
 	root_hash;
 	mist_wallet;
-	constructor(client) {
+	logger;
+	constructor(client,logger) {
 		this.db = client;
 		this.utils = new utils2;
 		this.mist_wallet = new mist_wallet1();
+		this.logger = logger
 	}
 
 	async start() {
@@ -47,7 +50,8 @@ export default class users{
 
 
 	async loop_token() {
-	
+		this.logger.info('Cheese is Gouda........');
+		this.logger.error('Cheese is Gouda2222........');
 		let users = await this.db.list_users();	
 		let create_time = this.utils.get_current_time();
 		let token_arr = await this.mist_wallet.list_tokens();
