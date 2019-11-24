@@ -39,6 +39,12 @@ async function getTakerWallet() {
 	return taker_wallet
 }
 
+async function getTestInst2(word) {
+    // 暂时每次都重新创建实例，效率低点但是应该更稳定。
+    walletInst = await walletHelper.testWallet(word, '111111')
+    return walletInst
+}
+
 let walletInst;
 async function getTestInst(){
 //chenfei
@@ -66,6 +72,95 @@ export default ({ config, db }) => {
 		let address = await walletInst.getAddress()
 		res.json({ wallet:address })
 	});
+
+	wallet.get('/dex_test', async (req, res) => {
+		//BTC-PI
+
+   let trades = [ 
+    { id:
+     '610a38f9ec6c569813a48a0edeef9999e351db4d152389fd6a60f58a5b8112ac',
+    trade_hash: null,
+    maker: '0x66bb0fb407455e22ad2ea7d90db2b0fc41c4540675',
+    taker: '0x6634d87c23decda47cbc3114863f01925dfef160a4',
+    price: 1.0000,
+    amount: 0.0001,
+    taker_side: 'sell'},
+    { id:
+     '610a38f9ec6c569813a48a0edeef9999e351db4d152389fd6a60f58a5b8112ac',
+    trade_hash: null,
+    maker: '0x66bb0fb407455e22ad2ea7d90db2b0fc41c4540675',
+    taker: '0x6634d87c23decda47cbc3114863f01925dfef160a4',
+    price: 1.0000,
+    amount: 0.0001,
+    taker_side: 'sell'},
+	 { id:
+     '610a38f9ec6c569813a48a0edeef9999e351db4d152389fd6a60f58a5b8112ac',
+    trade_hash: null,
+    //maker: '0x66bb0fb407455e22ad2ea7d90db2b0fc41c4540675',
+//    taker: '0x6634d87c23decda47cbc3114863f01925dfef160a4',
+	taker: '0x66bb0fb407455e22ad2ea7d90db2b0fc41c4540675',
+    //maker: '0x6634d87c23decda47cbc3114863f01925dfef160a4',
+	//taker: '0x66202fab701a58b4b622ee07ac8ac11b872d727ced',
+    maker: '0x66fb54e73b1ea0a40ca95c5a514500902dc19f2d61',
+    price: 1.0000,
+    amount: 0.0001,
+    taker_side: 'buy'}
+
+	];
+
+
+		 let order_address_set = ['0x632ebbb99f2b55523573a1cef46c7cac4301b3a9bd','0x6355e8fb64be8c63ba9a6ffec37563d5c1ec570056','0x66edd03c06441f8c2da19b90fcc42506dfa83226d3'];
+
+
+        for (var i in trades) {
+
+            let trade_info ={
+            taker: trades[i].taker,
+            maker: trades[i].maker,
+            baseToken: order_address_set[0],
+            quoteToken: order_address_set[1],
+            relayer: order_address_set[2],
+            baseTokenAmount: NP.times(trades[i].amount, trades[i].price, 100000000), //    uint256 baseTokenAmount;
+            quoteTokenAmount: NP.times(trades[i].amount, 100000000), // quoteTokenAmount;
+            takerSide:  trades[i].taker_side
+            };
+
+            trades[i].trade_hash = await utils.orderhashbytes(trade_info);
+
+            console.log("dex_test",trades[i]);
+        }
+
+
+
+		 let trades_hash = [];
+		for (var i in trades) {
+			let trade_info = [
+				trades[i].trade_hash,
+				trades[i].taker,
+				trades[i].maker,
+				NP.times(trades[i].amount, trades[i].price, 100000000), //    uint256 baseTokenAmount;
+				NP.times(trades[i].amount, 100000000), // quoteTokenAmount;
+				trades[i].taker_side
+			];
+			   //后边改合约传结构体数据
+			trades_hash.push(trade_info);
+		}
+
+		 let mist = new mist10(mist_config.ex_address);
+		 walletInst = await getTestInst2(mist_config.relayers[0].word);
+		mist.unlock(walletInst, "111111");
+		let [err2, result] = await to(walletInst.queryAllBalance());
+
+		//let [err, txid] = await to(mist.matchorder(trades_hash, order_address_set));
+		console.log("dex_test222",trades_hash, order_address_set,mist_config.relayers[0].prikey)
+		let [err, txid] = await to(mist.matchorder(trades_hash, order_address_set,mist_config.relayers[0].prikey));
+
+		console.log("dex_tes333t",err,txid)
+		res.json({ result:txid,err:err });
+
+	});
+
+
 
 	wallet.get('/get_user_info/:address',async (req, res) => {
 		 let token_arr = await mist_wallet.list_tokens();
