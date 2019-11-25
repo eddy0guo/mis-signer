@@ -165,10 +165,11 @@ adex.get('/list_tokens', async (req, res) => {
 				console.log(balance_info);
 		}
 
-		res.json({
-            success: true,
-            result: balances
-        });
+		res.json({success: true,result: balances});
+		 //res.json(balances);
+
+
+
     });
 
 
@@ -317,6 +318,34 @@ did对order_id进行签名，获取rsv
 		});
 	});
 
+//撤销订单，应该是需要对每个orderid进行签名，后期做
+	adex.get('/cancle_my_order/:address', async (req, res) => {
+	   
+		//暂时只支持取消1000以内的单子
+		let [err,orders] = await to(order.my_orders2(req.params.address,1,1000,'pending','partial_filled'));
+		console.log("cancle_my_order=",orders,err,req.params.address);
+
+		if(!err){
+			for(let index in orders){
+				let message = {amount:orders[index].available_amount,id:orders[index].id};
+				console.log("cancle_my_order",message)
+
+			   let [err,result] = await to(order.cancle_order(message));
+				if(err){
+					return res.json({
+						success: false,
+						err:err
+					})
+				}
+			}
+		}
+
+		res.json({
+			success: true,
+		});
+	});
+
+
 	adex.get('/list_orders', async (req, res) => {
        
 
@@ -445,16 +474,8 @@ did对order_id进行签名，获取rsv
 	// add 10 second memory cache ( change to redis later )
 	adex.get('/trading_view',cache('10 second'), async (req, res) => {
 		let current_time = Math.floor(new Date().getTime() / 1000);
-/**
-		let message = {
-		market_id:"ASIM-PAI",   
-		from: current_time - current_time%300 - 300*100,   //当前所在的时间区间不计算  
-		to: current_time - current_time%300,
-		granularity: 300,
-		};
-**/
 		var obj = urllib.parse(req.url,true).query;
-       console.log("obj=",obj);
+        console.log("obj=",obj);
 		let message = {
 		market_id:obj.marketID,   
 		from: current_time - current_time%obj.granularity - obj.granularity*obj.number,   //当前所在的时间区间不计算  
