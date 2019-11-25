@@ -61,6 +61,25 @@ async function my_wallet(word) {
 	return await walletHelper.testWallet(word,mist_config.wallet_default_passwd)
 }
 
+const CryptoJS = require('crypto-js');  //引用AES源码js
+const key = CryptoJS.enc.Utf8.parse("1234123412ABCDEF");  //十六位十六进制数作为密钥
+const iv = CryptoJS.enc.Utf8.parse('ABCDEF1234123412');   //十六位十六进制数作为密钥偏移量
+//解密方法
+function Decrypt(word) {
+	let encryptedHexStr = CryptoJS.enc.Hex.parse(word);
+	let srcs = CryptoJS.enc.Base64.stringify(encryptedHexStr);
+	let decrypt = CryptoJS.AES.decrypt(srcs, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
+	let decryptedStr = decrypt.toString(CryptoJS.enc.Utf8);
+	return decryptedStr.toString();
+}
+
+//加密方法
+function Encrypt(word) {
+	let srcs = CryptoJS.enc.Utf8.parse(word);
+	let encrypted = CryptoJS.AES.encrypt(srcs, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
+	return encrypted.ciphertext.toString().toUpperCase();
+}
+
 export default ({
 	config,
 	db
@@ -76,6 +95,7 @@ export default ({
 		const seed = bip39.mnemonicToSeedHex(mnemonic);
 		const hdPrivateKey = HDPrivateKey.fromSeed(seed).derive(
 			`m/44'/10003'/0'/0/0`);
+		console.log("mnemonic",mnemonic);
 		let privatekey = hdPrivateKey.privateKey.toString();
 		console.log("111111-prikey---22", privatekey);
 
@@ -190,7 +210,7 @@ export default ({
 					let newUser = new User({
 						username: req.body.username,
 						password: req.body.password,
-						mnemonic: mnemonic,
+						mnemonic: Encrypt(mnemonic),
 						asim_address: address,
 						id: index,
 						btc_address: btc_address.address,
@@ -300,7 +320,7 @@ export default ({
 			};
 			let jwt_token = jwt.sign(jwt_payload, dbConfig.secret);
 			// return the information including token as JSON
-			let wallet = await walletHelper.testWallet(user.mnemonic, payPassword)
+			let wallet = await walletHelper.testWallet(Decrypt(user.mnemonic), payPassword)
 			let address = await wallet.getAddress()
 
 			// clear info
@@ -336,7 +356,7 @@ export default ({
 					msg: 'Authentication failed. 1'
 				});
 			} else {
-				let signature = sign(user.mnemonic, req.body.order_id)
+				let signature = sign(Decrypt(user.mnemonic), req.body.order_id)
 				res.json({
 					success: true,
 					user: user,
@@ -363,7 +383,7 @@ export default ({
 			let deposit_assetID = cdp_tokens[0].token_asset_id;
 
 			let cdp_obj = new cdp(cdp_address);
-			let walletInst = await my_wallet(user.mnemonic);
+			let walletInst = await my_wallet(Decrypt(user.mnemonic));
 			let address = await walletInst.getAddress();
 			cdp_obj.unlock(walletInst, "111111")
 			await walletInst.queryAllBalance()
@@ -408,7 +428,7 @@ export default ({
 
 			console.log("33333----", cdp_address, assetID);
 			let cdp_obj = new cdp(cdp_address);
-			let walletInst = await my_wallet(user.mnemonic);
+			let walletInst = await my_wallet(Decrypt(user.mnemonic));
 			let address = await walletInst.getAddress();
 
 			cdp_obj.unlock(walletInst, "111111")
@@ -436,7 +456,7 @@ export default ({
 			let assetID = cdp_tokens[0].token_asset_id;
 
 			let cdp_obj = new cdp(cdp_address);
-			let walletInst = await my_wallet(user.mnemonic);
+			let walletInst = await my_wallet(Decrypt(user.mnemonic));
 			// let address = await walletInst.getAddress();
 
 			cdp_obj.unlock(walletInst, "111111")
@@ -459,7 +479,7 @@ export default ({
 
 			let user = req.user
 			let cdp_obj = new cdp(cdp_address);
-			let walletInst = await my_wallet(user.mnemonic);
+			let walletInst = await my_wallet(Decrypt(user.mnemonic));
 			let address = await walletInst.getAddress();
 
 			cdp_obj.unlock(walletInst, "111111")
@@ -485,7 +505,7 @@ export default ({
 		}, async (err, user) => {
 
 			// let erc20 = new Erc20(asim_address);
-			let walletInst = await my_wallet(user.mnemonic);
+			let walletInst = await my_wallet(Decrypt(user.mnemonic));
 			let tokens = await psql_db.get_tokens([req.params.token_name])
 			console.log("7777777", tokens);
 			//walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
@@ -514,7 +534,7 @@ export default ({
 		}, async (err, user) => {
 
 			// let erc20 = new Erc20(asim_address);
-			let walletInst = await my_wallet(user.mnemonic);
+			let walletInst = await my_wallet(Decrypt(user.mnemonic));
 			//walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
 			let tokens = await psql_db.get_tokens([req.params.token_name])
 			let erc20 = new Erc20(tokens[0].address);
@@ -582,17 +602,17 @@ export default ({
 				//ether.start_deposit(user);
 				console.log("txs----------------",user);
 				let ethBridge = new ETHBridge(user.asim_address,to_address);
-				await ethBridge.withdraw(user.mnemonic,amount);
+				await ethBridge.withdraw(Decrypt(user.mnemonic),amount);
 
 			} else if (token_name == 'BTC') {
 				let btcBridge = new BTCBridge(user.asim_address,to_address);
-				await btcBridge.withdraw(user.mnemonic,amount);
+				await btcBridge.withdraw(Decrypt(user.mnemonic),amount);
 				console.log("deposit btc");
 			} else if (token_name == 'USDT') {
 				console.log("deposit usdt");
 				console.log("txs----------------",user);
 				let usdtBridge = new USDTBridge(user.asim_address,to_address);
-				await usdtBridge.withdraw(user.mnemonic,amount);
+				await usdtBridge.withdraw(Decrypt(user.mnemonic),amount);
 			} else {
 				return res.json({
 					 success: false,
@@ -614,7 +634,7 @@ export default ({
 			username: req.params.username
 		}, async (err, user) => {
 
-			let wallet = await walletHelper.testWallet(user.mnemonic, payPassword);
+			let wallet = await walletHelper.testWallet(Decrypt(user.mnemonic), payPassword);
 			let token_info = await psql_db.get_tokens([req.params.token_name])
 			let token = new Token_did(token_info[0].address);
 			token.unlock(wallet, payPassword)
@@ -638,7 +658,7 @@ export default ({
 			username: req.params.username
 		}, async (err, user) => {
 
-			let walletInst = await my_wallet(user.mnemonic);
+			let walletInst = await my_wallet(Decrypt(user.mnemonic));
 			let tokens = await psql_db.get_tokens([req.params.base_token_name])
 
 
