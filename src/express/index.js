@@ -21,32 +21,13 @@ import mist_config from '../cfg'
 
 import apicache from 'apicache'
 let cache = apicache.middleware
-let price;
+
 async function my_wallet(word){
                 return await walletHelper.testWallet(word,'111111')
 }
 
-
-export default ({ config, db }) => {
-	 let express  = Router();
-	let mist_wallet = new mist_wallet1();
-	let psql_db = new psql();
-	let utils = new utils1();
-	let order = new order1(psql_db);
-
-
-	express.get('/my_records/:address/:page/:perpage', async (req, res) => {
-		  let {address,page,perpage} = req.params;
-            let offset = (+page - 1) * +perpage;
-			 let [err,result] = await to(psql_db.my_express([address,offset,perpage]));
-            res.json({ result:result,err:err});
-	});
-
-	express.get('/get_price/:base_token_name/:quote_token_name/:amount', async (req, res) => {
-		  let {base_token_name,quote_token_name,amount} = req.params;
-		  let base_book = await order.order_book(base_token_name + '-PI');
-		  //let [err,result] = await to(order.order_book(base_token_name + '-PI'));
-		  //console.log("123123----",result,err);
+async function get_price(base_token_name,quote_token_name,amount,order){
+ 		  let base_book = await order.order_book(base_token_name + '-PI');
 		  let quote_book = await order.order_book(quote_token_name + '-PI');
 		  let base_bids = base_book.bids;
 		  let quote_asks = quote_book.asks.reverse();
@@ -76,6 +57,7 @@ export default ({ config, db }) => {
 				quote_value += NP.times(quote_asks[index][1],quote_asks[index][0])
 
 			  if(quote_value >= base_value){
+				console.log("123123--quote_asks",quote_asks[index],index);
 			  	quote_amount += NP.divide(base_value - tmp_value,quote_asks[index][0]);
 				break;
 			  }else{
@@ -84,9 +66,33 @@ export default ({ config, db }) => {
 			  }
 
 		  }
-		  price = NP.divide(quote_amount,amount);
-		  console.log("123123-quote_amount,price----",quote_amount,price)
+		  let price = NP.divide(quote_amount,amount).toFixed(4);
 		  return price;
+}
+
+export default ({ config, db }) => {
+	 let express  = Router();
+	let mist_wallet = new mist_wallet1();
+	let psql_db = new psql();
+	let utils = new utils1();
+	let order = new order1(psql_db);
+
+
+	express.get('/my_records/:address/:page/:perpage', async (req, res) => {
+		  let {address,page,perpage} = req.params;
+            let offset = (+page - 1) * +perpage;
+			 let [err,result] = await to(psql_db.my_express([address,offset,perpage]));
+            res.json({ result:result,err:err});
+	});
+
+	express.get('/get_price/:base_token_name/:quote_token_name/:base_amount', async (req, res) => {
+		let {base_token_name,quote_token_name,base_amount} = req.params;
+		let [err,price] = await to(get_price(base_token_name,quote_token_name,base_amount,order))
+		res.json({
+            success: price == undefined ? false:true,
+            result: price,
+			err:err
+        });
 
 	});
 
@@ -102,7 +108,9 @@ export default ({ config, db }) => {
 				let current_time = utils.get_current_time();
 				let base_token_price =  await mist_wallet.get_token_price2pi(base_token_name);
 				let quote_token_price =  await mist_wallet.get_token_price2pi(quote_token_name);
-				let price = NP.divide(base_token_price,quote_token_price);
+				//let price = NP.divide(base_token_price,quote_token_price);
+				//根据深度取价格
+				let [err,price] = await to(get_price(base_token_name,quote_token_name,amount,order));
 
 				let quote_amount = NP.times(amount,price,0.995);
 				let fee_amount = NP.times(amount,price,0.005);
