@@ -209,7 +209,10 @@ export default ({ config, db }) => {
 		//PI,ASIM,BTC.USDT,ETH,MT
 		
 		console.log("aabobj1234588888=",mist_user);
-		res.json({ result:mist_user});
+		res.json({
+            success: mist_user == undefined ? false:true,
+            result: mist_user,
+        });
 	});
 
 
@@ -218,7 +221,11 @@ export default ({ config, db }) => {
 	wallet.get('/list_assets_info',async (req, res) => {
 		let [err,info] = await to(psql_db.list_assets_info());
 		console.log("list_assets_info-2222",err,info);
-		res.json({ result:info,err:err });
+		res.json({
+            success: info == undefined ? false:true,
+            result: info,
+			err: err
+        });
 	});
 
 
@@ -230,8 +237,11 @@ export default ({ config, db }) => {
 		assetToken.unlock(walletInst,'111111')
 		let [err,result] = await to(assetToken.getAssetInfo())
 		console.log(result,err);
-
-		res.json({ result:result,err:err });
+		 res.json({
+            success: result == undefined ? false:true,
+            result: result,
+            err: err
+        });
 	});
 
 	wallet.get('/faucet2/:token/:address',async (req, res) => {
@@ -242,7 +252,11 @@ export default ({ config, db }) => {
 		token.unlock(takerWallet,'111111')
 		let [err,result] = await to(token.transfer(req.params.address,10000))
 		console.log(result,err);
-		res.json({ result:result,err:err });
+		 res.json({
+            success: result == undefined ? false:true,
+            result: result,
+            err: err
+        });
 	});
 
 	wallet.get('/faucet/:address',async (req, res) => {
@@ -259,14 +273,22 @@ export default ({ config, db }) => {
 			asset.unlock(wallet,"111111")
 			await wallet.queryAllBalance()
 			let [err,result] = await to(asset.transfer(address,faucet_amount[i]));
-
+			if(err){
+			 	return res.json({
+						success: false,
+						err: err
+     	  			});
+			}
 			 results.push[result];
 			console.log("---------erc20_token_arr--i=",i,asset,"err-result",err,result,"\n\n\n\n")
 			 },i*10000);
 		}
+
+		 res.json({
+            success: true,
+            result: results,
+        });
 		
-		console.log(results);
-		res.json({ result:results});
 	});
 
 	wallet.get('/faucet3/:address',async (req, res) => {
@@ -283,14 +305,21 @@ export default ({ config, db }) => {
 			asset.unlock(wallet,"111111")
 			await wallet.queryAllBalance()
 			let [err,result] = await to(asset.transfer(address,100000));
+			if(err){
+                return res.json({
+                        success: false,
+                        err: err
+                    });
+            }
 
 			 results.push[result];
 			console.log("---------erc20_token_arr--i=",i,asset,"err-result",err,result,"\n\n\n\n")
 			 },i*10000);
 		}
-		
-		console.log(results);
-		res.json({ result:results});
+		  res.json({
+            success: true,
+            result: results,
+        });
 	});
 
 
@@ -301,7 +330,12 @@ export default ({ config, db }) => {
 		let token = new StandardToken(req.params.token)
 		let [err,result] = await to(token.balanceOf(req.params.address))
 		console.log(result,err);
-		res.json({ result:result,err:err });
+
+		res.json({
+            success: result == undefined ? false:true,
+            result: result,
+            err: err
+        });
 	});
 
 	wallet.get('/get_token_balance/:token_name/:address', async (req, res) => {
@@ -323,7 +357,12 @@ export default ({ config, db }) => {
 			}
 			console.log("3333333",err,err2,err4,balance,allowance,asset_balance);
 
-           res.json({erc20_balance:balance / 100000000,allowance:allowance / 100000000,asset_balance:asset_balance});
+           let result = {erc20_balance:balance / 100000000,allowance:allowance / 100000000,asset_balance:asset_balance};
+		   res.json({
+            success: result == undefined ? false:true,
+            result: result,
+            err: err
+       	    });
     });
 
 
@@ -331,8 +370,11 @@ export default ({ config, db }) => {
 
 		let [err,result] = await to(tokenTest.testBalanceOf())
 		console.log(result,err);
-
-		res.json({ result:result,err:err });
+	  	res.json({
+			success: result == undefined ? false:true,
+			result: result,
+			err: err
+		});
 	});
 
 	wallet.get('/transfer',async (req, res) => {
@@ -346,7 +388,11 @@ export default ({ config, db }) => {
 			await walletInst.queryAllBalance()
 		}
 
-		res.json({ result:result,err:err });
+		res.json({
+            success: result == undefined ? false:true,
+            result: result,
+            err: err
+        });
 	});
 
 	wallet.get('/approve',async (req, res) => {
@@ -354,8 +400,12 @@ export default ({ config, db }) => {
 		walletInst = await getTestInst();
 		let [err,result] = await to(tokenTest.testApprove(walletInst))
 		console.log(result,err);
-
-		res.json({ result:result,err:err });
+		 res.json({
+            success: result == undefined ? false:true,
+            result: result,
+            err: err
+        });
+		  
 	});
 
 	/**
@@ -365,7 +415,12 @@ export default ({ config, db }) => {
 	wallet.get('/assetBalanceOf/:address',async (req,res)=>{
 		let asset = new Asset(CONSTANT.DEFAULT_ASSET)
 		let [err,result] = await to(asset.balanceOf(req.params.address))
-		res.json({ result:result,err:err });
+		res.json({
+            success: result == undefined ? false:true,
+            result: result,
+            err: err
+        });
+		  
 	});
 
 	//这里后期是要传输入信息和加密的密闻
@@ -376,7 +431,11 @@ export default ({ config, db }) => {
 		asset.unlock(walletInst,"")
      	let [err,result] = await to(asset.transfer(req.params.address,req.params.amount));
 		console.log(result,err);
-		res.json({ result:result,err:err });
+		res.json({
+            success: result == undefined ? false:true,
+            result: result,
+            err: err
+        });
 	});
 	/**
 	 * curl -X POST --data '{"id":1, "jsonrpc":"2.0","method":"asimov_searchRawTransactions",
@@ -443,7 +502,7 @@ export default ({ config, db }) => {
 		res.json({result,err });
 	});
 
-	
+//弃用，采用本地hash计算	
 	 wallet.get('/orderhash',async (req, res) => {
 
 		console.log("33333");
@@ -488,7 +547,11 @@ export default ({ config, db }) => {
 	  wallet.get('/list_borrows/:address',async (req, res) => {
 			let address = [req.params.address];
 			let [err,result] = await to(psql_db.list_borrows(address));
-			res.json({ result:result,err:err });
+			res.json({
+				success: result == undefined ? false:true,
+				result: result,
+				err: err
+       		 });
 	  });
 
 
@@ -496,10 +559,15 @@ export default ({ config, db }) => {
 		 	let {address,page,perpage} = req.params;
 			let offset = (+page - 1) * +perpage;
 			let [err,result] = await to(psql_db.my_borrows2([address,offset,+perpage]));
-			res.json({ result:result,err:err });
+			 res.json({
+                success: result == undefined ? false:true,
+                result: result,
+                err: err
+             });
+		
 	  });
 
-
+//弃用，前期调试接口
 	  wallet.get('/matchorder',async (req, res) => {
 		
 		console.log("2222222222");
@@ -515,22 +583,21 @@ export default ({ config, db }) => {
 	  wallet.get('/sendrawtransaction/createDepositBorrow/:borrow_amount/:borrow_time/:token_name/:deposit_amount/:address/:row',async (req, res) => {
             let rowtx = [req.params.row];
             let [err,result] = await to(chain.sendrawtransaction(rowtx));
-						
 			console.log("555444444444",req.params,result);
 
 			if(!err){	
 					setTimeout(async ()=>{
 						let datas = utils.get_receipt(result);	
-						console.log("444444444",datas[3].slice(194,258));
-						let borrow_id  = parseInt(datas[3].slice(194,258),16);
-						console.log("444444444",borrow_id);
-						if(borrow_id){
+					
+						if(datas){
+							console.log("444444444",datas[3].slice(194,258));
+							let borrow_id  = parseInt(datas[3].slice(194,258),16);
+							console.log("444444444",borrow_id);
 							let cdp_tokens = await psql_db.find_cdp_token([req.params.token_name])
 							let cdp_address =  cdp_tokens[0].cdp_address;
 							console.log("-----uuuu--",cdp_address,req.params);
 							//暂定初始价格位当前价格
 							let current_price =  cdp_tokens[0].init_price
-
 							let assetID = cdp_tokens[0].token_asset_id;
 							//根据借贷时间去表中查对于的利率，临时先这么处理，4为字段的排序
 							//这里数据库加字段的话index偏移量3也要对应修改
@@ -543,7 +610,6 @@ export default ({ config, db }) => {
 								let current_time = utils.get_current_time();
 								let mortgage_rate = req.params.borrow_amount / (req.params.deposit_amount * current_price);
 								let should_repaid_amount = req.params.borrow_amount * (1 + (+interest_rate));
-
 								let borrow_info = {
 									 id:null,
 									 //addrss:req.params.address,          
@@ -565,16 +631,23 @@ export default ({ config, db }) => {
 									 updated_at: current_time,
 									 created_at: current_time
 								};
-
 								borrow_info.id = utils.get_hash(borrow_info);
-							
 								console.log("--555555-interest_rate--",borrow_info);	
-								let result = await psql_db.insert_borrows(utils.arr_values(borrow_info));
-								res.json({ result:txid,borrow_id:borrow_id});
-						}else{res.json({ result:"failed",borrow_id:borrow_id})}
+								let [err2,result2] = await to(psql_db.insert_borrows(utils.arr_values(borrow_info)));
+								if(err2){
+									res.json({  success:false,err:err2})		
+								}
+								let result3 = {txid:txid,borrow_id:borrow_id}
+
+								return res.json({ success:true,result:result3});
+						}else{return res.json({  success:false,err:"failed,cann't find borrow_id "})}
 					}, 10000);
 			}
-			 res.json({ result:result,err:err});
+		   res.json({
+            success: result == undefined ? false:true,
+            result: result,
+            err: err
+     	   });
       });
 
 //	还钱
@@ -600,7 +673,11 @@ export default ({ config, db }) => {
 					console.log("333333333",update_info)
 					let [err3,result2] = await to(psql_db.update_borrows(update_info));
 			}
-            res.json({ result:result,err:err});
+		   res.json({
+            success: result == undefined ? false:true,
+            result: result,
+            err: err
+           });
       });
 //加仓
 
@@ -614,7 +691,11 @@ export default ({ config, db }) => {
 					let [err2,result2] = await to(psql_db.update_borrows(update_info));
 			}
 
-            res.json({ result:result,err:err});
+		   res.json({
+            success: result == undefined ? false:true,
+            result: result,
+            err: err
+           });
       });
 
 
@@ -628,7 +709,11 @@ export default ({ config, db }) => {
             let update_info = ["liquidated",0,0,current_time,req.params.address,req.params.borrow_id];
             let [err2,result2] = await to(psql_db.update_borrows(update_info));
 
-            res.json({ result:result,err:err});
+			res.json({
+				success: result == undefined ? false:true,
+				result: result,
+				err: err
+            });
       });
 // id text primary key,
 /**
@@ -678,7 +763,11 @@ wallet.get('/sendrawtransaction/asset2coin/:amount/:address/:token_name/:row',as
 				let arr_info = utils.arr_values(info);
 				let [err2,result2] = await to(psql_db.insert_converts(arr_info));
 			}
-            res.json({ result:result,err:err});
+			res.json({
+            	success: result == undefined ? false:true,
+            	result: result,
+           		err: err
+          	});
       });
 //币币转资产
 wallet.get('/sendrawtransaction/coin2asset/:amount/:address/:token_name/:row',async (req, res) => {
@@ -710,20 +799,32 @@ wallet.get('/sendrawtransaction/coin2asset/:amount/:address/:token_name/:row',as
 				let arr_info = utils.arr_values(info);
 				let [err2,result2] = await to(psql_db.insert_converts(arr_info));
 			}
-            res.json({ result:result,err:err});
+			res.json({
+                success: result == undefined ? false:true,
+                result: result,
+                err: err
+            });
       });
 //划转记录
 		wallet.get('/my_converts/:address',async (req, res) => {
 
             let [err,result] = await to(psql_db.my_converts([req.params.address]));
-            res.json({ result:result,err:err});
+			 res.json({
+                success: result == undefined ? false:true,
+                result: result,
+                err: err
+            });
 		});
 
 		wallet.get('/my_converts2/:address/:page/:perpage',async (req, res) => {
 			let {address,page,perpage} = req.params;
 			let offset = (+page - 1) * +perpage;
             let [err,result] = await to(psql_db.my_converts2([address,offset,perpage]));
-            res.json({ result:result,err:err});
+			res.json({
+                success: result == undefined ? false:true,
+                result: result,
+                err: err
+            });
 		});
 
 
@@ -735,13 +836,21 @@ wallet.get('/sendrawtransaction/coin2asset/:amount/:address/:token_name/:row',as
 	  wallet.get('/sendrawtransaction/:row',async (req, res) => {
 	   let rowtx = [req.params.row];
             let [err,result] = await to(chain.sendrawtransaction(rowtx));
-            res.json({ result:result,err:err});
+			res.json({
+                success: result == undefined ? false:true,
+                result: result,
+                err: err
+            });
 		});
 
 	wallet.get('/list_cdp_info',async (req, res) => {
 
             let [err,result] = await to(psql_db.list_cdp());
-            res.json({ result:result,err:err});
+			 res.json({
+                success: result == undefined ? false:true,
+                result: result,
+                err: err
+            });
 		});
 
 

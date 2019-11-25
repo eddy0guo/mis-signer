@@ -50,8 +50,8 @@ export default class users{
 
 
 	async loop_token() {
-		this.logger.info('Cheese is Gouda........');
-		this.logger.error('Cheese is Gouda2222........');
+		//this.logger.info('Cheese is Gouda........');
+		//this.logger.error('Cheese is Gouda2222........');
 		let users = await this.db.list_users();	
 		let create_time = this.utils.get_current_time();
 		let token_arr = await this.mist_wallet.list_tokens();
