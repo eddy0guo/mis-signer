@@ -80,6 +80,8 @@ function Encrypt(word) {
 	return encrypted.ciphertext.toString().toUpperCase();
 }
 
+const SMSClient = require('@alicloud/sms-sdk')
+
 export default ({
 	config,
 	db
@@ -124,12 +126,69 @@ export default ({
 		console.log("3333", codeObj[mail]);
 		Mail.send(mail, code, (state) => {
 			if (state === 1) {
-				res.send('发送ok')
+				res.send({
+					success: true	
+				})
 			} else {
-				res.send('发送失败')
+				res.send({
+					 success: false	
+				})
 			}
 		})
 	})
+	//只是接口名字不同.为了兼容旧的前端代码
+	router.post('/get_mail_code', async (req, res) => {
+		let mail = req.body.mail; //获取数据
+		let code = Math.floor(Math.random() * 1000000);
+		codeObj[mail] = code;
+		console.log(codeObj);
+		console.log("3333", codeObj[mail]);
+		Mail.send(mail, code, (state) => {
+			if (state === 1) {
+				res.send({
+					success: true	
+				})
+			} else {
+				res.send({
+					 success: false	
+				})
+			}
+		})
+	})
+
+
+
+	router.post('/get_phone_code', async (req, res) => {
+		const accessKeyId = 'LTAIrgDqyP2INffS'
+		const secretAccessKey = '8q4fPHK17PI5QzcloFGw7oo8gC0y2z'
+		let phone = req.body.phone; //获取数据
+		let code = Math.floor(Math.random() * 1000000);
+		//初始化sms_client
+		let smsClient = new SMSClient({accessKeyId, secretAccessKey})
+		var params2 = {
+		  "PhoneNumbers": phone,
+		  "SignName": "芬果fingo",
+		  "TemplateCode": "SMS_119083170",
+		  "TemplateParam": '{"code":' + code + '}'
+		}
+
+		codeObj[phone] = code;
+		console.log(codeObj);
+		smsClient.sendSMS(params2).then(function (res2) {
+				let {Code}=res2
+				if (Code === 'OK') {
+					//处理返回参数
+					console.log(res2)
+					res.send({success:true})
+				}
+			}, function (err) {
+				console.log(err)
+				res.send({success:true})
+			})
+
+	})
+
+
 
 	router.post('/verify_code', async (req, res) => {
 		let mail = req.body.username;

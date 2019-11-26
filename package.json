@@ -36,6 +36,7 @@
   "author": "Ryan",
   "license": "MIT",
   "dependencies": {
+    "@alicloud/sms-sdk": "^1.1.6",
     "@asimovdev/asimovjs": "1.0.30",
     "@spinlee/ethers": "^1.0.12",
     "apicache": "^1.5.2",
