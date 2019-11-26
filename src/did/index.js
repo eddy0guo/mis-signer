@@ -605,37 +605,38 @@ export default ({
 		let {username,to_address,token_name,amount} = req.params;
 		User.findOne({
 			username: username
-		}, async (err, user) => {
-
+		}, async (err2, user) => {
+			let err,result;
 			if (token_name == 'ETH') {
 				//ether.start_deposit(user);
 				console.log("txs----------------",user);
 				let ethBridge = new ETHBridge(user.asim_address,to_address);
 				 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
-				await ethBridge.withdraw(mnemonic,amount);
-
+				[err,result] = await to(ethBridge.withdraw(mnemonic,amount));
 			} else if (token_name == 'BTC') {
 				let btcBridge = new BTCBridge(user.asim_address,to_address);
 				 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
-				await btcBridge.withdraw(mnemonic,amount);
+				[err,result] = await to(btcBridge.withdraw(mnemonic,amount));
 				console.log("deposit btc");
 			} else if (token_name == 'USDT') {
 				console.log("deposit usdt");
 				console.log("txs----------------",user);
 				let usdtBridge = new USDTBridge(user.asim_address,to_address);
 				 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
-				await usdtBridge.withdraw(mnemonic,amount);
+				[err,result] = await to(usdtBridge.withdraw(mnemonic,amount));
+			
 			} else {
 				return res.json({
 					 success: false,
 					result: "cannot support token"
 				});
 			}
-			 return res.json({
-                     success: true,
-                    result: "start listenting"
-                });
 
+			res.json({
+				 success: result == undefined ? false:true,
+				result: result,
+				err: result == undefined ? err.message:null 
+			 });
 		});
 	});
 

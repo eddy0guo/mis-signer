@@ -3,9 +3,11 @@ import axios from 'axios'
 import walletHelper from '../../wallet/lib/walletHelper'
 import Asset from '../../wallet/asset/Asset'
 import DepositModel from '../models/deposit'
+import WithdrawModel from '../models/withdraw'
 import mist_config from '../../cfg'
 const Web3 = require('web3')
-const ethereumjs = require('ethereumjs-tx')
+const EthereumTx = require('ethereumjs-tx').Transaction
+import NP from 'number-precision'
 let web3 = new Web3(new Web3.providers.HttpProvider("http://119.23.215.121:29842"));
 
 //axios.defaults.baseURL = 'https://api.bitcore.io/api/BTC/testnet'
@@ -15,7 +17,15 @@ var contractAddr = '0x2482a9c2573b13f70413030004f76b1421749d44';
 // https://api.bitcore.io/api/BTC/testnet/block/tip
 // https://api.bitcore.io/api/BTC/testnet/address/n2h3AZzCWdWc2z5NEjYJVtDmR7vBn1eq9z/coins
 // https://api.bitcore.io/api/BTC/testnet/tx/f903af5d0143f2861b7b9054b57b5d705802aa70705aafeddf8ebb2677f470d8
-var contractAbi = [{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_upgradedAddress","type":"address"}],"name":"deprecate","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"deprecated","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_evilUser","type":"address"}],"name":"addBlackList","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transferFrom","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"upgradedAddress","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"balances","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"maximumFee","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"_totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"unpause","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_maker","type":"address"}],"name":"getBlackListStatus","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"},{"name":"","type":"address"}],"name":"allowed","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"paused","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"who","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"pause","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"getOwner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"newBasisPoints","type":"uint256"},{"name":"newMaxFee","type":"uint256"}],"name":"setParams","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"amount","type":"uint256"}],"name":"issue","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"amount","type":"uint256"}],"name":"redeem","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"remaining","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"basisPointsRate","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"isBlackListed","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_clearedUser","type":"address"}],"name":"removeBlackList","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"MAX_UINT","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_blackListedUser","type":"address"}],"name":"destroyBlackFunds","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[{"name":"_initialSupply","type":"uint256"},{"name":"_name","type":"string"},{"name":"_symbol","type":"string"},{"name":"_decimals","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"name":"amount","type":"uint256"}],"name":"Issue","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"amount","type":"uint256"}],"name":"Redeem","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"newAddress","type":"address"}],"name":"Deprecate","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"feeBasisPoints","type":"uint256"},{"indexed":false,"name":"maxFee","type":"uint256"}],"name":"Params","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"_blackListedUser","type":"address"},{"indexed":false,"name":"_balance","type":"uint256"}],"name":"DestroyedBlackFunds","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"_user","type":"address"}],"name":"AddedBlackList","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"_user","type":"address"}],"name":"RemovedBlackList","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"owner","type":"address"},{"indexed":true,"name":"spender","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"from","type":"address"},{"indexed":true,"name":"to","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[],"name":"Pause","type":"event"},{"anonymous":false,"inputs":[],"name":"Unpause","type":"event"}]
+function addPreZero(num){
+  var t = (num+'').length,
+  s = '';
+  for(var i=0; i<64-t; i++){
+    s += '0';
+  }
+  return s+num;
+}
+
 
 export default class USDTBridge {
 	times;
@@ -133,35 +143,25 @@ export default class USDTBridge {
 
 	//待验证
 	async usdtTransfer(sender,receiver, amount) {
-        console.log(`Start to send ${amount} tokens to ${receiver}`);
-        const contract = web3.eth.contract(contractAbi).at(contractAddr);
-        const data = contract.transfer.getData(receiver, amount * 1e18);
-
-        const gasPrice = web3.eth.gasPrice;
-        const gasLimit = 300000;
-
-        var tx = new ethereumjs.Transaction({
-          'from': sender,
-          'nonce': web3.toHex(web3.eth.getTransactionCount(sender)),
-          'gasPrice': web3.toHex(gasPrice),
-          'gasLimit': web3.toHex(gasLimit),
-          'to': contractAddr,
-          'value': "0x0",
-          'data': data,
-          'chainId': 3
-        });
-		let prikey =  mist_config.bridge_facut_eth_prikey;
-
-        tx.sign(Buffer.from(prikey, 'hex'));
-        var raw = '0x' + tx.serialize().toString('hex');
-        //alert(raw);
-		  console.log("rrrrrrr",tx)
-        web3.eth.sendRawTransaction(raw, function (err, transactionHash) {
-         if(err!=''){
-            console.log('Error: '+ err);
-         }
-         console.log('Transaction : '+ transactionHash);
-        });
+        var number = await web3.eth.getTransactionCount(sender);
+        let id = await web3.eth.net.getId();
+		let wei = NP.times(amount,1000000000000000000)
+        var details = {
+		  nonce: number,
+		  gasPrice: '0x09184e72a0',
+		  gasLimit: '0x27100',
+		  to: contractAddr,
+		  value: '0x00',
+		  //依次是转账函数，接受人，金额
+		  data: '0x' + 'a9059cbb' + addPreZero(receiver.substr(2)) + addPreZero(web3.utils.toHex(wei).substr(2))
+		}
+        var tx = new EthereumTx(details,{chain:'ropsten', hardfork: 'petersburg'})
+        let prikey =  mist_config.bridge_facut_eth_prikey;
+        tx.sign( Buffer.from(prikey, 'hex'))
+        var serializedTx = tx.serialize();
+		let [err,result] = await to(web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex')));
+		return [err,result]
+		
     }
 
 	async withdraw(word,amount) {
@@ -179,12 +179,28 @@ export default class USDTBridge {
         let [err,res] = await to(asset.transfer(mist_config.bridge_fauct_asim_address,amount))
         console.log("22222",res);
         if(res){
-            let result = await this.usdtTransfer(mist_config.bridge_fauct_eth_address,this.ethAddress,amount);
-            if(result){
+            var [err5,result5] = await this.usdtTransfer(mist_config.bridge_fauct_eth_address,this.ethAddress,amount);
+            if(result5){
                 //insert mongo
-            }
-
-        }
+				let tx = new WithdrawModel({
+					txid: result5.transactionHash,
+					chain: 'USDT',
+					network: 'ropsten',
+					address:  this.ethAddress,
+					height: result5.blockNumber,
+					value: amount,
+					asim_address: this.asimAddress,
+					asim_tx: res,
+					status: 'success',
+					created_time: new Date().getTime(),
+				});
+				// save the user
+				let [err,result] = await to(tx.save())
+				if(!err){
+					return "withdraw success"; 
+				}else{throw new Error('tx save failed')}
+            }else{throw new Error('usdt transfer failed')}
+        }else{throw new Error('mint failed')}
 	}
 
 }

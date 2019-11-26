@@ -3,12 +3,14 @@ import axios from 'axios'
 import walletHelper from '../../wallet/lib/walletHelper'
 import Asset from '../../wallet/asset/Asset'
 import DepositModel from '../models/deposit'
+import WithdrawModel from '../models/withdraw'
 import mist_config from '../../cfg'
+import NP from 'number-precision'
 
 
 const Web3 = require('web3')
 const EthereumTx = require('ethereumjs-tx').Transaction
-//var EthereumTx = require('ethereumjs-tx').Transaction
+//let web3 = new Web3(new Web3.providers.HttpProvider("https://ropsten.infura.io/v3/116c3f7a7b8d40c080bb21c59d8983fe"));
 let web3 = new Web3(new Web3.providers.HttpProvider("http://119.23.215.121:29842"));
 
 //axios.defaults.baseURL = 'https://api.bitcore.io/api/BTC/testnet'
@@ -168,49 +170,27 @@ curl -X POST -H "Content-Type: application/json" -d '{"jsonrpc": "2.0", "method"
 	}
 
 
-	async ethTransfer(from,to,amount){
+	async ethTransfer(sender,reciever,amount){
 		
-		console.log("ethTransfer111",from,to,amount);
-		var number = await web3.eth.getTransactionCount(from);
+		var number = await web3.eth.getTransactionCount(sender);
 		let id = await web3.eth.net.getId();
+		let value = web3.utils.toHex(NP.times(amount,1000000000000000000)).toString()
 		console.log("rrrrrid",id);
-/*
-		let details = {
-			"to": '0x5cf83df52a32165a7f392168ac009b168c9e8915',                                               
-			"value":12300000000000000 ,                                                                              
-			"gas": 51000,                                                                                     
-			"gasPrice": 2 * 1000000000,                                                       
-			"gasLimit": '0x420710',
-			"nonce": number,                                                                      
-			"data":'',                                                 
-			"chainId": 0x03
-		  }                                                                                   
-		  */
 		var details = {
-  nonce: number,
-  gasPrice: '0x09184e72a0',
-  gasLimit: '0x27100',
-  to: '0x0000000000000000000000000000000000000000',
-  value: '0x00',
-  data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057'
-}
-		console.log("numberrrrrrrr",number)
-		var tx = new EthereumTx(details)
+		  nonce: number,
+		  gasPrice: '0x09184e72a0',
+		  gasLimit: '0x27100',
+		  to: reciever,
+		  value: value,
+		  data: ''
+		}
+		var tx = new EthereumTx(details,{chain:'ropsten', hardfork: 'petersburg'})
 		let prikey =  mist_config.bridge_facut_eth_prikey;
 		tx.sign( Buffer.from(prikey, 'hex'))
-		console.log("txssssxxx",tx);
 		var serializedTx = tx.serialize();
-		console.log("rrrrrrr",serializedTx)
-		//let [err,result] =  web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex')).on('receipt', console.error);
-		web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), (err,txHash) => {
-    		console.log('txHash : ',txHash,err)
-		})
-	//	console.error("rrrrrr22",result,err)
-	//	return result;
-		
-
-		
-		
+		let [err,result] = await to(web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex')));
+		console.log("withdraw--",err,result);
+		return [err,result];
 	}
 
 	async withdraw(word,amount) {
@@ -226,13 +206,34 @@ curl -X POST -H "Content-Type: application/json" -d '{"jsonrpc": "2.0", "method"
         console.log(balance);
         let [err,res] = await to(asset.transfer(mist_config.bridge_fauct_asim_address,amount))
 		console.log("22222",res);
-		if(res){
-			let result = await this.ethTransfer(mist_config.bridge_fauct_eth_address,this.ethAddress,amount);	
-			if(result){
-				//insert mongo	
-			}
-			
-		}
+		 if(res){
+            var  [err5,result5] = await this.ethTransfer(mist_config.bridge_fauct_eth_address,this.ethAddress,amount);
+				console.log("withdraw--",err5,result5.transactionHash);
+				
+            if(result5){
+                //insert mongo
+				console.log("22222--result",result5)
+                let tx = new WithdrawModel({
+                    txid: result5.transactionHash,
+                    chain: 'ETH',
+                    network: 'ropsten',
+                    address:  this.ethAddress,
+                    height: result5.blockNumber,
+                    value: amount,
+                    asim_address: this.asimAddress,
+                    asim_tx: res,
+                    status: 'success',
+                    created_time: new Date().getTime(),
+                });
+                // save the user
+                let [err,result] = await to(tx.save())
+				console.log("withdraw--",err,result);
+                if(!err){
+                    return "withdraw success";
+                }else{throw new Error('tx save failed')}
+            }else{throw new Error('usdt transfer failed')}
+        }else{throw new Error('mint failed')}
+	
 	}
 
 }
