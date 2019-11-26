@@ -320,7 +320,9 @@ export default ({
 			};
 			let jwt_token = jwt.sign(jwt_payload, dbConfig.secret);
 			// return the information including token as JSON
-			let wallet = await walletHelper.testWallet(Decrypt(user.mnemonic), payPassword)
+			//简单处理判断下兼容之前没加密的账户，后期去掉
+			let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+			let wallet = await walletHelper.testWallet(mnemonic, payPassword)
 			let address = await wallet.getAddress()
 
 			// clear info
@@ -356,7 +358,8 @@ export default ({
 					msg: 'Authentication failed. 1'
 				});
 			} else {
-				let signature = sign(Decrypt(user.mnemonic), req.body.order_id)
+				 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+				let signature = sign(mnemonic, req.body.order_id)
 				res.json({
 					success: true,
 					user: user,
@@ -383,7 +386,8 @@ export default ({
 			let deposit_assetID = cdp_tokens[0].token_asset_id;
 
 			let cdp_obj = new cdp(cdp_address);
-			let walletInst = await my_wallet(Decrypt(user.mnemonic));
+			 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+			let walletInst = await my_wallet(mnemonic);
 			let address = await walletInst.getAddress();
 			cdp_obj.unlock(walletInst, "111111")
 			await walletInst.queryAllBalance()
@@ -428,7 +432,8 @@ export default ({
 
 			console.log("33333----", cdp_address, assetID);
 			let cdp_obj = new cdp(cdp_address);
-			let walletInst = await my_wallet(Decrypt(user.mnemonic));
+			 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+			let walletInst = await my_wallet(mnemonic);
 			let address = await walletInst.getAddress();
 
 			cdp_obj.unlock(walletInst, "111111")
@@ -456,7 +461,8 @@ export default ({
 			let assetID = cdp_tokens[0].token_asset_id;
 
 			let cdp_obj = new cdp(cdp_address);
-			let walletInst = await my_wallet(Decrypt(user.mnemonic));
+			 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+			let walletInst = await my_wallet(mnemonic);
 			// let address = await walletInst.getAddress();
 
 			cdp_obj.unlock(walletInst, "111111")
@@ -479,7 +485,8 @@ export default ({
 
 			let user = req.user
 			let cdp_obj = new cdp(cdp_address);
-			let walletInst = await my_wallet(Decrypt(user.mnemonic));
+			 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+			let walletInst = await my_wallet(mnemonic);
 			let address = await walletInst.getAddress();
 
 			cdp_obj.unlock(walletInst, "111111")
@@ -505,7 +512,8 @@ export default ({
 		}, async (err, user) => {
 
 			// let erc20 = new Erc20(asim_address);
-			let walletInst = await my_wallet(Decrypt(user.mnemonic));
+			 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+			let walletInst = await my_wallet(mnemonic);
 			let tokens = await psql_db.get_tokens([req.params.token_name])
 			console.log("7777777", tokens);
 			//walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
@@ -534,7 +542,8 @@ export default ({
 		}, async (err, user) => {
 
 			// let erc20 = new Erc20(asim_address);
-			let walletInst = await my_wallet(Decrypt(user.mnemonic));
+			 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+			let walletInst = await my_wallet(mnemonic);
 			//walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
 			let tokens = await psql_db.get_tokens([req.params.token_name])
 			let erc20 = new Erc20(tokens[0].address);
@@ -602,17 +611,20 @@ export default ({
 				//ether.start_deposit(user);
 				console.log("txs----------------",user);
 				let ethBridge = new ETHBridge(user.asim_address,to_address);
-				await ethBridge.withdraw(Decrypt(user.mnemonic),amount);
+				 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+				await ethBridge.withdraw(mnemonic,amount);
 
 			} else if (token_name == 'BTC') {
 				let btcBridge = new BTCBridge(user.asim_address,to_address);
-				await btcBridge.withdraw(Decrypt(user.mnemonic),amount);
+				 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+				await btcBridge.withdraw(mnemonic,amount);
 				console.log("deposit btc");
 			} else if (token_name == 'USDT') {
 				console.log("deposit usdt");
 				console.log("txs----------------",user);
 				let usdtBridge = new USDTBridge(user.asim_address,to_address);
-				await usdtBridge.withdraw(Decrypt(user.mnemonic),amount);
+				 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+				await usdtBridge.withdraw(mnemonic,amount);
 			} else {
 				return res.json({
 					 success: false,
@@ -633,8 +645,8 @@ export default ({
 		User.findOne({
 			username: req.params.username
 		}, async (err, user) => {
-
-			let wallet = await walletHelper.testWallet(Decrypt(user.mnemonic), payPassword);
+			 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+			let wallet = await walletHelper.testWallet(mnemonic, payPassword);
 			let token_info = await psql_db.get_tokens([req.params.token_name])
 			let token = new Token_did(token_info[0].address);
 			token.unlock(wallet, payPassword)
@@ -657,8 +669,8 @@ export default ({
 		User.findOne({
 			username: req.params.username
 		}, async (err, user) => {
-
-			let walletInst = await my_wallet(Decrypt(user.mnemonic));
+			 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+			let walletInst = await my_wallet(mnemonic);
 			let tokens = await psql_db.get_tokens([req.params.base_token_name])
 
 
