@@ -191,9 +191,9 @@ export default ({
 
 
 	router.post('/verify_code', async (req, res) => {
-		let mail = req.body.username;
-		console.log("-------1111", codeObj[mail], req.body.code);
-		if (codeObj[mail] == +req.body.code) {
+		let username = req.body.username;
+		console.log("-------1111", codeObj[username], req.body.code);
+		if (codeObj[username] == +req.body.code) {
 			res.send({
 				success: true
 			});
@@ -220,7 +220,7 @@ export default ({
 			let mail = req.body.username;
 
 			console.log("-------1111", codeObj[mail], req.body.code);
-//			if (codeObj[mail] == +req.body.code) {
+			if (codeObj[mail] == +req.body.code) {
 
 				let wallet = new Wallet()
 				// 需要激活这个wallet，否则create逻辑有错误
@@ -291,12 +291,12 @@ export default ({
 						});
 					});
 				});
-		/*	} else {
+			} else {
 				res.send({
 					success: false,
 					msg: 'verify mail\'s code fail',
 				});
-			}*/
+			}
 		}
 	});
 
@@ -360,7 +360,7 @@ export default ({
 		if (!user) {
 			res.send({
 				success: false,
-				msg: 'Authentication failed. 1'
+				msg: 'User does not exist'
 			})
 			return
 		}
@@ -398,7 +398,7 @@ export default ({
 		} else {
 			res.send({
 				success: false,
-				msg: 'Authentication failed.2'
+				msg: 'Password mistake'
 			});
 		}
 	});
@@ -414,7 +414,7 @@ export default ({
 			if (!user) {
 				res.send({
 					success: false,
-					msg: 'Authentication failed. 1'
+					msg: 'user does not exsit'
 				});
 			} else {
 				 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
@@ -428,14 +428,40 @@ export default ({
 		});
 	});
 
+	router.post('/order_build_sign_v2',passport.authenticate('jwt', { session: false }), function(req, res) {
+	//router.post('/order_sign', function (req, res) {
+		console.log("111111", req.body);
+		User.findOne({
+			username: req.body.username
+		}, function (err, user) {
+			if (err) throw err;
+
+			if (!user) {
+				res.send({
+					success: false,
+					msg: 'user does not exsit'
+				});
+			} else {
+				 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+				let signature = sign(mnemonic, req.body.order_id)
+				res.json({
+					success: true,
+					signature: signature
+				});
+			}
+		});
+	});
+
+
+
 	//借钱
 	/*
 	let cdp_btc_address = '0x631a4bf19ab8b1a49d75001283316b70cdfee04d7b';
 	let cdp_eth_address = '0x6396fb6f5cf3679932520a8728f333e61237e35519';
 	let cdp_asim_address = '0x6333052d2e97aca42b6b2a63e792f1fcb2b35298a2';
 	*/
-	//router.get('/cdp_createDepositBorrow/:borrow_amount/:borrow_time/:deposit_token_name/:deposit_amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
-	router.get('/cdp_createDepositBorrow/:borrow_amount/:borrow_time/:deposit_token_name/:deposit_amount/:username', async (req, res) => {
+	router.get('/cdp_createDepositBorrow/:borrow_amount/:borrow_time/:deposit_token_name/:deposit_amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
+	//router.get('/cdp_createDepositBorrow/:borrow_amount/:borrow_time/:deposit_token_name/:deposit_amount/:username', async (req, res) => {
 		User.findOne({
 			username: req.params.username
 		}, async (err, user) => {
@@ -473,8 +499,8 @@ export default ({
 
 
 	//还pai，得btc
-	//router.get('/cdp_repay/:borrow_id/:token_name/:amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
-	router.get('/cdp_repay/:borrow_id/:deposit_token_name/:amount/:username', async (req, res) => {
+	router.get('/cdp_repay/:borrow_id/:token_name/:amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
+	//router.get('/cdp_repay/:borrow_id/:deposit_token_name/:amount/:username', async (req, res) => {
 		console.log("111111", req.params);
 		User.findOne({
 			username: req.params.username
@@ -506,12 +532,8 @@ export default ({
 			});
 		});
 	});
-
 	//加仓
-	router.get('/cdp_deposit/:borrow_id/:token_name/:amount/:username',
-		passport.authenticate('jwt', {
-			session: false
-		}), async (req, res) => {
+	router.get('/cdp_deposit/:borrow_id/:token_name/:amount/:username',passport.authenticate('jwt', {session: false}), async (req, res) => {
 
 			let user = req.user
 
