@@ -232,7 +232,7 @@ curl -X POST -H "Content-Type: application/json" -d '{"jsonrpc": "2.0", "method"
                     return "withdraw success";
                 }else{throw new Error('tx save failed')}
             }else{throw new Error('usdt transfer failed')}
-        }else{throw new Error('mint failed')}
+        }else{throw new Error('burned failed,maybe lack of balance ')}
 	
 	}
 

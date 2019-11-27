@@ -536,7 +536,6 @@ export default ({
 	router.get('/cdp_deposit/:borrow_id/:token_name/:amount/:username',passport.authenticate('jwt', {session: false}), async (req, res) => {
 
 			let user = req.user
-
 			let cdp_tokens = await psql_db.find_cdp_token([req.params.token_name])
 			let cdp_address = cdp_tokens[0].cdp_address;
 			let assetID = cdp_tokens[0].token_asset_id;
@@ -591,6 +590,12 @@ export default ({
 		User.findOne({
 			username: req.params.username
 		}, async (err, user) => {
+			if(!user){
+             return res.json({
+                    success: false,
+                    err: 'user does not exsit'
+                });
+            }
 
 			// let erc20 = new Erc20(asim_address);
 			 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
@@ -615,12 +620,17 @@ export default ({
 
 
 	//币币到钱包
-	//router.get('/asim_withdraw/:amount/:username/:token_name',passport.authenticate('jwt', { session: false }),async (req, res) => {
-	router.get('/coin2asset/:amount/:username/:token_name', async (req, res) => {
-	//router.get('/asim_withdraw/:amount/:username/:token_name', async (req, res) => {
+	router.get('/coin2asset/:amount/:username/:token_name',passport.authenticate('jwt', { session: false }),async (req, res) => {
+	//router.get('/coin2asset/:amount/:username/:token_name', async (req, res) => {
 		User.findOne({
 			username: req.params.username
 		}, async (err, user) => {
+			if(!user){
+             return res.json({
+                    success: false,
+                    err: 'user does not exsit'
+                });
+            }
 
 			// let erc20 = new Erc20(asim_address);
 			 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
@@ -650,6 +660,12 @@ export default ({
 		User.findOne({
 			username: req.params.username
 		}, async (err, user) => {
+			if(!user){
+             return res.json({
+                    success: false,
+                    err: 'user does not exsit'
+                });
+            }
 
 			let token_name = req.params.token_name;
 			if (token_name == 'ETH') {
@@ -687,6 +703,12 @@ export default ({
 		User.findOne({
 			username: username
 		}, async (err2, user) => {
+			if(!user){
+             return res.json({
+                    success: false,
+                    err: 'user does not exsit'
+                });
+            }
 			let err,result;
 			if (token_name == 'ETH') {
 				//ether.start_deposit(user);
@@ -709,7 +731,7 @@ export default ({
 			} else {
 				return res.json({
 					 success: false,
-					result: "cannot support token"
+					err: "cannot support token"
 				});
 			}
 
@@ -727,6 +749,12 @@ export default ({
 		User.findOne({
 			username: req.params.username
 		}, async (err, user) => {
+			if(!user){
+			 return res.json({
+                    success: false,
+                    err: 'user does not exsit'
+                });
+			}
 			 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
 			let wallet = await walletHelper.testWallet(mnemonic, payPassword);
 			let token_info = await psql_db.get_tokens([req.params.token_name])
@@ -738,19 +766,22 @@ export default ({
 			console.log("444--", err2, rawtx);
 			res.json({
 				success: rawtx == undefined ? false:true,
-				result: rawtx,
-				err: err2
+				result: rawtx
 			});
 		});
 	});
 
 	//express
-	//router.get('/asim_withdraw/:amount/:username/:token_name',passport.authenticate('jwt', { session: false }),async (req, res) => {
-	router.get('/build_express/:username/:base_token_name/:amount', async (req, res) => {
-	//router.get('/asim_withdraw/:amount/:username/:token_name', async (req, res) => {
+	router.get('/build_express/:username/:base_token_name/:amount', passport.authenticate('jwt', {session: false}),async (req, res) => {
 		User.findOne({
 			username: req.params.username
 		}, async (err, user) => {
+			if(!user){
+             return res.json({
+                    success: false,
+                    err: 'user does not exsit'
+                });
+            }
 			 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
 			let walletInst = await my_wallet(mnemonic);
 			let tokens = await psql_db.get_tokens([req.params.base_token_name])
@@ -764,8 +795,7 @@ export default ({
 
 			res.json({
 				success: result == undefined ? false:true,
-				result: result,
-				err: err2
+				result: result
 			});
 		});
 	});
