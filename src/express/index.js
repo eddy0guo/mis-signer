@@ -96,7 +96,36 @@ export default ({ config, db }) => {
 
 	});
 
+	express.all('/get_pool_info', async (req, res) => {
+		  let token_arr = await mist_wallet.list_tokens();
+                    let balances = [];
+                      console.log("obj11111111133=",token_arr);
+                    for(var i in token_arr){
+                            let asset = new Asset(token_arr[i].asim_assetid)
+                            let [err4,assets_balance] = await to(asset.balanceOf(mist_config.fauct_address))
+                            let asset_balance=0;
+                            for(let j in assets_balance){
+                                if( token_arr[i].asim_assetid == assets_balance[j].asset){
+                                    asset_balance = assets_balance[j].value;
+                                }
+                            }
 
+                            let balance_info ={
+                                token_symbol: token_arr[i].symbol,
+                                asim_assetid: token_arr[i].asim_assetid,
+                                asim_asset_balance: asset_balance
+                            };
+
+                            console.log("obj111111111=",token_arr[i]);
+                            balances.push(balance_info);
+                            console.log(balance_info);
+                    }
+		res.json({
+            success: true,
+            result: balances,
+        });
+
+	});
 
 
 	express.get('/sendrawtransaction/build_express/:base_token_name/:quote_token_name/:amount/:address/:row',async (req, res) => {
@@ -148,9 +177,10 @@ export default ({ config, db }) => {
 
 				 console.log("info")
 				let [err3,result3] = await to(psql_db.insert_express(info_arr));
+            res.json({ success:true,result:result});
+		}else{
+            res.json({ success:false,err:err});
 		}
-
-            res.json({ result:result,err:err});
     });
 
 	return express;
