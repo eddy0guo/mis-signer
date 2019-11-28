@@ -40,6 +40,8 @@ const ECDSA = bitcore_lib_1.crypto.ECDSA;
 const Mail = require('./models/mail.js')
 const bcrypt = require('bcrypt-nodejs');
 
+const crypto_sha256 = require('crypto');
+
 
 import cdp from '../wallet/contract/cdp'
 import adex_utils from '../adex/api/utils'
@@ -455,6 +457,34 @@ export default ({
 			}
 		});
 	});
+
+	router.post('/orders_sign_v2',passport.authenticate('jwt', { session: false }), function(req, res) {
+		let str = req.body.orders_id.join();
+		 let root_hash = crypto_sha256.createHmac('sha256', '123')
+		 let hash = root_hash.update(str, 'utf8').digest('hex');
+		User.findOne({
+			username: req.body.username
+		}, function (err, user) {
+			if (err) throw err;
+
+			if (!user) {
+				res.send({
+					success: false,
+					msg: 'user does not exsit'
+				});
+			} else {
+				 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+				let signature = sign(mnemonic, hash)
+				res.json({
+					success: true,
+					signature: signature
+					//signature: hash
+				});
+			}
+		});
+	});
+
+
 
 
 

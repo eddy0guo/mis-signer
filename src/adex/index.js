@@ -21,6 +21,7 @@ const urllib = require('url');
 import mist_config from '../cfg'
 
 import apicache from 'apicache'
+const crypto_sha256 = require('crypto');
 let cache = apicache.middleware
 
 async function my_wallet(word){
@@ -41,9 +42,9 @@ export default ({ config, db,logger}) => {
     let tokenTest = new TokenTest()
 	let utils = new utils1();
 	let launcher = new launcher1(client);
-//	wathcer.start();
-//	user.start();
-//	asset.status_flushing();
+	wathcer.start();
+	user.start();
+	asset.status_flushing();
 	launcher.start();
 
 	adex.get('/mist_engine_info', async (req, res) => {
@@ -349,15 +350,7 @@ did对order_id进行签名，获取rsv
        });
 	});
 
-
-	//撤销用户所有当前订单
-    adex.get('/cancle_my_order/:address', async (req, res) => {
-	  /** 
-		let result = utils.verify(obj.order_id,JSON.parse(obj.signature));
-		if(!result){
-			return res.json("verify failed");
-		}
-		**/
+	adex.get('/cancle_my_order/:address', async (req, res) => {
 
         //暂时只支持取消1000以内的单子
         let [err,orders] = await to(order.my_orders2(req.params.address,1,1000,'pending','partial_filled'));
@@ -381,6 +374,61 @@ did对order_id进行签名，获取rsv
         res.json({
             success: true,
         });
+    });
+
+
+    adex.get('/cancle_orders_v2', async (req, res) => {
+		let {address,orders_id,signature} =  req.body;
+		console.log("cancle_orders_v2",address,orders_id,signature)
+		 let str = orders_id.join();
+         let root_hash = crypto_sha256.createHmac('sha256', '123')
+         let hash = root_hash.update(str, 'utf8').digest('hex');
+	  	console.log("cancle_orders_v2--",hash); 
+		let success = utils.verify(hash,signature);
+		if(!success){
+			 return res.json({
+                        success: false,
+                        err:'verify failed'
+             })
+		}
+
+		let results = [];
+		let errs = [];
+		for(let index in orders_id){
+			let order_info = await order.get_order(orders_id[index]);
+			console.log("2222",order_info);
+			//已经取消过的不报错直接跳过
+			if(order_info[0].available_amount <= 0){
+				continue;
+			}
+			//不能取消别人的订单
+			if(order_info[0].trader_address != address){
+				 return res.json({
+                    success: false,
+                    err:'You can‘t cancel others order'
+                })	
+			}
+
+			let message = {
+				 amount: order_info[0].available_amount,
+				 id: order_info[0].id
+			};
+
+
+		   let [err,result] = await to(order.cancle_order(message));
+		   if(err){
+		   	errs.push(err);
+		   }else{
+		   results.push(result);
+		   }
+		}
+
+		return res.json({
+			success: errs.length == 0 ? true:false,
+			result: results,
+			err:errs
+		})
+
     });
 
 
