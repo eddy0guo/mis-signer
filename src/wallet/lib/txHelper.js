@@ -1,5 +1,5 @@
 'use strict'
-var asimov = require('@asimovdev/asimovjs')
+var ethers = require('@spinlee/ethers')
 
 module.exports = {
   makeFullTupleTypeDefinition: function (typeDef) {
@@ -24,15 +24,13 @@ module.exports = {
 
     // NOTE: the caller will concatenate the bytecode and this
     //       it could be done here too for consistency
-    
-    var abiCoder = new asimov.utils.AbiCoder()
+    var abiCoder = new ethers.utils.AbiCoder()
     return abiCoder.encode(types, args)
   },
 
   encodeFunctionId: function (funABI) {
     if (funABI.type === 'fallback') return '0x'
-    
-    var abi = new asimov.utils.Interface([funABI])
+    var abi = new ethers.utils.Interface([funABI])
     abi = abi.functions[funABI.name]
     return abi.sighash
   },
