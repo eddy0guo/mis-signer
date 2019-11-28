@@ -78,14 +78,14 @@ export default ({ config, db }) => {
 	let order = new order1(psql_db);
 
 
-	express.get('/my_records/:address/:page/:perpage', async (req, res) => {
+	express.all('/my_records/:address/:page/:perpage', async (req, res) => {
 		  let {address,page,perpage} = req.params;
             let offset = (+page - 1) * +perpage;
 			 let [err,result] = await to(psql_db.my_express([address,offset,perpage]));
             res.json({ result:result,err:err});
 	});
 
-	express.get('/get_price/:base_token_name/:quote_token_name/:base_amount', async (req, res) => {
+	express.all('/get_price/:base_token_name/:quote_token_name/:base_amount', async (req, res) => {
 		let {base_token_name,quote_token_name,base_amount} = req.params;
 		let [err,price] = await to(get_price(base_token_name,quote_token_name,base_amount,order))
 		res.json({

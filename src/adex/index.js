@@ -248,6 +248,12 @@ did对order_id进行签名，获取rsv
 	adex.get('/cancle_order', async (req, res) => {
 	    var obj = urllib.parse(req.url,true).query;
        console.log("cancled_obj=",obj);
+	     /** 
+		let result = utils.verify(obj.order_id,JSON.parse(obj.signature));
+		if(!result){
+			return res.json("verify failed");
+		}
+		**/
 		let message = {
 			 amount: obj.amount,
 			 id: obj.orderID,
@@ -258,8 +264,14 @@ did对order_id进行签名，获取rsv
        res.json({result,err });
 	});
 
-	//撤销订单，应该是需要对每个orderid进行签名，后期做
+	//撤销用户所有当前订单
     adex.get('/cancle_my_order/:address', async (req, res) => {
+	  /** 
+		let result = utils.verify(obj.order_id,JSON.parse(obj.signature));
+		if(!result){
+			return res.json("verify failed");
+		}
+		**/
 
         //暂时只支持取消1000以内的单子
         let [err,orders] = await to(order.my_orders2(req.params.address,1,1000,'pending','partial_filled'));
