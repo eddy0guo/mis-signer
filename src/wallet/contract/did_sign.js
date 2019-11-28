@@ -9,17 +9,20 @@ export default class Token {
   fee = 0.1
  gasLimit = 30000000
 
+  constructor(address) {
+    this.address = address;
+}
+
 unlock(wallet, password) {
     this.wallet = wallet
     this.password = password
 }
 
-async callContract(hex_data) {
-	if(!value){value = 0;};
+async callContract(hex_data,assetID,amount) {
     let params = {
         to: this.address,
-        amount: 0,
-        assetId: '000000000000000000000000',
+        amount: amount,
+        assetId: assetID,
         data: hex_data
       };
       console.log('params.data',params.data)

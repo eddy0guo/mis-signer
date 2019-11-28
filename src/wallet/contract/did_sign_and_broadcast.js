@@ -18,11 +18,11 @@ unlock(wallet, password) {
     this.password = password
 }
 
-async callContract(hex_data) {
+async callContract(hex_data,assetID,amount) {
     let params = {
         to: this.address,
-        amount: 0,
-        assetId: '000000000000000000000000',
+        amount: amount,
+        assetId: assetID,
         data: hex_data
       };
       console.log('params.data',params.data)

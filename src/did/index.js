@@ -804,7 +804,8 @@ export default ({
 		});
 	});
 
-	router.all('/signTransaction/:username/:hexData', passport.authenticate('jwt', {session: false}),async (req, res) => {
+	router.all('/sign_transaction/:username/:contract_address/:asset_id/:amount/:hex_data', passport.authenticate('jwt', {session: false}),async (req, res) => {
+		let{username,contract_address,asset_id,amount,hex_data} = req.params;
 		User.findOne({
 			username: req.params.username
 		}, async (err, user) => {
@@ -816,11 +817,11 @@ export default ({
             }
 			let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
 			let walletInst = await my_wallet(mnemonic);
-			let did_sign = new didSign();
+			let did_sign = new didSign(contract_address);
 
 			did_sign.unlock(walletInst,mist_config.wallet_default_passwd)
             await walletInst.queryAllBalance()
-			let [err2,result] = await to(did_sign.callContract(req.params.hexData));
+			let [err2,result] = await to(did_sign.callContract(hex_data,asset_id,amount));
 			console.log("signTransaction==",err2,result)
 
 
@@ -832,9 +833,10 @@ export default ({
 		});
 	});
 
-	router.all('/signTransactionAndBroadcast/:username/:hexData', passport.authenticate('jwt', {session: false}),async (req, res) => {
+	router.all('/sign_transaction_and_broadcast/:username/:contract_address/:asset_id/:amount/:hex_data', passport.authenticate('jwt', {session: false}),async (req, res) => {
+		let{username,contract_address,asset_id,amount,hex_data} = req.params;
 		User.findOne({
-			username: req.params.username
+			username: username
 		}, async (err, user) => {
 			if(!user){
              return res.json({
@@ -843,14 +845,13 @@ export default ({
                 });
             }
 
-
 			let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
 			let walletInst = await my_wallet(mnemonic);
-			let did_sign = new didSignAndBroadcast();
+			let did_sign = new didSignAndBroadcast(contract_address);
 
 			did_sign.unlock(walletInst,mist_config.wallet_default_passwd)
             await walletInst.queryAllBalance()
-			let [err2,result] = await to(did_sign.callContract(req.params.hexData));
+			let [err2,result] = await to(did_sign.callContract(hex_data,asset_id,amount));
 			console.log("signTransaction==",err2,result)
 
 
@@ -883,7 +884,7 @@ export default ({
             let tokens = await psql_db.get_tokens([req.params.token_name])
             console.log("7777777", tokens);
             //walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
-            let erc20 = new Erc20(tokens[0].address);
+            let erc20 = new Erc20_gen_hex(tokens[0].address);
             erc20.unlock(walletInst, "111111")
             await walletInst.queryAllBalance()
             let [err2, result] = await to(erc20.deposit(tokens[0].asim_assetid, req.params.amount));
