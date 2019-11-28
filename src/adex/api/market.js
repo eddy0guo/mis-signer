@@ -21,6 +21,12 @@ export default class makets{
         return result;
     }
 
+	async get_market(market_id) {
+		return await this.db.get_market([market_id]);
+    }
+
+
+
 	async list_market_quotations() {
 
 		let markets = await this.list_markets();

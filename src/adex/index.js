@@ -41,9 +41,9 @@ export default ({ config, db,logger}) => {
     let tokenTest = new TokenTest()
 	let utils = new utils1();
 	let launcher = new launcher1(client);
-	wathcer.start();
-	user.start();
-	asset.status_flushing();
+//	wathcer.start();
+//	user.start();
+//	asset.status_flushing();
 	launcher.start();
 
 	adex.get('/mist_engine_info', async (req, res) => {
@@ -341,11 +341,42 @@ did对order_id进行签名，获取rsv
        res.json({result,err });
 	});
 
+	adex.all('/order_book_v2/:market_id', async (req, res) => {
+       let [err,result] = await to(order.order_book(req.params.market_id));
+	   //没数据判定为不存在的交易对，实际上刚部署的时候也没数据
+	   if(result.asks.length == 0 && result.asks.length == 0){
+			res.json({
+                 success: false,
+                err:'have no this marketID'
+       		});	   
+	   }else{
+		   res.json({
+					 success: true,
+					result: result
+		   });
+	   }
+	});
+
+
+
 	adex.get('/list_markets', async (req, res) => {
 
        let [err,result] = await to(market.list_markets());
        res.json({result,err });
 	});
+
+	adex.all('/list_markets_v2', async (req, res) => {
+
+       let [err,result] = await to(market.list_markets());
+	   res.json({
+                 success: result == undefined ? false:true,
+                result: result,
+                err:err
+       });
+	});
+
+
+
 
 
 	adex.get('/rollback_trades', async (req, res) => {
@@ -373,6 +404,36 @@ did对order_id进行签名，获取rsv
 	});
 
 
+
+	adex.all('/list_trades_v2/:market_id', async (req, res) => {
+      	let {market_id} = req.params; 
+
+		let [err,result] = await to(market.get_market(market_id));
+        if(err || result.length == 0){
+            res.json({
+                 success: false,
+                err: err + ' or have no this market'
+            });
+        }
+
+
+       let [err2,result2] = await to(trades.list_trades(market_id));
+
+	     if(err2){
+            res.json({
+                 success: false,
+                err:err2
+            });
+       }else{
+           res.json({
+                     success: true,
+                    result: result2
+           });
+       }
+	});
+
+
+
     adex.get('/my_trades', async (req, res) => {
       /**
         let message = {address:"0x66b7637198aee4fffa103fc0082e7a093f81e05a64"}
@@ -385,27 +446,28 @@ did对order_id进行签名，获取rsv
        res.json({result,err });
     });
 
-
-	adex.get('/my_trades2/address/page/perpage', async (req, res) => {
+	 adex.get('/my_trades2/:address/:page/:per_page', async (req, res) => {
        let [err,result] = await to(trades.my_trades2(req.params.address,req.params.page,req.params.per_page));
+         res.json({
+            success: result == undefined ? false:true,
+            result: result,
+            err:err
+        });
+    });
 
-       res.json({result,err });
-	});
-
+	adex.get('/my_trades_v2/:address/:page/:per_page', async (req, res) => {
+       let [err,result] = await to(trades.my_trades2(req.params.address,req.params.page,req.params.per_page));
+         res.json({
+            success: result == undefined ? false:true,
+            result: result,
+            err:err
+        });
+    });
 
 
 	// add 10 second memory cache ( change to redis later )
 	adex.get('/trading_view',cache('10 second'), async (req, res) => {
 		let current_time = Math.floor(new Date().getTime() / 1000);
-/**
-		let message = {
-		market_id:"ASIM-PAI",   
-		from: current_time - current_time%300 - 300*100,   //当前所在的时间区间不计算  
-		to: current_time - current_time%300,
-		granularity: 300,
-		};
-**/
-
 		 var obj = urllib.parse(req.url,true).query;
        console.log("obj=",obj);
 
@@ -421,6 +483,42 @@ did对order_id进行签名，获取rsv
 		let [err,result] = await to(trades.trading_view(message));
         res.json({result,err });
 	});
+
+	adex.all('/trading_view_v2/:granularity/:number/:market_id',cache('10 second'), async (req, res) => {
+
+		let {granularity,number,market_id} = req.params;
+
+		let [err,result] = await to(market.get_market(market_id));
+		if(err || result.length == 0){
+			res.json({
+                 success: false,
+                err: err + ' or have no this market'
+            });	
+		}
+
+		let current_time = Math.floor(new Date().getTime() / 1000);
+		let message = {
+		market_id: market_id,   
+		from: current_time - current_time%granularity - granularity*number,   //当前所在的时间区间不计算  
+		to: current_time - current_time%granularity,
+		granularity: granularity,
+		};
+	   
+
+		let [err2,result2] = await to(trades.trading_view(message));
+		 if(err2){
+            res.json({
+                 success: false,
+                err:err2
+            });
+       }else{
+           res.json({
+                     success: true,
+                    result: result2
+           });
+       }
+	});
+
 
 	return adex;
 };
