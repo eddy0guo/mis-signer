@@ -245,6 +245,64 @@ did对order_id进行签名，获取rsv
        res.json({ result2,err });
 	});
 
+
+
+	adex.all('/build_order_v2/:trader_address/:market_id/:side/:price/:amount/:order_id/:signature', async (req, res) => {
+		let {trader_address,market_id,side,price,amount,order_id,signature} = req.params;
+
+		let result = utils.verify(order_id,JSON.parse(signature));
+		if(!result){
+			 return res.json({
+                        success: false,
+                        err:'verify failed'
+            })
+		}
+		if(!(utils.judge_legal_num(+amount) && utils.judge_legal_num(+price))){
+			 return res.json({
+                        success: false,
+                        err:'amount or price is cannt support'
+            })
+		}
+		/*
+		var arr = obj.market.toString().split("-");
+		let token_info = mist_wallet.get_token(arr[1]);
+		let token = new Token(token_info[0].address);
+        let balance = await token.balanceOf(obj.address);
+		if(NP.times(+obj.amount, +obj.price) > balance){
+			return res.json("balance is not enoungh");
+		}
+		*/
+
+
+       let message = {
+                      id:order_id,
+                      trader_address: trader_address,
+                      market_id: market_id,
+                      side: side,
+                      price: price,
+                      amount: amount,
+                      status:'pending',
+                      type:'limit',
+                      available_amount: amount,
+                      confirmed_amount:0,
+                      canceled_amount:0,
+                      pending_amount:0,
+                      updated_at:null,
+                      created_at:null,
+       };
+
+
+       let [err,result2] = await to(order.build(message))
+       console.log(result2,err);
+       res.json({
+                 success: result == undefined ? false:true,
+                result: result2,
+                err:err
+       });
+	});
+
+
+
 	adex.get('/cancle_order', async (req, res) => {
 	    var obj = urllib.parse(req.url,true).query;
        console.log("cancled_obj=",obj);
@@ -263,6 +321,34 @@ did对order_id进行签名，获取rsv
        let [err,result] = await to(order.cancle_order(message));
        res.json({result,err });
 	});
+
+	adex.all('/cancle_order_v2/:order_id/:signature', async (req, res) => {
+	    let {order_id,signature} = req.params; 
+		let success = utils.verify(order_id,JSON.parse(signature));
+		if(!success){
+			return res.json({
+                        success: false,
+                        err:'verify failed'
+            })
+		}
+		
+		console.log("333",order);
+		let order_info = await order.get_order(order_id);
+		console.log("2222",order_info);
+		let message = {
+			 amount: order_info[0].available_amount,
+			 id: order_id,
+		};
+
+
+       let [err,result] = await to(order.cancle_order(message));
+	   res.json({
+                 success: result == undefined ? false:true,
+                result: result,
+                err:err
+       });
+	});
+
 
 	//撤销用户所有当前订单
     adex.get('/cancle_my_order/:address', async (req, res) => {
