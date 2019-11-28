@@ -432,7 +432,7 @@ export default ({
 		});
 	});
 
-	router.post('/order_build_sign_v2',passport.authenticate('jwt', { session: false }), function(req, res) {
+	router.post('/order_sign_v2',passport.authenticate('jwt', { session: false }), function(req, res) {
 	//router.post('/order_sign', function (req, res) {
 		console.log("111111", req.body);
 		User.findOne({
