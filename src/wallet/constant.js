@@ -37,7 +37,186 @@ export const CONSTANT = {
       asset: '000000000000000001010101',
       unit: "fee",
       balance: 0
+    },
+	{
+      name: "fbtc2",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000000300000001',
+      unit: "fee",
+      balance: 0
+    },
+	{
+      name: "pai",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000000500000001',
+      unit: "fee",
+      balance: 0
+    },
+	{
+      name: "mpai",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000001f00000001',
+      unit: "fee",
+      balance: 0
+    },
+	{
+      name: "musdt",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000001b00000001',
+      unit: "fee",
+      balance: 0
+    },
+	{
+      name: "meth",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000001400000001',
+      unit: "fee",
+      balance: 0
+    },
+	{
+      name: "mbtc",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000001800000001',
+      unit: "fee",
+      balance: 0
+    },
+	{
+      name: "mmt",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000001600000001',
+      unit: "fee",
+      balance: 0
+    },
+	{
+      name: "mmt",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000001500000001',
+      unit: "fee",
+      balance: 0
+    },
+	{
+      name: "mmt",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000001700000001',
+      unit: "fee",
+      balance: 0
+    },
+	{
+      name: "mmt",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000005600000002',
+      unit: "fee",
+      balance: 0
+    },
+	{
+      name: "mmt",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000003d00000000',
+      unit: "fee",
+      balance: 0
+    },
+	{
+      name: "hqbtc",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000005f00000001',
+      unit: "fee",
+      balance: 0
+    },
+	{
+      name: "hqeth",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000006000000001',
+      unit: "fee",
+      balance: 0
+    },
+	{
+      name: "hqmt",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000006100000001',
+      unit: "fee",
+      balance: 0
+    },
+	{
+      name: "hqusdt",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000006200000001',
+      unit: "fee",
+      balance: 0
+    },
+	{
+      name: "mmt",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000006300000001',
+      unit: "fee",
+      balance: 0
     }
+
+
+
   ],
 
   DEPLOY_CONTRACT_SENDAMOUNT: 0,

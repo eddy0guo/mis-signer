@@ -18,7 +18,7 @@ export const sts2btc = value => {
 export const btc2sts = value => {
   if (!value) return value
   // validateNumber(value)
-  console.log("btc2sts:",value)
+  // console.log("btc2sts:",value)
   let v = new BigNumber(value.toString())
   return parseInt(v.times(SATOSHI_BTC).toFixed(0))
 }

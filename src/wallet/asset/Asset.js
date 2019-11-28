@@ -29,6 +29,26 @@ export default class Asset {
         let password = this.password;
         let from = await wallet.getAddress()
 
+
+		const assetObjArr = [];
+
+		assetObjArr.push({
+        amount: amount,
+        asset: this.assetId
+      });
+
+      assetObjArr.push({
+        amount: 0.02,
+        asset: '000000000000000000000000'
+      });
+
+      const { ins, changeOut } = await TranService.chooseUTXO(
+        wallet.walletId,
+        assetObjArr,
+        from
+      );
+
+/*
         let { ins, changeOut } = await TranService.chooseUTXO(
             wallet.walletId,
             amount,
@@ -36,7 +56,7 @@ export default class Asset {
             from,
             this.fee
         );
-
+*/
         let outs = [{
             amount: btc2sts(parseFloat(amount)),
             assets: this.assetId,
@@ -58,17 +78,17 @@ export default class Asset {
         try {
             let rawtx = TranService.generateRawTx(ins, outs, keys);
 
-            console.log("RAWTX:",rawtx)
+            // console.log("RAWTX:",rawtx)
 
             if (!rawtx) {
-                console.log("executeContract Raw TX Error")
+                console.log("execute Transfer generateRawTx Error")
                 return;
             }
 
-            console.log("executeContract Success:",ins, outs);
+            console.log("execute Transfer sendrawtransaction");
             return chain.sendrawtransaction([rawtx]);
         } catch (e) {
-            console.log("executeContract TX Error", e)
+            console.log("execute Transfer TX Error", e)
         }
     }
 

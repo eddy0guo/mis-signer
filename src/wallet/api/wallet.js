@@ -70,10 +70,10 @@ export const walletRPC = {
   },
 
   getbalance: function(params) {
-    return rpc('flow_getBalance', params);
+    return rpc('asimov_getBalance', params);
   },
   getbalances: function(params) {
-    return rpc('flow_getBalances', params);
+    return rpc('asimov_getBalances', params);
   },
   //marshalled: `{"jsonrpc":"1.0","method":"getnewaddress","params":[],"id":1}`,
   //marshalled: `{"jsonrpc":"1.0","method":"getnewaddress","params":["acct"],"id":1}`,
@@ -105,7 +105,7 @@ export const walletRPC = {
     return rpc('gettransactionlist', params);
   },
   getutxobyaddress:function(params){
-    return rpc('flow_getUtxoByAddress', params);
+    return rpc('asimov_getUtxoByAddress', params);
   },
   //marshalled: `{"jsonrpc":"1.0","method":"importprivkey","params":["abc"],"id":1}`,
   //marshalled: `{"jsonrpc":"1.0","method":"importprivkey","params":["abc","label"],"id":1}`,

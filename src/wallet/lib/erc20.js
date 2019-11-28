@@ -131,12 +131,26 @@ export default class erc20 {
     // 先简单处理，Execute 前更新UTXO
     // await wallet.queryAllBalance()
 
-    let { ins, changeOut } = await TranService.chooseUTXO(
-      wallet.walletId,
-      params.amount,
-      params.assetId,
-      params.from
-    );
+
+	  const assetObjArr = [];
+
+        assetObjArr.push({
+        amount: params.amount,
+        asset: params.assetId
+      });
+
+      assetObjArr.push({
+        amount: 0.02,
+        asset: '000000000000000000000000'
+      });
+
+      const { ins, changeOut } = await TranService.chooseUTXO(
+        wallet.walletId,
+        assetObjArr,
+        params.from
+      );
+
+
 
     console.log(ins,changeOut)
 

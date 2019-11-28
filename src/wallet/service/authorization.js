@@ -1,4 +1,4 @@
-import Storage from 'storage';
+import Storage from '@service/storage';
 
 
 const maxAuthorizationAge = 7 * 24 * 60 * 60 * 1000;

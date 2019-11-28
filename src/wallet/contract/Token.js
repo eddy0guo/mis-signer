@@ -33,6 +33,7 @@ export default class Token {
      * @param {*} wallet 
      */
     async callContract(abiInfo) {
+            console.log("callContracti111111:");
         let params = {
             to: this.address,
             amount: 0,
@@ -43,8 +44,10 @@ export default class Token {
         console.log("params.data:",params.data)
 
         if (abiInfo.stateMutability == 'view' || abiInfo.stateMutability == 'pure') {
+            console.log("callContractig2222:");
             return chain.callreadonlyfunction([this.address, this.address, params.data, abiInfo.name, this.abiStr])
         } else {
+            console.log("callContractigxyyyy:");
             params.from = await this.wallet.getAddress()
             params.type = CONSTANT.CONTRACT_TYPE.CALL
             return this.executeContract(params)
@@ -61,13 +64,27 @@ export default class Token {
         let wallet = this.wallet;
         let password = this.password;
 
-        let { ins, changeOut } = await TranService.chooseUTXO(
-            wallet.walletId,
-            params.amount,
-            params.assetId,
-            params.from,
-            this.fee
-        );
+
+
+		const assetObjArr = [];
+
+        assetObjArr.push({
+        amount: params.amount,
+        asset: params.assetId
+      });
+
+      assetObjArr.push({
+        amount: 0.02,
+        asset: '000000000000000000000000'
+      });
+
+      const { ins, changeOut } = await TranService.chooseUTXO(
+        wallet.walletId,
+        assetObjArr,
+        params.from
+      );
+
+       
 
         let outs = [{
             amount: btc2sts(parseFloat(params.amount)),
@@ -87,6 +104,7 @@ export default class Token {
             password
         );
 
+                console.log("executeContract Raw TX 1111")
         try {
             let rawtx = TranService.generateRawTx(ins, outs, keys, this.gasLimit);
 
@@ -210,6 +228,28 @@ export default class Token {
         return this.callContract(abiInfo);
     }
 
+    async transferfrom(from, to,amount) {
+        let abiInfo = {"constant":false,"inputs":[{"name":"from","type":"address","value":from},{"name":"to","type":"address","value":to},{"name":"amount","type":"uint256","value":amount}],"name":"transferFrom","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"};
+        return this.callContract(abiInfo);
+    }  
+
+
+    async dex_match_order(trades) {
+
+let relayer = '0x66edd03c06441f8c2da19b90fcc42506dfa83226d3';
+let token_address = '0x631f62ca646771cd0c78e80e4eaf1d2ddf8fe414bf';
+
+
+            console.log("dex_match_order-----inner:",trades);
+
+        let abiInfo = {"constant":false,"inputs":[{"components":[{"name":"taker","type":"address"},{"name":"maker","type":"address"},{"name":"amount","type":"uint256"}],"name":"TradeParams","type":"tuple[]","value":trades},{"components":[{"name":"quoteToken","type":"address"},{"name":"relayer","type":"address"}],"name":"orderAddressSet","type":"tuple","value":[token_address,relayer]}],"name":"matchOrder","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"};
+
+
+        return this.callContract(abiInfo);
+    }  
+
+
+
     /**
      * Generate ABI Hex Data
      * @param {*} abiInfo 
@@ -222,7 +262,7 @@ export default class Token {
 
         abiInfo.inputs.forEach(i => {
             if (isArrayType(i.type)) {
-                let arr = JSON.parse(i.value);
+                let arr = i.value;
                 let type = i.type.replace('[]', '');
                 let result = []
                 arr.forEach(a => {
@@ -251,6 +291,8 @@ export default class Token {
         }
 
         let data = functionHash.replace('0x', '') + paramsHash.replace('0x', '');
+
+        console.log("gxy---gethexdata=",data);
         return data;
     }
 

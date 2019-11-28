@@ -8,7 +8,7 @@ import { btc2sts, isArrayType, callParamsConvert,signature,getWalletPubKey} from
 const bitcore_lib_1 = require("bitcore-lib");
 const ECDSA = bitcore_lib_1.crypto.ECDSA;
 export default class Token {
- abiStr ='[{"constant":false,"inputs":[{"components":[{"name":"actionType","type":"uint8"},{"name":"marketID","type":"uint16"},{"name":"asset","type":"address"},{"name":"amount","type":"uint256"},{"components":[{"name":"category","type":"uint8"},{"name":"marketID","type":"uint16"},{"name":"user","type":"address"}],"name":"fromBalancePath","type":"tuple"},{"components":[{"name":"category","type":"uint8"},{"name":"marketID","type":"uint16"},{"name":"user","type":"address"}],"name":"toBalancePath","type":"tuple"}],"name":"actions","type":"tuple[]"}],"name":"batch","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[],"name":"getTemplateInfo","outputs":[{"name":"","type":"uint16"},{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"EIP712_ORDER_TYPE","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"hash","type":"bytes32"},{"name":"signerAddress","type":"address"},{"components":[{"name":"config","type":"bytes32"},{"name":"r","type":"bytes32"},{"name":"s","type":"bytes32"}],"name":"signature","type":"tuple"}],"name":"isValidSignature","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"components":[{"name":"trader","type":"address"},{"name":"baseAssetAmount","type":"uint256"},{"name":"quoteAssetAmount","type":"uint256"},{"name":"gasTokenAmount","type":"uint256"},{"name":"data","type":"bytes32"},{"components":[{"name":"config","type":"bytes32"},{"name":"r","type":"bytes32"},{"name":"s","type":"bytes32"}],"name":"signature","type":"tuple"}],"name":"takerOrderParam","type":"tuple"},{"components":[{"name":"trader","type":"address"},{"name":"baseAssetAmount","type":"uint256"},{"name":"quoteAssetAmount","type":"uint256"},{"name":"gasTokenAmount","type":"uint256"},{"name":"data","type":"bytes32"},{"components":[{"name":"config","type":"bytes32"},{"name":"r","type":"bytes32"},{"name":"s","type":"bytes32"}],"name":"signature","type":"tuple"}],"name":"makerOrderParams","type":"tuple[]"},{"name":"baseAssetFilledAmounts","type":"uint256[]"},{"components":[{"name":"baseAsset","type":"address"},{"name":"quoteAsset","type":"address"},{"name":"relayer","type":"address"}],"name":"orderAddressSet","type":"tuple"}],"name":"matchOrders","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"components":[{"name":"trader","type":"address"},{"name":"relayer","type":"address"},{"name":"baseAsset","type":"address"},{"name":"quoteAsset","type":"address"},{"name":"baseAssetAmount","type":"uint256"},{"name":"quoteAssetAmount","type":"uint256"},{"name":"gasTokenAmount","type":"uint256"},{"name":"data","type":"bytes32"}],"name":"order","type":"tuple"}],"name":"_hashContent","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"eip712hash","type":"bytes32"}],"name":"hashMessage","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_category","type":"uint16"},{"name":"_templateName","type":"string"}],"name":"initTemplate","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"components":[{"name":"trader","type":"address"},{"name":"relayer","type":"address"},{"name":"baseAsset","type":"address"},{"name":"quoteAsset","type":"address"},{"name":"baseAssetAmount","type":"uint256"},{"name":"quoteAssetAmount","type":"uint256"},{"name":"gasTokenAmount","type":"uint256"},{"name":"data","type":"bytes32"}],"name":"order","type":"tuple"}],"name":"getHash","outputs":[{"name":"orderHash","type":"bytes32"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"asset","type":"address"},{"name":"user","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"msghash","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"anonymous":false,"inputs":[{"indexed":false,"name":"balce","type":"uint256"}],"name":"bac","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"bol","type":"bool"}],"name":"result","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"bl","type":"bool"},{"indexed":false,"name":"bts","type":"bytes32"}],"name":"jiancha","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"bl","type":"uint256"},{"indexed":false,"name":"recovereds","type":"address"}],"name":"jieguo","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"hashs","type":"bytes32"}],"name":"Hashcont","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"smghash","type":"bytes32"}],"name":"MsgHash","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"b","type":"address"},{"indexed":false,"name":"c","type":"uint256"},{"indexed":false,"name":"d","type":"uint256"}],"name":"huazhuan","type":"event"}]'
+  abiStr = '[{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"guy","type":"address"},{"name":"wad","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"from","type":"address"},{"name":"to","type":"address"},{"name":"amount","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"wad","type":"uint256"}],"name":"withdraw","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"getTemplateInfo","outputs":[{"name":"","type":"uint16"},{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"to","type":"address"},{"name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_category","type":"uint16"},{"name":"_templateName","type":"string"}],"name":"initTemplate","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"deposit","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[{"name":"owner","type":"address"},{"name":"spender","type":"address"}],"name":"allowance","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[{"name":"_exchange","type":"address"}],"payable":false,"stateMutability":"nonpayable","type":"constructor","name":"ASIM"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"anonymous":false,"inputs":[{"indexed":true,"name":"src","type":"address"},{"indexed":true,"name":"guy","type":"address"},{"indexed":false,"name":"wad","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"src","type":"address"},{"indexed":true,"name":"dst","type":"address"},{"indexed":false,"name":"wad","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"dst","type":"address"},{"indexed":false,"name":"wad","type":"uint256"}],"name":"Deposit","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"src","type":"address"},{"indexed":false,"name":"wad","type":"uint256"}],"name":"Withdrawal","type":"event"}]'
   fee = 0.1
  gasLimit = 30000000
 
@@ -21,10 +21,11 @@ unlock(wallet, password) {
     this.password = password
 }
 
-async callContract(abiInfo) {
+async callContract(abiInfo,value) {
+	if(!value){value = 0;};
     let params = {
         to: this.address,
-        amount: 0,
+        amount: value,
         assetId: CONSTANT.DEFAULT_ASSET,
         data: this.getHexData(abiInfo)
       };
@@ -42,13 +43,25 @@ async executeContract(params) {
     let wallet = this.wallet;
     let password = this.password;
 
-    let { ins, changeOut } = await TranService.chooseUTXO(
+  const assetObjArr = [];
+
+        assetObjArr.push({
+        amount: params.amount,
+        asset: params.assetId
+      });
+
+      assetObjArr.push({
+        amount: 0.02,
+        asset: '000000000000000000000000'
+      });
+
+      const { ins, changeOut } = await TranService.chooseUTXO(
         wallet.walletId,
-        params.amount,
-        params.assetId,
-        params.from,
-        this.fee
-    );
+        assetObjArr,
+        params.from
+      );
+
+
 
     let outs = [{
         amount: btc2sts(parseFloat(params.amount)),
@@ -130,30 +143,30 @@ getHexData(abiInfo) {
 }
 
     //MistToken contract
-        // async deposit(){
-        //     let abiInfo=
-        //     {"constant":false,
-        //     "inputs":[],
-        //     "name":"deposit",
-        //     "outputs":[],
-        //     "payable":true,
-        //     "stateMutability":"payable",
-        //     "type":"function"
-        //     }
-        //     return this.callContract(abiInfo);
-        // }
+         async deposit(amount){
+             let abiInfo=
+             {"constant":false,
+             "inputs":[],
+             "name":"deposit",
+             "outputs":[],
+             "payable":true,
+             "stateMutability":"payable",
+             "type":"function"
+             }
+             return this.callContract(abiInfo,amount);
+         }
 
-        // async withdraw(){
-        //     let abiInfo=
-        //     {"constant":false,
-        //     "inputs":[{"name":"wad","type":"uint256","value":100000000}],
-        //     "name":"withdraw",
-        //     "outputs":[],
-        //     "payable":false,
-        //     "stateMutability":"nonpayable",
-        //     "type":"function"}
-        //     return this.callContract(abiInfo);
-        // }
+         async withdraw(amount){
+             let abiInfo=
+             {"constant":false,
+             "inputs":[{"name":"wad","type":"uint256","value":amount}],
+             "name":"withdraw",
+             "outputs":[],
+             "payable":false,
+             "stateMutability":"nonpayable",
+             "type":"function"}
+             return this.callContract(abiInfo);
+         }
     
 
 
