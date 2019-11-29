@@ -102,7 +102,7 @@ export default class engine {
 				taker: my_order.trader_address,
 				price: find_orders[item].price,
 				amount: find_orders[item].available_amount,
-				taker_side: find_orders[item].side,
+				taker_side: my_order.side,
 				maker_order_id: find_orders[item].id,
 				taker_order_id: my_order.id,
 				created_at: create_time,
@@ -165,8 +165,8 @@ export default class engine {
 			baseToken: order_address_set[0],
 			quoteToken: order_address_set[1],
 			relayer: order_address_set[2],
-			baseTokenAmount: NP.times(trades[i].amount, trades[i].price, 100000000), //    uint256 baseTokenAmount;
-			quoteTokenAmount: NP.times(trades[i].amount, 100000000), // quoteTokenAmount;
+			baseTokenAmount: NP.times(trades[i].amount, 100000000), //    uint256 baseTokenAmount;
+			quoteTokenAmount: NP.times(trades[i].amount, trades[i].price,100000000), // quoteTokenAmount;
 			takerSide:	trades[i].taker_side
 			};
 

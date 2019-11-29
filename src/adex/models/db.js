@@ -329,10 +329,12 @@ export default class db{
 
 
 		async get_laucher_trades() {
-			let [err,result] = await to(this.clientDB.query('select * from mist_trades left join (SELECT transaction_id as right_id  FROM mist_trades where status=\'matched\'  order by transaction_id limit 1)s on mist_trades.transaction_id=s.right_id where s.right_id is not null')); 
+			let [err,result] = await to(this.clientDB.query('select * from mist_trades left join (SELECT transaction_id as right_id  FROM mist_trades where status=\'matched\'  order by transaction_id desc limit 1)s on mist_trades.transaction_id=s.right_id where s.right_id is not null')); 
 			if(err) {
 				return console.error('get_laucher_trades_查询失败', err);
 			}
+
+			console.log("gxygxy11111---",result.rows)
 			return result.rows;
 
 		} 

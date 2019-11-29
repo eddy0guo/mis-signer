@@ -36,7 +36,7 @@ export default class launcher {
 	async loop() {
 	
             let trades = await this.db.get_laucher_trades();
-            console.log("launchertrades=", trades);
+            console.log("gxygxylaunchertrades=", trades);
 			let current_time = this.utils.get_current_time();
 			if (trades.length == 0) {
 				console.log("111111111111-launcher--",trades)
@@ -47,35 +47,15 @@ export default class launcher {
 			}
 
 						console.log("gxyrelayers-aa--launcher0000",mist_config.relayers);
-						let token_address = await this.db.get_market([trades[0].market_id]);
 
 					//这里合约逻辑写反了。参数顺序也故意写反，使整体没问题，等下次合约更新调整过来，fixme
 					//let order_address_set = [token_address[0].base_token_address,token_address[0].quote_token_address,index.relayer];
 					    let index = trades[0].transaction_id % 3;
 					//		let order_address_set = [token_address[0].quote_token_address, token_address[0].base_token_address, mist_config.relayers[index].address];
-
-					/*
-					
-					
-					
-    struct Trade{
-        address taker;
-        address maker;
-        address baseToken;
-        address quoteToken;
-        address relayer;
-        uint256 baseTokenAmount;
-        uint256 quoteTokenAmount;
-        bytes32 r;
-        bytes32 s;
-        string  takerSide;
-        uint8 v;
-      }
-					
-					*/
-
-						 let trades_hash = [];
+					 let trades_hash = [];
 						for (var i in trades) {
+
+							let token_address = await this.db.get_market([trades[i].market_id]);
 							let trade_info ={
 								trade_hash: trades[i].trade_hash,
 								taker: trades[i].taker,
@@ -83,8 +63,8 @@ export default class launcher {
 								base_token_address: token_address[0].base_token_address,
 								quote_token_address: token_address[0].quote_token_address,
 								relayer: mist_config.relayers[index].address,
-								base_token_amount: NP.times(+trades[i].amount, +trades[i].price, 100000000), //    uint256 baseTokenAmount;
-								quote_token_amount: NP.times(+trades[i].amount, 100000000), // quoteTokenAmount;
+								base_token_amount: NP.times(+trades[i].amount, 100000000), //    uint256 baseTokenAmount;
+								quote_token_amount: NP.times(+trades[i].amount, +trades[i].price, 100000000), // quoteTokenAmount;
 								r: null,
 								s: null,
 								side: trades[i].taker_side,
@@ -98,6 +78,9 @@ export default class launcher {
 						 walletInst = await getTestInst(mist_config.relayers[index].word);
 						mist.unlock(walletInst, "111111");
 						let [err2, result] = await to(walletInst.queryAllBalance());
+
+						console.log("gxygxy2--222--",trades)
+						console.log("gxygxy2--333--",trades_hash)
 
 						//let [err, txid] = await to(mist.matchorder(trades_hash, order_address_set));
 						console.log("relayers------",mist_config.relayers[index]);
@@ -130,7 +113,7 @@ export default class launcher {
 
 		setTimeout(()=>{
 			this.loop.call(this)
-		}, 12000);
+		}, 16000);
 		//}, 6000000);
 
 	}

@@ -170,40 +170,22 @@ var mist_config_hqpd = {
     fauct_address:'0x666234b6348c10fed282b95c1f1768aa3113eb96b2',
     fauct_word:'tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook',
     fauct_prikey:'0x47c98c143179d48664dfc2f029a8583cb6a394a94037e06f0658dcf18ed6c66a',
-/*
-	relayers:[
-    {
-        prikey:"0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2",
-        word:"ivory local this tooth occur glide wild wild few popular science horror",
-        address:"0x66edd03c06441f8c2da19b90fcc42506dfa83226d3"
-    },
-    {
-        prikey:"0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2",
-        word:"ivory local this tooth occur glide wild wild few popular science horror",
-        address:"0x66edd03c06441f8c2da19b90fcc42506dfa83226d3"
-    },
-    {
-        prikey:"0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2",
-        word:"ivory local this tooth occur glide wild wild few popular science horror",
-        address:"0x66edd03c06441f8c2da19b90fcc42506dfa83226d3"
 
-    }],
-*/
 	relayers:[
     {
-        prikey:"0x0281e6822da8501ef76b9f72a0b0ccf888525edef94c83a5de91fd1c11c143ac",
-        word:"skill utility exist blur ozone tiger roof toast agent cereal attract style",
-        address:"0x66202fab701a58b4b622ee07ac8ac11b872d727ced"
+        prikey:"0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2",
+        word:"ivory local this tooth occur glide wild wild few popular science horror",
+        address:"0x66edd03c06441f8c2da19b90fcc42506dfa83226d3"
     },
     {
-        prikey:"0x0281e6822da8501ef76b9f72a0b0ccf888525edef94c83a5de91fd1c11c143ac",
-        word:"skill utility exist blur ozone tiger roof toast agent cereal attract style",
-        address:"0x66202fab701a58b4b622ee07ac8ac11b872d727ced"
+        prikey:"0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2",
+        word:"ivory local this tooth occur glide wild wild few popular science horror",
+        address:"0x66edd03c06441f8c2da19b90fcc42506dfa83226d3"
     },
     {
-        prikey:"0x0281e6822da8501ef76b9f72a0b0ccf888525edef94c83a5de91fd1c11c143ac",
-        word:"skill utility exist blur ozone tiger roof toast agent cereal attract style",
-        address:"0x66202fab701a58b4b622ee07ac8ac11b872d727ced"
+        prikey:"0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2",
+        word:"ivory local this tooth occur glide wild wild few popular science horror",
+        address:"0x66edd03c06441f8c2da19b90fcc42506dfa83226d3"
 
     }],
 	//0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c
