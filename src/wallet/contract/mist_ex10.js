@@ -187,29 +187,15 @@ getHexData(abiInfo) {
 
 
    async matchorder(trades_info,prikey){
-	   console.log("222trades_info--",trades_info);
-	   /*
-	   
-	    let trade_info = [
-                                trades[i].trade_hash,
-                                trades[i].taker,
-                                trades[i].maker,
-                                NP.times(+trades[i].amount, +trades[i].price, 100000000), //    uint256 baseTokenAmount;
-                                NP.times(+trades[i].amount, 100000000), // quoteTokenAmount;
-                                trades[i].taker_side,
-                                token_address[0].base_token_address,
-                                token_address[0].quote_token_address,
-                                mist_config.relayers[index].address
-                            ];
-	   
-	   
-	   */
+	   console.log("222trades_info--",trades_info,prikey);
+
 	    let utils = new adex_utils();
 	   let trades_arr = [];
 	   for(var index in trades_info){
-		   //打印trade id
 		   console.log("1111i44444444",trades_info[index].trade_hash.slice(2,66));
 		   var hashbuf=Buffer.alloc(32,trades_info[index].trade_hash.slice(2,66),'hex');
+		   console.log("1111155555",hashbuf); //2a0a3943217145950ad81b04c82aabd2a6e3c098b9ec20500b070d4ef0bb4031
+
 		   var sign = util.ecsign(hashbuf, util.toBuffer(prikey));
 		   trades_info[index].v = sign.v.toString();
 		   trades_info[index].r = '0x' + sign.r.toString("hex");
@@ -221,38 +207,32 @@ getHexData(abiInfo) {
 
 		   //去掉id
 		   console.log("1111",index,trade_arr);
+
 	   }
 
+	   console.log("gxygxy2---trades_info",trades_arr);
+		let abiInfo = 
+		{"constant":false,
+		"inputs":[{"components":
+		[{"name":"taker","type":"address"},
+		{"name":"maker","type":"address"},
+		{"name":"baseToken","type":"address"},
+		{"name":"quoteToken","type":"address"},
+		{"name":"relayer","type":"address"},
+		{"name":"baseTokenAmount","type":"uint256"},
+		{"name":"quoteTokenAmount","type":"uint256"},
+		{"name":"r","type":"bytes32"},
+		{"name":"s","type":"bytes32"},
+		{"name":"takerSide","type":"string"},
+		{"name":"v","type":"uint8"}],
+		"name":"_trader",
+		"type":"tuple[]","value":trades_arr}],
+		"name":"matchorder",
+		"outputs":[{"name":"","type":"bool"}],
+		"payable":false,
+		"stateMutability":"nonpayable",
+		"type":"function"}
 
-	 
-	   console.log("3333---trades_info",trades_arr);
-//	   console.log("4444---order_address_setinfo",order_address_set)
-//		asim-api
-        let abiInfo=
-        {"constant":false,
-        "inputs":[{"components":
-        [{"name":"taker","type":"address"},
-        {"name":"maker","type":"address"},
-        {"name":"baseTokenAmount","type":"uint256"},
-        {"name":"quoteTokenAmount","type":"uint256"},
-        {"name":"takerSide","type":"string"},
-        {"name":"r","type":"bytes32"},
-        {"name":"s","type":"bytes32"},
-        {"name":"v","type":"uint8"}],
-    //    "name":"TradeParams","type":"tuple[]","value":[['0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9','0x66b7637198aee4fffa103fc0082e7a093f81e05a64',10,10,
-      //  'buy','0x3731597097df23bc05b8e938ebc8a606e47b7c13987d6d9a04070eb049464685','0x653a585c541dcbe2055049f12a9e3a7b58f20fb1b3de702a48855b55d31f2bd0',27]]},
-    	  "name":"TradeParams","type":"tuple[]","value":trades_info},
-        {"components":
-        [{"name":"baseToken","type":"address"},
-        {"name":"quoteToken","type":"address"},
-        {"name":"relayer","type":"address"}],
-     //   "name":"orderAddressSet","type":"tuple","value":['0x6376141c4fa5b11841f7dc186d6a9014a11efcbae6','0x63b98f4bf0360c91fec1668aafdc552d3c725f66bf','0x6611f5fa2927e607d3452753d3a41e24a23e0b947f']}],
-       "name":"orderAddressSet","type":"tuple","value":order_address_set}],
-        "name":"matchOrder",
-        "outputs":[],
-        "payable":false,
-        "stateMutability":"nonpayable",
-        "type":"function"}
 	  return this.callContract(abiInfo);
     }
     

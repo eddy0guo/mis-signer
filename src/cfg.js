@@ -164,7 +164,72 @@ var mist_config_hqtn = {
 	btc_explorer_rpc:"https://api.bitcore.io/api/BTC/testnet"
 
 }
-var mist_config_hqpd = {};
+var mist_config_hqpd = {
+    ex_address:'0x6383177655bca94f802191a19282f39e117b8edb2f',
+    order_hash_word:'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
+    fauct_address:'0x666234b6348c10fed282b95c1f1768aa3113eb96b2',
+    fauct_word:'tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook',
+    fauct_prikey:'0x47c98c143179d48664dfc2f029a8583cb6a394a94037e06f0658dcf18ed6c66a',
+/*
+	relayers:[
+    {
+        prikey:"0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2",
+        word:"ivory local this tooth occur glide wild wild few popular science horror",
+        address:"0x66edd03c06441f8c2da19b90fcc42506dfa83226d3"
+    },
+    {
+        prikey:"0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2",
+        word:"ivory local this tooth occur glide wild wild few popular science horror",
+        address:"0x66edd03c06441f8c2da19b90fcc42506dfa83226d3"
+    },
+    {
+        prikey:"0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2",
+        word:"ivory local this tooth occur glide wild wild few popular science horror",
+        address:"0x66edd03c06441f8c2da19b90fcc42506dfa83226d3"
+
+    }],
+*/
+	relayers:[
+    {
+        prikey:"0x0281e6822da8501ef76b9f72a0b0ccf888525edef94c83a5de91fd1c11c143ac",
+        word:"skill utility exist blur ozone tiger roof toast agent cereal attract style",
+        address:"0x66202fab701a58b4b622ee07ac8ac11b872d727ced"
+    },
+    {
+        prikey:"0x0281e6822da8501ef76b9f72a0b0ccf888525edef94c83a5de91fd1c11c143ac",
+        word:"skill utility exist blur ozone tiger roof toast agent cereal attract style",
+        address:"0x66202fab701a58b4b622ee07ac8ac11b872d727ced"
+    },
+    {
+        prikey:"0x0281e6822da8501ef76b9f72a0b0ccf888525edef94c83a5de91fd1c11c143ac",
+        word:"skill utility exist blur ozone tiger roof toast agent cereal attract style",
+        address:"0x66202fab701a58b4b622ee07ac8ac11b872d727ced"
+
+    }],
+	//0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c
+	bridge_fauct_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
+	bridge_fauct_asim_address:"0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c",
+
+	bridge_fauct_eth_address:"0xF7aD9e873Ed1c6D257c7D497D78272e7F3574Aa4",
+	bridge_facut_eth_prikey:"8647e5b7175f8d05786dcb9b8bb5260674b33c1ad8ab401471d909681bce49f9",
+	bridge_fauct_usdt_address:"0xF7aD9e873Ed1c6D257c7D497D78272e7F3574Aa4",
+
+	bridge_fauct_btc_address:"2Mv1JX1d5jvwz5bgLjwr82hsoKFFbXqDbZs",
+	bridge_fauct_btc_prikey:"cVyua8EAoys6qXpT6HfieYNk2fyNFETJE3K7syuszDn3WQ5NxcTx",
+
+	express_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
+	express_address:"0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c",
+
+	wallet_default_passwd:"111111",
+	did_seed_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
+	asimov_chain_rpc:"https://rpc-master.mistabit.com",
+    mist_server_port:25000,
+    websocket_port:25001,
+	eth_explorer_rpc:"http://119.23.215.121:8030",
+	eth_chain_rpc:"http://119.23.215.121:29842",
+	btc_explorer_rpc:"https://api.bitcore.io/api/BTC/testnet"
+
+}
 
 var mist_config;
 switch (process.env.MIST_MODE) {

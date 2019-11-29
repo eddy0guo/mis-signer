@@ -151,7 +151,8 @@ export default class engine {
 		//为了保证relayer的轮番顺序打包，这里和transaction_id关联
 		let index = transaction_id % 3;
 		console.log("gxyrelayers-engine-1",transaction_id,index,mist_config.relayers[index]);
-		let order_address_set = [token_address[0].quote_token_address, token_address[0].base_token_address, mist_config.relayers[index].address];
+		//let order_address_set = [token_address[0].quote_token_address, token_address[0].base_token_address, mist_config.relayers[index].address];
+		let order_address_set = [token_address[0].base_token_address, token_address[0].quote_token_address, mist_config.relayers[index].address];
 
 
 

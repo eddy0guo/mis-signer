@@ -7,7 +7,7 @@ seed: initdb
 hqtn_seed: initdb
 	psql postgres://postgres:postgres@localhost:5432/${MIST_MODE}?sslmode=disable < ./hqtn_seed.sql
 hqpd_seed: initdb
-	psql postgres://postgres:postgres@localhost:5432/${MIST_MODE}?sslmode=disable < ./hqtn_seed.sql
+	psql postgres://postgres:postgres@localhost:5432/${MIST_MODE}?sslmode=disable < ./hqpd_seed.sql
 test:
 	psql postgres://postgres:postgres@localhost:5432/${MIST_MODE}?sslmode=disable < ./test.sql
 cdp_seed: borrow_up
