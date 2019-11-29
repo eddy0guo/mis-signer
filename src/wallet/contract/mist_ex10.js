@@ -4,12 +4,14 @@ import { TranService } from "../service/transaction";
 import { CONSTANT } from "../constant";
 import { btc2sts, isArrayType, callParamsConvert,signature,getWalletPubKey} from "../utils";
 const bitcore_lib_1 = require("bitcore-lib");
+import adex_utils from '../../adex/api/utils'
 const ECDSA = bitcore_lib_1.crypto.ECDSA;
 var util =require('ethereumjs-util');
 var bip39 = require('bip39');
 var bip32 = require('bip32');
 var bitcoin = require('bitcoinjs-lib');
 var ethers = require('ethers');
+
 let hdkey = require('ethereumjs-wallet/hdkey');
 
 import { HDPrivateKey, crypto } from "bitcore-lib";
@@ -184,90 +186,47 @@ getHexData(abiInfo) {
 
 
 
-   async matchorder(trades_info,order_address_set,prikey){
-	  //relayer_pri_key
-/*
-//let mnemonic = bip39.generateMnemonic()
-let mnemonic = 'ivory local this tooth occur glide wild wild few popular science horror';
-	  const network = bitcoin.networks.bitcoin
-// 计算seed:
-//const seed = bip39.mnemonicToSeed(mnemonic,'')
-const seed = bip39.mnemonicToSeedHex(mnemonic);
-console.log('seed:' + util.bufferToHex(seed), "\n");
-const root = bip32.fromSeed(seed,network)
-const path = "m/44'/0'/0'/0/0";
-const keyPair = root.derivePath(path)
-const privateKey = keyPair.toWIF()
-console.log("BTC私钥：", privateKey)
-const publicKey = keyPair.publicKey.toString("hex")
-console.log("BTC公钥：", publicKey)
-let address = bitcoin.payments.p2pkh({ pubkey: keyPair.publicKey , network:network})
-console.log("BTC普通地址：", address.address, "\n")
-
-let mnemonic2 = 'ivory local this tooth occur glide wild wild few popular science horror';
-let Wallet = ethers.Wallet.fromMnemonic(mnemonic2);
-    let privateKey2 = Wallet.privateKey;
-    console.log('ETH私钥：',privateKey2)
-	console.log("11111111222-privatekey=",privateKey2);
-	let address_eth = Wallet.address;
-    console.log('ETH地址：',address_eth);
-
-
-	let hdwallet = hdkey.fromMasterSeed(seed);
-
-    for (let i = 0; i < 3; i++) {
-    //    let path = "m/44'/60'/0'/0/" + i;
-        let path ="m/44'/10003'/0'";
-        console.log(path);
-
-        let keypair = hdwallet.derivePath(path);
-
-        let privateKey = util.bufferToHex(keypair._hdkey._privateKey);
-        console.log('私钥：', privateKey);
-        let publicKey = util.bufferToHex(keypair._hdkey._publicKey);
-        console.log('公钥：', publicKey);
-
-        let address = util.pubToAddress(keypair._hdkey._publicKey, true);
-        console.log('地址：', address.toString('hex'))
-}
-
-const hdPrivateKey = HDPrivateKey.fromSeed(seed).derive(
-      `m/44'/10003'/0'/0/0`);
-console.log("111111-prikey---22",hdPrivateKey.privateKey);
-console.log("111111-prikey---22",hdPrivateKey.privateKey.toString());
-
-console.log("111111-prikey---22",hdPrivateKey.privateKey.slice(13,78));
-**/
-
-
-	 //  var privKey =  'd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2';
+   async matchorder(trades_info,prikey){
 	   console.log("222trades_info--",trades_info);
+	   /*
+	   
+	    let trade_info = [
+                                trades[i].trade_hash,
+                                trades[i].taker,
+                                trades[i].maker,
+                                NP.times(+trades[i].amount, +trades[i].price, 100000000), //    uint256 baseTokenAmount;
+                                NP.times(+trades[i].amount, 100000000), // quoteTokenAmount;
+                                trades[i].taker_side,
+                                token_address[0].base_token_address,
+                                token_address[0].quote_token_address,
+                                mist_config.relayers[index].address
+                            ];
+	   
+	   
+	   */
+	    let utils = new adex_utils();
+	   let trades_arr = [];
 	   for(var index in trades_info){
 		   //打印trade id
-		   console.log("1111i44444444",trades_info[index][0].slice(2,66));
-		   var hashbuf=Buffer.alloc(32,trades_info[index][0].slice(2,66),'hex');
+		   console.log("1111i44444444",trades_info[index].trade_hash.slice(2,66));
+		   var hashbuf=Buffer.alloc(32,trades_info[index].trade_hash.slice(2,66),'hex');
 		   var sign = util.ecsign(hashbuf, util.toBuffer(prikey));
-		   let v = sign.v.toString();
-		   let r = '0x' + sign.r.toString("hex");
-		   let s = '0x' + sign.s.toString("hex");
+		   trades_info[index].v = sign.v.toString();
+		   trades_info[index].r = '0x' + sign.r.toString("hex");
+		   trades_info[index].s = '0x' + sign.s.toString("hex");
+		   delete trades_info[index].trade_hash;
+
+		   let trade_arr = utils.arr_values(trades_info[index]);
+		   trades_arr.push(trade_arr);
+
 		   //去掉id
-		  trades_info[index].splice(0,1);
-		   trades_info[index].push(r,s,v);
-		   console.log("1111",index,r,s,v);
-			/**var sign2=new bitcore_lib_1.crypto.Signature()
-			 sign2.set({
-             r:sign.r.toString("hex"),
-             s:sign.s.toString("hex")
-         })
-		  var publick=new bitcore_lib_1.PrivateKey(privKey).toPublicKey();
-		   console.log('签名验证==',ECDSA.verify(hashbuf,sign2,publick))
-		   **/
+		   console.log("1111",index,trade_arr);
 	   }
 
 
 	 
-	   console.log("3333---trades_info",trades_info)
-	   console.log("4444---order_address_setinfo",order_address_set)
+	   console.log("3333---trades_info",trades_arr);
+//	   console.log("4444---order_address_setinfo",order_address_set)
 //		asim-api
         let abiInfo=
         {"constant":false,

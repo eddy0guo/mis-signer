@@ -52,18 +52,44 @@ export default class launcher {
 					//这里合约逻辑写反了。参数顺序也故意写反，使整体没问题，等下次合约更新调整过来，fixme
 					//let order_address_set = [token_address[0].base_token_address,token_address[0].quote_token_address,index.relayer];
 					    let index = trades[0].transaction_id % 3;
-						let order_address_set = [token_address[0].quote_token_address, token_address[0].base_token_address, mist_config.relayers[index].address];
+					//		let order_address_set = [token_address[0].quote_token_address, token_address[0].base_token_address, mist_config.relayers[index].address];
+
+					/*
+					
+					
+					
+    struct Trade{
+        address taker;
+        address maker;
+        address baseToken;
+        address quoteToken;
+        address relayer;
+        uint256 baseTokenAmount;
+        uint256 quoteTokenAmount;
+        bytes32 r;
+        bytes32 s;
+        string  takerSide;
+        uint8 v;
+      }
+					
+					*/
 
 						 let trades_hash = [];
 						for (var i in trades) {
-							let trade_info = [
-								trades[i].trade_hash,
-								trades[i].taker,
-								trades[i].maker,
-								NP.times(+trades[i].amount, +trades[i].price, 100000000), //    uint256 baseTokenAmount;
-								NP.times(+trades[i].amount, 100000000), // quoteTokenAmount;
-								trades[i].taker_side
-							];
+							let trade_info ={
+								trade_hash: trades[i].trade_hash,
+								taker: trades[i].taker,
+								maker: trades[i].maker,
+								base_token_address: token_address[0].base_token_address,
+								quote_token_address: token_address[0].quote_token_address,
+								relayer: mist_config.relayers[index].address,
+								base_token_amount: NP.times(+trades[i].amount, +trades[i].price, 100000000), //    uint256 baseTokenAmount;
+								quote_token_amount: NP.times(+trades[i].amount, 100000000), // quoteTokenAmount;
+								r: null,
+								s: null,
+								side: trades[i].taker_side,
+								v: null
+							};
 							   //后边改合约传结构体数据
 							trades_hash.push(trade_info);
 						}
@@ -75,7 +101,7 @@ export default class launcher {
 
 						//let [err, txid] = await to(mist.matchorder(trades_hash, order_address_set));
 						console.log("relayers------",mist_config.relayers[index]);
-						let [err, txid] = await to(mist.matchorder(trades_hash, order_address_set,mist_config.relayers[index].prikey));
+						let [err, txid] = await to(mist.matchorder(trades_hash,mist_config.relayers[index].prikey));
 						console.log("gxy---engine-call_asimov_result33333 = -", txid, err);
 
 						if(!err){
