@@ -18,6 +18,8 @@ cache:
 test_install:
   script:
     - npm install
+  tags:
+    - docker
 
 #test_db:
 #  script:
