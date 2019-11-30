@@ -36,38 +36,45 @@ export default class launcher {
 	async loop() {
 	
             let trades = await this.db.get_laucher_trades();
-            console.log("gxygxylaunchertrades=", trades);
+            console.log("time--gxygxylaunchertrades=", trades);
 			let current_time = this.utils.get_current_time();
 			if (trades.length == 0) {
-				console.log("111111111111-launcher--",trades)
 					   setTimeout(()=>{
 						this.loop.call(this)
-						}, 5000);
+						}, 3000);
 				return
 			}
 
-						console.log("gxyrelayers-aa--launcher0000",mist_config.relayers);
 						//只要进入laucher阶段就先把状态设置为pending，防止engine那边在laucher的时候，继续在当前transaction_id里继续插数据
-						//这里仍然会出现，在.get_laucher_trades和launch_update_trades中间的空隙传入了新撮合的订单的情况，概率百分之1
-						let update_trade_info = ['pending','',current_time,trades[0].transaction_id];
+						let update_trade_info = ['pending',,current_time,trades[0].transaction_id];
 						await this.db.launch_update_trades(update_trade_info);
 
 
-
-					//这里合约逻辑写反了。参数顺序也故意写反，使整体没问题，等下次合约更新调整过来，fixme
-					//let order_address_set = [token_address[0].base_token_address,token_address[0].quote_token_address,index.relayer];
-					    let index = trades[0].transaction_id % 3;
-					//		let order_address_set = [token_address[0].quote_token_address, token_address[0].base_token_address, mist_config.relayers[index].address];
+					  let index = trades[0].transaction_id % 3;
 					 let trades_hash = [];
-						for (var i in trades) {
+					 let markets = await this.db.list_markets();
+					 console.log("time--markets",markets);
+						for (let i in trades) {
+							//耗时
+							//let token_address = await this.db.get_market([trades[i].market_id]);
+							let token_address;
+							for(let j in markets){
+								if (trades[i].market_id	== markets[j].id){
+									 token_address = markets[j];	
+								}
+							}
 
-							let token_address = await this.db.get_market([trades[i].market_id]);
+							if( token_address ==  undefined){
+								console.error("not support market id");	
+								continue;
+							}
+
 							let trade_info ={
 								trade_hash: trades[i].trade_hash,
 								taker: trades[i].taker,
 								maker: trades[i].maker,
-								base_token_address: token_address[0].base_token_address,
-								quote_token_address: token_address[0].quote_token_address,
+								base_token_address: token_address.base_token_address,
+								quote_token_address: token_address.quote_token_address,
 								relayer: mist_config.relayers[index].address,
 								base_token_amount: NP.times(+trades[i].amount, 100000000), //    uint256 baseTokenAmount;
 								quote_token_amount: NP.times(+trades[i].amount, +trades[i].price, 100000000), // quoteTokenAmount;
@@ -84,26 +91,24 @@ export default class launcher {
 						 walletInst = await getTestInst(mist_config.relayers[index].word);
 						mist.unlock(walletInst, "111111");
 						let [err2, result] = await to(walletInst.queryAllBalance());
-
-						console.log("gxygxy2--222--",trades)
-						console.log("gxygxy2--333--",trades_hash)
-
-						//let [err, txid] = await to(mist.matchorder(trades_hash, order_address_set));
-						console.log("relayers------",mist_config.relayers[index]);
 						let [err, txid] = await to(mist.matchorder(trades_hash,mist_config.relayers[index].prikey));
 						console.log("gxy---engine-call_asimov_result33333 = -", txid, err);
+
+						console.log("time--222--",this.utils.get_current_time())
 
 						if(!err){
 						let update_trade_info = ['pending',txid,current_time,trades[0].transaction_id];
 						await this.db.launch_update_trades(update_trade_info);
 
-						console.log("trades[i]=22222222222222", trades);
+						console.log("time-4444--",this.utils.get_current_time())
+
 						let TXinfo = [trades[0].transaction_id, txid, trades[0].market_id, "pending", trades[0].created_at, trades[0].created_at];
 						this.db.insert_transactions(TXinfo);
 						}else{
 
 						let update_trade_info = ['matched','',current_time,trades[0].transaction_id];
 						await this.db.launch_update_trades(update_trade_info);
+						console.log("time--444--err--",this.utils.get_current_time())
 							//失败了不做任何处理，等待下次被laucher打包
 						//	let update_trade_info = ['failed',txid,current_time,trades[0].transaction_id];
 						//	await this.db.launch_update_trades(update_trade_info);
@@ -122,7 +127,7 @@ export default class launcher {
 
 		setTimeout(()=>{
 			this.loop.call(this)
-		}, 16000);
+		}, 7000);
 //		}, 1800000);
 
 	}

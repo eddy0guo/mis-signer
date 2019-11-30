@@ -137,8 +137,8 @@ export default class engine {
 
 		let transactions = await this.db.list_all_trades();
 		let matched_trades = await this.db.list_matched_trades();
-		//超过1000的单子排下次
-		let add_queue_num  = Math.floor(matched_trades.length / 500 ) + 1;
+		//累计没超过100+1,粒度小，relayer高频，粒度大relayer低频
+		let add_queue_num  = Math.floor(matched_trades.length / 100 ) + 1;
 
 		let transaction_id = transactions.length == 0 ?  0 : transactions[0].transaction_id + add_queue_num;
 

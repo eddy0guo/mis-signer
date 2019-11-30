@@ -330,7 +330,7 @@ export default class db{
 
 		async get_laucher_trades() {
 			//容错laucher过程中进程重启的情况
-			let [err,result] = await to(this.clientDB.query('select t.*,s.right_id from (select * from mist_trades where status!=\'successful\')t left join (SELECT transaction_id as right_id  FROM mist_trades where status!=\'successful\'  order by transaction_id  limit 1)s on t.transaction_id=s.right_id where s.right_id is not null')); 
+			let [err,result] = await to(this.clientDB.query('select t.*,s.right_id from (select * from mist_trades where status!=\'successful\' and transaction_hash is null)t left join (SELECT transaction_id as right_id  FROM mist_trades where status!=\'successful\'  and transaction_hash is null order by transaction_id  limit 1)s on t.transaction_id=s.right_id where s.right_id is not null')); 
 			if(err) {
 				return console.error('get_laucher_trades_查询失败', err);
 			}
