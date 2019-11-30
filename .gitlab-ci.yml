@@ -19,7 +19,7 @@ test_install:
   script:
     - npm install
   tags:
-    - pp
+    - docker
 
 #test_db:
 #  script:
