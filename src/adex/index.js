@@ -43,8 +43,8 @@ export default ({ config, db,logger}) => {
 	let utils = new utils1();
 	let launcher = new launcher1(client);
 	wathcer.start();
-	user.start();
-	asset.status_flushing();
+//	user.start();
+//	asset.status_flushing();
 	launcher.start();
 
 	adex.get('/mist_engine_info', async (req, res) => {
