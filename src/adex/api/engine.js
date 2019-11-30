@@ -135,13 +135,10 @@ export default class engine {
 		console.log("dex_match_order----gxy---22", trades);
 		let token_address = await this.db.get_market([trades[0].market_id]);
 
-		//这里合约逻辑写反了。参数顺序也故意写反，使整体没问题，等下次合约更新调整过来，fixme
-		//let order_address_set = [token_address[0].base_token_address,token_address[0].quote_token_address,index.relayer];
-
 		let transactions = await this.db.list_all_trades();
 		let matched_trades = await this.db.list_matched_trades();
-
-		let add_queue_num  = Math.floor(matched_trades.length / 1000 ) + 1;
+		//超过1000的单子排下次
+		let add_queue_num  = Math.floor(matched_trades.length / 500 ) + 1;
 
 		let transaction_id = transactions.length == 0 ?  0 : transactions[0].transaction_id + add_queue_num;
 
@@ -151,7 +148,6 @@ export default class engine {
 		//为了保证relayer的轮番顺序打包，这里和transaction_id关联
 		let index = transaction_id % 3;
 		console.log("gxyrelayers-engine-1",transaction_id,index,mist_config.relayers[index]);
-		//let order_address_set = [token_address[0].quote_token_address, token_address[0].base_token_address, mist_config.relayers[index].address];
 		let order_address_set = [token_address[0].base_token_address, token_address[0].quote_token_address, mist_config.relayers[index].address];
 
 

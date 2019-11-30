@@ -47,6 +47,12 @@ export default class launcher {
 			}
 
 						console.log("gxyrelayers-aa--launcher0000",mist_config.relayers);
+						//只要进入laucher阶段就先把状态设置为pending，防止engine那边在laucher的时候，继续在当前transaction_id里继续插数据
+						//这里仍然会出现，在.get_laucher_trades和launch_update_trades中间的空隙传入了新撮合的订单的情况，概率百分之1
+						let update_trade_info = ['pending','',current_time,trades[0].transaction_id];
+						await this.db.launch_update_trades(update_trade_info);
+
+
 
 					//这里合约逻辑写反了。参数顺序也故意写反，使整体没问题，等下次合约更新调整过来，fixme
 					//let order_address_set = [token_address[0].base_token_address,token_address[0].quote_token_address,index.relayer];
@@ -95,6 +101,9 @@ export default class launcher {
 						let TXinfo = [trades[0].transaction_id, txid, trades[0].market_id, "pending", trades[0].created_at, trades[0].created_at];
 						this.db.insert_transactions(TXinfo);
 						}else{
+
+						let update_trade_info = ['matched','',current_time,trades[0].transaction_id];
+						await this.db.launch_update_trades(update_trade_info);
 							//失败了不做任何处理，等待下次被laucher打包
 						//	let update_trade_info = ['failed',txid,current_time,trades[0].transaction_id];
 						//	await this.db.launch_update_trades(update_trade_info);
@@ -114,7 +123,7 @@ export default class launcher {
 		setTimeout(()=>{
 			this.loop.call(this)
 		}, 16000);
-		//}, 6000000);
+//		}, 1800000);
 
 	}
 
