@@ -513,10 +513,10 @@ export default ({
 
 			//let [err,txid] = await to(cdp_obj.createDepositBorrow(3000000000000,1,'000000000000000300000001',1));
 			console.log("4444", req.params.borrow_amount * 100000000, req.params.borrow_time / 30, req.params.deposit_amount);
-			let [err2, row] = await to(cdp_obj.createDepositBorrow(req.params.borrow_amount * 100000000, req.params.borrow_time / 30, deposit_assetID, req.params.deposit_amount));
+			let [err2, sign_data] = await to(cdp_obj.createDepositBorrow(req.params.borrow_amount * 100000000, req.params.borrow_time / 30, deposit_assetID, req.params.deposit_amount));
 			res.json({
-				success: row == undefined ? false:true,
-				result: row
+				success: sign_data == undefined ? false:true,
+				result: sign_data
 			});
 		});
 
@@ -558,11 +558,10 @@ export default ({
 			cdp_obj.unlock(walletInst, "111111")
 			await walletInst.queryAllBalance()
 
-			//let [err2,row] = await to(cdp_obj.repay(+req.params.borrow_id,assetID,+req.params.amount));
-			let [err2, row] = await to(cdp_obj.repay(req.params.borrow_id, assetID, req.params.amount));
+			let [err2, sign_data] = await to(cdp_obj.repay(req.params.borrow_id, assetID, req.params.amount));
 			res.json({
-				success: row == undefined ? false:true,
-				result: row
+				success: sign_data == undefined ? false:true,
+				result: sign_data
 			});
 		});
 	});
@@ -582,11 +581,10 @@ export default ({
 			cdp_obj.unlock(walletInst, "111111")
 			await walletInst.queryAllBalance()
 			console.log("- cdp_deposit --", req.params);
-			//let [err2,row]  = await to(cdp_obj.deposit(41,'000000000000001e00000001',60));
-			let [err2, row] = await to(cdp_obj.deposit(req.params.borrow_id, assetID, req.params.amount));
+			let [err2, sign_data] = await to(cdp_obj.deposit(req.params.borrow_id, assetID, req.params.amount));
 			res.json({
-				 success: row == undefined ? false:true,
-				result: row
+				 success: sign_data == undefined ? false:true,
+				result: sign_data
 			});
 		});
 
@@ -606,11 +604,10 @@ export default ({
 			cdp_obj.unlock(walletInst, "111111")
 			await walletInst.queryAllBalance()
 
-			let [err2, row] = await to(cdp_obj.liquidate(req.params.borrow_id, req.params.asset_id));
-			console.log(row, err2);
+			let [err2, sign_data] = await to(cdp_obj.liquidate(req.params.borrow_id, req.params.asset_id));
 			res.json({
-				 success: row == undefined ? false:true,
-				result: row,
+				 success: sign_data == undefined ? false:true,
+				result: sign_data,
 				err:err2
 			});
 		});

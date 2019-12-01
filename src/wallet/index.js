@@ -512,9 +512,9 @@ export default ({ config, db }) => {
         res.json({ result:result,err:err });
     });
 
-	  wallet.get('/sendrawtransaction/createDepositBorrow/:borrow_amount/:borrow_time/:token_name/:deposit_amount/:address/:row',async (req, res) => {
-            let rowtx = [req.params.row];
-            let [err,result] = await to(chain.sendrawtransaction(rowtx));
+	  wallet.get('/sendrawtransaction/createDepositBorrow/:borrow_amount/:borrow_time/:token_name/:deposit_amount/:address/:sign_data',async (req, res) => {
+            let sign_data = [req.params.sign_data];
+            let [err,result] = await to(chain.sendrawtransaction(sign_data));
 						
 			console.log("555444444444",req.params,result);
 
@@ -578,9 +578,9 @@ export default ({ config, db }) => {
       });
 
 //	还钱
-	  wallet.get('/sendrawtransaction/repay/:borrow_id/:deposit_token_name/:amount/:address/:row',async (req, res) => {
-            let rowtx = [req.params.row];
-            let [err,result] = await to(chain.sendrawtransaction(rowtx));
+	  wallet.get('/sendrawtransaction/repay/:borrow_id/:deposit_token_name/:amount/:address/:sign_data',async (req, res) => {
+            let sign_data = [req.params.sign_data];
+            let [err,result] = await to(chain.sendrawtransaction(sign_data));
 			if(!err){
 					let current_time = utils.get_current_time();
 
@@ -604,9 +604,9 @@ export default ({ config, db }) => {
       });
 //加仓
 
-	  wallet.get('/sendrawtransaction/cdp_deposit/:borrow_id/:token_name/:amount/:address/:row',async (req, res) => {
-            let rowtx = [req.params.row];
-            let [err,result] = await to(chain.sendrawtransaction(rowtx));
+	  wallet.get('/sendrawtransaction/cdp_deposit/:borrow_id/:token_name/:amount/:address/:sign_data',async (req, res) => {
+            let sign_data = [req.params.sign_data];
+            let [err,result] = await to(chain.sendrawtransaction(sign_data));
 			if(!err){
 					let current_time = utils.get_current_time();
 					//加仓量为输入值，还钱量为0
@@ -619,9 +619,9 @@ export default ({ config, db }) => {
 
 
 //清仓
-	  wallet.get('/sendrawtransaction/cdp_liquidate/:borrow_id/:asset_id/:address/:row',async (req, res) => {
-            let rowtx = [req.params.row];
-            let [err,result] = await to(chain.sendrawtransaction(rowtx));
+	  wallet.get('/sendrawtransaction/cdp_liquidate/:borrow_id/:asset_id/:address/:sign_data',async (req, res) => {
+            let sign_data = [req.params.sign_data];
+            let [err,result] = await to(chain.sendrawtransaction(sign_data));
 
 			let current_time = utils.get_current_time();
             //加仓量为输入值，还钱量为0
@@ -648,9 +648,9 @@ export default ({ config, db }) => {
  created_at timestamp
  *///
 //资产转币币
-wallet.get('/sendrawtransaction/asset2coin/:amount/:address/:token_name/:row',async (req, res) => {
-            let rowtx = [req.params.row];
-            let [err,result] = await to(chain.sendrawtransaction(rowtx));
+wallet.get('/sendrawtransaction/asset2coin/:amount/:address/:token_name/::sign_data',async (req, res) => {
+            let sign_data = [req.params.sign_data];
+            let [err,result] = await to(chain.sendrawtransaction(sign_data));
 			if(!err){
 				let token_info = await psql_db.get_tokens([req.params.token_name]);
 				console.log("sss--",token_info);
@@ -681,9 +681,9 @@ wallet.get('/sendrawtransaction/asset2coin/:amount/:address/:token_name/:row',as
             res.json({ result:result,err:err});
       });
 //币币转资产
-wallet.get('/sendrawtransaction/coin2asset/:amount/:address/:token_name/:row',async (req, res) => {
-            let rowtx = [req.params.row];
-            let [err,result] = await to(chain.sendrawtransaction(rowtx));
+wallet.get('/sendrawtransaction/coin2asset/:amount/:address/:token_name/:sign_data',async (req, res) => {
+            let sign_data = [req.params.sign_data];
+            let [err,result] = await to(chain.sendrawtransaction(sign_data));
 			if(!err){
 				let token_info = await psql_db.get_tokens([req.params.token_name]);
 				let current_time = utils.get_current_time();
@@ -732,9 +732,9 @@ wallet.get('/sendrawtransaction/coin2asset/:amount/:address/:token_name/:row',as
 
 
 
-	  wallet.get('/sendrawtransaction/:row',async (req, res) => {
-	   let rowtx = [req.params.row];
-            let [err,result] = await to(chain.sendrawtransaction(rowtx));
+	  wallet.get('/sendrawtransaction/:sign_data',async (req, res) => {
+	   let sign_data = [req.params.sign_data];
+            let [err,result] = await to(chain.sendrawtransaction(sign_data));
             res.json({ result:result,err:err});
 		});
 
