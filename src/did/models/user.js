@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt-nodejs');
 import db from './db'
 
 let UserSchema = new Schema({
-    username: {
+    username: {        //手机或者邮箱
         type: String,
         unique: true,
         required: true
@@ -25,7 +25,9 @@ let UserSchema = new Schema({
     email: String,  // 绑定email，需要唯一
     nickname:String,
     avatar: String, // 头像地址
-    amount: Number, // 账户余额
+	home_address: String, //kyc家庭住址
+	identity_card: String, //身份证
+	name:String  //姓名
 });
 
 UserSchema.pre('save', function (next) {
