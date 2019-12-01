@@ -11,12 +11,6 @@ import didSignAndBroadcast from '../wallet/contract/did_sign_and_broadcast'
 
 import mist_wallet1 from '../adex/api/mist_wallet'
 import to from 'await-to-js'
-import eth from './deposit_withdraw/eth'
-import btc from './deposit_withdraw/btc'
-import ETHBridge from './bridge/ETHBridge'
-import USDTBridge from './bridge/USDTBridge'
-import BTCBridge from './bridge/BTCBridge'
-
 import Erc20 from '../wallet/contract/ERC20_did'
 import Erc20_gen_hex  from '../wallet/contract/ERC20_gen_hex'
 var bip39 = require('bip39');
@@ -243,58 +237,18 @@ export default ({
 				let walletInst = await walletHelper.testWallet(mnemonic, payPassword);
 				let address = await walletInst.getAddress();
 				console.log("signup-3333333333333333---address=", address);
-
-
-				User.find({}).sort({
-					'id': -1
-				}).limit(1).exec(function (err, docs) {
-					// path是btc和eth同时更新共用
-					let index = 0
-					if (docs && docs[0]) index = docs[0].id + 1
-					// 这里处理第一个用户的容错
-					const path = "m/0/0/0/0/" + index;
-
-					//const network = bitcoin.networks.bitcoin;
-					const network = bitcoin.networks.testnet;
-					const btc_seed = bip39.mnemonicToSeed(mist_config.did_seed_word, '');
-					const root = bip32.fromSeed(btc_seed, network)
-					const btc_keyPair = root.derivePath(path)
-					let btc_address = bitcoin.payments.p2pkh({
-						pubkey: btc_keyPair.publicKey,
-						network: network
-					})
-					console.log("BTC普通地址：", btc_address.address, "id=", path, "\n")
-
-					const eth_seed = bip39.mnemonicToSeedHex(mist_config.did_seed_word);
-					let hdwallet = hdkey.fromMasterSeed(eth_seed);
-					let eth_keypair = hdwallet.derivePath(path);
-					let eth_address = util.pubToAddress(eth_keypair._hdkey._publicKey, true);
-					console.log('eth地址：', eth_address.toString('hex'))
-					console.log("path:", path);
-
-					let newUser = new User({
-						username: req.body.username,
-						password: req.body.password,
-						mnemonic: Encrypt(mnemonic),
-						asim_address: address,
-						id: index,
-						btc_address: btc_address.address,
-						eth_address: eth_address.toString('hex')
-					});
-					// save the user
-					newUser.save(function (err) {
-						if (err) {
-							return res.json({
-								success: false,
-								msg: 'Username already exists.'
-							});
-						}
-
-						res.json({
-							success: true,
-							msg: 'Successful created new user.',
-							address: address
+				// save the user
+				newUser.save(function (err) {
+					if (err) {
+						return res.json({
+							success: false,
+							msg: 'Username already exists.'
 						});
+					}
+
+					res.json({
+						success: true,
+						msg: 'Successful created new user.',
 					});
 				});
 			} else {
@@ -698,32 +652,7 @@ export default ({
                 });
             }
 
-			let token_name = req.params.token_name;
-			if (token_name == 'ETH') {
-				//ether.start_deposit(user);
-				console.log("txs----------------",user);
-				let ethBridge = new ETHBridge(user.asim_address,"0x" + user.eth_address);
-				ethBridge.start(60*1000);
-
-			} else if (token_name == 'BTC') {
-				let btcBridge = new BTCBridge(user.asim_address,"0x" + user.btc_address);
-				btcBridge.start(60*1000);
-				console.log("deposit btc");
-			} else if (token_name == 'USDT') {
-				console.log("deposit usdt");
-				console.log("txs----------------",user);
-				let usdtBridge = new USDTBridge(user.asim_address,"0x" + user.eth_address);
-				usdtBridge.start(60*1000);
-			} else {
-				return res.json({
-					 success: false,
-					result: "cannot support token"
-				});
-			}
-			 return res.json({
-                     success: true,
-                    result: "start listenting"
-                });
+			console.log("start deposit")
 		});
 	});
 
@@ -740,37 +669,9 @@ export default ({
                     err: 'user does not exsit'
                 });
             }
-			let err,result;
-			if (token_name == 'ETH') {
-				//ether.start_deposit(user);
-				console.log("txs----------------",user);
-				let ethBridge = new ETHBridge(user.asim_address,to_address);
-				 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
-				[err,result] = await to(ethBridge.withdraw(mnemonic,amount));
-			} else if (token_name == 'BTC') {
-				let btcBridge = new BTCBridge(user.asim_address,to_address);
-				 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
-				[err,result] = await to(btcBridge.withdraw(mnemonic,amount));
-				console.log("deposit btc");
-			} else if (token_name == 'USDT') {
-				console.log("deposit usdt");
-				console.log("txs----------------",user);
-				let usdtBridge = new USDTBridge(user.asim_address,to_address);
-				 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
-				[err,result] = await to(usdtBridge.withdraw(mnemonic,amount));
-			
-			} else {
-				return res.json({
-					 success: false,
-					err: "cannot support token"
-				});
-			}
+		
+			console.log("start withdraw");
 
-			res.json({
-				 success: result == undefined ? false:true,
-				result: result,
-				err: result == undefined ? err.message:null 
-			 });
 		});
 	});
 

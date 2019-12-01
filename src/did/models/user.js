@@ -17,25 +17,10 @@ let UserSchema = new Schema({
         type: String,
         required: true
     },
-    id: {
-        type: Number,
-        required: true
-    },
-	asim_address: {
+	address: {
         type: String,
         required: true
     },
-
-    btc_address: {
-        type: String,
-        required: true
-    },
-    eth_address: {
-        type: String,
-        required: true
-    },
- 
- 
     mobile: String, // 绑定手机，一般同账户，需要唯一
     email: String,  // 绑定email，需要唯一
     nickname:String,
@@ -72,4 +57,4 @@ UserSchema.methods.comparePassword = function (passw, cb) {
     });
 };
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model('fingo_user', UserSchema);

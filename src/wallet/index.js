@@ -744,7 +744,7 @@ wallet.get('/sendrawtransaction/coin2asset/:amount/:address/:token_name/:sign_da
             res.json({ result:result,err:err});
 	});
 
-	wallet.get('/list_fingo_config',async (req, res) => {
+	wallet.all('/list_fingo_config',async (req, res) => {
 			let conf = {
 				dex_address: mist_config.ex_address,
 				express_address: mist_config.express_address,

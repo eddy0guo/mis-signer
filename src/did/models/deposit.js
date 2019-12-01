@@ -2,11 +2,6 @@ import mongoose from 'mongoose'
 const Schema = mongoose.Schema;
 
 let DataSchema = new Schema({
-    txid: String,
-	chain: {
-        type: String,
-        required: true
-    },
 	network: {
         type: String,
         required: true
@@ -15,30 +10,43 @@ let DataSchema = new Schema({
         type: String,
         required: true
     },
-    height: {
-        type: Number,
-        required: true
-    },
-    value: {
-        type: Number,
-        required: true
-    },
-    asim_address: {
+	master_txid: {
         type: String,
         required: true
     },
-    asim_tx: {
+	child_txid: {
         type: String,
         required: true
     },
-    status: {
+	convert_txid: {
+        type: String,
+        required: true
+    },
+	master_status: {
         type:String,
+        required: true
+    },
+	child_status: {
+        type:String,
+        required: true
+    },
+    convert_status: {
+        type:String,
+        required: true
+    },
+   	value: {
+        type: Number,
+        required: true
+    },
+	updated_time: {
+        type: Date,
         required: true
     },
 	created_time: {
         type: Date,
         required: true
     },
+
 });
 
-export default mongoose.model('Deposit', DataSchema)
+export default mongoose.model('fingo_deposit', DataSchema)
