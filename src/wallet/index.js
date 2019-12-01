@@ -742,7 +742,23 @@ wallet.get('/sendrawtransaction/coin2asset/:amount/:address/:token_name/:sign_da
 
             let [err,result] = await to(psql_db.list_cdp());
             res.json({ result:result,err:err});
-		});
+	});
+
+	wallet.get('/list_fingo_config',async (req, res) => {
+			let conf = {
+				dex_address: mist_config.ex_address,
+				express_address: mist_config.express_address,
+				asimov_chain_rpc: mist_config.asimov_chain_rpc,
+				bridge_address: mist_config.bridge_address
+			};
+
+			res.json({
+                 success: true,
+                result: conf
+            });
+	});
+
+
 
 
 
