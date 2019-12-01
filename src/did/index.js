@@ -48,7 +48,6 @@ PassportPlugin(passport)
 
 let jwt = require('jsonwebtoken');
 let User = require("./models/user");
-let user_tx_records = require("./models/user_tx_records");
 
 
 let payPassword = 'temp-pass-227'
@@ -90,8 +89,6 @@ export default ({
 	let mist_wallet = new mist_wallet1();
 	let psql_db = new psql();
 	let utils = new adex_utils();
-	let ether = new eth();
-	let btcer = new btc();
 
 	function sign(mnemonic, order_id) {
 		const seed = bip39.mnemonicToSeedHex(mnemonic);

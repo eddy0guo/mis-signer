@@ -1,4 +1,4 @@
-var fingo_local = {
+var local = {
     ex_address:'0x6383177655bca94f802191a19282f39e117b8edb2f',
     order_hash_word:'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
     fauct_address:'0x666234b6348c10fed282b95c1f1768aa3113eb96b2',
@@ -49,14 +49,14 @@ var fingo_local = {
 	wallet_default_passwd:"111111",
 	did_seed_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
 	asimov_chain_rpc:"https://rpc-master.mistabit.com",
-    mist_server_port:25000,
-    websocket_port:25001,
+    mist_server_port:15000,
+    websocket_port:15001
 }
 
 
 
 
-var fingo_dev = {
+var dev = {
     ex_address:'0x6383177655bca94f802191a19282f39e117b8edb2f',
     order_hash_word:'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
     fauct_address:'0x666234b6348c10fed282b95c1f1768aa3113eb96b2',
@@ -107,8 +107,8 @@ var fingo_dev = {
 	wallet_default_passwd:"111111",
 	did_seed_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
 	asimov_chain_rpc:"https://rpc-master.mistabit.com",
-    mist_server_port:25000,
-    websocket_port:25001,
+    mist_server_port:16000,
+    websocket_port:16001
 }
 
 
@@ -116,7 +116,7 @@ var fingo_dev = {
 
 
 
-var fingo_product = {
+var product = {
     ex_address:'0x6383177655bca94f802191a19282f39e117b8edb2f',
     order_hash_word:'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
     fauct_address:'0x666234b6348c10fed282b95c1f1768aa3113eb96b2',
@@ -167,23 +167,23 @@ var fingo_product = {
 	wallet_default_passwd:"111111",
 	did_seed_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
 	asimov_chain_rpc:"https://rpc-master.mistabit.com",
-    mist_server_port:25000,
-    websocket_port:25001,
+    mist_server_port:17000,
+    websocket_port:17001
 }
 
 var mist_config;
 switch (process.env.MIST_MODE) {
-	case 'fingo_local':
-		mist_config = fingo_local;
+	case 'local':
+		mist_config = local;
 		break;
-	case 'fingo_dev':
-		mist_config = fingo_dev;
+	case 'dev':
+		mist_config = dev;
 		break;
-	case 'fingo_product':
-		mist_config = fingo_product;
+	case 'product':
+		mist_config = product;
 		break;
 	default:
-		mist_config = fingo_local;
+		mist_config = local;
 }
 //var mist_config = mist_config_test;
 export default mist_config

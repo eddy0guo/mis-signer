@@ -11,13 +11,12 @@
     "lint": "eslint --fix --ext .js,.ts src",
     "test": "eslint src",
     "bot": "nodemon -w src/bot --exec \"babel-node src/bot --presets es2015,stage-0\"",
-    "ws": "source ./mist_product.env && nodemon -w src/ws --exec \"babel-node src/ws --presets es2015,stage-0\"",
-    "ws-poa": "source ./mist_hqtn.env && nodemon -w src/ws --exec \"babel-node src/ws --presets es2015,stage-0\"",
+    "ws": "source ./product.env && nodemon -w src/ws --exec \"babel-node src/ws --presets es2015,stage-0\"",
+    "ws-poa": "source ./dev.env && nodemon -w src/ws --exec \"babel-node src/ws --presets es2015,stage-0\"",
     "bridge": "nodemon -w src/did/bridge --exec \"babel-node src/did/bridge --presets es2015,stage-0\"",
-    "server-dev": "source ./mist_test.env && babel-node src --presets es2015,stage-0",
-    "server-product": "source ./mist_product.env && babel-node src --presets es2015,stage-0",
-    "server-hqtn": "source ./mist_hqtn.env && babel-node src --presets es2015,stage-0",
-    "server-hqpd": "source ./mist_hqpd.env && babel-node src --presets es2015,stage-0"
+    "server-local": "source ./local.env && babel-node src --presets es2015,stage-0",
+    "server-dev": "source ./dev.env && babel-node src --presets es2015,stage-0",
+    "server-product": "source ./product.env && babel-node src --presets es2015,stage-0"
   },
   "eslintConfig": {
     "extends": "eslint:recommended",
