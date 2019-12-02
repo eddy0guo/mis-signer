@@ -47,7 +47,7 @@ export default ({ config, db,logger}) => {
 //	asset.status_flushing();
 	launcher.start();
 
-	adex.get('/mist_engine_info', async (req, res) => {
+	adex.all('/mist_engine_info', async (req, res) => {
 					 let result = await trades.get_engine_info();
                     console.log(result)
        res.json({result});
@@ -55,13 +55,13 @@ export default ({ config, db,logger}) => {
 
 
 	        
-   	adex.get('/list_market_quotations', async (req, res) => {
+   	adex.all('/list_market_quotations', async (req, res) => {
 					 let result = await market.list_market_quotations();
                     console.log(result)
        res.json({result});
 	});
 
-adex.get('/list_tokens', async (req, res) => {
+adex.all('/list_tokens', async (req, res) => {
 					 let result = await mist_wallet.list_tokens();
                     console.log(result)
        res.json({result});
@@ -70,7 +70,7 @@ adex.get('/list_tokens', async (req, res) => {
 
 
 
- 	adex.get('/get_token_price', async (req, res) => {
+ 	adex.all('/get_token_price', async (req, res) => {
 				var obj = urllib.parse(req.url,true).query;
  	 				  console.log("obj=",obj);
 				let result = await mist_wallet.get_token_price2pi(obj.symbol);
@@ -80,7 +80,7 @@ adex.get('/list_tokens', async (req, res) => {
        res.json({result});
 	});
 
-	adex.get('/get_token_price2btc', async (req, res) => {
+	adex.all('/get_token_price2btc', async (req, res) => {
 			var obj = urllib.parse(req.url,true).query;
  	 				  console.log("obj=",obj);
 			let result = await mist_wallet.get_token_price2btc(obj.symbol);
@@ -93,7 +93,7 @@ adex.get('/list_tokens', async (req, res) => {
 
 
 
-    adex.get('/balances',async (req, res) => {
+    adex.all('/balances',async (req, res) => {
 					var obj = urllib.parse(req.url,true).query;
  	 				  console.log("obj=",obj);
                     let token_arr = await mist_wallet.list_tokens();
@@ -133,7 +133,7 @@ adex.get('/list_tokens', async (req, res) => {
 
 
     //所有token合约赋予所有地址权限
-    adex.get('/approves',async (req, res) => {
+    adex.all('/approves',async (req, res) => {
                     
                    var obj = urllib.parse(req.url,true).query;
                       console.log("obj=",obj);
@@ -170,7 +170,7 @@ did对order_id进行签名，获取rsv
 新加个接口build_order加上order_id和rs的值去传rsv和orderid，后台去验证，通过才落表。
 撮合完成之后relayer对trade信息的hash进行签名，然后合约用relayer的公钥对trade的密文rsv进行验签
 	**/ 
-	adex.get('/get_order_id', async (req, res) => {
+	adex.all('/get_order_id', async (req, res) => {
 	   
 	     var obj = urllib.parse(req.url,true).query;
        console.log("obj=",obj);
@@ -198,7 +198,7 @@ did对order_id进行签名，获取rsv
 
   
 
-    adex.get('/build_order', async (req, res) => {
+    adex.all('/build_order', async (req, res) => {
     	//打印键值对中的值
   		var obj = urllib.parse(req.url,true).query;
  	   console.log("obj=",obj);
@@ -304,7 +304,7 @@ did对order_id进行签名，获取rsv
 
 
 
-	adex.get('/cancle_order', async (req, res) => {
+	adex.all('/cancle_order', async (req, res) => {
 	    var obj = urllib.parse(req.url,true).query;
        console.log("cancled_obj=",obj);
 	     /** 
@@ -350,7 +350,7 @@ did对order_id进行签名，获取rsv
        });
 	});
 
-	adex.get('/cancle_my_order/:address', async (req, res) => {
+	adex.all('/cancle_my_order/:address', async (req, res) => {
 
         //暂时只支持取消1000以内的单子
         let [err,orders] = await to(order.my_orders2(req.params.address,1,1000,'pending','partial_filled'));
@@ -377,7 +377,7 @@ did对order_id进行签名，获取rsv
     });
 
 
-    adex.get('/cancle_orders_v2', async (req, res) => {
+    adex.all('/cancle_orders_v2', async (req, res) => {
 		let {address,orders_id,signature} =  req.body;
 		console.log("cancle_orders_v2",address,orders_id,signature)
 		 let str = orders_id.join();
@@ -432,7 +432,7 @@ did对order_id进行签名，获取rsv
     });
 
 
-	adex.get('/list_orders', async (req, res) => {
+	adex.all('/list_orders', async (req, res) => {
        
 
        let [err,result] = await to(order.list_orders());
@@ -440,7 +440,7 @@ did对order_id进行签名，获取rsv
        res.json({result,err });
 	});
 
-	adex.get('/my_orders', async (req, res) => {
+	adex.all('/my_orders', async (req, res) => {
        
 	   /**
 		let message = {address:"0x66b7637198aee4fffa103fc0082e7a093f81e05a64"}
@@ -454,7 +454,7 @@ did对order_id进行签名，获取rsv
        res.json({result,err });
 	});
 
-	adex.get('/my_orders2/:address/:page/:perpage/:status1/:status2', async (req, res) => {
+	adex.all('/my_orders2/:address/:page/:perpage/:status1/:status2', async (req, res) => {
 		//pending,partial_filled,当前委托
 		//cancled，full_filled，历史委托
 	   let {address,page,perpage,status1,status2} = req.params;
@@ -466,7 +466,7 @@ did对order_id进行签名，获取rsv
 
 
 
-	adex.get('/order_book', async (req, res) => {
+	adex.all('/order_book', async (req, res) => {
 
 		var obj = urllib.parse(req.url,true).query;
        console.log("obj=",obj);
@@ -493,7 +493,7 @@ did对order_id进行签名，获取rsv
 
 
 
-	adex.get('/list_markets', async (req, res) => {
+	adex.all('/list_markets', async (req, res) => {
 
        let [err,result] = await to(market.list_markets());
        res.json({result,err });
@@ -513,7 +513,7 @@ did对order_id进行签名，获取rsv
 
 
 
-	adex.get('/rollback_trades', async (req, res) => {
+	adex.all('/rollback_trades', async (req, res) => {
        
 		
 		var obj = urllib.parse(req.url,true).query;
@@ -526,7 +526,7 @@ did对order_id进行签名，获取rsv
 
 
 
-	adex.get('/list_trades', async (req, res) => {
+	adex.all('/list_trades', async (req, res) => {
        
 		
 		var obj = urllib.parse(req.url,true).query;
@@ -568,7 +568,7 @@ did对order_id进行签名，获取rsv
 
 
 
-    adex.get('/my_trades', async (req, res) => {
+    adex.all('/my_trades', async (req, res) => {
       /**
         let message = {address:"0x66b7637198aee4fffa103fc0082e7a093f81e05a64"}
 **/
@@ -580,7 +580,7 @@ did对order_id进行签名，获取rsv
        res.json({result,err });
     });
 
-	 adex.get('/my_trades2/:address/:page/:per_page', async (req, res) => {
+	 adex.all('/my_trades2/:address/:page/:per_page', async (req, res) => {
        let [err,result] = await to(trades.my_trades2(req.params.address,req.params.page,req.params.per_page));
          res.json({
             success: result == undefined ? false:true,
@@ -589,7 +589,7 @@ did对order_id进行签名，获取rsv
         });
     });
 
-	adex.get('/my_trades_v2/:address/:page/:per_page', async (req, res) => {
+	adex.all('/my_trades_v2/:address/:page/:per_page', async (req, res) => {
        let [err,result] = await to(trades.my_trades2(req.params.address,req.params.page,req.params.per_page));
          res.json({
             success: result == undefined ? false:true,
@@ -600,7 +600,7 @@ did对order_id进行签名，获取rsv
 
 
 	// add 10 second memory cache ( change to redis later )
-	adex.get('/trading_view',cache('10 second'), async (req, res) => {
+	adex.all('/trading_view',cache('10 second'), async (req, res) => {
 		let current_time = Math.floor(new Date().getTime() / 1000);
 		 var obj = urllib.parse(req.url,true).query;
        console.log("obj=",obj);

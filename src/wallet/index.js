@@ -67,13 +67,13 @@ export default ({ config, db }) => {
 	let utils = new adex_utils();
 	let mist_wallet = new mist_wallet1();
 
-	wallet.get('/', async (req, res) => {
+	wallet.all('/', async (req, res) => {
 		walletInst = await getTestInst();
 		let address = await walletInst.getAddress()
 		res.json({ wallet:address })
 	});
 
-	wallet.get('/dex_test', async (req, res) => {
+	wallet.all('/dex_test', async (req, res) => {
 		//BTC-PI
 
    let trades = [ 
@@ -162,7 +162,7 @@ export default ({ config, db }) => {
 
 
 
-	wallet.get('/get_user_info/:address',async (req, res) => {
+	wallet.all('/get_user_info/:address',async (req, res) => {
 		 let token_arr = await mist_wallet.list_tokens();
 		 let mist_user = await psql_db.find_user([req.params.address]);
 		 let users_obj = new users();
@@ -215,7 +215,7 @@ export default ({ config, db }) => {
 
 
 
-	wallet.get('/list_assets_info',async (req, res) => {
+	wallet.all('/list_assets_info',async (req, res) => {
 		let [err,info] = await to(psql_db.list_assets_info());
 		console.log("list_assets_info-2222",err,info);
 		res.json({ result:info,err:err });
@@ -223,7 +223,7 @@ export default ({ config, db }) => {
 
 
 
-	wallet.get('/get_asset_info/:token_name',async (req, res) => {
+	wallet.all('/get_asset_info/:token_name',async (req, res) => {
 		let tokens = await psql_db.get_tokens([req.params.token_name])
 		let assetToken = new fake_token(tokens[0].asim_address);
 		walletInst = await getTestInst();
@@ -234,7 +234,7 @@ export default ({ config, db }) => {
 		res.json({ result:result,err:err });
 	});
 
-	wallet.get('/faucet2/:token/:address',async (req, res) => {
+	wallet.all('/faucet2/:token/:address',async (req, res) => {
 		console.log(req.params)
 		let token = new StandardToken(req.params.token)
 		let takerWallet = await getTakerWallet();
@@ -245,7 +245,7 @@ export default ({ config, db }) => {
 		res.json({ result:result,err:err });
 	});
 
-	wallet.get('/faucet/:address',async (req, res) => {
+	wallet.all('/faucet/:address',async (req, res) => {
 		console.log(req.params)
 	
 		let token_arr = await mist_wallet.list_tokens();
@@ -269,7 +269,7 @@ export default ({ config, db }) => {
 		res.json({ result:results});
 	});
 
-	wallet.get('/faucet3/:address',async (req, res) => {
+	wallet.all('/faucet3/:address',async (req, res) => {
 		console.log(req.params)
 	
 		let token_arr = await mist_wallet.list_tokens();
@@ -296,7 +296,7 @@ export default ({ config, db }) => {
 
 
 
-	wallet.get('/balanceOf/:token/:address',async (req, res) => {
+	wallet.all('/balanceOf/:token/:address',async (req, res) => {
 		console.log(req.params)
 		let token = new StandardToken(req.params.token)
 		let [err,result] = await to(token.balanceOf(req.params.address))
@@ -304,7 +304,7 @@ export default ({ config, db }) => {
 		res.json({ result:result,err:err });
 	});
 
-	wallet.get('/get_token_balance/:token_name/:address', async (req, res) => {
+	wallet.all('/get_token_balance/:token_name/:address', async (req, res) => {
 
 		   let token_info = await psql_db.get_tokens([req.params.token_name])
 
@@ -327,7 +327,7 @@ export default ({ config, db }) => {
     });
 
 
-	wallet.get('/balance',async (req, res) => {
+	wallet.all('/balance',async (req, res) => {
 
 		let [err,result] = await to(tokenTest.testBalanceOf())
 		console.log(result,err);
@@ -335,7 +335,7 @@ export default ({ config, db }) => {
 		res.json({ result:result,err:err });
 	});
 
-	wallet.get('/transfer',async (req, res) => {
+	wallet.all('/transfer',async (req, res) => {
 
 		walletInst = await getTestInst();
 		let [err,result] = await to(tokenTest.testTransfer(walletInst))
@@ -349,7 +349,7 @@ export default ({ config, db }) => {
 		res.json({ result:result,err:err });
 	});
 
-	wallet.get('/approve',async (req, res) => {
+	wallet.all('/approve',async (req, res) => {
 
 		walletInst = await getTestInst();
 		let [err,result] = await to(tokenTest.testApprove(walletInst))
@@ -362,14 +362,14 @@ export default ({ config, db }) => {
 	 * Assets Test
 	 */
 
-	wallet.get('/assetBalanceOf/:address',async (req,res)=>{
+	wallet.all('/assetBalanceOf/:address',async (req,res)=>{
 		let asset = new Asset(CONSTANT.DEFAULT_ASSET)
 		let [err,result] = await to(asset.balanceOf(req.params.address))
 		res.json({ result:result,err:err });
 	});
 
 	//这里后期是要传输入信息和加密的密闻
-	wallet.get('/assetTransfer/:address/:symbol/:amount',async (req, res) => {
+	wallet.all('/assetTransfer/:address/:symbol/:amount',async (req, res) => {
 		let tokens = await psql_db.get_tokens([req.params.symbol])
 		let asset = new Asset(tokens[0].asim_assetid)
 		walletInst = await getTestInst();
@@ -395,7 +395,7 @@ export default ({ config, db }) => {
 	 * Returns
 	 * -information of raw transaction
 	 */
-	wallet.get('/tx',async (req, res) => {
+	wallet.all('/tx',async (req, res) => {
 		let address
 		if( req.query.address ){
 			address = req.query.address
@@ -411,7 +411,7 @@ export default ({ config, db }) => {
 		res.json({result,err });
 	});
 
-	wallet.get('/rawtx',async (req, res) => {
+	wallet.all('/rawtx',async (req, res) => {
 		let txid = req.query.txid
 
 		let [err,result] = await to(chain.getrawtransaction([txid,true,true]))
@@ -429,7 +429,7 @@ export default ({ config, db }) => {
 	 * Returns
 	 * UTXO information
 	 */
-	wallet.get('/utxo',async (req, res) => {
+	wallet.all('/utxo',async (req, res) => {
 		let address
 		if( req.query.address ){
 			address = req.query.address
@@ -444,7 +444,7 @@ export default ({ config, db }) => {
 	});
 
 	
-	 wallet.get('/orderhash',async (req, res) => {
+	 wallet.all('/orderhash',async (req, res) => {
 
 		console.log("33333");
 		let mist = new mist10(mist_config.ex_address);
@@ -462,7 +462,7 @@ export default ({ config, db }) => {
     });
 
 	//清仓
-	wallet.get('/cdp_liquidate/:borrow_id/:asset_id/:address',async (req, res) => {
+	wallet.all('/cdp_liquidate/:borrow_id/:asset_id/:address',async (req, res) => {
 
 		console.log("33333");
 		let cdp_obj = new cdp(cdp_address);
@@ -485,14 +485,14 @@ export default ({ config, db }) => {
 
 
 
-	  wallet.get('/list_borrows/:address',async (req, res) => {
+	  wallet.all('/list_borrows/:address',async (req, res) => {
 			let address = [req.params.address];
 			let [err,result] = await to(psql_db.list_borrows(address));
 			res.json({ result:result,err:err });
 	  });
 
 
-	 wallet.get('/my_borrows2/:address/:page/:perpage',async (req, res) => {
+	 wallet.all('/my_borrows2/:address/:page/:perpage',async (req, res) => {
 		 	let {address,page,perpage} = req.params;
 			let offset = (+page - 1) * +perpage;
 			let [err,result] = await to(psql_db.my_borrows2([address,offset,+perpage]));
@@ -500,7 +500,7 @@ export default ({ config, db }) => {
 	  });
 
 
-	  wallet.get('/matchorder',async (req, res) => {
+	  wallet.all('/matchorder',async (req, res) => {
 		
 		console.log("2222222222");
 		let mist = new mist10(mist_config.ex_address);
@@ -512,7 +512,7 @@ export default ({ config, db }) => {
         res.json({ result:result,err:err });
     });
 
-	  wallet.get('/sendrawtransaction/createDepositBorrow/:borrow_amount/:borrow_time/:token_name/:deposit_amount/:address/:sign_data',async (req, res) => {
+	  wallet.all('/sendrawtransaction/createDepositBorrow/:borrow_amount/:borrow_time/:token_name/:deposit_amount/:address/:sign_data',async (req, res) => {
             let sign_data = [req.params.sign_data];
             let [err,result] = await to(chain.sendrawtransaction(sign_data));
 						
@@ -578,7 +578,7 @@ export default ({ config, db }) => {
       });
 
 //	还钱
-	  wallet.get('/sendrawtransaction/repay/:borrow_id/:deposit_token_name/:amount/:address/:sign_data',async (req, res) => {
+	  wallet.all('/sendrawtransaction/repay/:borrow_id/:deposit_token_name/:amount/:address/:sign_data',async (req, res) => {
             let sign_data = [req.params.sign_data];
             let [err,result] = await to(chain.sendrawtransaction(sign_data));
 			if(!err){
@@ -604,7 +604,7 @@ export default ({ config, db }) => {
       });
 //加仓
 
-	  wallet.get('/sendrawtransaction/cdp_deposit/:borrow_id/:token_name/:amount/:address/:sign_data',async (req, res) => {
+	  wallet.all('/sendrawtransaction/cdp_deposit/:borrow_id/:token_name/:amount/:address/:sign_data',async (req, res) => {
             let sign_data = [req.params.sign_data];
             let [err,result] = await to(chain.sendrawtransaction(sign_data));
 			if(!err){
@@ -619,7 +619,7 @@ export default ({ config, db }) => {
 
 
 //清仓
-	  wallet.get('/sendrawtransaction/cdp_liquidate/:borrow_id/:asset_id/:address/:sign_data',async (req, res) => {
+	  wallet.all('/sendrawtransaction/cdp_liquidate/:borrow_id/:asset_id/:address/:sign_data',async (req, res) => {
             let sign_data = [req.params.sign_data];
             let [err,result] = await to(chain.sendrawtransaction(sign_data));
 
@@ -648,7 +648,7 @@ export default ({ config, db }) => {
  created_at timestamp
  *///
 //资产转币币
-wallet.get('/sendrawtransaction/asset2coin/:amount/:address/:token_name/::sign_data',async (req, res) => {
+wallet.all('/sendrawtransaction/asset2coin/:amount/:address/:token_name/::sign_data',async (req, res) => {
             let sign_data = [req.params.sign_data];
             let [err,result] = await to(chain.sendrawtransaction(sign_data));
 			if(!err){
@@ -681,7 +681,7 @@ wallet.get('/sendrawtransaction/asset2coin/:amount/:address/:token_name/::sign_d
             res.json({ result:result,err:err});
       });
 //币币转资产
-wallet.get('/sendrawtransaction/coin2asset/:amount/:address/:token_name/:sign_data',async (req, res) => {
+wallet.all('/sendrawtransaction/coin2asset/:amount/:address/:token_name/:sign_data',async (req, res) => {
             let sign_data = [req.params.sign_data];
             let [err,result] = await to(chain.sendrawtransaction(sign_data));
 			if(!err){
@@ -713,13 +713,13 @@ wallet.get('/sendrawtransaction/coin2asset/:amount/:address/:token_name/:sign_da
             res.json({ result:result,err:err});
       });
 //划转记录
-		wallet.get('/my_converts/:address',async (req, res) => {
+		wallet.all('/my_converts/:address',async (req, res) => {
 
             let [err,result] = await to(psql_db.my_converts([req.params.address]));
             res.json({ result:result,err:err});
 		});
 
-		wallet.get('/my_converts2/:address/:page/:perpage',async (req, res) => {
+		wallet.all('/my_converts2/:address/:page/:perpage',async (req, res) => {
 			let {address,page,perpage} = req.params;
 			let offset = (+page - 1) * +perpage;
             let [err,result] = await to(psql_db.my_converts2([address,offset,perpage]));
@@ -732,13 +732,13 @@ wallet.get('/sendrawtransaction/coin2asset/:amount/:address/:token_name/:sign_da
 
 
 
-	  wallet.get('/sendrawtransaction/:sign_data',async (req, res) => {
+	  wallet.all('/sendrawtransaction/:sign_data',async (req, res) => {
 	   let sign_data = [req.params.sign_data];
             let [err,result] = await to(chain.sendrawtransaction(sign_data));
             res.json({ result:result,err:err});
 		});
 
-	wallet.get('/list_cdp_info',async (req, res) => {
+	wallet.all('/list_cdp_info',async (req, res) => {
 
             let [err,result] = await to(psql_db.list_cdp());
             res.json({ result:result,err:err});
