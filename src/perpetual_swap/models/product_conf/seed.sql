@@ -1,0 +1,7 @@
+insert into perpetual_markets (id,base_token_address,base_token_symbol,quote_token_address,quote_token_symbol,created_at) values ('ASIM-PI', '0x6384f0823c8f8ef8646a0dd3293cc43255df0fb138','ASIM', '0x63584d1b65d51ee47051fc88c18d0b368a59586883','PI', NOW());
+insert into perpetual_markets (id,base_token_address,base_token_symbol,quote_token_address,quote_token_symbol,created_at) values ('BTC-PI', '0x63566fd3f3e73df42de3ec78781e2ae87c1344bad8','BTC', '0x63584d1b65d51ee47051fc88c18d0b368a59586883','PI', NOW());
+insert into perpetual_markets (id,base_token_address,base_token_symbol,quote_token_address,quote_token_symbol,created_at) values ('ETH-PI', '0x633d7fb38c72d08f69c558337d33295385dd3495aa','ETH', '0x63584d1b65d51ee47051fc88c18d0b368a59586883','PI', NOW());
+
+insert into perpetual_markets (id,base_token_address,base_token_symbol,quote_token_address,quote_token_symbol,created_at) values ('ASIM-USDT', '0x6384f0823c8f8ef8646a0dd3293cc43255df0fb138','ASIM', '0x636df008a75cb00c8f7f9bd74c273ca833f8d304d3','USDT', NOW());
+insert into perpetual_markets (id,base_token_address,base_token_symbol,quote_token_address,quote_token_symbol,created_at) values ('ETH-USDT', '0x633d7fb38c72d08f69c558337d33295385dd3495aa','ETH', '0x636df008a75cb00c8f7f9bd74c273ca833f8d304d3','USDT', NOW());
+insert into perpetual_markets (id,base_token_address,base_token_symbol,quote_token_address,quote_token_symbol,created_at) values ('BTC-USDT', '0x63566fd3f3e73df42de3ec78781e2ae87c1344bad8','BTC', '0x636df008a75cb00c8f7f9bd74c273ca833f8d304d3','USDT', NOW());
