@@ -167,8 +167,8 @@ var product = {
 	wallet_default_passwd:"111111",
 	did_seed_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
 	asimov_chain_rpc:"https://rpc-master.mistabit.com",
-    mist_server_port:17000,
-    websocket_port:17001
+    mist_server_port:21000,
+    websocket_port:21001
 }
 
 var mist_config;

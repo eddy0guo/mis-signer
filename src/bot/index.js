@@ -45,7 +45,7 @@ for(let i in markets ){
 	let amount = amounts[i]
 	// console.log(i,markets[i],amount)
 	let bot = new CloudBot(i,priceOracle,amount)
-	bot.start(5000+i*1000)
+	bot.start(5+i*1)
 }
 
 // start cli server

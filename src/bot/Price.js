@@ -30,7 +30,7 @@ export default class Price {
         await this.updatePrice()
         this.timer = setTimeout(() => {
             this.loop.call(this)
-        }, 15000);
+        }, 1500);
     }
 
     async updatePrice() {

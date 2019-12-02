@@ -1,4 +1,4 @@
-var mist_config_test = {
+var config_local = {
     accounts : [
         "13682471710",
         "13682471714"],
@@ -10,19 +10,19 @@ var mist_config_test = {
         "0x66fb54e73b1ea0a40ca95c5a514500902dc19f2d61"],
 }
 
-var mist_config_product = {
+var config_product = {
     accounts : [
         "13682471710",
-        "13682471714"],
+        "13682471711"],
     password : [
 
     ],
     addresses : [
         "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
-        "0x66fb54e73b1ea0a40ca95c5a514500902dc19f2d61"],
+        "0x66b7637198aee4fffa103fc0082e7a093f81e05a64"],
 }
 
-var mist_config_hqtn = {
+var config_dev = {
     accounts : [
         "13682471717",
         "13682471718"],
@@ -37,23 +37,23 @@ var mist_config_hqpd = {};
 
 var mist_config;
 switch (process.env.MIST_MODE) {
-	case 'mist_test':
-		mist_config = mist_config_test;
+	case 'local':
+		mist_config = config_local;
 		break;
 	//old product
 	case 'postgres':
-		mist_config = mist_config_product;
+		mist_config = config_postgres;
 		break;
 	//hongqiaotestnet
-	case 'mist_hqtn':
-		mist_config = mist_config_hqtn;
+	case 'dev':
+		mist_config = config_dev;
 		break;
 	//reserved for future use,hongqiaoproduct
-	case 'mist_hqpd':
-		mist_config = mist_config_hqpd;
+	case 'product':
+		mist_config = config_product;
 		break;
 	default:
-		mist_config = mist_config_test;
+		mist_config = config_local;
 }
 //var mist_config = mist_config_test;
 export default mist_config
