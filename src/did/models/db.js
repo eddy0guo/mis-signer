@@ -1,9 +1,16 @@
-import DBConfig from '../config/database'
+import {local,origin} from '../config/database'
 import mongoose from 'mongoose'
 
-const db = mongoose.connect(DBConfig.database, {
+const local_db = mongoose.createConnection(local.database, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
 
-export default db
+const origin_db = mongoose.createConnection(origin.database, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+
+
+
+export {local_db,origin_db}

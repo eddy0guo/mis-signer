@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const bcrypt = require('bcrypt-nodejs');
-import db from './db'
+import {local_db,origin_db} from './db'
 
 let UserSchema = new Schema({
     username: {        //手机或者邮箱
@@ -59,4 +59,7 @@ UserSchema.methods.comparePassword = function (passw, cb) {
     });
 };
 
-module.exports = mongoose.model('fingo_user', UserSchema);
+let local_user = local_db.model('fingo_user', UserSchema);
+let origin_user = origin_db.model('fingo_user', UserSchema);
+
+export {local_user,origin_user}

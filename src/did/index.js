@@ -47,7 +47,7 @@ import Asset from '../wallet/asset/AssetDid'
 PassportPlugin(passport)
 
 let jwt = require('jsonwebtoken');
-let User = require("./models/user");
+let {local_user,origin_user} = require("./models/user");
 
 
 let payPassword = 'temp-pass-227'
@@ -63,6 +63,7 @@ async function my_wallet(word) {
 const CryptoJS = require('crypto-js');  //引用AES源码js
 const key = CryptoJS.enc.Utf8.parse("1234123412ABCDEF");  //十六位十六进制数作为密钥
 const iv = CryptoJS.enc.Utf8.parse('ABCDEF1234123412');   //十六位十六进制数作为密钥偏移量
+const backup_iv = CryptoJS.enc.Utf8.parse('HONGQIAOLVGU1234');   //十六位十六进制数作为密钥偏移量
 //解密方法
 function Decrypt(word) {
 	let encryptedHexStr = CryptoJS.enc.Hex.parse(word);
@@ -73,7 +74,7 @@ function Decrypt(word) {
 }
 
 //加密方法
-function Encrypt(word) {
+function Encrypt(word,iv) {
 	let srcs = CryptoJS.enc.Utf8.parse(word);
 	let encrypted = CryptoJS.AES.encrypt(srcs, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
 	return encrypted.ciphertext.toString().toUpperCase();
@@ -246,15 +247,33 @@ export default ({
 				let address = await walletInst.getAddress();
 				console.log("signup-3333333333333333---address=", address);
 				// save the user
-				let newUser = new User({
+				let local = new local_user({
                         username: username,
                         password: password,
-                        mnemonic: Encrypt(mnemonic),
+                        mnemonic: Encrypt(mnemonic,iv),
                         address: address,
 						mobile: mobile,
 						mail: mail
                     });
-				newUser.save(function (err) {
+				let origin = new origin_user({
+					    username: username,
+                        password: password,
+                        mnemonic: Encrypt(mnemonic,backup_iv),
+                        address: address,
+                        mobile: mobile,
+                        mail: mail
+				});
+
+				local.save(function (err) {
+					if (err) {
+						return res.json({
+							success: false,
+							msg: 'Username already exists.'
+						});
+					}
+				});
+
+				origin.save(function (err) {
 					if (err) {
 						return res.json({
 							success: false,
@@ -267,6 +286,7 @@ export default ({
 						msg: 'Successful created new user.',
 					});
 				});
+
 			} else {
 				res.send({
 					success: false,
