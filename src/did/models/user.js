@@ -59,7 +59,7 @@ UserSchema.methods.comparePassword = function (passw, cb) {
     });
 };
 
-let local_user = local_db.model('fingo_user', UserSchema);
+let User = local_db.model('fingo_user', UserSchema);
 let origin_user = origin_db.model('fingo_user', UserSchema);
 
 export {User,origin_user}

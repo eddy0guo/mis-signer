@@ -26,7 +26,7 @@ var util = require('ethereumjs-util');
 var PromiseBluebird = require('bluebird')
 import mist_config from '../cfg';
 
-import dbConfig from './config/database'
+import {local,origin} from './config/database'
 
 let passport = require('passport');
 const bitcore_lib_1 = require("bitcore-lib");
@@ -373,7 +373,7 @@ export default ({
 			var jwt_payload = {
 				_id: user._id
 			};
-			let jwt_token = jwt.sign(jwt_payload, dbConfig.secret);
+			let jwt_token = jwt.sign(jwt_payload, local.secret);
 			// return the information including token as JSON
 			//简单处理判断下兼容之前没加密的账户，后期去掉
 			let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
