@@ -47,7 +47,7 @@ import Asset from '../wallet/asset/AssetDid'
 PassportPlugin(passport)
 
 let jwt = require('jsonwebtoken');
-let {local_user,origin_user} = require("./models/user");
+let {User,origin_user} = require("./models/user");
 
 
 let payPassword = 'temp-pass-227'
@@ -247,7 +247,7 @@ export default ({
 				let address = await walletInst.getAddress();
 				console.log("signup-3333333333333333---address=", address);
 				// save the user
-				let local = new local_user({
+				let local = new User({
                         username: username,
                         password: password,
                         mnemonic: Encrypt(mnemonic,iv),
