@@ -42,10 +42,7 @@ export default ({ config, db,logger}) => {
     let tokenTest = new TokenTest()
 	let utils = new utils1();
 	let launcher = new launcher1(client);
-	wathcer.start();
-//	user.start();
-//	asset.status_flushing();
-	launcher.start();
+	user.start();
 
 	adex.all('/mist_engine_info', async (req, res) => {
 					 let result = await trades.get_engine_info();
@@ -132,37 +129,6 @@ adex.all('/list_tokens', async (req, res) => {
                     });
 
 
-    //所有token合约赋予所有地址权限
-    adex.all('/approves',async (req, res) => {
-                    
-                   var obj = urllib.parse(req.url,true).query;
-                      console.log("obj=",obj);
-					let token_arr = await mist_wallet.list_tokens();
-                    let txids =[];
-                    for(let i in token_arr){
-                                    let token  = new Token(token_arr[i].address);
-                                    let wallet = await my_wallet(obj.word);
-                                    let address = await wallet.getAddress();
-
-                                    console.log("333--address",address);
-                                    
-                                     token.unlock(wallet,"111111")
-                                   let [err,balance] = await to(token.balanceOf(address));
-                                    let [err3,allowance] = await to(token.allowance(address,mist_config.ex_address));
-                                    if(balance != allowance){
-                                        await wallet.queryAllBalance()
-                                        let [err2,txid] = await to(token.approve(mist_config.ex_address,9999999));
-
-                                    console.log("333--address---",err2,txid);
-
-                                        txids.push(txid);
-                                        console.log("444--",err2,txid);
-
-                                    }
-                                    console.log("444--",balance,allowance);
-                    }
-                    res.json(txids);
-                    });
  	/****
 	
 get_order_id，获取order_id,
@@ -197,56 +163,6 @@ did对order_id进行签名，获取rsv
 
 
   
-
-    adex.all('/build_order', async (req, res) => {
-    	//打印键值对中的值
-  		var obj = urllib.parse(req.url,true).query;
- 	   console.log("obj=",obj);
-	   //test model
-	  /** 
-		let result = utils.verify(obj.order_id,JSON.parse(obj.signature));
-		if(!result){
-			return res.json("verify failed");
-		}
-		**/
-		if(!(utils.judge_legal_num(+obj.amount) && utils.judge_legal_num(+obj.price))){
-			return res.json("amount or price is cannt support");
-		}
-		/*
-		var arr = obj.market.toString().split("-");
-		let token_info = mist_wallet.get_token(arr[1]);
-		let token = new Token(token_info[0].address);
-        let balance = await token.balanceOf(obj.address);
-		if(NP.times(+obj.amount, +obj.price) > balance){
-			return res.json("balance is not enoungh");
-		}
-		*/
-
-
-       let message = {
-                      id:obj.order_id,
-                      trader_address: obj.trader_address,
-                      market_id: obj.marketID,
-                      side: obj.side,
-                      price: +obj.price,
-                      amount: +obj.amount,
-                      status:'pending',
-                      type:'limit',
-                      available_amount: +obj.amount,
-                      confirmed_amount:0,
-                      canceled_amount:0,
-                      pending_amount:0,
-                      updated_at:null,
-                      created_at:null,
-       };
-
-
-       let [err,result2] = await to(order.build(message))
-       console.log(result2,err);
-       res.json({ result2,err });
-	});
-
-
 
 	adex.all('/build_order_v2/:trader_address/:market_id/:side/:price/:amount/:order_id/:signature', async (req, res) => {
 		let {trader_address,market_id,side,price,amount,order_id,signature} = req.params;
@@ -454,27 +370,6 @@ did对order_id进行签名，获取rsv
        res.json({result,err });
 	});
 
-	adex.all('/my_orders2/:address/:page/:perpage/:status1/:status2', async (req, res) => {
-		//pending,partial_filled,当前委托
-		//cancled，full_filled，历史委托
-	   let {address,page,perpage,status1,status2} = req.params;
-       let [err,result] = await to(order.my_orders2(address,page,perpage,status1,status2));
-       res.json({result,err });
-	});
-
-
-
-
-
-	adex.all('/order_book', async (req, res) => {
-
-		var obj = urllib.parse(req.url,true).query;
-       console.log("obj=",obj);
-	
-       let [err,result] = await to(order.order_book(obj.marketID));
-       res.json({result,err });
-	});
-
 	adex.all('/order_book_v2/:market_id', async (req, res) => {
        let [err,result] = await to(order.order_book(req.params.market_id));
 	   //没数据判定为不存在的交易对，实际上刚部署的时候也没数据
@@ -566,29 +461,6 @@ did对order_id进行签名，获取rsv
        }
 	});
 
-
-
-    adex.all('/my_trades', async (req, res) => {
-      /**
-        let message = {address:"0x66b7637198aee4fffa103fc0082e7a093f81e05a64"}
-**/
-        var obj = urllib.parse(req.url,true).query;
-       console.log("obj=",obj);
-        let message = {address:obj.address};
-       let [err,result] = await to(trades.my_trades(message));
-
-       res.json({result,err });
-    });
-
-	 adex.all('/my_trades2/:address/:page/:per_page', async (req, res) => {
-       let [err,result] = await to(trades.my_trades2(req.params.address,req.params.page,req.params.per_page));
-         res.json({
-            success: result == undefined ? false:true,
-            result: result,
-            err:err
-        });
-    });
-
 	adex.all('/my_trades_v2/:address/:page/:per_page', async (req, res) => {
        let [err,result] = await to(trades.my_trades2(req.params.address,req.params.page,req.params.per_page));
          res.json({
@@ -599,24 +471,6 @@ did对order_id进行签名，获取rsv
     });
 
 
-	// add 10 second memory cache ( change to redis later )
-	adex.all('/trading_view',cache('10 second'), async (req, res) => {
-		let current_time = Math.floor(new Date().getTime() / 1000);
-		 var obj = urllib.parse(req.url,true).query;
-       console.log("obj=",obj);
-
-
-		let message = {
-		market_id:obj.marketID,   
-		from: current_time - current_time%obj.granularity - obj.granularity*obj.number,   //当前所在的时间区间不计算  
-		to: current_time - current_time%obj.granularity,
-		granularity: obj.granularity,
-		};
-	   
-
-		let [err,result] = await to(trades.trading_view(message));
-        res.json({result,err });
-	});
 
 	adex.all('/trading_view_v2/:granularity/:number/:market_id',cache('10 second'), async (req, res) => {
 

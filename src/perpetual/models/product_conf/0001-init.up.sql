@@ -1,5 +1,5 @@
 -- tokens table
-create table mist_tokens(
+create table perpetual_tokens(
  symbol text primary key,
  name text,
  address text ,
@@ -8,10 +8,10 @@ create table mist_tokens(
  asim_address text ,
  created_at timestamp
 );
-create unique index idx_mist_tokens_address on mist_tokens (address);
+create unique index idx_perpetual_tokens_address on perpetual_tokens (address);
 
 -- markets table
-create table mist_markets(
+create table perpetual_markets(
  id text primary key,
  base_token_address text ,
  base_token_symbol text ,
@@ -23,7 +23,7 @@ create table mist_markets(
 );
 
 -- trades table
-create table mist_trades(
+create table perpetual_trades(
   id text PRIMARY KEY,
   trade_hash text,
   transaction_id integer ,
@@ -44,13 +44,13 @@ create table mist_trades(
   updated_at timestamp ,
   created_at timestamp
 );
-create index idx_mist_trades_transaction_hash on mist_trades (transaction_hash);
-create index idx_mist_trades_taker on mist_trades (taker,market_id);
-create index idx_mist_trades_maker on mist_trades (maker,market_id);
-create index idx_mist_market_id_status_executed_at on mist_trades (market_id, status, created_at);
+create index idx_perpetual_trades_transaction_hash on perpetual_trades (transaction_hash);
+create index idx_perpetual_trades_taker on perpetual_trades (taker,market_id);
+create index idx_perpetual_trades_maker on perpetual_trades (maker,market_id);
+create index idx_perpetual_market_id_status_executed_at on perpetual_trades (market_id, status, created_at);
 
 -- orders table
-create table mist_orders(
+create table perpetual_orders(
   id text  primary key,
   trader_address text ,
   market_id text ,
@@ -67,11 +67,11 @@ create table mist_orders(
   updated_at  timestamp,
   created_at  timestamp
 );
-create index idx_mist_market_id_status on mist_orders (market_id, status);
-create index idx_mist_market_trader_address on mist_orders (trader_address, market_id, status, created_at);
+create index idx_perpetual_market_id_status on perpetual_orders (market_id, status);
+create index idx_perpetual_market_trader_address on perpetual_orders (trader_address, market_id, status, created_at);
 
 -- transactions table
-create table mist_transactions(
+create table perpetual_transactions(
   id SERIAL PRIMARY KEY,
   transaction_hash text,
   market_id text ,
@@ -79,10 +79,10 @@ create table mist_transactions(
   updated_at  timestamp,
   created_at timestamp
 );
-create unique index idx_mist_transactions_transaction_hash on mist_transactions (transaction_hash);
+create unique index idx_perpetual_transactions_transaction_hash on perpetual_transactions (transaction_hash);
 
 -- launch_logs table
-create table mist_launch_logs(
+create table perpetual_launch_logs(
   id SERIAL PRIMARY KEY,
   status text ,
   transaction_hash text,
@@ -93,10 +93,10 @@ create table mist_launch_logs(
   updated_at  timestamp,
   created_at  timestamp
 );
-create index idx_mist_created_at on mist_launch_logs (created_at);
-create unique index idx_mist_launch_logs_transaction_hash on mist_launch_logs (transaction_hash);
+create index idx_perpetual_created_at on perpetual_launch_logs (created_at);
+create unique index idx_perpetual_launch_logs_transaction_hash on perpetual_launch_logs (transaction_hash);
 
-create table mist_users(
+create table perpetual_users(
   address text  PRIMARY KEY,
   PI numeric(32,8) default 0,
   ASIM numeric(32,8) default 0,  
@@ -118,17 +118,6 @@ create table mist_users(
   total_value_6day numeric(32,8) default 0,
   total_value_7day numeric(32,8) default 0,
   updated_at  timestamp default now(),
-  created_at  timestamp default now()
-);
-
-create table asim_assets_info(
-  id text PRIMARY KEY,
-  asset_id text default '',
-  asset_name text default '',
-  producer text default '',
-  total text default '',
-  producer_amount text default '' ,
-  circulation_amount text default '' ,--circulation_amount + producer_amount = total
   created_at  timestamp default now()
 );
 
