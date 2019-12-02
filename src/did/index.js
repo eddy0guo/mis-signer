@@ -115,7 +115,7 @@ export default ({
 	}
 
 
-	router.post('/get_code', async (req, res) => {
+	router.all('/get_code', async (req, res) => {
 		let mail = req.body.mail; //获取数据
 		let code = Math.floor(Math.random() * 1000000);
 		codeObj[mail] = code;
@@ -134,7 +134,7 @@ export default ({
 		})
 	})
 	//只是接口名字不同.为了兼容旧的前端代码
-	router.post('/get_mail_code', async (req, res) => {
+	router.all('/get_mail_code', async (req, res) => {
 		let mail = req.body.mail; //获取数据
 		let code = Math.floor(Math.random() * 1000000);
 		codeObj[mail] = code;
@@ -155,7 +155,7 @@ export default ({
 
 
 
-	router.post('/get_phone_code', async (req, res) => {
+	router.all('/get_phone_code', async (req, res) => {
 		const accessKeyId = 'LTAIrgDqyP2INffS'
 		const secretAccessKey = '8q4fPHK17PI5QzcloFGw7oo8gC0y2z'
 		let phone = req.body.phone; //获取数据
@@ -187,7 +187,7 @@ export default ({
 
 
 
-	router.post('/verify_code', async (req, res) => {
+	router.all('/verify_code', async (req, res) => {
 		let username = req.body.username;
 		console.log("-------1111", codeObj[username], req.body.code);
 		if (codeObj[username] == +req.body.code) {
@@ -205,19 +205,30 @@ export default ({
 
 
 
-	router.post('/signup', async (req, res) => {
-		if (!req.body.username || !req.body.password) {
+	router.all('/signup', async (req, res) => {
+		let {username,password,code} = req.body;
+		let  tel_reg= /^((0\d{2,3}-\d{7,8})|(1[3584]\d{9}))$/;
+		let  mail_reg=/^\w+@[a-zA-Z0-9]{2,10}(?:\.[a-z]{2,4}){1,3}$/;
+		if(tel_reg.test(username)){
+			var mobile = username;
+			var mail;
+		}else if(mail_reg.test(username)){
+			var mobile;
+			var mail = username;
+		}else{
+			 return res.send({
+                    success: false,
+                    msg: 'Unsupported registration methods',
+                });	
+		}
+
+		if (!username || !password) {
 			res.json({
 				success: false,
 				msg: 'Please pass username and password.'
 			});
 		} else {
-			// create wallet
-
-			let mail = req.body.username;
-
-			console.log("-------1111", codeObj[mail], req.body.code);
-			if (codeObj[mail] == +req.body.code) {
+			if (codeObj[username] == +code) {
 
 				let wallet = new Wallet()
 				// 需要激活这个wallet，否则create逻辑有错误
@@ -235,6 +246,14 @@ export default ({
 				let address = await walletInst.getAddress();
 				console.log("signup-3333333333333333---address=", address);
 				// save the user
+				let newUser = new User({
+                        username: username,
+                        password: password,
+                        mnemonic: Encrypt(mnemonic),
+                        address: address,
+						mobile: mobile,
+						mail: mail
+                    });
 				newUser.save(function (err) {
 					if (err) {
 						return res.json({
@@ -257,7 +276,7 @@ export default ({
 		}
 	});
 
-	router.post('/modify_password', async (req, res) => {
+	router.all('/modify_password', async (req, res) => {
 
 		let user = await User.findOne({
 			username: req.body.username
@@ -308,7 +327,7 @@ export default ({
 
 
 
-	router.post('/signin', async (req, res) => {
+	router.all('/signin', async (req, res) => {
 
 		let user = await User.findOne({
 			username: req.body.username
@@ -349,7 +368,7 @@ export default ({
 				success: true,
 				user: user,
 				token: jwt_token,
-				authMessage: address,
+				address: address,
 				//				approveResults:txids
 			});
 		} else {
@@ -361,7 +380,7 @@ export default ({
 	});
 
 	//router.post('/order_sign',passport.authenticate('jwt', { session: false }), function(req, res) {
-	router.post('/order_sign', function (req, res) {
+	router.all('/order_sign', function (req, res) {
 		console.log("111111", req.body);
 		User.findOne({
 			username: req.body.username
@@ -385,7 +404,7 @@ export default ({
 		});
 	});
 
-	router.post('/order_sign_v2',passport.authenticate('jwt', { session: false }), function(req, res) {
+	router.all('/order_sign_v2',passport.authenticate('jwt', { session: false }), function(req, res) {
 	//router.post('/order_sign', function (req, res) {
 		console.log("111111", req.body);
 		User.findOne({
@@ -409,7 +428,8 @@ export default ({
 		});
 	});
 
-	router.post('/orders_sign_v2',passport.authenticate('jwt', { session: false }), function(req, res) {
+	router.all('/orders_sign_v2',passport.authenticate('jwt', { session: false }), function(req, res) {
+	//router.post('/order_sign', function (req, res) {
 		let str = req.body.orders_id.join();
 		 let root_hash = crypto_sha256.createHmac('sha256', '123')
 		 let hash = root_hash.update(str, 'utf8').digest('hex');
@@ -445,7 +465,7 @@ export default ({
 	let cdp_eth_address = '0x6396fb6f5cf3679932520a8728f333e61237e35519';
 	let cdp_asim_address = '0x6333052d2e97aca42b6b2a63e792f1fcb2b35298a2';
 	*/
-	router.get('/cdp_createDepositBorrow/:borrow_amount/:borrow_time/:deposit_token_name/:deposit_amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
+	router.all('/cdp_createDepositBorrow/:borrow_amount/:borrow_time/:deposit_token_name/:deposit_amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
 	//router.get('/cdp_createDepositBorrow/:borrow_amount/:borrow_time/:deposit_token_name/:deposit_amount/:username', async (req, res) => {
 		User.findOne({
 			username: req.params.username
@@ -473,7 +493,7 @@ export default ({
 
 	});
 
-	router.get("/secret", passport.authenticate('jwt', {
+	router.all("/secret", passport.authenticate('jwt', {
 		session: false
 	}), function (req, res) {
 		console.log('--------------jwt test------------------')
@@ -484,7 +504,7 @@ export default ({
 
 
 	//还pai，得btc
-	router.get('/cdp_repay/:borrow_id/:token_name/:amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
+	router.all('/cdp_repay/:borrow_id/:token_name/:amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
 	//router.get('/cdp_repay/:borrow_id/:deposit_token_name/:amount/:username', async (req, res) => {
 		console.log("111111", req.params);
 		User.findOne({
@@ -517,7 +537,7 @@ export default ({
 		});
 	});
 	//加仓
-	router.get('/cdp_deposit/:borrow_id/:token_name/:amount/:username',passport.authenticate('jwt', {session: false}), async (req, res) => {
+	router.all('/cdp_deposit/:borrow_id/:token_name/:amount/:username',passport.authenticate('jwt', {session: false}), async (req, res) => {
 
 			let user = req.user
 			let cdp_tokens = await psql_db.find_cdp_token([req.params.token_name])
@@ -541,7 +561,7 @@ export default ({
 
 
 	//清仓
-	router.get('/cdp_liquidate/:borrow_id/:asset_id/:username',
+	router.all('/cdp_liquidate/:borrow_id/:asset_id/:username',
 		passport.authenticate('jwt', {
 			session: false
 		}), async (req, res) => {
@@ -566,7 +586,7 @@ export default ({
 
 	//钱包到币币
 	//router.get('/asim_deposit/:amount/:username/:token_name',passport.authenticate('jwt', { session: false }),async (req, res) => {
-	router.get('/asset2coin/:amount/:username/:token_name', async (req, res) => {
+	router.all('/asset2coin/:amount/:username/:token_name', async (req, res) => {
 	//router.get('/asim_deposit/:amount/:username/:token_name', async (req, res) => {
 		console.log("33333");
 		User.findOne({
@@ -602,7 +622,7 @@ export default ({
 
 
 	//币币到钱包
-	router.get('/coin2asset/:amount/:username/:token_name',passport.authenticate('jwt', { session: false }),async (req, res) => {
+	router.all('/coin2asset/:amount/:username/:token_name',passport.authenticate('jwt', { session: false }),async (req, res) => {
 	//router.get('/coin2asset/:amount/:username/:token_name', async (req, res) => {
 		User.findOne({
 			username: req.params.username
@@ -637,7 +657,7 @@ export default ({
 
 	//交易所充币
 	//展示二维码之后1分钟后开始监控，1分钟之内要完成充值,暂时不支持连续充值
-	router.get('/deposit/:username/:token_name', async (req, res) => {
+	router.all('/deposit/:username/:token_name', async (req, res) => {
 		console.log("33333");
 		User.findOne({
 			username: req.params.username
@@ -655,7 +675,7 @@ export default ({
 
 
 	//交易所提币
-	router.get('/withdraw/:username/:to_address/:token_name/:amount', async (req, res) => {
+	router.all('/withdraw/:username/:to_address/:token_name/:amount', async (req, res) => {
 		let {username,to_address,token_name,amount} = req.params;
 		User.findOne({
 			username: username
@@ -672,7 +692,7 @@ export default ({
 		});
 	});
 
-	router.get('/approve/:username/:token_name', passport.authenticate('jwt', {
+	router.all('/approve/:username/:token_name', passport.authenticate('jwt', {
 		session: false
 	}), async (req, res) => {
 		User.findOne({
@@ -701,7 +721,7 @@ export default ({
 	});
 
 	//express
-	router.get('/build_express/:username/:base_token_name/:amount', passport.authenticate('jwt', {session: false}),async (req, res) => {
+	router.all('/build_express/:username/:base_token_name/:amount', passport.authenticate('jwt', {session: false}),async (req, res) => {
 		User.findOne({
 			username: req.params.username
 		}, async (err, user) => {

@@ -128,10 +128,10 @@ export default ({ config, db }) => {
 	});
 
 
-	express.get('/sendrawtransaction/build_express/:base_token_name/:quote_token_name/:amount/:address/:row',async (req, res) => {
+	express.all('/sendrawtransaction/build_express/:base_token_name/:quote_token_name/:amount/:address/:sign_data',async (req, res) => {
 		console.log("1111",req.params)
-		let {base_token_name,quote_token_name,amount,address,row} = req.params;
-		let [err,result] = await to(chain.sendrawtransaction([row]));
+		let {base_token_name,quote_token_name,amount,address,sign_data} = req.params;
+		let [err,result] = await to(chain.sendrawtransaction([sign_data]));
 		console.log("express----",err,result)
 		if(!err){
 				let current_time = utils.get_current_time();
