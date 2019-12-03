@@ -27,31 +27,35 @@ async function my_wallet(word){
 }
 
 async function get_price(base_token_name,quote_token_name,amount,order){
- 		  let base_book = await order.order_book(base_token_name + '-PI');
+		let base_value = 0;
+        let base_amount = 0;
+		if(base_token_name != 'PI'){
+			  let base_book = await order.order_book(base_token_name + '-PI');
+			  let base_bids = base_book.bids;
+			  //模拟先卖掉所有base，再全部买quote
+			  for(let index in base_bids){
+				  let tmp_amount = base_amount; 
+				  base_amount += (+base_bids[index][1]);
+				  if(base_amount >= amount){
+					base_value += NP.times(amount - tmp_amount,base_bids[index][0])
+					break;
+				  }else{
+					//amount * price
+					 base_value += NP.times(base_bids[index][1],base_bids[index][0]) 	  
+				  }
+
+			  }
+		}else{
+			base_value = NP.times(amount,1);		
+		}
+
+		let quote_value = 0;
+		let quote_amount = 0;	
+		if(quote_token_name != 'PI'){
+		  console.log("123123-base_value-",base_value);
 		  let quote_book = await order.order_book(quote_token_name + '-PI');
-		  let base_bids = base_book.bids;
 		  let quote_asks = quote_book.asks.reverse();
 
-		  
-		  //模拟先卖掉所有base，再全部买quote
-		  let base_value = 0;
-		  let base_amount = 0;
-		  for(let index in base_bids){
-			  let tmp_amount = base_amount; 
-			  base_amount += (+base_bids[index][1]);
-			  if(base_amount >= amount){
-				base_value += NP.times(amount - tmp_amount,base_bids[index][0])
-				break;
-			  }else{
-			    //amount * price
-			     base_value += NP.times(base_bids[index][1],base_bids[index][0]) 	  
-			  }
-
-		  }
-
-			console.log("123123-base_value-",base_value);
-		  let quote_value = 0;
-		  let quote_amount = 0;
 		  for(let index in quote_asks){
 			  let tmp_value = quote_value; 
 				quote_value += NP.times(quote_asks[index][1],quote_asks[index][0])
@@ -66,8 +70,12 @@ async function get_price(base_token_name,quote_token_name,amount,order){
 			  }
 
 		  }
-		  let price = NP.divide(quote_amount,amount).toFixed(4);
-		  return price;
+		}else{
+			quote_amount = NP.divide(base_value,1)		 
+		}
+		let price = NP.divide(quote_amount,amount).toFixed(8);
+		console.log("base_value--",price,quote_amount,amount);
+		return price;
 }
 
 export default ({ config, db }) => {
