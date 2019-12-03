@@ -61,11 +61,31 @@ export default ({ config, db,logger}) => {
        res.json({result});
 	});
 
-adex.all('/list_tokens', async (req, res) => {
+	adex.all('/list_market_quotations_v2', async (req, res) => {
+		let result = await market.list_market_quotations();
+		res.json({
+            success: true,
+            result: result
+        });
+	});
+
+
+
+	adex.all('/list_tokens', async (req, res) => {
 					 let result = await mist_wallet.list_tokens();
                     console.log(result)
        res.json({result});
 	});
+
+	adex.all('/list_tokens_v2', async (req, res) => {
+		let result = await mist_wallet.list_tokens();
+        res.json({
+            success: true,
+            result: result
+        });
+	});
+
+
 
 
 
