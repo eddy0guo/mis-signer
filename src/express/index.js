@@ -27,32 +27,26 @@ let express_config = [
 		token:"PI",
 		min: 60,
 		max: 60000,
-		icon:'https://www.mist.exchange/res/icons/logo_pi@1x.png'
 	},{
 		token:"USDT",
         min: 10,
         max: 10000,
-		icon:'https://www.mist.exchange/res/icons/logo_usdt@1x.png'
 	},{
 		 token:"ASIM",
         min: 1,
         max: 1000,
-		icon:'https://www.mist.exchange/res/icons/logo_asim@1x.png'
 	},{
 		 token:"MT",
         min: 1,
         max: 1000,
-		icon:'https://www.mist.exchange/res/icons/logo_mt@1x.png'
 	},{
 		 token:"ETH",
         min: 0.06,
         max: 60,
-		icon:'https://www.mist.exchange/res/icons/logo_eth@1x.png'
 	},{
 		 token:"BTC",
         min: 0.001,
         max: 1,
-		icon:'https://www.mist.exchange/res/icons/logo_btc@1x.png'
 	}
 ]
 
@@ -153,6 +147,7 @@ export default ({ config, db }) => {
 
 	express.all('/get_pool_info', async (req, res) => {
 		  let token_arr = await mist_wallet.list_tokens();
+		
                     let balances = [];
                       console.log("obj11111111133=",token_arr);
                     for(var i in token_arr){
@@ -164,11 +159,12 @@ export default ({ config, db }) => {
                                     asset_balance = assets_balance[j].value;
                                 }
                             }
-
+							let icon = 'https://www.mist.exchange/res/icons/logo_' + token_arr[i].symbol.toLowerCase() + '@1x.png'
                             let balance_info ={
                                 token_symbol: token_arr[i].symbol,
                                 asim_assetid: token_arr[i].asim_assetid,
-                                asim_asset_balance: asset_balance
+                                asim_asset_balance: asset_balance,
+								icon:icon
                             };
 
                             console.log("obj111111111=",token_arr[i]);
