@@ -4,7 +4,7 @@
 import PJWT from 'passport-jwt'
 
 // load up the user model
-import User from '../models/user'
+import {User} from '../models/user'
 import {local} from './database'
 
 const JwtStrategy = PJWT.Strategy
