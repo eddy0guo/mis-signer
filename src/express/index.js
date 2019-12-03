@@ -22,6 +22,40 @@ import mist_config from '../cfg'
 import apicache from 'apicache'
 let cache = apicache.middleware
 
+let express_config = [
+	{
+		token:"PI",
+		min: 60,
+		max: 60000,
+		icon:'https://www.mist.exchange/res/icons/logo_pi@1x.png'
+	},{
+		token:"USDT",
+        min: 10,
+        max: 10000,
+		icon:'https://www.mist.exchange/res/icons/logo_usdt@1x.png'
+	},{
+		 token:"ASIM",
+        min: 1,
+        max: 1000,
+		icon:'https://www.mist.exchange/res/icons/logo_asim@1x.png'
+	},{
+		 token:"MT",
+        min: 1,
+        max: 1000,
+		icon:'https://www.mist.exchange/res/icons/logo_mt@1x.png'
+	},{
+		 token:"ETH",
+        min: 0.06,
+        max: 60,
+		icon:'https://www.mist.exchange/res/icons/logo_eth@1x.png'
+	},{
+		 token:"BTC",
+        min: 0.001,
+        max: 1,
+		icon:'https://www.mist.exchange/res/icons/logo_btc@1x.png'
+	}
+]
+
 async function my_wallet(word){
                 return await walletHelper.testWallet(word,'111111')
 }
@@ -90,8 +124,21 @@ export default ({ config, db }) => {
 		  let {address,page,perpage} = req.params;
             let offset = (+page - 1) * +perpage;
 			 let [err,result] = await to(psql_db.my_express([address,offset,perpage]));
-            res.json({ result:result,err:err});
+			res.json({
+            success: result == undefined ? false:true,
+            result: result,
+            err:err
+        });
 	});
+
+	express.all('/config', async (req, res) => {
+		 res.json({
+            success: true,
+            result: express_config
+        });
+	});
+
+
 
 	express.all('/get_price/:base_token_name/:quote_token_name/:base_amount', async (req, res) => {
 		let {base_token_name,quote_token_name,base_amount} = req.params;
