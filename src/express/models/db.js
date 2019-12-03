@@ -44,7 +44,6 @@ export default class db{
 			if(err) {
 				return console.error('insert_traders_查询失败', err,info);
 			}
-			console.log('insert_borrows_成功',JSON.stringify(result),"info",borrow_info); 
 			return JSON.stringify(result.rows);
         } 
 

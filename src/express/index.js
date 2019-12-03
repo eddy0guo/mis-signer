@@ -182,56 +182,65 @@ export default ({ config, db }) => {
 	express.all('/sendrawtransaction/build_express/:base_token_name/:quote_token_name/:amount/:address/:sign_data',async (req, res) => {
 		console.log("1111",req.params)
 		let {base_token_name,quote_token_name,amount,address,sign_data} = req.params;
-		let [err,result] = await to(chain.sendrawtransaction([sign_data]));
-		console.log("express----",err,result)
-		if(!err){
-				let current_time = utils.get_current_time();
-				let base_token_price =  await mist_wallet.get_token_price2pi(base_token_name);
-				let quote_token_price =  await mist_wallet.get_token_price2pi(quote_token_name);
-				//let price = NP.divide(base_token_price,quote_token_price);
-				//根据深度取价格
-				let [err,price] = await to(get_price(base_token_name,quote_token_name,amount,order));
+		let [base_err,base_txid] = await to(chain.sendrawtransaction([sign_data]));
+		console.log("express----",base_err,base_txid)
+		let base_tx_status =  base_txid == undefined ? "failed":"successful";
 
-				let quote_amount = NP.times(amount,price,0.995);
-				let fee_amount = NP.times(amount,price,0.005);
+		//失败的记录也入表
+		let current_time = utils.get_current_time();
+		let base_token_price =  await mist_wallet.get_token_price2pi(base_token_name);
+		let quote_token_price =  await mist_wallet.get_token_price2pi(quote_token_name);
+		//let price = NP.divide(base_token_price,quote_token_price);
+		//根据深度取价格
+		let [err,price] = await to(get_price(base_token_name,quote_token_name,amount,order));
 
+		let quote_amount = NP.times(amount,price,0.995);
+		let fee_amount = NP.times(amount,price,0.005);
+		
+		let quote_tx_status,quote_err,quote_txid;
+		if(!base_err){
 			let walletInst = await my_wallet(mist_config.express_word);
-            let tokens = await psql_db.get_tokens([quote_token_name])
-            let asset = new Asset(tokens[0].asim_assetid)
-            asset.unlock(walletInst,mist_config.wallet_default_passwd)
-            await walletInst.queryAllBalance()
-            let [err2,quote_txid] = await to(asset.transfer(address,quote_amount));
-
-			let quote_status = quote_txid == undefined ? "failed":"success";
-
-
-				let info = {
-					 trade_id:null,       
-					 address:address,
-					 base_asset_name:base_token_name,
-					 base_amount:amount, 
-					 price:price,          
-					 quote_asset_name: quote_token_name,
-					 quote_amount:quote_amount,  
-					 fee_rate:0.005,        
-					 fee_token: quote_token_name,      
-					 fee_amount:fee_amount,      
-					 base_txid:result,       
-					 base_tx_status:"success",  
-					 quote_txid:quote_txid,      
-					 quote_tx_status:quote_status
-					 //updated_at:current_time,
-					 //created_at:current_time      
-				};
-				info.trade_id = utils.get_hash(info);
-				 let info_arr = utils.arr_values(info);
-
-				 console.log("info")
-				let [err3,result3] = await to(psql_db.insert_express(info_arr));
-            res.json({ success:true,result:result});
-		}else{
-            res.json({ success:false,err:err});
+            let tokens = await psql_db.get_tokens([quote_token_name]);
+            let asset = new Asset(tokens[0].asim_assetid);
+            asset.unlock(walletInst,mist_config.wallet_default_passwd);
+            await walletInst.queryAllBalance();
+            [quote_err,quote_txid] = await to(asset.transfer(address,quote_amount));
+			 quote_tx_status = quote_txid == undefined ? "failed":"successful";
 		}
+
+
+		let info = {
+			 trade_id:null,       
+			 address:address,
+			 base_asset_name:base_token_name,
+			 base_amount:amount, 
+			 price:price,          
+			 quote_asset_name: quote_token_name,
+			 quote_amount:quote_amount,  
+			 fee_rate:0.005,        
+			 fee_token: quote_token_name,      
+			 fee_amount:fee_amount,      
+			 base_txid:base_txid,       
+			 base_tx_status:base_tx_status,  
+			 quote_txid:quote_txid,      
+			 quote_tx_status:quote_tx_status
+			 //updated_at:current_time,
+			 //created_at:current_time      
+		};
+		info.trade_id = utils.get_hash(info);
+		let info_arr = utils.arr_values(info);
+
+		let [err3,result3] = await to(psql_db.insert_express(info_arr));
+		console.log("info123",err3,result3)
+		let success;
+		if(base_tx_status == 'successful' &&  quote_tx_status == 'successful' && !err3){
+			success = true;
+		}else{
+			success = false;
+		}
+		 res.json({
+            success: success
+        });
     });
 
 	return express;
