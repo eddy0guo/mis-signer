@@ -121,7 +121,7 @@ create table perpetual_users(
   created_at  timestamp default now()
 );
 
-create table asim_assets_convert(
+create table perpetua_coin_convert(
   id text PRIMARY KEY,
   address  text default '',
   base_asset_id text default '',

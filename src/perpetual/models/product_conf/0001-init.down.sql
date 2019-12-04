@@ -1,9 +1,8 @@
-drop table if exists mist_tokens;
-drop table if exists mist_markets;
-drop table if exists mist_trades;
-drop table if exists mist_orders;
-drop table if exists mist_transactions;
-drop table if exists mist_launch_logs;
-drop table if exists mist_users;
-drop table if exists asim_assets_info;
-drop table if exists asim_assets_convert
+drop table if exists perpetual_tokens;
+drop table if exists perpetual_markets;
+drop table if exists perpetual_trades;
+drop table if exists perpetual_orders;
+drop table if exists perpetual_transactions;
+drop table if exists perpetual_launch_logs;
+drop table if exists perpetual_users;
+drop table if exists perpetual_coin_convert

@@ -89,46 +89,6 @@ adex.all('/list_tokens', async (req, res) => {
 
 
 
-
-    adex.all('/balances',async (req, res) => {
-					var obj = urllib.parse(req.url,true).query;
- 	 				  console.log("obj=",obj);
-                    let token_arr = await mist_wallet.list_tokens();
-					let balances = [];
- 	 				  console.log("obj11111111133=",token_arr);
-                    for(var i in token_arr){
-                    	    let token = new Token(token_arr[i].address);
-                            let [err,result] = await to(token.balanceOf(obj.address));
-							console.log("444444444",mist_config);
-							let [err3,allowance] = await to(token.allowance(obj.address,mist_config.ex_address));
-
-							let asset = new Asset(token_arr[i].asim_assetid)
-        					let [err4,assets_balance] = await to(asset.balanceOf(obj.address))
-							let asset_balance=0;
-							for(let j in assets_balance){
-								if( token_arr[i].asim_assetid == assets_balance[j].asset){
-									asset_balance = assets_balance[j].value;	
-								}
-							}
-
-							let balance_info ={
-								token_symbol: token_arr[i].symbol,   
-								token_name: token_arr[i].name,   
-								balance:result / (1 * 10 ** 8),
-								allowance_ex:allowance / (1 * 10 ** 8),
-								asim_assetid: token_arr[i].asim_assetid,
-								asim_asset_balance: asset_balance
-							};
-
- 	 				  		console.log("obj111111111=",token_arr[i]);
-							balances.push(balance_info);
-                            console.log(balance_info);
-                    }
-
-                    res.json(balances);
-                    });
-
-
  	/****
 	
 get_order_id，获取order_id,
@@ -387,13 +347,6 @@ did对order_id进行签名，获取rsv
 	});
 
 
-
-	adex.all('/list_markets', async (req, res) => {
-
-       let [err,result] = await to(market.list_markets());
-       res.json({result,err });
-	});
-
 	adex.all('/list_markets_v2', async (req, res) => {
 
        let [err,result] = await to(market.list_markets());
@@ -419,18 +372,6 @@ did对order_id进行签名，获取rsv
        res.json({result,err });
 	});
 
-
-
-	adex.all('/list_trades', async (req, res) => {
-       
-		
-		var obj = urllib.parse(req.url,true).query;
-       console.log("obj=",obj);
-
-       let [err,result] = await to(trades.list_trades(obj.marketID));
-
-       res.json({result,err });
-	});
 
 
 
@@ -469,43 +410,6 @@ did对order_id进行签名，获取rsv
             err:err
         });
     });
-
-
-
-	adex.all('/trading_view_v2/:granularity/:number/:market_id',cache('10 second'), async (req, res) => {
-
-		let {granularity,number,market_id} = req.params;
-
-		let [err,result] = await to(market.get_market(market_id));
-		if(err || result.length == 0){
-			res.json({
-                 success: false,
-                err: err + ' or have no this market'
-            });	
-		}
-
-		let current_time = Math.floor(new Date().getTime() / 1000);
-		let message = {
-		market_id: market_id,   
-		from: current_time - current_time%granularity - granularity*number,   //当前所在的时间区间不计算  
-		to: current_time - current_time%granularity,
-		granularity: granularity,
-		};
-	   
-
-		let [err2,result2] = await to(trades.trading_view(message));
-		 if(err2){
-            res.json({
-                 success: false,
-                err:err2
-            });
-       }else{
-           res.json({
-                     success: true,
-                    result: result2
-           });
-       }
-	});
 
 
 	return adex;
