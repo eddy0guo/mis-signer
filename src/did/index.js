@@ -118,7 +118,7 @@ export default ({
 
 	router.all('/get_code', async (req, res) => {
 		let mail = req.body.mail; //获取数据
-		let code = Math.floor(Math.random() * 1000000);
+		let code = Math.round(900000*Math.random() + 100000);
 		codeObj[mail] = code;
 		console.log(codeObj);
 		console.log("3333", codeObj[mail]);
@@ -137,7 +137,9 @@ export default ({
 	//只是接口名字不同.为了兼容旧的前端代码
 	router.all('/get_mail_code', async (req, res) => {
 		let mail = req.body.mail; //获取数据
-		let code = Math.floor(Math.random() * 1000000);
+		let code = Math.round(900000*Math.random() + 100000);
+
+
 		codeObj[mail] = code;
 		console.log(codeObj);
 		console.log("3333", codeObj[mail]);
@@ -160,7 +162,7 @@ export default ({
 		const accessKeyId = 'LTAIrgDqyP2INffS'
 		const secretAccessKey = '8q4fPHK17PI5QzcloFGw7oo8gC0y2z'
 		let phone = req.body.phone; //获取数据
-		let code = Math.floor(Math.random() * 1000000);
+		let code = Math.round(900000*Math.random() + 100000);
 		//初始化sms_client
 		let smsClient = new SMSClient({accessKeyId, secretAccessKey})
 		var params2 = {
