@@ -305,16 +305,16 @@ export default ({
 		if (!user) {
 			res.send({
 				success: false,
-				msg: 'Authentication failed. 1'
+				msg: 'user does not exsit'
 			})
 			return
 		}
-		let mail = req.body.username;
+		let username = req.body.username;
 		let password = req.body.new_password;
 
-		console.log("-------1111", codeObj[mail], req.body.code);
+		console.log("-------1111", codeObj[username], req.body.code);
 
-		if (codeObj[mail] == +req.body.code) {
+		if (codeObj[username] == +req.body.code) {
 
 			const saltRounds = 10;
 			const salt = bcrypt.genSaltSync(saltRounds);
@@ -345,10 +345,62 @@ export default ({
 		}
 	});
 
+	router.all('/modify_password_after_login',passport.authenticate('jwt', { session: false }), async (req, res) => {
+		let {username,password,new_password} = req.body;
+		let user = await User.findOne({
+			username: username
+		})
+
+		if (!user) {
+			res.send({
+				success: false,
+				msg: 'user does not exsit'
+			})
+			return
+		}
+
+		let verifyPasswordAsync = PromiseBluebird.promisify(user.comparePassword, {
+            context: user
+        });
+        let [err, isMatch] = await to(verifyPasswordAsync(req.body.password))
+
+        console.log(err, isMatch, user)
+
+        if (isMatch && !err) {
+			const saltRounds = 10;
+			const salt = bcrypt.genSaltSync(saltRounds);
+			var hash = bcrypt.hashSync(new_password, salt);
+			User.update({
+				username: username
+			}, {
+				password: hash
+			}, {
+				multi: false
+			}, async (err, docs) => {
+				if (err) console.log(err);
+				console.log('更改成功：' + docs);
+
+				res.send({
+					success: true,
+					msg: 'modify success'
+				});
+			})
+
+
+		} else {
+			res.send({
+				success: false,
+				msg: 'password verify failed'
+			});
+		}
+	});
+
+
+
+
 
 
 	router.all('/signin', async (req, res) => {
-
 		let user = await User.findOne({
 			username: req.body.username
 		})
