@@ -162,7 +162,7 @@ export default ({ config, db }) => {
 							let icon = 'https://www.mist.exchange/res/icons/logo_' + token_arr[i].symbol.toLowerCase() + '@1x.png'
                             let balance_info ={
                                 token_symbol: token_arr[i].symbol,
-                                asim_assetid: token_arr[i].asim_assetid,
+                                asim_asset_id: token_arr[i].asim_assetid,
                                 asim_asset_balance: asset_balance,
 								icon:icon
                             };
