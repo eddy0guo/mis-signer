@@ -376,7 +376,7 @@ export default ({
 			let jwt_token = jwt.sign(jwt_payload, local.secret);
 			// return the information including token as JSON
 			//简单处理判断下兼容之前没加密的账户，后期去掉
-			let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+			let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
 			let wallet = await walletHelper.testWallet(mnemonic, payPassword)
 			let address = await wallet.getAddress()
 
@@ -413,7 +413,7 @@ export default ({
 					msg: 'user does not exsit'
 				});
 			} else {
-				 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+				 let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
 				let signature = sign(mnemonic, req.body.order_id)
 				res.json({
 					success: true,
@@ -438,7 +438,7 @@ export default ({
 					msg: 'user does not exsit'
 				});
 			} else {
-				 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+				 let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
 				let signature = sign(mnemonic, req.body.order_id)
 				res.json({
 					success: true,
@@ -464,7 +464,7 @@ export default ({
 					msg: 'user does not exsit'
 				});
 			} else {
-				 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+				 let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
 				let signature = sign(mnemonic, hash)
 				res.json({
 					success: true,
@@ -496,7 +496,7 @@ export default ({
 			let deposit_assetID = cdp_tokens[0].token_asset_id;
 
 			let cdp_obj = new cdp(cdp_address);
-			 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+			 let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
 			let walletInst = await my_wallet(mnemonic);
 			let address = await walletInst.getAddress();
 			cdp_obj.unlock(walletInst, "111111")
@@ -542,7 +542,7 @@ export default ({
 
 			console.log("33333----", cdp_address, assetID);
 			let cdp_obj = new cdp(cdp_address);
-			 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+			 let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
 			let walletInst = await my_wallet(mnemonic);
 			let address = await walletInst.getAddress();
 
@@ -565,7 +565,7 @@ export default ({
 			let assetID = cdp_tokens[0].token_asset_id;
 
 			let cdp_obj = new cdp(cdp_address);
-			 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+			 let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
 			let walletInst = await my_wallet(mnemonic);
 			// let address = await walletInst.getAddress();
 
@@ -588,7 +588,7 @@ export default ({
 
 			let user = req.user
 			let cdp_obj = new cdp(cdp_address);
-			 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+			 let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
 			let walletInst = await my_wallet(mnemonic);
 			let address = await walletInst.getAddress();
 
@@ -620,7 +620,7 @@ export default ({
             }
 
 			// let erc20 = new Erc20(asim_address);
-			 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+			 let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
 			let walletInst = await my_wallet(mnemonic);
 			let tokens = await psql_db.get_tokens([req.params.token_name])
 			console.log("7777777", tokens);
@@ -655,7 +655,7 @@ export default ({
             }
 
 			// let erc20 = new Erc20(asim_address);
-			 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+			 let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
 			let walletInst = await my_wallet(mnemonic);
 			//walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
 			let tokens = await psql_db.get_tokens([req.params.token_name])
@@ -724,7 +724,7 @@ export default ({
                     err: 'user does not exsit'
                 });
 			}
-			 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+			 let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
 			let wallet = await walletHelper.testWallet(mnemonic, payPassword);
 			let token_info = await psql_db.get_tokens([req.params.token_name])
 			let token = new Token_did(token_info[0].address);
@@ -751,7 +751,7 @@ export default ({
                     err: 'user does not exsit'
                 });
             }
-			 let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+			 let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
 			let walletInst = await my_wallet(mnemonic);
 			let tokens = await psql_db.get_tokens([req.params.base_token_name])
 
@@ -780,7 +780,7 @@ export default ({
                     err: 'user does not exsit'
                 });
             }
-			let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+			let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
 			let walletInst = await my_wallet(mnemonic);
 			let did_sign = new didSign(contract_address);
 
@@ -810,7 +810,7 @@ export default ({
                 });
             }
 
-			let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+			let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
 			let walletInst = await my_wallet(mnemonic);
 			let did_sign = new didSignAndBroadcast(contract_address);
 
@@ -844,7 +844,7 @@ export default ({
                 });
             }
 			// let erc20 = new Erc20(asim_address);
-            let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+            let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
             let walletInst = await my_wallet(mnemonic);
             let tokens = await psql_db.get_tokens([req.params.token_name])
             console.log("7777777", tokens);
