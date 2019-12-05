@@ -117,10 +117,15 @@ export default ({ config, db }) => {
 	express.all('/my_records/:address/:page/:perpage', async (req, res) => {
 		  let {address,page,perpage} = req.params;
             let offset = (+page - 1) * +perpage;
-			 let [err,result] = await to(psql_db.my_express([address,offset,perpage]));
+			let [err,records] = await to(psql_db.my_express([address,offset,perpage]));
+
+			for(let record of records){
+				record.base_token_icon =  'https://www.mist.exchange/res/icons/logo_' + record.base_asset_name.toLowerCase() + '@1x.png'
+				record.quote_token_icon = 'https://www.mist.exchange/res/icons/logo_' + record.quote_asset_name.toLowerCase() + '@1x.png'
+			}
 			res.json({
-            success: result == undefined ? false:true,
-            result: result,
+            success: records == undefined ? false:true,
+            result: records,
             err:err
         });
 	});
