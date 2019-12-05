@@ -22,6 +22,7 @@ import {
 var bitcoin = require('bitcoinjs-lib');
 let hdkey = require('ethereumjs-wallet/hdkey');
 var util = require('ethereumjs-util');
+import { TranService } from "../wallet/service/transaction";
 
 var PromiseBluebird = require('bluebird')
 import mist_config from '../cfg';
@@ -323,7 +324,7 @@ export default ({
 			var hash = bcrypt.hashSync(password, salt);
 			password = hash;
 			User.update({
-				username: mail
+				username: username
 			}, {
 				password: password
 			}, {
@@ -349,17 +350,7 @@ export default ({
 
 	router.all('/modify_password_after_login',passport.authenticate('jwt', { session: false }), async (req, res) => {
 		let {username,password,new_password} = req.body;
-		let user = await User.findOne({
-			username: username
-		})
-
-		if (!user) {
-			res.send({
-				success: false,
-				msg: 'user does not exsit'
-			})
-			return
-		}
+		let user = req.user;
 
 		let verifyPasswordAsync = PromiseBluebird.promisify(user.comparePassword, {
             context: user
@@ -479,53 +470,28 @@ export default ({
 	});
 
 	router.all('/order_sign_v2',passport.authenticate('jwt', { session: false }), function(req, res) {
-	//router.post('/order_sign', function (req, res) {
-		console.log("111111", req.body);
-		User.findOne({
-			username: req.body.username
-		}, function (err, user) {
-			if (err) throw err;
-
-			if (!user) {
-				res.send({
-					success: false,
-					msg: 'user does not exsit'
-				});
-			} else {
+				let user = req.user;
 				 let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
 				let signature = sign(mnemonic, req.body.order_id)
 				res.json({
 					success: true,
 					signature: signature
 				});
-			}
-		});
 	});
 
 	router.all('/orders_sign_v2',passport.authenticate('jwt', { session: false }), function(req, res) {
 	//router.post('/order_sign', function (req, res) {
+		let user = req.user;
 		let str = req.body.orders_id.join();
 		 let root_hash = crypto_sha256.createHmac('sha256', '123')
 		 let hash = root_hash.update(str, 'utf8').digest('hex');
-		User.findOne({
-			username: req.body.username
-		}, function (err, user) {
-			if (err) throw err;
 
-			if (!user) {
-				res.send({
-					success: false,
-					msg: 'user does not exsit'
-				});
-			} else {
-				 let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
-				let signature = sign(mnemonic, hash)
-				res.json({
-					success: true,
-					signature: signature
-					//signature: hash
-				});
-			}
+		 let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
+		let signature = sign(mnemonic, hash)
+		res.json({
+			success: true,
+			signature: signature
+			//signature: hash
 		});
 	});
 
@@ -541,10 +507,8 @@ export default ({
 	*/
 	router.all('/cdp_createDepositBorrow/:borrow_amount/:borrow_time/:deposit_token_name/:deposit_amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
 	//router.get('/cdp_createDepositBorrow/:borrow_amount/:borrow_time/:deposit_token_name/:deposit_amount/:username', async (req, res) => {
-		User.findOne({
-			username: req.params.username
-		}, async (err, user) => {
-			console.log("33333", req.params, "user", user, err);
+			let user = req.user;
+			console.log("33333", req.params, "user", user);
 			let cdp_tokens = await psql_db.find_cdp_token([req.params.deposit_token_name])
 			let cdp_address = cdp_tokens[0].cdp_address;
 			let deposit_assetID = cdp_tokens[0].token_asset_id;
@@ -563,7 +527,6 @@ export default ({
 				success: sign_data == undefined ? false:true,
 				result: sign_data
 			});
-		});
 
 	});
 
@@ -580,13 +543,11 @@ export default ({
 	//还pai，得btc
 	router.all('/cdp_repay/:borrow_id/:token_name/:amount/:username',passport.authenticate('jwt', { session: false }),async (req, res) => {
 	//router.get('/cdp_repay/:borrow_id/:deposit_token_name/:amount/:username', async (req, res) => {
-		console.log("111111", req.params);
-		User.findOne({
-			username: req.params.username
-		}, async (err, user) => {
+			let user = req.user;
 			//先找到借贷订单信息的充值币中，然后找币的address，
 			//	let borrow_id_info  = await psql_db.find_borrow([req.params.borrow_id])
 			//	let deposit_token_name = borrow_id_info[0].deposit_token_name;
+
 
 			let cdp_tokens = await psql_db.find_cdp_token([req.params.deposit_token_name])
 			let cdp_address = cdp_tokens[0].cdp_address;
@@ -608,7 +569,6 @@ export default ({
 				success: sign_data == undefined ? false:true,
 				result: sign_data
 			});
-		});
 	});
 	//加仓
 	router.all('/cdp_deposit/:borrow_id/:token_name/:amount/:username',passport.authenticate('jwt', {session: false}), async (req, res) => {
@@ -659,22 +619,11 @@ export default ({
 
 
 	//钱包到币币
-	//router.get('/asim_deposit/:amount/:username/:token_name',passport.authenticate('jwt', { session: false }),async (req, res) => {
-	router.all('/asset2coin/:amount/:username/:token_name', async (req, res) => {
-	//router.get('/asim_deposit/:amount/:username/:token_name', async (req, res) => {
-		console.log("33333");
-		User.findOne({
-			username: req.params.username
-		}, async (err, user) => {
-			if(!user){
-             return res.json({
-                    success: false,
-                    err: 'user does not exsit'
-                });
-            }
-
-			// let erc20 = new Erc20(asim_address);
-			 let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
+	router.all('/asim_deposit/:amount/:username/:token_name',passport.authenticate('jwt', { session: false }),async (req, res) => {
+	//router.all('/asset2coin/:amount/:username/:token_name', async (req, res) => {
+					// let erc20 = new Erc20(asim_address);
+			let user = req.user;
+			let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
 			let walletInst = await my_wallet(mnemonic);
 			let tokens = await psql_db.get_tokens([req.params.token_name])
 			console.log("7777777", tokens);
@@ -683,7 +632,7 @@ export default ({
 			erc20.unlock(walletInst, "111111")
 			await walletInst.queryAllBalance()
 			let [err2, result] = await to(erc20.deposit(tokens[0].asim_assetid, req.params.amount));
-			console.log(result, err);
+			console.log(result, err2);
 
 
 			res.json({
@@ -691,24 +640,14 @@ export default ({
 				result: result,
 				err: err2
 			});
-		});
 	});
 
 
 	//币币到钱包
 	router.all('/coin2asset/:amount/:username/:token_name',passport.authenticate('jwt', { session: false }),async (req, res) => {
 	//router.get('/coin2asset/:amount/:username/:token_name', async (req, res) => {
-		User.findOne({
-			username: req.params.username
-		}, async (err, user) => {
-			if(!user){
-             return res.json({
-                    success: false,
-                    err: 'user does not exsit'
-                });
-            }
-
-			// let erc20 = new Erc20(asim_address);
+		let user = req.user;
+				// let erc20 = new Erc20(asim_address);
 			 let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
 			let walletInst = await my_wallet(mnemonic);
 			//walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
@@ -726,58 +665,28 @@ export default ({
 				result: result,
 				err: err2
 			});
-		});
 	});
 
 	//交易所充币
 	//展示二维码之后1分钟后开始监控，1分钟之内要完成充值,暂时不支持连续充值
-	router.all('/deposit/:username/:token_name', async (req, res) => {
-		console.log("33333");
-		User.findOne({
-			username: req.params.username
-		}, async (err, user) => {
-			if(!user){
-             return res.json({
-                    success: false,
-                    err: 'user does not exsit'
-                });
-            }
-
-			console.log("start deposit")
-		});
+	router.all('/deposit/:username/:token_name',passport.authenticate('jwt', {session: false}), async (req, res) => {
+		let user = req.user;
+				console.log("start deposit")
 	});
 
 
 	//交易所提币
 	router.all('/withdraw/:username/:to_address/:token_name/:amount', async (req, res) => {
 		let {username,to_address,token_name,amount} = req.params;
-		User.findOne({
-			username: username
-		}, async (err2, user) => {
-			if(!user){
-             return res.json({
-                    success: false,
-                    err: 'user does not exsit'
-                });
-            }
-		
+		let user =  req.user;	
 			console.log("start withdraw");
 
-		});
 	});
 
 	router.all('/approve/:username/:token_name', passport.authenticate('jwt', {
 		session: false
 	}), async (req, res) => {
-		User.findOne({
-			username: req.params.username
-		}, async (err, user) => {
-			if(!user){
-			 return res.json({
-                    success: false,
-                    err: 'user does not exsit'
-                });
-			}
+			let user =  req.user;	
 			 let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
 			let wallet = await walletHelper.testWallet(mnemonic, payPassword);
 			let token_info = await psql_db.get_tokens([req.params.token_name])
@@ -791,21 +700,12 @@ export default ({
 				success: rawtx == undefined ? false:true,
 				result: rawtx
 			});
-		});
 	});
 
 	//express
 	router.all('/build_express/:username/:base_token_name/:amount', passport.authenticate('jwt', {session: false}),async (req, res) => {
-		User.findOne({
-			username: req.params.username
-		}, async (err, user) => {
-			if(!user){
-             return res.json({
-                    success: false,
-                    err: 'user does not exsit'
-                });
-            }
-			 let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
+			let user = req.user;
+			let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
 			let walletInst = await my_wallet(mnemonic);
 			let tokens = await psql_db.get_tokens([req.params.base_token_name])
 
@@ -820,20 +720,11 @@ export default ({
 				success: result == undefined ? false:true,
 				result: result
 			});
-		});
 	});
 
 	router.all('/sign_transaction/:username/:contract_address/:asset_id/:amount/:hex_data', passport.authenticate('jwt', {session: false}),async (req, res) => {
 		let{username,contract_address,asset_id,amount,hex_data} = req.params;
-		User.findOne({
-			username: req.params.username
-		}, async (err, user) => {
-			if(!user){
-             return res.json({
-                    success: false,
-                    err: 'user does not exsit'
-                });
-            }
+		let user = req.user;	
 			let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
 			let walletInst = await my_wallet(mnemonic);
 			let did_sign = new didSign(contract_address);
@@ -849,22 +740,12 @@ export default ({
 				result: result,
 				err:err2
 			});
-		});
 	});
 
 	router.all('/sign_transaction_and_broadcast/:username/:contract_address/:asset_id/:amount/:hex_data', passport.authenticate('jwt', {session: false}),async (req, res) => {
 		let{username,contract_address,asset_id,amount,hex_data} = req.params;
-		User.findOne({
-			username: username
-		}, async (err, user) => {
-			if(!user){
-             return res.json({
-                    success: false,
-                    err: 'user does not exsit'
-                });
-            }
-
-			let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
+		let user = req.user;
+				let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
 			let walletInst = await my_wallet(mnemonic);
 			let did_sign = new didSignAndBroadcast(contract_address);
 
@@ -881,22 +762,13 @@ export default ({
 			});
 
 		
-		});
 	});
 
 //调试用
 //router.get('/asset2coin/:amount/:username/:token_name'
 
 	router.all('/genarate_asset2coin_hex_data/:amount/:username/:token_name', passport.authenticate('jwt', {session: false}),async (req, res) => {
-		User.findOne({
-			username: req.params.username
-		}, async (err, user) => {
-			if(!user){
-             return res.json({
-                    success: false,
-                    err: 'user does not exsit'
-                });
-            }
+			let user =  req.user;	
 			// let erc20 = new Erc20(asim_address);
             let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
             let walletInst = await my_wallet(mnemonic);
@@ -907,7 +779,6 @@ export default ({
             erc20.unlock(walletInst, "111111")
             await walletInst.queryAllBalance()
             let [err2, result] = await to(erc20.deposit(tokens[0].asim_assetid, req.params.amount));
-            console.log(result, err);
 
 
             res.json({
@@ -917,8 +788,31 @@ export default ({
             });
 
 		
-		});
 	});
+
+	    router.all('/sign/:user/:hex_data', passport.authenticate('jwt', {session: false}),async (req, res) => {
+			//let user = req.user;
+			let {user,hex_data} = req.params
+        //let{inputs,outpus,gaslimit} = req.body;
+			user = req.user;
+
+       
+            let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+
+             let  seed = bip39.mnemonicToSeedHex(mnemonic);
+            let  hdPrivateKey = HDPrivateKey.fromSeed(seed).derive(`m/44'/10003'/0'/0/0`);
+            let privatekey = hdPrivateKey.privateKey.toString();
+
+            //console.log("mnemonic-privatekey",mnemonic,privatekey);
+            //let rawtx = signature(new bitcore_lib_1.PrivateKey(privatekey),hex_data);
+            let rawtx = TranService.signHex([privatekey,privatekey],hex_data);
+            console.log("rawtx=",rawtx);
+			
+            res.json({
+                success: true,
+                result: "1"
+            });
+    });
 
 
 	return router;
