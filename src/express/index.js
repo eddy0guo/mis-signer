@@ -130,6 +130,19 @@ export default ({ config, db }) => {
         });
 	});
 
+	express.all('/get_express_trade/:trade_id', async (req, res) => {
+		  let {trade_id} = req.params;
+			let [err,record] = await to(psql_db.find_express([trade_id]));
+			record[0].base_token_icon =  'https://www.mist.exchange/res/icons/logo_' + record[0].base_asset_name.toLowerCase() + '@1x.png'
+			record[0].quote_token_icon = 'https://www.mist.exchange/res/icons/logo_' + record[0].quote_asset_name.toLowerCase() + '@1x.png'
+			res.json({
+            success: record == undefined ? false:true,
+            result: record[0],
+            err:err
+        });
+	});
+
+
 	express.all('/config', async (req, res) => {
 		 res.json({
             success: true,

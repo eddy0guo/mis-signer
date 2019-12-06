@@ -38,6 +38,19 @@ export default class db{
 
 		}
 
+		async find_express(trade_id) {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM asim_express_records  where trade_id=$1',trade_id)); 
+			if(err) {
+				return console.error('list_borrows_查询失败', err);
+			}
+
+			console.log("1122334455",result.rows);
+			return result.rows;
+
+		}
+
+
+
 		
 		 async insert_express(info) {
 			let [err,result] = await to(this.clientDB.query('insert into asim_express_records values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)',info));
