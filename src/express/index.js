@@ -270,7 +270,10 @@ export default ({ config, db }) => {
 			success = false;
 		}
 		 res.json({
-            success: success
+            success: success,
+			trade_id: info.trade_id,
+			base_err:base_err,
+			quote_err:quote_err
         });
     });
 
