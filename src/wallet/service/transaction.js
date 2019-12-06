@@ -480,8 +480,59 @@ export const TranService = {
     }
 
     try {
-      // console.log("KEYS:",keys)
-      // console.log("TX:",tx.toHex())
+    //  console.log("GXYGXYKEYS:",keys)
+      console.log("adcdefg-before:",keys,tx)
+      tx.sign(keys)
+    } catch (e) {
+      console.log('签名错误，请检查密码', e);
+      return ''
+    }
+
+    try {
+      console.log("adcdefg-after:",tx.toHex())
+      return tx.toHex();
+    } catch (e) {
+      console.log('交易格式化错误，请检查数据', e);
+      return ''
+    }
+  },
+  generateTxHex(inputs, outputs, keys, gasLimit = 0) {
+    let tx;
+    try {
+      //validate
+      tx = new Transaction({
+        inputs,
+        outputs,
+        gasLimit
+      });
+
+    } catch (e) {
+      console.log('交易构建错误，请检查交易数据', e)
+      return ''
+    }
+
+	try {
+	 let hex = tx.toUnsignHex();
+      return hex;
+    } catch (e) {
+      console.log('交易格式化错误，请检查数据', e);
+      return ''
+    }
+  },
+  signHex(keys,hex) {
+    let tx;
+    try {
+      //validate
+	  console.log('\n',hex,'\n')
+      tx = Transaction.fromHex(hex);
+	console.log("gxy222",tx);
+    } catch (e) {
+      console.log('交易构建错误，请检查交易数据', e)
+      return ''
+    }
+
+
+    try {
       tx.sign(keys)
     } catch (e) {
       console.log('签名错误，请检查密码', e);
@@ -495,4 +546,6 @@ export const TranService = {
       return ''
     }
   }
+
+
 }

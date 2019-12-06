@@ -21,6 +21,25 @@ unlock(wallet, password) {
     this.password = password
 }
 
+async callContract(assetID,abiInfo,value) {
+    if(!value){value = 0;};
+    let params = {
+        to: this.address,
+        amount: value,
+        assetId: assetID,
+        data: this.getHexData(abiInfo)
+      };
+      console.log('params.data',params.data)
+    if (abiInfo.stateMutability == 'view' || abiInfo.stateMutability == 'pure') {
+        return chain.callreadonlyfunction([this.address, this.address, params.data, abiInfo.name, this.abiStr])
+    } else {
+
+        params.from = await this.wallet.getAddress()
+        params.type = CONSTANT.CONTRACT_TYPE.CALL
+        return this.executeContract(params)
+    }
+}
+
 
 async executeContract(params) {
     let wallet = this.wallet;
@@ -68,7 +87,7 @@ async executeContract(params) {
 
     try {
         console.log("Input",ins)
-        let rawtx = TranService.generateRawTx(ins, outs, keys, this.gasLimit);
+        let rawtx = TranService.generateTxHex(ins, outs, keys, this.gasLimit);
 
         console.log("RAWTX:",rawtx)
 
@@ -138,7 +157,7 @@ getHexData(abiInfo) {
              "type":"function"
              }
 			 console.log("7777771111111",assetID,amount);
-             return this.getHexData(abiInfo);
+             return this.callContract(assetID,abiInfo,amount);;
          }
 
          async withdraw(assetID,amount){
@@ -150,7 +169,7 @@ getHexData(abiInfo) {
              "payable":false,
              "stateMutability":"nonpayable",
              "type":"function"}
-             return this.getHexData(abiInfo);
+             return this.callContract(assetID,abiInfo);;
          }
     
 

@@ -669,14 +669,14 @@ export default ({
 
 	//交易所充币
 	//展示二维码之后1分钟后开始监控，1分钟之内要完成充值,暂时不支持连续充值
-	router.all('/deposit/:username/:token_name',passport.authenticate('jwt', {session: false}), async (req, res) => {
+	router.all('/deposit/:txid',passport.authenticate('jwt', {session: false}), async (req, res) => {
 		let user = req.user;
 				console.log("start deposit")
 	});
 
 
 	//交易所提币
-	router.all('/withdraw/:username/:to_address/:token_name/:amount', async (req, res) => {
+	router.all('/withdraw/:txid', async (req, res) => {
 		let {username,to_address,token_name,amount} = req.params;
 		let user =  req.user;	
 			console.log("start withdraw");
@@ -773,7 +773,7 @@ export default ({
             let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
             let walletInst = await my_wallet(mnemonic);
             let tokens = await psql_db.get_tokens([req.params.token_name])
-            console.log("7777777", tokens);
+            console.log("7777777", user.username);
             //walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
             let erc20 = new Erc20_gen_hex(tokens[0].address);
             erc20.unlock(walletInst, "111111")
@@ -790,13 +790,12 @@ export default ({
 		
 	});
 
-	    router.all('/sign/:user/:hex_data', passport.authenticate('jwt', {session: false}),async (req, res) => {
+	    router.all('/sign/:hex_data', passport.authenticate('jwt', {session: false}),async (req, res) => {
 			//let user = req.user;
 			let {user,hex_data} = req.params
         //let{inputs,outpus,gaslimit} = req.body;
 			user = req.user;
-
-       
+	   		console.log("\n\n\n",user.username)
             let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
 
              let  seed = bip39.mnemonicToSeedHex(mnemonic);
@@ -805,12 +804,12 @@ export default ({
 
             //console.log("mnemonic-privatekey",mnemonic,privatekey);
             //let rawtx = signature(new bitcore_lib_1.PrivateKey(privatekey),hex_data);
-            let rawtx = TranService.signHex([privatekey,privatekey],hex_data);
+            let rawtx = TranService.signHex([privatekey],hex_data);
             console.log("rawtx=",rawtx);
 			
             res.json({
                 success: true,
-                result: "1"
+                result: rawtx
             });
     });
 
