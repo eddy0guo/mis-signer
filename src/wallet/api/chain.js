@@ -1,4 +1,5 @@
 import {rpc} from '../service/request'
+import {child_rpc} from '../service/child_request'
 
 export const chain = {
     //marshalled:   {"jsonrpc":"1.0","method":"addnode","params":["127.0.0.1","remove"],"id":1}
@@ -53,9 +54,9 @@ export const chain = {
 
     //区块链信息
     //marshalled:   {"jsonrpc":"1.0","method":"getblockchaininfo","params":[],"id":1}
-    getblockchaininfo: function(params) {
+    getblockchaininfo: function(params,network) {
 
-        return rpc('getblockchaininfo', params);
+        return network == 'child_poa' ?  child_rpc('asimov_getBlockChainInfo', params) : rpc('asimov_getBlockChainInfo', params);
     },
 
     //marshalled:   {"jsonrpc":"1.0","method":"getblockcount","params":[],"id":1}

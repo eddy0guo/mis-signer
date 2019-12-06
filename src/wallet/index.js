@@ -744,6 +744,15 @@ wallet.all('/sendrawtransaction/coin2asset/:amount/:address/:token_name/:sign_da
             res.json({ result:result,err:err});
 	});
 
+	wallet.all('/get_blockchain_info',async (req, res) => {
+
+            let [err,result] = await to(chain.getblockchaininfo());
+            let [err2,result2] = await to(chain.getblockchaininfo(undefined,'poa_child'));
+            res.json({ result:result,result2:result2,err:err});
+	});
+
+
+
 	wallet.all('/list_fingo_config',async (req, res) => {
 			let conf = {
 				dex_address: mist_config.ex_address,
