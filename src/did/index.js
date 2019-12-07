@@ -709,6 +709,7 @@ export default ({
 			let walletInst = await my_wallet(mnemonic);
 			let tokens = await psql_db.get_tokens([req.params.base_token_name])
 
+			console.log("username---",user.username,'\n');
 
 			let asset = new Asset(tokens[0].asim_assetid)
             asset.unlock(walletInst,mist_config.wallet_default_passwd)
@@ -808,7 +809,7 @@ export default ({
             console.log("rawtx=",rawtx);
 			
             res.json({
-                success: true,
+                success: rawtx.length == 0 ? false:true,
                 result: rawtx
             });
     });
