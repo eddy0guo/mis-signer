@@ -158,17 +158,17 @@ var product = {
         address:"0x66ac76c2aea20aafb807fa2ac7fbeba44507d0e4a0"
     }],
 	//0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c
-	bridge_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
-	bridge_address:"0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c",
+	bridge_word:"sound mandate urban welcome grass gospel gather shoulder hunt catch host second",
+	bridge_address:"0x66a5e2e1d9243f9dfd1d54b31952d94043a105188f",
 
 	express_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
 	express_address:"0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c",
 
 	wallet_default_passwd:"111111",
 	did_seed_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
-	asimov_chain_rpc:"https://rpc-master.mistabit.com",
-    mist_server_port:21000,
-    websocket_port:21001
+	asimov_chain_rpc:"http://119.23.215.121:18545",
+    mist_server_port:16000,
+    websocket_port:16001
 }
 
 var mist_config;

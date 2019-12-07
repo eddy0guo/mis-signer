@@ -121,5 +121,97 @@ export default class utils{
 		}else{}
 		return result;
 	}	
-	
+
+
+	async decode_transfer_info(txid){
+		console.log("-------txid---",txid)
+		let cmd = 'curl -X POST --data \'\{\"id\":1, \"jsonrpc\":\"2.0\",\"method\":\"asimov_getRawTransaction\",\"params\":\[\"' + txid + '\",true,true\]\}\}\' -H \"Content-type: application\/json\" ' + mist_config.asimov_chain_rpc;
+		console.log("cmd--------------",cmd)
+
+		let sto =  child.execSync(cmd)
+        let txinfo = JSON.parse(sto).result;
+
+		console.log("---------------%o\n",txinfo)
+		//vins的所有address和assetid必须一致才去处理,且只考虑主网币做手续费这一种情况
+		let vin_amount = 0;
+		let from = txinfo.vin[0].prevOut.addresses[0];
+		let asset_id;   
+		for(let vin of txinfo.vin){
+			console.log("--vinnnnnnn--",vin.prevOut.addresses[0])	
+			if(vin.prevOut.addresses[0] != from){
+			 throw new Error('decode failed,inputs contained Multiple addresses')
+			}else if(vin.prevOut.asset == '000000000000000000000000'){
+				console.log("this is a fee utxo");	
+				continue;
+			}else if(vin.prevOut.asset != '000000000000000000000000' &&  asset_id !=  undefined  && vin.prevOut.asset != asset_id){
+				 throw new Error('decode failed,inputs contained Multiple asset')
+			}else if(asset_id ==  undefined){
+				 asset_id = vin.prevOut.asset;
+				  vin_amount += +vin.prevOut.value
+			}else if(asset_id != undefined && vin.prevOut.asset != '000000000000000000000000'){	
+				vin_amount += +vin.prevOut.value	
+			}else{
+			console.log("unknown case happened")
+			 throw new Error('decode failed')	
+			}
+		}
+
+		//vin里已经排除了多个asset的情况，vout就不判断了
+		let vout_remain_amount = 0;
+		let vout_to_amount = 0;
+		let to_address;
+		for(let out of txinfo.vout){
+			if(out.asset == '000000000000000000000000' ){
+				console.log("this is a fee out")
+				continue;
+			}else if(  to_address !=  undefined && to_address != out.scriptPubKey.addresses[0] && from != out.scriptPubKey.addresses[0]){
+			 	throw new Error('decode failed,outputss contained Multiple addresses')
+			}else if(out.scriptPubKey.addresses[0] == from){
+				vout_remain_amount += out.value	
+			}else if( to_address == undefined ){
+				to_address = out.scriptPubKey.addresses[0];
+				console.log("78787778888-----",out.scriptPubKey.addresses[0])
+				vout_to_amount += +out.value
+			}else if(  to_address !=  undefined && to_address == out.scriptPubKey.addresses[0]){
+				 vout_to_amount += +out.value
+			}else{
+			 	throw new Error('decode failed')
+			}
+		}
+
+		let transfer_info = {
+				from:from,
+				to:to_address,
+				asset_id: txinfo.vout[0].asset, 
+				vin_amount: vin_amount,
+				to_amount: vout_to_amount,
+				remain_amount: vout_remain_amount,
+				fee_amount: txinfo.fee[0].value,   //TODO: 兼容多个fee的情况
+				fee_asset: txinfo.fee[0].asset
+		};	
+
+		console.log("111-----------",transfer_info);
+
+		return transfer_info;	
+	}
+/*
+	async decode_bridge_info(txid){
+		txid = '7f082454b220151a52f8b2241b0d47b6ac17ab6f13e47693d945b1de0744d028';
+		let cmd = 'curl -X POST --data \'\{\"id\":1, \"jsonrpc\":\"2.0\",\"method\":\"asimov_getTransactionReceipt\",\"params\":\[\"' + txid + '\"\]\}\}\' -H \"Content-type: application\/json\" ' + mist_config.asimov_chain_rpc;
+
+		let brige_info = {
+				type:
+				from:
+				to:
+				amount:
+		};	
+		
+		let sto =  child.execSync(cmd)
+        let logs = JSON.parse(sto).result.logs;
+        if(logs){
+            console.error(`${cmd} result  have no logs`);
+        }
+		
+	}
+*/	
 }
