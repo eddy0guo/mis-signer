@@ -29,7 +29,7 @@ export default class Token {
      * @param {*} abiInfo 
      * @param {*} wallet 
      */
-    async callContract(abiInfo) {
+    async callContract(abiInfo,network_flag) {
             console.log("callContracti111111:");
         let params = {
             to: this.address,
@@ -42,7 +42,7 @@ export default class Token {
 
         if (abiInfo.stateMutability == 'view' || abiInfo.stateMutability == 'pure') {
             console.log("callContractig2222:");
-            return chain.callreadonlyfunction([this.address, this.address, params.data, abiInfo.name, this.abiStr])
+            return chain.callreadonlyfunction([this.address, this.address, params.data, abiInfo.name, this.abiStr],network_flag)
         } else {
             console.log("callContractigxyyyy:");
             params.from = await this.wallet.getAddress()
@@ -123,7 +123,7 @@ export default class Token {
      * return balance of address
      * @param {*} address 
      */
-    async balanceOf(address) {
+    async balanceOf(address,network_flag = 'master_poa') {
         let abiInfo = {
             "constant": true,
             "inputs": [{
@@ -140,7 +140,7 @@ export default class Token {
             "stateMutability": "view",
             "type": "function"
         };
-        return this.callContract(abiInfo);
+        return this.callContract(abiInfo,network_flag);
     }
 
     async allowance(owner, spender) {

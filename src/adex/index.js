@@ -19,6 +19,8 @@ import client1 from './models/db'
 import mist_wallet1 from './api/mist_wallet'
 const urllib = require('url');
 import mist_config from '../cfg'
+import AsimovWallet from  '../../node_modules/asimov-wallet/lib/AsimovWallet'
+import AsimovConst from  '../../node_modules/asimov-wallet/lib/lib/AsimovConst'
 
 import apicache from 'apicache'
 const crypto_sha256 = require('crypto');
@@ -42,10 +44,10 @@ export default ({ config, db,logger}) => {
     let tokenTest = new TokenTest()
 	let utils = new utils1();
 	let launcher = new launcher1(client);
-	wathcer.start();
+//	wathcer.start();
 //	user.start();
 //	asset.status_flushing();
-	launcher.start();
+//	launcher.start();
 
 	adex.all('/mist_engine_info', async (req, res) => {
 					 let result = await trades.get_engine_info();
@@ -150,6 +152,66 @@ export default ({ config, db,logger}) => {
 
                     res.json(balances);
                     });
+	//test，暂时无法查余额,http://119.23.181.166:16000/adex/balances_v2?address=111111111
+	adex.all('/balances_v2',async (req, res) => {
+					var obj = urllib.parse(req.url,true).query;
+ 	 				  console.log("obj=",obj);
+                    let token_arr = await mist_wallet.list_tokens();
+					let balances = [];
+ 	 				 console.log("obj11111111133=",token_arr);
+					
+                    for(var i in token_arr){
+
+						/*
+							let master_wallet = new AsimovWallet({
+								name: 'test',
+								rpc:'https://rpc-master.mistabit.com',
+								mnemonic:'tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook',
+								// storage: 'localforage',
+							})
+
+
+						   let child_wallet = new AsimovWallet({
+								name: 'test2',
+								rpc:'https://rpc-child.mistabit.com',
+								mnemonic:'tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook',
+								// storage: 'localforage',
+							})
+
+						   let balance = await master_wallet.account.balance()
+						   console.log("balanceeeeeeee----asset--",balance,master_wallet.address)
+						   let res = await child_wallet.contractCall.callReadOnly('0x63720b32964170980b216cabbb4ecdd0979f8c9c17','balanceOf(address)',['0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c'])
+						   console.log("erc20---child--------",res)
+						   let res2 = await child_wallet.contractCall.callReadOnly('0x63720b32964170980b216cabbb4ecdd0979f8c9c17','balanceOf()',['0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c'])
+						   console.log("erc20---child--------",res2)
+						*/
+							
+                    	    let token = new Token(token_arr[i].address);
+                            let [err,result] = await to(token.balanceOf(obj.address,'child_poa'));
+							let asset = new Asset(token_arr[i].asim_assetid)
+        					let [err4,assets_balance] = await to(asset.balanceOf(obj.address))
+							let asset_balance=0;
+							for(let j in assets_balance){
+								if( token_arr[i].asim_assetid == assets_balance[j].asset){
+									asset_balance = assets_balance[j].value;	
+								}
+							}
+
+							let balance_info ={
+								token_symbol: token_arr[i].symbol,   
+								erc20_address: token_arr[i].address,
+								erc20_balance:result / (1 * 10 ** 8),
+								asim_assetid: token_arr[i].asim_assetid,
+								asim_asset_balance: asset_balance
+							};
+							
+							balances.push(balance_info);
+                    }
+
+                    res.json(balances);
+     });
+
+
 
 
     //所有token合约赋予所有地址权限
