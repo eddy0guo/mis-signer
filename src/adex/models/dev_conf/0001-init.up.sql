@@ -150,4 +150,22 @@ create table asim_assets_convert(
   created_at  timestamp default now()
 );
 
+create table mist_bridge(
+  id text PRIMARY KEY,
+  address  text default '',
+  token_name text default '',
+  amount numeric(32,8) default 0,
+  side  text default '', --asset2coin,coin2asset
+  master_txid text default '',
+  master_txid_status text default '',
+  child_txid  text default '',
+  child_txid_status  text default '',
+  fee_asset_id  text default '', ---提现和充值的时候在master侧扣钱
+  fee_amount  text default '',
+  updated_at  timestamp default now(),
+  created_at  timestamp default now()
+);
+
+
+
 

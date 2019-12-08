@@ -60,7 +60,7 @@ var local = {
 
 
 var dev = {
-    ex_address:'0x6383177655bca94f802191a19282f39e117b8edb2f',
+    ex_address:'0x63722839a7d46e75e4cd9f40edc7680651143084ae',
     order_hash_word:'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
     fauct_address:'0x666234b6348c10fed282b95c1f1768aa3113eb96b2',
     fauct_word:'tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook',
@@ -174,8 +174,8 @@ var product = {
 	asimov_chain_rpc:"http://119.23.215.121:18545",
 	asimov_master_rpc:"http://119.23.215.121:18545",
 	asimov_child_rpc:"https://rpc-child.mistabit.com",
-    mist_server_port:21000,
-    websocket_port:21001
+    mist_server_port:16000,
+    websocket_port:16001
 }
 
 var mist_config;
