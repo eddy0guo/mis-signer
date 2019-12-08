@@ -45,6 +45,7 @@ import psql from '../adex/models/db'
 // require('./config/passport')(passport);
 import PassportPlugin from './config/passport'
 import Asset from '../wallet/asset/AssetDid'
+import asset_tohex from '../wallet/asset/asset_tohex'
 PassportPlugin(passport)
 
 let jwt = require('jsonwebtoken');
@@ -790,6 +791,36 @@ export default ({
 
 		
 	});
+
+//test
+	router.all('/genarate_transfer_hex/:token_name/:amount', passport.authenticate('jwt', {session: false}),async (req, res) => {
+			let user =  req.user;	
+			let {token_name,amount} = req.params
+			// let erc20 = new Erc20(asim_address);
+
+
+            let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
+            let walletInst = await my_wallet(mnemonic);
+            let tokens = await psql_db.get_tokens([token_name])
+
+            console.log("username---",user.username,'\n');
+
+            let asset = new asset_tohex(tokens[0].asim_assetid)
+            asset.unlock(walletInst,mist_config.wallet_default_passwd)
+            await walletInst.queryAllBalance()
+            let [err2,result] = await to(asset.transfer(mist_config.bridge_address,amount));
+            console.log(result, err2);
+
+            res.json({
+                 success: result == undefined ? false:true,
+                result: result,
+                err: err2
+            });
+
+		
+	});
+
+
 
 	    router.all('/sign/:hex_data', passport.authenticate('jwt', {session: false}),async (req, res) => {
 			//let user = req.user;

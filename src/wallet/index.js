@@ -739,15 +739,16 @@ wallet.all('/sendrawtransaction/coin2asset/:amount/:address/:token_name/:sign_da
 
 //只有广播失败和解析失败的的不存表，其他会存
 wallet.all('/sendrawtransaction/asset2coin_v2/:sign_data',async (req, res) => {
-           // let sign_data = [req.params.sign_data];
-           // let [err,master_txid] = await to(chain.sendrawtransaction(sign_data));
-	//	   let matser_err;
-			let master_txid = '228128eb182c135cc6e702f3345230aa22a084639df89e931fca5ec613367ef8'
-			//let master_txid = '747a405c54d20c76b4069e759c3e5d6e2b0480c14ac1d66aa92ccab06b711b8e'
+            let sign_data = [req.params.sign_data];
+           let [master_err,master_txid] = await to(chain.sendrawtransaction(sign_data));
+		//	let master_txid = '228128eb182c135cc6e702f3345230aa22a084639df89e931fca5ec613367ef8'
             //let master_tx_status = master_txid == undefined ? "failed":"success";
 
-	//		if( master_err == undefined){
+			if( master_err == undefined){
+
+
 				//console.log("-------txid2222---",txid)
+		setTimeout(async ()=>{
 				let [decode_err,decode_info] = await to(utils.decode_transfer_info(master_txid));
 				console.log("---------------",decode_err,decode_info)
 				let {from,asset_id,vin_amount,to_amount,remain_amount,fee_amount,fee_asset} = decode_info;
@@ -757,24 +758,16 @@ wallet.all('/sendrawtransaction/asset2coin_v2/:sign_data',async (req, res) => {
 							err:err.message
 						})	
 				}
-			/*	
+				
 				if(decode_info.to  != mist_config.bridge_address){
 					return res.json({
                             success: false,
                             err:'reciver ' + decode_info.to +  ' is not official address'
                         })
 				}
-			*/
-				
-				//let walletInst = await my_wallet(mist_config.bridge_word);
+			
 				let transfer_tokens = await psql_db.get_tokens([asset_id])
 				let fee_tokens = await psql_db.get_tokens([fee_asset])
-				//if()
-				//let asset = new Asset(transfer_tokens[0].asim_assetid)
-				//asset.unlock(walletInst,mist_config.wallet_default_passwd)
-				//await walletInst.queryAllBalance()
-
-				//let [child_err,child_txid] = await to(asset.transfer(from,to_amount));
 				let wallet = new AsimovWallet({
 					name: 'test',
 					rpc:'https://rpc-child.mistabit.com',
@@ -783,7 +776,7 @@ wallet.all('/sendrawtransaction/asset2coin_v2/:sign_data',async (req, res) => {
 				});
 
 				let [child_err,child_txid] = await to(wallet.contractCall.call(
-					'0x63720b32964170980b216cabbb4ecdd0979f8c9c17',
+					transfer_tokens[0].address,
 					'mint(address,uint256)',
 					[from,NP.times(to_amount,100000000)],
 					AsimovConst.DEFAULT_GAS_LIMIT,0,
@@ -791,16 +784,11 @@ wallet.all('/sendrawtransaction/asset2coin_v2/:sign_data',async (req, res) => {
 					AsimovConst.DEFAULT_FEE_AMOUNT,
 					AsimovConst.DEFAULT_ASSET_ID,
 					AsimovConst.CONTRACT_TYPE.CALL))
-
 				console.log("---------------------------------child_err,child_txid",child_err,child_txid)
-
-
-
-
                 let info = {
                      id:null,
                      address:from,
-                     token_name:transfer_tokens.symbol,
+                     token_name:transfer_tokens[0].symbol,
 					 amount:to_amount,
 					 side:'asset2coin',
                      master_txid:master_txid,
@@ -818,10 +806,12 @@ wallet.all('/sendrawtransaction/asset2coin_v2/:sign_data',async (req, res) => {
 					 		success: err3 == undefined ? true : false,
 							err: err3
 						});
-		//	}
+				},10000);
+				return res.json({ success: true,result:"converting..."});
+			}
 		
-            res.json({ success:false, err:"111"});
-            //res.json({ success: false,err:master_err});
+            //res.json({ success:false, err:"111"});
+            res.json({ success: false,err:master_err});
       });
 
 wallet.all('/sendrawtransaction/coin2asset_v2/:sign_data',async (req, res) => {
@@ -869,7 +859,7 @@ wallet.all('/sendrawtransaction/coin2asset_v2/:sign_data',async (req, res) => {
 				});
 
 				let [child_err,child_txid] = await to(wallet.contractCall.call(
-					'0x63720b32964170980b216cabbb4ecdd0979f8c9c17',
+					transfer_tokens.address,
 					'mint(address,uint256)',
 					[from,to_amount],
 					AsimovConst.DEFAULT_GAS_LIMIT,0,
@@ -886,7 +876,7 @@ wallet.all('/sendrawtransaction/coin2asset_v2/:sign_data',async (req, res) => {
                 let info = {
                      id:null,
                      address:from,
-                     token_name:transfer_tokens.symbol,
+                     token_name:transfer_tokens[0].symbol,
 					 amount:to_amount,
 					 side:'asset2coin',
                      master_txid:master_txid,
@@ -914,7 +904,7 @@ wallet.all('/sendrawtransaction/coin2asset_v2/:sign_data',async (req, res) => {
 	wallet.all('/my_converts_v2/:address/:page/:perpage',async (req, res) => {
 			let {address,page,perpage} = req.params;
 			let offset = (+page - 1) * +perpage;
-            let [err,result] = await to(psql_db.my_converts2([address,offset,perpage]));
+            let [err,result] = await to(psql_db.my_bridge([address,offset,perpage]));
             res.json({ result:result,err:err});
 		});
 

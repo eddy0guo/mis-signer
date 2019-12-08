@@ -195,8 +195,8 @@ export default class utils{
 		return transfer_info;	
 	}
 /*
-	async decode_bridge_info(txid){
-		txid = '7f082454b220151a52f8b2241b0d47b6ac17ab6f13e47693d945b1de0744d028';
+	async decode_erc20_info(txid){
+		txid = '3e27ed0bec51f1dad2e416dfaeba73206145b329f56bbae013da5af3e90b18f9';
 		let cmd = 'curl -X POST --data \'\{\"id\":1, \"jsonrpc\":\"2.0\",\"method\":\"asimov_getTransactionReceipt\",\"params\":\[\"' + txid + '\"\]\}\}\' -H \"Content-type: application\/json\" ' + mist_config.asimov_chain_rpc;
 
 		let brige_info = {
@@ -213,5 +213,6 @@ export default class utils{
         }
 		
 	}
-*/	
+*/
+
 }
