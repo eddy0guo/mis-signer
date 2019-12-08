@@ -16,7 +16,8 @@
     "bridge": "nodemon -w src/did/bridge --exec \"babel-node src/did/bridge --presets es2015,stage-0\"",
     "server-local": "source ./local.env && babel-node src --presets es2015,stage-0",
     "server-dev": "source ./dev.env && babel-node src --presets es2015,stage-0",
-    "server-product": "source ./product.env && babel-node src --presets es2015,stage-0"
+    "server-product": "source ./product.env && babel-node src --presets es2015,stage-0",
+    "sdk-test": "nodemon -w src/test --exec \"babel-node src/test --presets es2015,stage-0\""
   },
   "eslintConfig": {
     "extends": "eslint:recommended",
@@ -40,7 +41,7 @@
     "@asimovdev/asimovjs": "^1.0.121",
     "@spinlee/ethers": "^1.0.12",
     "apicache": "^1.5.2",
-    "asimov-wallet": "^1.0.14",
+    "asimov-wallet": "1.0.15",
     "await-to-js": "^2.1.1",
     "axios": "^0.19.0",
     "bcrypt-nodejs": "^0.0.3",
