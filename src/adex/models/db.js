@@ -151,10 +151,10 @@ export default class db{
 
         }
 
-	  async get_tokens(symbol) {
-			let [err,result] = await to(this.clientDB.query('select * from mist_tokens where symbol=$1',symbol)); 
+	  async get_tokens(filter) {
+			let [err,result] = await to(this.clientDB.query('select * from mist_tokens where symbol=$1 or asim_assetid=$1',filter)); 
 			if(err) {
-				return console.error('get_tokens_查询失败', err,symbol);
+				return console.error('get_tokens_查询失败', err,filter);
 			}
 			return result.rows;
 
@@ -570,6 +570,19 @@ export default class db{
 
 		}
 
+		async my_bridge(filter_info) {
+			console.log("11223344",filter_info);
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_bridge  where address=$1 order by created_at desc limit $3 offset $2',filter_info)); 
+			if(err) {
+				return console.error('list_borrows_查询失败', err,filter_info);
+			}
+
+			return result.rows;
+
+		}
+
+
+
 		
 		 async insert_converts(info) {
 			let [err,result] = await to(this.clientDB.query('insert into mist_token_convert values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)',info));
@@ -579,6 +592,17 @@ export default class db{
 			//console.log('insert_borrows_成功',JSON.stringify(result),"info",borrow_info); 
 			return JSON.stringify(result.rows);
         } 
+
+		 async insert_bridge(info) {
+			let [err,result] = await to(this.clientDB.query('insert into mist_bridge values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)',info));
+			if(err) {
+				return console.error('insert_mist_bridge_查询失败', err);
+			}
+			//console.log('insert_borrows_成功',JSON.stringify(result),"info",borrow_info); 
+			return JSON.stringify(result.rows);
+        } 
+
+
 
 
 		 async get_engine_info() {

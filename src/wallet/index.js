@@ -39,7 +39,7 @@ async function getTakerWallet() {
 	return taker_wallet
 }
 
-async function getTestInst2(word) {
+async function my_wallet(word) {
     // 暂时每次都重新创建实例，效率低点但是应该更稳定。
     walletInst = await walletHelper.testWallet(word, '111111')
     return walletInst
@@ -147,7 +147,7 @@ export default ({ config, db }) => {
 		}
 
 		 let mist = new mist10(mist_config.ex_address);
-		 walletInst = await getTestInst2(mist_config.relayers[0].word);
+		 walletInst = await my_wallet(mist_config.relayers[0].word);
 		mist.unlock(walletInst, "111111");
 		let [err2, result] = await to(walletInst.queryAllBalance());
 
@@ -648,7 +648,7 @@ export default ({ config, db }) => {
  created_at timestamp
  *///
 //资产转币币
-wallet.all('/sendrawtransaction/asset2coin/:amount/:address/:token_name/::sign_data',async (req, res) => {
+wallet.all('/sendrawtransaction/asset2coin/:amount/:address/:token_name/:sign_data',async (req, res) => {
             let sign_data = [req.params.sign_data];
             let [err,result] = await to(chain.sendrawtransaction(sign_data));
 			if(!err){
@@ -731,6 +731,121 @@ wallet.all('/sendrawtransaction/coin2asset/:amount/:address/:token_name/:sign_da
 
 
 
+//只有广播失败和解析失败的的不存表，其他会存
+wallet.all('/sendrawtransaction/asset2coin_v2/:sign_data',async (req, res) => {
+           // let sign_data = [req.params.sign_data];
+           // let [err,master_txid] = await to(chain.sendrawtransaction(sign_data));
+	//	   let matser_err;
+			//let master_txid = '228128eb182c135cc6e702f3345230aa22a084639df89e931fca5ec613367ef8'
+			let master_txid = '747a405c54d20c76b4069e759c3e5d6e2b0480c14ac1d66aa92ccab06b711b8e'
+            //let master_tx_status = master_txid == undefined ? "failed":"success";
+
+	//		if( master_err == undefined){
+				//console.log("-------txid2222---",txid)
+				let [decode_err,decode_info] = await to(utils.decode_transfer_info(master_txid));
+				console.log("---------------",decode_err,decode_info)
+				let {from,asset_id,vin_amount,to_amount,remain_amount,fee_amount,fee_asset} = decode_info;
+				if(decode_err){
+					return res.json({
+							success: false,
+							err:err.message
+						})	
+				}
+				
+				if(decode_info.to  != mist_config.bridge_address){
+					return res.json({
+                            success: false,
+                            err:'reciver ' + decode_info.to +  ' is not official address'
+                        })
+				}
+			
+				
+				let walletInst = await my_wallet(mist_config.bridge_word);
+				let transfer_tokens = await psql_db.get_tokens([asset_id])
+				let fee_tokens = await psql_db.get_tokens([fee_asset])
+				//if()
+				let asset = new Asset(transfer_tokens[0].asim_assetid)
+				asset.unlock(walletInst,mist_config.wallet_default_passwd)
+				await walletInst.queryAllBalance()
+				let [child_err,child_txid] = await to(asset.transfer(from,to_amount));
+
+                let info = {
+                     id:null,
+                     address:from,
+                     token_name:transfer_tokens.symbol,
+					 amount:to_amount,
+					 side:'asset2coin',
+                     master_txid:master_txid,
+                     master_txid_status:"successful",
+					 child_txid:child_txid,
+                     child_txid_status: child_txid == undefined ? "failed" : "successful",
+					 fee_asset:fee_tokens[0].symbol,
+					 fee_amount:fee_amount
+                };
+                info.id = utils.get_hash(info);
+                 let info_arr = utils.arr_values(info);
+                let [err3,result3] = await to(psql_db.insert_bridge(info_arr));
+				return  res.json({
+					 		success: err3 == undefined ? true : false,
+							err: err3
+						});
+		//	}
+		
+            res.json({ success:false, err:"111"});
+            //res.json({ success: false,err:master_err});
+      });
+//币币转资产
+wallet.all('/sendrawtransaction/coin2asset_v2/:sign_data',async (req, res) => {
+            let sign_data = [req.params.sign_data];
+            let [err,result] = await to(chain.sendrawtransaction(sign_data));
+			if(!err){
+				let token_info = await psql_db.get_tokens([req.params.token_name]);
+				let current_time = utils.get_current_time();
+				let info = {
+					 id:null,
+					 address:req.params.address,
+					 asim_token_name:req.params.token_name,
+					 erc20_totken_name:req.params.token_name,
+					 //side: coin2asset,asset2coin
+					 side:"coin2asset",
+					 asim_token_contract:token_info[0].asim_address,
+					 asim_token_id:token_info[0].asim_assetid,
+					 erc20_token_contract:token_info[0].address,
+					 status:"successful",
+					 txid:result,
+					 amount:req.params.amount,
+					 fee_token:"ASIM",
+					 fee_token_amount:0.2,
+					 created_at:current_time	
+					
+				}
+				if(err){info.status = "failed"}
+				info.id = utils.get_hash(info);
+				let arr_info = utils.arr_values(info);
+				let [err2,result2] = await to(psql_db.insert_converts(arr_info));
+
+			}
+            res.json({ result:result,err:err});
+      });
+
+
+	wallet.all('/my_converts_v2/:address/:page/:perpage',async (req, res) => {
+			let {address,page,perpage} = req.params;
+			let offset = (+page - 1) * +perpage;
+            let [err,result] = await to(psql_db.my_converts2([address,offset,perpage]));
+            res.json({ result:result,err:err});
+		});
+
+
+
+
+
+
+
+
+
+
+
 
 	  wallet.all('/sendrawtransaction/:sign_data',async (req, res) => {
 	   let sign_data = [req.params.sign_data];
@@ -747,7 +862,7 @@ wallet.all('/sendrawtransaction/coin2asset/:amount/:address/:token_name/:sign_da
 	wallet.all('/get_blockchain_info',async (req, res) => {
 
             let [err,result] = await to(chain.getblockchaininfo());
-            let [err2,result2] = await to(chain.getblockchaininfo(undefined,'poa_child'));
+            let [err2,result2] = await to(chain.getblockchaininfo(undefined,'child_poa'));
             res.json({ result:result,result2:result2,err:err});
 	});
 
