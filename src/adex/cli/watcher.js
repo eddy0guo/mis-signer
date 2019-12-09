@@ -38,7 +38,7 @@ export default class watcher {
 		
 		console.log("watche running11111111",transaction);
 
-		let [err, result] = await to(chain.getrawtransaction([transaction[0].transaction_hash, true, true]))
+		let [err, result] = await to(chain.getrawtransaction([transaction[0].transaction_hash, true, true],'child_poa'))
 
 		//          console.log("chain.getrawtransaction",result,err);
 		//检测txid失败之后，更新为failed就不再管了,暂定为8个区块确认

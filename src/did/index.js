@@ -799,9 +799,9 @@ export default ({
 	});
 
 //test
-	router.all('/genarate_transfer_hex/:token_name/:amount', passport.authenticate('jwt', {session: false}),async (req, res) => {
+	router.all('/genarate_transfer_hex/:to_address/:token_name/:amount', passport.authenticate('jwt', {session: false}),async (req, res) => {
 			let user =  req.user;	
-			let {token_name,amount} = req.params
+			let {to_address,token_name,amount} = req.params
 			// let erc20 = new Erc20(asim_address);
 
 
@@ -814,7 +814,7 @@ export default ({
             let asset = new asset_tohex(tokens[0].asim_assetid)
             asset.unlock(walletInst,mist_config.wallet_default_passwd)
             await walletInst.queryAllBalance()
-            let [err2,result] = await to(asset.transfer(mist_config.bridge_address,amount));
+            let [err2,result] = await to(asset.transfer(to_address,amount));
             console.log(result, err2);
 
             res.json({

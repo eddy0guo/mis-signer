@@ -44,10 +44,10 @@ export default ({ config, db,logger}) => {
     let tokenTest = new TokenTest()
 	let utils = new utils1();
 	let launcher = new launcher1(client);
-//	wathcer.start();
+	wathcer.start();
 //	user.start();
 //	asset.status_flushing();
-//	launcher.start();
+	launcher.start();
 
 	adex.all('/mist_engine_info', async (req, res) => {
 					 let result = await trades.get_engine_info();

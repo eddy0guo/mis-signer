@@ -1,13 +1,13 @@
 import client from '../models/db'
 import utils2 from '../api/utils'
 import {restore_order} from '../api/order'
-import { chain } from '../../wallet/api/chain'
-import walletHelper from '../../wallet/lib/walletHelper'
+import { chain } from '../../wallet_child/api/chain'
+import walletHelper from '../../wallet_child/lib/walletHelper'
 import to from 'await-to-js'
 const crypto = require('crypto');
 var date = require("silly-datetime");
 import mist_config  from '../../cfg';
-import mist_ex10 from '../../wallet/contract/mist_ex10'
+import mist_ex10 from '../../wallet_child/contract/mist_ex10'
 
 import NP from 'number-precision'
 let walletInst;
@@ -106,7 +106,7 @@ export default class launcher {
 						this.db.insert_transactions(TXinfo);
 						}else{
 
-						let update_trade_info = ['matched','',current_time,trades[0].transaction_id];
+						let update_trade_info = ['matched',undefined,current_time,trades[0].transaction_id];
 						await this.db.launch_update_trades(update_trade_info);
 						console.log("time--444--err--",this.utils.get_current_time())
 							//失败了不做任何处理，等待下次被laucher打包
