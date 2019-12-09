@@ -195,24 +195,32 @@ export default class utils{
 		return transfer_info;	
 	}
 /*
-	async decode_erc20_info(txid){
-		txid = '3e27ed0bec51f1dad2e416dfaeba73206145b329f56bbae013da5af3e90b18f9';
-		let cmd = 'curl -X POST --data \'\{\"id\":1, \"jsonrpc\":\"2.0\",\"method\":\"asimov_getTransactionReceipt\",\"params\":\[\"' + txid + '\"\]\}\}\' -H \"Content-type: application\/json\" ' + mist_config.asimov_chain_rpc;
+----mint--"logs":[{"address":"0x63d202a9f65a4de95f7b2ea1ea632bfc27f10dff8c","topics":["0xce39aadd0e6aca7dcec6b4f53b1a15e20e545cad46a10664ad0af416cb0ac936"],"data":"0x0000000000000000000000000000000000000000000000000000000000000001000000000000000000000066202fab701a58b4b622ee07ac8ac11b872d727ced000000000000000000000066202fab701a58b4b622ee07ac8ac11b872d727ced0000000000000000000000000000000000000000000000000000000000989680","blockNumber":"0x1c1d7","transactionHash":"7f082454b220151a52f8b2241b0d47b6ac17ab6f13e47693d945b1de0744d028","transactionIndex":"0x2","blockHash":"dee5e73731f5396465117d0eaee83e0797160a8215c985b458ee72fecd087e0c","logIndex":"0x0","removed":false}]
 
-		let brige_info = {
-				type:
-				from:
-				to:
-				amount:
-		};	
-		
+--transfer--
+logs":[{"address":"0x63d202a9f65a4de95f7b2ea1ea632bfc27f10dff8c","topics":["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef","0x000000000000000000000066202fab701a58b4b622ee07ac8ac11b872d727ced","0x000000000000000000000066da67bf3462da51f083b5fed4662973a62701a687"],"data":"0x0000000000000000000000000000000000000000000000000000000000989680","blockNumber":"0x2f75f","transactionHash":"1794093892b16f6e141b69ab5289ed45b537098fe0bad3abf8d7e9ca32054618","transactionIndex":"0x2","blockHash":"63593807ccf41ce984d86a85b7ccfb475c29e43af2a8e9c423a82d44405e09ee","logIndex":"0x0","removed":false}]
+*/
+	async decode_erc20_transfer(txid){
+		let cmd = 'curl -X POST --data \'\{\"id\":1, \"jsonrpc\":\"2.0\",\"method\":\"asimov_getTransactionReceipt\",\"params\":\[\"' + txid + '\"\]\}\}\' -H \"Content-type: application\/json\" ' + mist_config.asimov_child_rpc;
+		console.log("cmd--------",cmd);
 		let sto =  child.execSync(cmd)
         let logs = JSON.parse(sto).result.logs;
         if(logs){
             console.error(`${cmd} result  have no logs`);
-        }
-		
+       	} 
+	   console.log("contractaddress-----data--------------",logs[0].address,logs[0].data)
+	   let amount = parseInt(logs[0].data,16);
+	   console.log("----------amount",amount)
+		let info = {
+				contract_address: logs[0].address,
+				from: '0x' + logs[0].topics[1].substring(24), 
+				to: '0x' + logs[0].topics[2].substring(24),
+				amount: NP.divide(amount,100000000)
+		};	
+
+		console.log("erc--transferinfo=---------",info);
+		return info;
 	}
-*/
+
 
 }
