@@ -6,8 +6,11 @@ import Wallets from "../wallet/service/wallets"
 import walletHelper from '../wallet/lib/walletHelper'
 import Token from '../wallet/contract/Token'
 import Token_did from '../wallet/contract/Token_did'
+import token_tohex from '../wallet/contract/token_tohex'
 import didSign from '../wallet/contract/did_sign'
 import didSignAndBroadcast from '../wallet/contract/did_sign_and_broadcast'
+
+import NP from 'number-precision'
 
 import mist_wallet1 from '../adex/api/mist_wallet'
 import to from 'await-to-js'
@@ -46,6 +49,9 @@ import psql from '../adex/models/db'
 import PassportPlugin from './config/passport'
 import Asset from '../wallet/asset/AssetDid'
 import asset_tohex from '../wallet/asset/asset_tohex'
+import AsimovWallet from  '../../node_modules/asimov-wallet/lib/AsimovWallet'
+import AsimovConst from  '../../node_modules/asimov-wallet/lib/lib/AsimovConst'
+
 PassportPlugin(passport)
 
 let jwt = require('jsonwebtoken');
@@ -820,6 +826,124 @@ export default ({
 		
 	});
 
+//test
+	router.all('/genarate_erc20_transfer_hex/:token_name/:amount', passport.authenticate('jwt', {session: false}),async (req, res) => {
+			let user =  req.user;	
+			let {token_name,amount} = req.params
+			// let erc20 = new Erc20(asim_address);
+
+             let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
+            let tokens = await psql_db.get_tokens([token_name])
+				 let wallet = new AsimovWallet({
+                    name: 'test3',
+                    rpc:'https://rpc-child.mistabit.com',
+                    mnemonic:mnemonic,
+                    // storage: 'localforage',
+                });
+
+   await wallet.account.createAccount()
+
+				 console.log("-------mnemonic--",mnemonic);
+                let balance = await wallet.account.balance();
+				console.log("--------------",tokens[0].address)
+
+				let [err,tx] = await to(wallet.contractCall.generateTX(
+                    tokens[0].address,
+                    'transfer(address,uint256)',
+                    [mist_config.bridge_address,NP.times(amount,100000000)],
+                    AsimovConst.DEFAULT_GAS_LIMIT,0,
+                    AsimovConst.DEFAULT_ASSET_ID,
+                    AsimovConst.DEFAULT_FEE_AMOUNT,
+                    AsimovConst.DEFAULT_ASSET_ID,
+                    AsimovConst.CONTRACT_TYPE.CALL))
+				if(err){
+					return	res.json({
+							 success:false,
+							err: err
+						});
+				}
+
+
+			let hex1 = tx.toUnsignHex()
+			console.log("hex1------",hex1)
+			tx = await wallet.commonTX.signTX(tx)
+
+			console.log("hex2------",tx)
+			let hex2 = tx.toHex()
+
+
+            res.json({
+                 success:true,
+                result: tx,
+                err: err
+            });
+
+		
+	});
+
+
+
+
+	router.all('/sign_burn/:token_name/:amount/:expire_time', passport.authenticate('jwt', {session: false}),async (req, res) => {
+			let user =  req.user;	
+			let {token_name,amount,expire_time} = req.params
+			// let erc20 = new Erc20(asim_address);
+            let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
+            let tokens = await psql_db.get_tokens([token_name])
+
+			const wallet = new AsimovWallet({
+				name: 'test',
+				// rpc:'https://rpc-master.mistabit.com',
+				rpc:'http://119.23.215.121:18545',
+				address:user.address
+			})
+
+			console.log("wallet------",wallet,user,tokens[0].address)
+			await wallet.account.createAccount()
+/**
+			let balance = await wallet.contractCall.callReadOnly(tokens[0].address,'balanceOf(address)',[user.address])
+			console.log("balance------",balance)
+
+			if(balance < amount){
+				return res.json({
+                 success:false,
+                 err:'Lack of balance'
+            	});	
+			}
+**/
+			if(expire_time <= 0 || expire_time > 3600){
+				return res.json({
+                 success:false,
+                 err:'the expire_time must be less than 1 hour and more than 0'
+            	});	
+			}
+
+
+
+			
+			let expire_at = new Date().getTime() + expire_time*1000;
+			let info = ['MIST_BURN',tokens[0].address,mist_config.bridge_address,amount,expire_at]
+			console.log("info------",info)
+			let str = info.join("");
+         	let root_hash = crypto_sha256.createHmac('sha256', '123')
+            let hash = root_hash.update(str, 'utf8').digest('hex');
+
+			let signature = sign(mnemonic, hash)
+
+            res.json({
+                 success:true,
+                 result:signature,
+				 expire_at:expire_at
+            });
+
+		
+	});
+
+
+
+
+
+
 
 
 	    router.all('/sign/:hex_data', passport.authenticate('jwt', {session: false}),async (req, res) => {
@@ -834,7 +958,7 @@ export default ({
             let  hdPrivateKey = HDPrivateKey.fromSeed(seed).derive(`m/44'/10003'/0'/0/0`);
             let privatekey = hdPrivateKey.privateKey.toString();
 
-            //console.log("mnemonic-privatekey",mnemonic,privatekey);
+            console.log("------------mnemonic-privatekey",mnemonic,privatekey);
             //let rawtx = signature(new bitcore_lib_1.PrivateKey(privatekey),hex_data);
             let rawtx = TranService.signHex([privatekey],hex_data);
             console.log("rawtx=",rawtx);

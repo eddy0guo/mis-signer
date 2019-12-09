@@ -23,6 +23,7 @@ import psql from '../adex/models/db'
 import mist_wallet1 from '../adex/api/mist_wallet'
 import NP from 'number-precision'
 import users from '../adex/cli/users'
+const crypto_sha256 = require('crypto');
 //const  asimov_wallet = require("asimov-wallet");
 import AsimovWallet from  '../../node_modules/asimov-wallet/lib/AsimovWallet'
 import AsimovConst from  '../../node_modules/asimov-wallet/lib/lib/AsimovConst'
@@ -744,6 +745,9 @@ wallet.all('/sendrawtransaction/asset2coin_v2/:sign_data',async (req, res) => {
 		//	let master_txid = '228128eb182c135cc6e702f3345230aa22a084639df89e931fca5ec613367ef8'
             //let master_tx_status = master_txid == undefined ? "failed":"success";
 
+
+			console.log("1111111-----------",master_err,master_txid);
+
 			if( master_err == undefined){
 
 
@@ -770,13 +774,11 @@ wallet.all('/sendrawtransaction/asset2coin_v2/:sign_data',async (req, res) => {
 				let fee_tokens = await psql_db.get_tokens([fee_asset])
 				let wallet = new AsimovWallet({
 					name: 'test',
-					rpc:'https://rpc-child.mistabit.com',
-					mnemonic:'sound mandate urban welcome grass gospel gather shoulder hunt catch host second',
+					rpc: mist_config.asimov_child_rpc,
+					mnemonic: mist_config.bridge_word,
 					// storage: 'localforage',
 				});
 				 let balance = await wallet.account.balance();
-
-				console.log("666666666-----------",balance)
 
 				let [child_err,child_txid] = await to(wallet.contractCall.call(
 					transfer_tokens[0].address,
@@ -817,46 +819,74 @@ wallet.all('/sendrawtransaction/asset2coin_v2/:sign_data',async (req, res) => {
             res.json({ success: false,err:master_err});
       });
 
-wallet.all('/sendrawtransaction/coin2asset_v2/:sign_data',async (req, res) => {
-           // let sign_data = [req.params.sign_data];
-           // let [err,master_txid] = await to(chain.sendrawtransaction(sign_data));
-			let child_txid = '1794093892b16f6e141b69ab5289ed45b537098fe0bad3abf8d7e9ca32054618'
-			
-			//let master_txid = '747a405c54d20c76b4069e759c3e5d6e2b0480c14ac1d66aa92ccab06b711b8e'
-            //let master_tx_status = master_txid == undefined ? "failed":"success";
-	//		if( master_err == undefined){
-				let [decode_err,decode_info] = await to(utils.decode_erc20_transfer(child_txid));
-				let {contract_address,from,amount} = decode_info
+wallet.all('/sendrawtransaction/coin2asset_v2/:signature/:address/:token_name/:amount/:expire_time',async (req, res) => {
+				
+				let {signature,address,token_name,amount,expire_time} = req.params;
+            	let current_time = new Date().getTime();
+				if(+current_time > +expire_time ){
+					return res.json({ success: false,err:"sign data expire"});	
+					
+				}
 
-				/**
-				console.log("---------------",decode_err,decode_info)
-				 if(decode_info.to  != mist_config.bridge_address){
-                    return res.json({
-                            success: false,
-                            err:'reciver ' + decode_info.to +  ' is not official address'
-                        })
-                }**/
-				let tokens = await psql_db.get_tokens([contract_address]);
+				let tokens = await psql_db.get_tokens([token_name]);
 
-				 let wallet = new AsimovWallet({
+
+				let info = ['MIST_BURN',tokens[0].address,mist_config.bridge_address,amount,expire_time];
+				let str = info.join("");
+            	let root_hash = crypto_sha256.createHmac('sha256', '123')
+            	let hash = root_hash.update(str, 'utf8').digest('hex');
+
+
+
+				let result = utils.verify(hash,JSON.parse(signature));
+				if(!result){
+					 return res.json({
+								success: false,
+								err:'verify failed'
+					})
+				}
+
+				console.log("-----------",result,hash)
+
+
+				let child_wallet = new AsimovWallet({
+					name: 'test',
+					rpc: mist_config.asimov_child_rpc,
+					mnemonic: mist_config.bridge_word,
+					// storage: 'localforage',
+				});
+				 let balance = await child_wallet.account.balance();
+
+				let [child_err,child_txid] = await to(child_wallet.contractCall.call(
+					tokens[0].address,
+					'burn(address,uint256)',
+					[address,NP.times(amount,100000000)],
+					AsimovConst.DEFAULT_GAS_LIMIT,0,
+					AsimovConst.DEFAULT_ASSET_ID,
+					AsimovConst.DEFAULT_FEE_AMOUNT,
+					AsimovConst.DEFAULT_ASSET_ID,
+					AsimovConst.CONTRACT_TYPE.CALL))
+				console.log("---------child_err---child_txid",child_err,child_txid)
+
+
+
+				 let master_wallet = new AsimovWallet({
                     name: 'test3',
-                    rpc:'https://rpc-master.mistabit.com',
-                    mnemonic:'sound mandate urban welcome grass gospel gather shoulder hunt catch host second',
+                    rpc:mist_config.asimov_master_rpc,
+                    mnemonic:mist_config.bridge_word,
                     // storage: 'localforage',
                 });
-				let balance = await wallet.account.balance();
-
-				 console.log("6666666555----------%o-",balance)
-				 await wallet.account.createAccount()
-				let balance2 = await wallet.account.balance();
+				 await master_wallet.account.createAccount()
+				let balance2 = await master_wallet.account.balance();
 
 				 console.log("666666666----------%o-",balance2)
-				let [master_err,master_txid] = await to(wallet.commonTX.transfer(from,amount,tokens[0].asim_assetid))	
+				let [master_err,master_txid] = await to(master_wallet.commonTX.transfer(address,amount,tokens[0].asim_assetid))	
 				console.log("--------------err,master_txid",master_err,master_txid,tokens[0].asim_assetid);
 
-				let info = {
+				//
+				let insert_info = {
                      id:null,
-                     address:from,
+                     address:address,
                      token_name:tokens[0].symbol,
 					 amount:amount,
 					 side:'coin2asset',
@@ -867,14 +897,14 @@ wallet.all('/sendrawtransaction/coin2asset_v2/:sign_data',async (req, res) => {
 					 fee_asset:'ASIM',
 					 fee_amount:0.02
                 };
-                info.id = utils.get_hash(info);
-                 let info_arr = utils.arr_values(info);
+                insert_info.id = utils.get_hash(insert_info);
+                 let info_arr = utils.arr_values(insert_info);
                 let [err3,result3] = await to(psql_db.insert_bridge(info_arr));
 
 
 				return     res.json({
 								 success: result3 == undefined ? false:true,
-								 id: info.id
+								 id: insert_info.id
 							});
 
 
@@ -904,6 +934,39 @@ wallet.all('/sendrawtransaction/coin2asset_v2/:sign_data',async (req, res) => {
             let [err,result] = await to(psql_db.list_cdp());
             res.json({ result:result,err:err});
 	});
+
+	wallet.all('/erc20_faucet',async (req, res) => {
+
+
+  let wallet = new AsimovWallet({
+                    name: 'test',
+                    rpc: mist_config.asimov_child_rpc,
+                    mnemonic: mist_config.bridge_word,
+                    // storage: 'localforage',
+                });
+                 let balance = await wallet.account.balance();
+                
+                console.log("666666666-----------",balance)
+                let from = '0x66381fed979566a0656a3b422706072915a452ba6b';
+                let to_amount = 1000000;
+                let address = '0x638374231575328e380610fbb12020c29e11afcd01';
+                
+                let [child_err,child_txid] = await to(wallet.contractCall.call(
+                    address,
+                    'mint(address,uint256)',
+                    [from,NP.times(to_amount,100000000)],
+                    AsimovConst.DEFAULT_GAS_LIMIT,0,
+                    AsimovConst.DEFAULT_ASSET_ID,
+                    AsimovConst.DEFAULT_FEE_AMOUNT,
+                    AsimovConst.DEFAULT_ASSET_ID,
+                    AsimovConst.CONTRACT_TYPE.CALL))
+
+
+            res.json({ result:child_txid,err:child_err});
+	});
+
+
+
 
 	wallet.all('/get_blockchain_info',async (req, res) => {
 
