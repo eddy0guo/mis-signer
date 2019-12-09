@@ -935,26 +935,26 @@ wallet.all('/sendrawtransaction/coin2asset_v2/:signature/:address/:token_name/:a
             res.json({ result:result,err:err});
 	});
 
-	wallet.all('/erc20_faucet',async (req, res) => {
+	wallet.all('/erc20_faucet/:address',async (req, res) => {
+		let token_arr = await mist_wallet.list_tokens();
+		let results = [];	
+		 for(let i in  token_arr){
+			let address = req.params.address; 
+			 setTimeout(async ()=>{
 
-
-  let wallet = new AsimovWallet({
+				let wallet = new AsimovWallet({
                     name: 'test',
                     rpc: mist_config.asimov_child_rpc,
                     mnemonic: mist_config.bridge_word,
                     // storage: 'localforage',
                 });
                  let balance = await wallet.account.balance();
-                
-                console.log("666666666-----------",balance)
-                let from = '0x66381fed979566a0656a3b422706072915a452ba6b';
                 let to_amount = 1000000;
-                let address = '0x638374231575328e380610fbb12020c29e11afcd01';
                 
                 let [child_err,child_txid] = await to(wallet.contractCall.call(
-                    address,
+                    token_arr[i].address,
                     'mint(address,uint256)',
-                    [from,NP.times(to_amount,100000000)],
+                    [req.params.address,NP.times(to_amount,100000000)],
                     AsimovConst.DEFAULT_GAS_LIMIT,0,
                     AsimovConst.DEFAULT_ASSET_ID,
                     AsimovConst.DEFAULT_FEE_AMOUNT,
@@ -962,7 +962,16 @@ wallet.all('/sendrawtransaction/coin2asset_v2/:signature/:address/:token_name/:a
                     AsimovConst.CONTRACT_TYPE.CALL))
 
 
-            res.json({ result:child_txid,err:child_err});
+
+
+
+			 results.push[child_txid];
+			console.log("---------erc20_token_arr--err-result",child_err,child_txid,"\n\n\n\n")
+			 },i*20000);
+		}
+
+  			
+            res.json({ result:"",err:""});
 	});
 
 
