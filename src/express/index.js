@@ -183,7 +183,7 @@ export default ({ config, db }) => {
                       console.log("obj11111111133=",token_arr);
                     for(var i in token_arr){
                             let asset = new Asset(token_arr[i].asim_assetid)
-                            let [err4,assets_balance] = await to(asset.balanceOf(mist_config.fauct_address))
+                            let [err4,assets_balance] = await to(asset.balanceOf(mist_config.express_address))
                             let asset_balance=0;
                             for(let j in assets_balance){
                                 if( token_arr[i].asim_assetid == assets_balance[j].asset){
