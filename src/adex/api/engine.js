@@ -153,7 +153,7 @@ export default class engine {
 
 
 
-
+	
 		for (var i in trades) {
 
 			let trade_info ={
@@ -168,12 +168,25 @@ export default class engine {
 			};
 
 			trades[i].trade_hash = await this.utils.orderhashbytes(trade_info);
-			trades[i].transaction_id = transaction_id;
-
-			await this.db.insert_trades(this.utils.arr_values(trades[i]));
-
-			console.log("dex_match_order----gxy---333333",trades[i]);
 		}
+		
+		//这块逻辑是为了规避同一个transactionid里中间状态同时出现pending和matched的情况
+		let transactions2 = await this.db.list_all_trades();
+		if(transactions2[0].transaction_id == transaction_id){
+			transaction_id += 1;	
+		}
+
+		let trades_arr= [];
+		for(var i in trades){
+			trades[i].transaction_id = transaction_id;
+			trades_arr.push(this.utils.arr_values(trades[i]))
+		}
+
+
+			console.log("dex_match_order333333",trades_arr);
+
+
+		await this.db.insert_trades(trades_arr);
 
 	}
 

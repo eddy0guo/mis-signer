@@ -219,12 +219,35 @@ export default class db{
          *
          *trades
          */
-        async insert_trades(trade_info) {
-			let [err,result] = await to(this.clientDB.query('insert into mist_trades values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)',trade_info));
-			if(err) {
-				return console.error('insert_traders_查询失败', err,trade_info);
+        async insert_trades(trades_info) {
+			let query = 'insert into mist_trades values(';
+			let trades_arr = [];
+			for(var index in trades_info){
+				
+				let temp_value = '';
+				for(let i = 1;i<=15;i++){
+					if(i < 15){
+					temp_value += '$' + (i + 15 * index) + ','
+					}else{
+						temp_value += '$' + (i + 15 * index)	
+					}
+				}
+				if(index < trades_info.length -1){
+				query =  query + temp_value + '),('
+				}else{
+					query =  query + temp_value + ')'	
+				}
+				trades_arr = trades_arr.concat(trades_info[index]);
 			}
-			console.log('insert_trades_成功',JSON.stringify(result),"info",trade_info); 
+
+			//console.error("-----------------------------insert_trades-----query---trades_arr---",query,trades_arr);
+
+			//let [err,result] = await to(this.clientDB.query('insert into mist_trades values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)',trades_info));
+			let [err,result] = await to(this.clientDB.query(query,trades_arr));
+			if(err) {
+				return console.error('insert_traders_查询失败', err,trades_info);
+			}
+			console.log('insert_trades_成功',JSON.stringify(result),"info",trades_info); 
 			return JSON.stringify(result.rows);
 
 
@@ -270,7 +293,7 @@ export default class db{
 
 
 		async list_all_trades() {
-			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_trades where status!=\'matched\' order by transaction_id desc limit 100')); 
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_trades where status!=\'matched\' and (current_timestamp - created_at) < \'1 hours\' order by transaction_id desc limit 100')); 
 			if(err) {
 				return console.error('list_all_trades_查询失败', err);
 			}
