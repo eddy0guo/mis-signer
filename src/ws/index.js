@@ -49,11 +49,11 @@ class WSMananger {
         this.broadcast(data)
 
         // 测试时暂时只更新2个交易对。也可以每个交易对启动一个进程
-        await this.updateMarket('ASIM-PI')
-        await this.updateMarket('MT-PI')
-        await this.updateMarket('USDT-PI')
-        await this.updateMarket('BTC-PI')
-        await this.updateMarket('ETH-PI')
+        await this.updateMarket('ASIM-CNYc')
+        await this.updateMarket('MT-CNYc')
+        await this.updateMarket('USDT-CNYc')
+        await this.updateMarket('BTC-CNYc')
+        await this.updateMarket('ETH-CNYc')
 
         await this.updateMarket('BTC-USDT')
         await this.updateMarket('ASIM-USDT')
@@ -95,7 +95,7 @@ class WSMananger {
         //     }
         //   }
         
-        // this.broadcastMarket('ASIM-PI',data)
+        // this.broadcastMarket('ASIM-CNYc',data)
     }
 
     broadcast(msg) {

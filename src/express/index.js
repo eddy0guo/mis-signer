@@ -57,8 +57,8 @@ async function my_wallet(word){
 async function get_price(base_token_name,quote_token_name,amount,order){
 		let base_value = 0;
         let base_amount = 0;
-		if(base_token_name != 'PI'){
-			  let base_book = await order.order_book(base_token_name + '-PI');
+		if(base_token_name != 'CNYc'){
+			  let base_book = await order.order_book(base_token_name + '-CNYc');
 			  let base_bids = base_book.bids;
 			  //模拟先卖掉所有base，再全部买quote
 			  for(let index in base_bids){
@@ -79,9 +79,9 @@ async function get_price(base_token_name,quote_token_name,amount,order){
 
 		let quote_value = 0;
 		let quote_amount = 0;	
-		if(quote_token_name != 'PI'){
+		if(quote_token_name != 'CNYc'){
 		  console.log("123123-base_value-",base_value);
-		  let quote_book = await order.order_book(quote_token_name + '-PI');
+		  let quote_book = await order.order_book(quote_token_name + '-CNYc');
 		  let quote_asks = quote_book.asks.reverse();
 
 		  for(let index in quote_asks){

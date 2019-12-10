@@ -558,7 +558,7 @@ export default ({
 			let cdp_tokens = await psql_db.find_cdp_token([req.params.deposit_token_name])
 			let cdp_address = cdp_tokens[0].cdp_address;
 			//这里找pi的信息assetid
-			let borrow_token_info = await psql_db.find_cdp_token(['PI'])
+			let borrow_token_info = await psql_db.find_cdp_token(['CNYc'])
 			let assetID = borrow_token_info[0].token_asset_id;
 
 			console.log("33333----", cdp_address, assetID);

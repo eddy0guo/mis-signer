@@ -74,7 +74,7 @@ export default ({ config, db }) => {
 	});
 
 	wallet.get('/dex_test', async (req, res) => {
-		//BTC-PI
+		//BTC-CNYc
 
    let trades = [ 
     { id:

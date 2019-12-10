@@ -80,7 +80,7 @@ export default ({ config, db }) => {
 	});
 
 	wallet.all('/dex_test', async (req, res) => {
-		//BTC-PI
+		//BTC-CNYc
 
    let trades = [ 
     { id:

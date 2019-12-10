@@ -111,8 +111,8 @@ initializeDb( db => {
 });
 
 
-console.log = ()=>{}
-consola.info('test consola')
+//console.log = ()=>{}
+//consola.info('test consola')
 
 
 export default app;
