@@ -47,8 +47,10 @@ export default class watcher {
 		let update_time = this.utils.get_current_time();
 		if (!err && result.confirmations >= 1) {
 			let status = 'successful';
-			let info = [status, update_time, id]
-			await this.db.update_transactions(info);
+			let contract_status = this.utils.get_receipt_log(transaction[0].transaction_hash);
+			let info = [status,update_time, id]
+			let transaction_info = [status,contract_status,update_time, id]
+			await this.db.update_transactions(transaction_info);
 			await this.db.update_trades(info);
 
 			let trades = await this.db.transactions_trades([id]);
@@ -76,8 +78,8 @@ export default class watcher {
 			console.log("chain.getrawtransaction-------restore_order--err",trades[index]);
 			}**/
 			//失败了订单状态重新改为matched，等待下次打包,此failed为中间状态
-			await this.db.update_transactions(["failed", update_time, id]);
-			await this.db.update_trades(["matched", update_time, id]);
+			await this.db.update_transactions(["failed",undefined,update_time, id]);
+//			await this.db.update_trades(["matched", update_time, id]);
 
 			console.log("chain.getrawtransaction--err", err);
 		} else {

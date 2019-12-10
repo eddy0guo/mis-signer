@@ -76,6 +76,7 @@ create table mist_transactions(
   transaction_hash text,
   market_id text ,
   status text ,
+  contract_status text ,
   updated_at  timestamp,
   created_at timestamp
 );

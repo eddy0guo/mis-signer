@@ -392,7 +392,7 @@ export default class db{
          *
          * */
         async insert_transactions(TXinfo) {
-			let [err,result] = await to(this.clientDB.query('insert into mist_transactions values($1,$2,$3,$4,$5,$6)',TXinfo));
+			let [err,result] = await to(this.clientDB.query('insert into mist_transactions values($1,$2,$3,$4,$5,$6,$7)',TXinfo));
 			if(err) {
 				return console.error('insert_transactions_查询失败', err,TXinfo);
 			}
@@ -429,7 +429,7 @@ export default class db{
 	
         async update_transactions(update_info) {
 			let [err,result] = await to(this.clientDB
-				.query('UPDATE mist_transactions SET (status,updated_at)=($1,$2) WHERE  id=$3',update_info)); 
+				.query('UPDATE mist_transactions SET (status,contract_status,updated_at)=($1,$2,$3) WHERE  id=$4',update_info)); 
 
 			if(err) {
 				return console.error('update_transactions_查询失败', err,update_info);

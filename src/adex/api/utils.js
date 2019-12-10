@@ -55,7 +55,7 @@ export default class utils{
 			return result;
 	}
 	get_receipt(txid){
-		let cmd = 'curl -X POST --data \'\{\"id\":1, \"jsonrpc\":\"2.0\",\"method\":\"asimov_getTransactionReceipt\",\"params\":\[\"' + txid + '\"\]\}\}\' -H \"Content-type: application\/json\" ' + mist_config.asimov_chain_rpc;
+		let cmd = 'curl -X POST --data \'\{\"id\":1, \"jsonrpc\":\"2.0\",\"method\":\"asimov_getTransactionReceipt\",\"params\":\[\"' + txid + '\"\]\}\}\' -H \"Content-type: application\/json\" ' + mist_config.asimov_child_rpc;
 		
 		console.log("ssss---",cmd);
 		let sto =  child.execSync(cmd)
@@ -70,6 +70,22 @@ export default class utils{
     	console.log("222222222222222",datas);//sto才是真正的输出，要不要打印到控制台，由你自己啊
 		return datas;
 	}
+
+
+	get_receipt_log(txid){
+		let cmd = 'curl -X POST --data \'\{\"id\":1, \"jsonrpc\":\"2.0\",\"method\":\"asimov_getTransactionReceipt\",\"params\":\[\"' + txid + '\"\]\}\}\' -H \"Content-type: application\/json\" ' + mist_config.asimov_child_rpc;
+		
+		console.log("ssss---",cmd);
+		let sto =  child.execSync(cmd)
+		let logs = JSON.parse(sto).result.logs;
+		if(!logs){
+			console.error(`${cmd} result  have no logs`);
+		}
+    	console.log("log22222222222222222",logs.length,logs);//sto才是真正的输出，要不要打印到控制台，由你自己啊
+		return logs.length > 0 ? 'successful':'failed';
+	}
+
+
 
 	async orderTobytes(order){
 

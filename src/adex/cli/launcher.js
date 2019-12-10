@@ -46,7 +46,7 @@ export default class launcher {
 			}
 
 						//只要进入laucher阶段就先把状态设置为pending，防止engine那边在laucher的时候，继续在当前transaction_id里继续插数据
-						let update_trade_info = ['pending',,current_time,trades[0].transaction_id];
+						let update_trade_info = ['pending',undefined,current_time,trades[0].transaction_id];
 						await this.db.launch_update_trades(update_trade_info);
 					//准备laucher之前先延时2秒	
 					setTimeout(async ()=>{
@@ -103,7 +103,7 @@ export default class launcher {
 
 							console.log("time-4444--",this.utils.get_current_time())
 
-							let TXinfo = [trades[0].transaction_id, txid, trades[0].market_id, "pending", trades[0].created_at, trades[0].created_at];
+							let TXinfo = [trades[0].transaction_id, txid, trades[0].market_id, "pending","pending", trades[0].created_at, trades[0].created_at];
 							this.db.insert_transactions(TXinfo);
 							}else{
 
