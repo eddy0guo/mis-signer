@@ -6,7 +6,6 @@ import Wallets from "../wallet/service/wallets"
 import walletHelper from '../wallet/lib/walletHelper'
 import Token from '../wallet/contract/Token'
 import Token_did from '../wallet/contract/Token_did'
-import token_tohex from '../wallet/contract/token_tohex'
 import didSign from '../wallet/contract/did_sign'
 import didSignAndBroadcast from '../wallet/contract/did_sign_and_broadcast'
 
