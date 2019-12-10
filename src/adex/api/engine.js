@@ -154,6 +154,7 @@ export default class engine {
 
 
 	
+		let trades_arr= [];
 		for (var i in trades) {
 
 			let trade_info ={
@@ -167,24 +168,13 @@ export default class engine {
 			takerSide:	trades[i].taker_side
 			};
 
-			trades[i].trade_hash = await this.utils.orderhashbytes(trade_info);
-		}
-		
-		//这块逻辑是为了规避同一个transactionid里中间状态同时出现pending和matched的情况
-		let transactions2 = await this.db.list_all_trades();
-		if(transactions2[0].transaction_id == transaction_id){
-			transaction_id += 1;	
-		}
-
-		let trades_arr= [];
-		for(var i in trades){
 			trades[i].transaction_id = transaction_id;
+			trades[i].trade_hash = await this.utils.orderhashbytes(trade_info);
+
 			trades_arr.push(this.utils.arr_values(trades[i]))
 		}
 
-
-			console.log("dex_match_order333333",trades_arr);
-
+		console.log("-call_asimov_result33333----------",transaction_id + 'gxyyyyy',mist_config.relayers[index].address,index)
 
 		await this.db.insert_trades(trades_arr);
 

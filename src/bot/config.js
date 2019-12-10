@@ -1,12 +1,12 @@
 var config_local = {
     accounts : [
-        "13682471713",
+        "13700000003",
         "13682471714"],
     password : [
 
     ],
     addresses : [
-        "0x666234b6348c10fed282b95c1f1768aa3113eb96b2",
+        "0x66a9ae316e1914dc8d835d5cd2ed57ab24b52a02c7",
         "0x66fb54e73b1ea0a40ca95c5a514500902dc19f2d61"],
 }
 

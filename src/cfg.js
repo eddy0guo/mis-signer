@@ -5,6 +5,22 @@ var local = {
     fauct_word:'tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook',
     fauct_prikey:'0x47c98c143179d48664dfc2f029a8583cb6a394a94037e06f0658dcf18ed6c66a',
 
+
+	relayers:[
+		 {
+            prikey:"0xb4969d5aeb8c0bcc833b9537e38c60e2ba01cd45ae7a3e77e3d936252209ca49",
+            word:"inmate truly february tray slim receive secret route clutch magnet bike inform",
+            address:"0x66a1c3eeaa9dddec4e1fc3a352a3250d8da91bce31"
+        }, {
+            prikey:"0xb4969d5aeb8c0bcc833b9537e38c60e2ba01cd45ae7a3e77e3d936252209ca49",
+            word:"inmate truly february tray slim receive secret route clutch magnet bike inform",
+            address:"0x66a1c3eeaa9dddec4e1fc3a352a3250d8da91bce31"
+        }, {
+            prikey:"0xb4969d5aeb8c0bcc833b9537e38c60e2ba01cd45ae7a3e77e3d936252209ca49",
+            word:"inmate truly february tray slim receive secret route clutch magnet bike inform",
+            address:"0x66a1c3eeaa9dddec4e1fc3a352a3250d8da91bce31"
+    }],
+/*
  	relayers:[
 		{
 			prikey:"0xb74dec46bddca59a39bbbb309ccf48f97be5ca5f980c62fab635a749f5f317ce",
@@ -21,6 +37,7 @@ var local = {
 			word:"setup letter modify bronze embark label elegant crash argue glare amazing photo",
 			address:"0x66c84eef87209999154a108ee968ef81ce690dcb20"
     }],
+	*/
 	//0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c
 	bridge_word:"sound mandate urban welcome grass gospel gather shoulder hunt catch host second",
     bridge_address:"0x66a5e2e1d9243f9dfd1d54b31952d94043a105188f",
