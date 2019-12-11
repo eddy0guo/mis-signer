@@ -924,6 +924,18 @@ wallet.all('/sendrawtransaction/coin2asset_v2/:signature/:address/:token_name/:a
 		});
 
 
+
+	wallet.all('/my_converts_v3/:address/:token_name/:page/:perpage',async (req, res) => {
+			let {address,token_name,page,perpage} = req.params;
+			let offset = (+page - 1) * +perpage;
+            let [err,result] = await to(psql_db.my_bridge_v3([address,token_name,offset,perpage]));
+			let success = (result == undefined || result.length == 0) ? false:true
+            res.json({ success: success,result:result,err:err});
+		});
+
+
+
+
 	  wallet.all('/sendrawtransaction/:sign_data',async (req, res) => {
 	   let sign_data = [req.params.sign_data];
             let [err,result] = await to(chain.sendrawtransaction(sign_data));
