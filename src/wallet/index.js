@@ -919,7 +919,8 @@ wallet.all('/sendrawtransaction/coin2asset_v2/:signature/:address/:token_name/:a
 			let {address,page,perpage} = req.params;
 			let offset = (+page - 1) * +perpage;
             let [err,result] = await to(psql_db.my_bridge([address,offset,perpage]));
-            res.json({ result:result,err:err});
+			let success = (result == undefined || result.length == 0) ? false:true
+            res.json({ success: success,result:result,err:err});
 		});
 
 
