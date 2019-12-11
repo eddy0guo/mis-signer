@@ -118,30 +118,26 @@ var dev = {
 
 
 var product = {
-    ex_address:'0x6383177655bca94f802191a19282f39e117b8edb2f',
+    ex_address:'0x63722839a7d46e75e4cd9f40edc7680651143084ae',
     order_hash_word:'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
     fauct_address:'0x666234b6348c10fed282b95c1f1768aa3113eb96b2',
     fauct_word:'tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook',
     fauct_prikey:'0x47c98c143179d48664dfc2f029a8583cb6a394a94037e06f0658dcf18ed6c66a',
-/*
 	relayers:[
-    {
-        prikey:"0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2",
-        word:"ivory local this tooth occur glide wild wild few popular science horror",
-        address:"0x66edd03c06441f8c2da19b90fcc42506dfa83226d3"
-    },
-    {
-        prikey:"0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2",
-        word:"ivory local this tooth occur glide wild wild few popular science horror",
-        address:"0x66edd03c06441f8c2da19b90fcc42506dfa83226d3"
-    },
-    {
-        prikey:"0xd2dd57d8969770fad230bf34cacc5ca60e2dc7e406f8f99ced0f59ccf56a19c2",
-        word:"ivory local this tooth occur glide wild wild few popular science horror",
-        address:"0x66edd03c06441f8c2da19b90fcc42506dfa83226d3"
-
+		{
+            prikey:"0x1f06c8b003fa13b3ae74dd8e2320468da652ed40899d8b4eec4279de75bf6030",
+            word:"setup letter modify bronze embark label elegant crash argue glare amazing photo",
+            address:"0x66c84eef87209999154a108ee968ef81ce690dcb20"
+		},{
+            prikey:"0x1f06c8b003fa13b3ae74dd8e2320468da652ed40899d8b4eec4279de75bf6030",
+            word:"setup letter modify bronze embark label elegant crash argue glare amazing photo",
+            address:"0x66c84eef87209999154a108ee968ef81ce690dcb20"
+		},{
+            prikey:"0x1f06c8b003fa13b3ae74dd8e2320468da652ed40899d8b4eec4279de75bf6030",
+            word:"setup letter modify bronze embark label elegant crash argue glare amazing photo",
+            address:"0x66c84eef87209999154a108ee968ef81ce690dcb20"
     }],
-*/
+/*
  relayers:[
     {
         prikey:"0xbbb56da9edd3cac9e7c1e9f991d4bc51f5c9dde9a6e3122fbd53b5f8cce6799b",
@@ -158,6 +154,7 @@ var product = {
         word:"toss uniform manage bar circle shine project method danger replace capable bicycle",
         address:"0x66ac76c2aea20aafb807fa2ac7fbeba44507d0e4a0"
     }],
+	*/
 	//0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c
 	bridge_word:"sound mandate urban welcome grass gospel gather shoulder hunt catch host second",
 	bridge_address:"0x66a5e2e1d9243f9dfd1d54b31952d94043a105188f",
