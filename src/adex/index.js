@@ -556,7 +556,7 @@ did对order_id进行签名，获取rsv
        let [err,result] = await to(order.my_orders2(address,page,perpage,status1,status2));
 
 	    res.json({
-                 success: result == undefined ? false:true;
+                 success: result == undefined ? false:true,
 				 result:result,
                  err:err
             });
