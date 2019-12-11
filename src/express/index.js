@@ -24,7 +24,7 @@ let cache = apicache.middleware
 
 let express_config = [
 	{
-		token:"PI",
+		token:"CNYc",
 		min: 60,
 		max: 60000,
 	},{
