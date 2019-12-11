@@ -202,13 +202,17 @@ export default ({ config, db,logger}) => {
 								erc20_address: token_arr[i].address,
 								erc20_balance:result / (1 * 10 ** 8),
 								asim_assetid: token_arr[i].asim_assetid,
-								asim_asset_balance: asset_balance
+								asim_asset_balance: asset_balance,
+								token_icon: 'https://www.mist.exchange/res/icons/logo_' + token_arr[i].symbol.toLowerCase() + '@1x.png'
 							};
 							
 							balances.push(balance_info);
                     }
 
-                    res.json(balances);
+					  res.json({
+							success: true,
+							result: balances
+						});
      });
 
 
@@ -545,7 +549,18 @@ did对order_id进行签名，获取rsv
 	});
 
 
+	adex.all('/my_orders_v2/:address/:page/:perpage/:status1/:status2', async (req, res) => {
+		//pending,partial_filled,当前委托
+		//cancled，full_filled，历史委托
+	   let {address,page,perpage,status1,status2} = req.params;
+       let [err,result] = await to(order.my_orders2(address,page,perpage,status1,status2));
 
+	    res.json({
+                 success: result == undefined ? false:true;
+				 result:result,
+                 err:err
+            });
+	});
 
 
 	adex.all('/order_book', async (req, res) => {
