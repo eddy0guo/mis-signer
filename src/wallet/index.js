@@ -913,6 +913,15 @@ wallet.all('/sendrawtransaction/coin2asset_v2',async (req, res) => {
       });
 
 
+
+	wallet.all('/find_convert/:id',async (req, res) => {
+            let [err,result] = await to(psql_db.find_bridge([req.params.id]));
+			let success = (result == undefined || result.length == 0) ? false:true
+            res.json({ success: success,result:result,err:err});
+		});
+
+
+
 	wallet.all('/my_converts_v2/:address/:page/:perpage',async (req, res) => {
 			let {address,page,perpage} = req.params;
 			let offset = (+page - 1) * +perpage;

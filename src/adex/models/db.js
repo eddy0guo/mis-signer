@@ -593,8 +593,17 @@ export default class db{
 
 		}
 
+		async find_bridge(filter_info) {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_bridge  where id=$1',filter_info)); 
+			if(err) {
+				return console.error('find_bridge_查询失败', err,filter_info);
+			}
+
+			return result.rows;
+
+		}
+
 		async my_bridge(filter_info) {
-			console.log("11223344",filter_info);
 			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_bridge  where address=$1 order by created_at desc limit $3 offset $2',filter_info)); 
 			if(err) {
 				return console.error('list_borrows_查询失败', err,filter_info);
@@ -604,8 +613,8 @@ export default class db{
 
 		}
 
+
 		async my_bridge_v3(filter_info) {
-			console.log("11223344",filter_info);
 			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_bridge  where address=$1 and token_name=$2 order by created_at desc limit $4 offset $3',filter_info)); 
 			if(err) {
 				return console.error('list_borrows_查询失败', err,filter_info);

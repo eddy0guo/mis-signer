@@ -885,8 +885,10 @@ export default ({
 
 	router.all('/sign_burn/:token_name/:amount', passport.authenticate('jwt', {session: false}),async (req, res) => {
 			let user =  req.user;	
-			let {token_name,amount,expire_time} = req.params
+			let {token_name,amount} = req.params
 			// let erc20 = new Erc20(asim_address);
+			 let expire_time = 600;
+
             let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
             let tokens = await psql_db.get_tokens([token_name])
 
