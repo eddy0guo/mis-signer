@@ -883,7 +883,7 @@ export default ({
 
 
 
-	router.all('/sign_burn/:token_name/:amount/:expire_time', passport.authenticate('jwt', {session: false}),async (req, res) => {
+	router.all('/sign_burn/:token_name/:amount', passport.authenticate('jwt', {session: false}),async (req, res) => {
 			let user =  req.user;	
 			let {token_name,amount,expire_time} = req.params
 			// let erc20 = new Erc20(asim_address);
@@ -916,9 +916,6 @@ export default ({
                  err:'the expire_time must be less than 1 hour and more than 0'
             	});	
 			}
-
-
-
 			
 			let expire_at = new Date().getTime() + expire_time*1000;
 			let info = ['MIST_BURN',tokens[0].address,mist_config.bridge_address,amount,expire_at]
@@ -939,11 +936,59 @@ export default ({
 	});
 
 
+	router.all('/burn_coin_tohex/:token_name/:amount', passport.authenticate('jwt', {session: false}),async (req, res) => {
+			let user =  req.user;	
+			let {token_name,amount} = req.params
+			// let erc20 = new Erc20(asim_address);
+			let expire_time = 600;
+            let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
+            let tokens = await psql_db.get_tokens([token_name])
 
+			const wallet = new AsimovWallet({
+				name: 'test',
+				// rpc:'https://rpc-master.mistabit.com',
+				rpc:'http://119.23.215.121:18545',
+				address:user.address
+			})
 
+			console.log("wallet------",wallet,user,tokens[0].address)
+			await wallet.account.createAccount()
 
+			if(expire_time <= 0 || expire_time > 3600){
+				return res.json({
+                 success:false,
+                 err:'the expire_time must be less than 1 hour and more than 0'
+            	});	
+			}
+			
+			let expire_at = new Date().getTime() + expire_time*1000;
+			let info = ['MIST_BURN',tokens[0].address,mist_config.bridge_address,amount,expire_at]
+			console.log("info------",info)
+			let str = info.join("");
+         	let root_hash = crypto_sha256.createHmac('sha256', '123')
+            let hash = root_hash.update(str, 'utf8').digest('hex');
 
+            res.json({
+                 success:true,
+				 hash:hash,
+				 expire_at:expire_at
+            });
 
+		
+	});
+
+	router.all('/burn_coin_sign/:hex_data', passport.authenticate('jwt', {session: false}),async (req, res) => {
+			let user =  req.user;	
+            let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
+            let signature = sign(mnemonic, req.params.hex_data)
+
+            res.json({
+                 success:true,
+                 result:signature,
+            });
+
+		
+	});
 
 	    router.all('/sign/:hex_data', passport.authenticate('jwt', {session: false}),async (req, res) => {
 			//let user = req.user;
