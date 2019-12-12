@@ -8,6 +8,7 @@ import { Router } from 'express'
 import Asset from '../wallet//asset/Asset'
 
 import client1 from './models/db'
+import watcher1 from './watcher'
 
 import mist_wallet1 from '../adex/api/mist_wallet'
 import order1 from '../adex/api/order'
@@ -111,7 +112,9 @@ export default ({ config, db }) => {
 	let mist_wallet = new mist_wallet1();
 	let psql_db = new psql();
 	let utils = new utils1();
+	let watcher = new watcher1();
 	let order = new order1(psql_db);
+	watcher.start()
 
 
 	express.all('/my_records/:address/:page/:perpage', async (req, res) => {
@@ -285,10 +288,10 @@ export default ({ config, db }) => {
 		console.log("express----",base_err,base_txid)
 		let trade_id,success,base_tx_status;
 
+
 		if(base_txid){
 			//只有decode成功才是成功
 			base_tx_status = "pending";
-			success = true;
 			let info = {
 					 trade_id:null,       
 					 address:null,
@@ -308,13 +311,20 @@ export default ({ config, db }) => {
 					 //created_at:current_time      
 				};
 				info.trade_id = utils.get_hash(info);
+				trade_id = info.trade_id;
 				let info_arr = utils.arr_values(info);
 
 				let [err3,result3] = await to(psql_db.insert_express(info_arr));
 				console.log("info123",err3,result3)
+				res.json({
+							success: true,
+							trade_id: info.trade_id,
+				});
 		}else{
-			base_tx_status = "failed";
-			 success = false;
+			res.json({
+				success: false,
+				err: base_err
+			});
 			
 		}
 		setTimeout(async ()=>{
@@ -361,16 +371,13 @@ export default ({ config, db }) => {
 					 trade_id:trade_id    
 				};
 				let info_arr = utils.arr_values(info);
+				console.log("------",info);
 
 				let [err4,result4] = await to(psql_db.update_base(info_arr));
-				console.log("info123",err4,result4)
+				console.log("info1234444",err4,result4)
 				
 		},10000);
-		 res.json({
-            success: success,
-			trade_id: trade_id,
-			base_err:base_err,
-        });
+		 
     });
 
 

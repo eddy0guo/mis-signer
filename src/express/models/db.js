@@ -113,6 +113,16 @@ export default class db{
             return result.rows;
         }
 
+		 async get_tokens(filter) {
+            let [err,result] = await to(this.clientDB.query('select * from mist_tokens where symbol=$1 or asim_assetid=$1 or address=$1',filter));
+            if(err) {
+                return console.error('get_tokens_查询失败', err,filter);
+            }
+            return result.rows;
+
+        }
+
+
 
 
 
