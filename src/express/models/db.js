@@ -78,39 +78,6 @@ export default class db{
 			return JSON.stringify(result.rows);
         } 
 
-
-		/*
-			 trade_id:trade_id,
-                     address:address,
-                     base_asset_name:base_token_name,
-                     base_amount:amount,   
-                     price:price,          
-                     quote_asset_name: quote_token_name,
-                     quote_amount:quote_amount,
-                   //  fee_rate:0.005,        
-                     fee_token: quote_token_name,
-                     fee_amount:fee_amount,     
-                     base_txid:base_txid,       
-                     base_tx_status:base_tx_status,
-                 //   quote_txid:null,      
-                     quote_tx_status:"pending"
-                     updated_at:current_time,
-
-    address:address,
-                     base_asset_name:base_token_name,
-                     base_amount:amount,
-                     price:price,
-                     quote_amount:quote_amount,
-                     fee_amount:fee_amount,
-                     base_txid:base_txid,
-                     base_tx_status:base_tx_status,
-                     quote_tx_status:"pending"
-                     updated_at:current_time,
-                     trade_id:trade_id
-		
-		
-		*/
-
 		 async update_base(info) {
 			let [err,result] = await to(this.clientDB.query('UPDATE asim_express_records SET (address,base_asset_name,base_amount,price,quote_amount,fee_amount,base_tx_status,quote_tx_status,updated_at)=($1,$2,$3,$4,$5,$6,$7,$8,$9) WHERE  trade_id=$10',info));
 			if(err) {
@@ -128,6 +95,24 @@ export default class db{
             return result.rows;
 
         }
+
+		async order_book(filter) {
+            let err;
+            let result;
+            if(filter[0] == 'sell'){
+                [err,result] = await to(this.clientDB.query('select s.* from  (SELECT price,sum(available_amount) as amount FROM mist_orders\
+            where available_amount>0  and side=$1 and market_id=$2 group by price)s order by s.price asc limit 100',filter));
+            }else{
+
+                [err,result] = await to(this.clientDB.query('select s.* from  (SELECT price,sum(available_amount) as amount FROM mist_orders\
+            where available_amount>0  and side=$1 and market_id=$2 group by price)s order by s.price desc limit 100',filter));
+            }
+            if(err) {
+                return console.error('filter_orders_查询失败11',err,filter);
+            }
+            return result.rows;
+        }
+
 
 
 
