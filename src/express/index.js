@@ -277,5 +277,102 @@ export default ({ config, db }) => {
         });
     });
 
+
+	express.all('/sendrawtransaction/build_express_v2/:sign_data/:quote_token_name',async (req, res) => {
+		console.log("1111",req.params)
+		let {quote_token_name,sign_data} = req.params;
+		let [base_err,base_txid] = await to(chain.sendrawtransaction([sign_data]));
+		console.log("express----",base_err,base_txid)
+		let trade_id,success,base_tx_status;
+
+		if(base_txid){
+			//只有decode成功才是成功
+			base_tx_status = "pending";
+			success = true;
+			let info = {
+					 trade_id:null,       
+					 address:null,
+					 base_asset_name:null,
+					 base_amount:null, 
+					 price:null,          
+					 quote_asset_name: quote_token_name,
+					 quote_amount:null,  
+					 fee_rate:0.005,        
+					 fee_token: quote_token_name,      
+					 fee_amount:null,      
+					 base_txid:base_txid,       
+					 base_tx_status:'pending',
+					 quote_txid:null,      
+					 quote_tx_status:null
+					 //updated_at:current_time,
+					 //created_at:current_time      
+				};
+				info.trade_id = utils.get_hash(info);
+				let info_arr = utils.arr_values(info);
+
+				let [err3,result3] = await to(psql_db.insert_express(info_arr));
+				console.log("info123",err3,result3)
+		}else{
+			base_tx_status = "failed";
+			 success = false;
+			
+		}
+		setTimeout(async ()=>{
+				//失败的记录也入表
+				let [decode_err,decode_info] = await to(utils.decode_transfer_info(base_txid));
+                console.log("---------------",decode_err,decode_info)
+                let {from,asset_id,vin_amount,to_amount,remain_amount} = decode_info;
+				let base_tx_status;
+                if(!decode_err){
+                  base_tx_status = 'successful' 
+                }else{
+                  base_tx_status = 'illegaled' 
+				}
+
+                if(decode_info.to  != mist_config.bridge_address){
+					 base_tx_status = 'illegaled';
+                            console.error(`reciver ${decode_info.to}  is not official address`)
+                }
+
+				let [err3,base_token] = await to(psql_db.get_tokens([asset_id]));
+				if(err3 || base_token.length == 0){
+					base_tx_status = 'illegaled';
+                    console.error(`asset ${asset_id}  is not support`)	
+				}
+
+				console.log("--------------",base_token[0].symbol,quote_token_name,to_amount);
+				let [err,price] = await to(get_price(base_token[0].symbol,quote_token_name,to_amount,order));
+				let current_time = utils.get_current_time();
+
+				console.log("--------------",to_amount,price);
+				let quote_amount = NP.times(to_amount,price,0.995);
+				let fee_amount = NP.times(to_amount,price,0.005);
+				
+				let info = {
+					 address:from,
+					 base_asset_name:base_token[0].symbol,
+					 base_amount:to_amount, 
+					 price:price,          
+					 quote_amount:quote_amount,  
+					 fee_amount:fee_amount,      
+					 base_tx_status:base_tx_status,  
+					 quote_tx_status:"pending",
+					 updated_at:current_time,
+					 trade_id:trade_id    
+				};
+				let info_arr = utils.arr_values(info);
+
+				let [err4,result4] = await to(psql_db.update_base(info_arr));
+				console.log("info123",err4,result4)
+				
+		},10000);
+		 res.json({
+            success: success,
+			trade_id: trade_id,
+			base_err:base_err,
+        });
+    });
+
+
 	return express;
 };
