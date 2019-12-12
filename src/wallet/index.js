@@ -819,9 +819,9 @@ wallet.all('/sendrawtransaction/asset2coin_v2/:sign_data',async (req, res) => {
             res.json({ success: false,err:master_err});
       });
 
-wallet.all('/sendrawtransaction/coin2asset_v2/:signature/:address/:token_name/:amount/:expire_time',async (req, res) => {
-				
-				let {signature,address,token_name,amount,expire_time} = req.params;
+wallet.all('/sendrawtransaction/coin2asset_v2',async (req, res) => {
+				let {signature,address,token_name,amount,expire_time} =  req.body;
+				//let {signature,address,token_name,amount,expire_time} = req.params;
             	let current_time = new Date().getTime();
 				if(+current_time > +expire_time ){
 					return res.json({ success: false,err:"sign data expire"});	
@@ -837,17 +837,15 @@ wallet.all('/sendrawtransaction/coin2asset_v2/:signature/:address/:token_name/:a
             	let hash = root_hash.update(str, 'utf8').digest('hex');
 
 
-
-				let result = utils.verify(hash,JSON.parse(signature));
+			
+				//let result = utils.verify(hash,JSON.parse(signature));
+				let result = utils.verify(hash,signature);
 				if(!result){
 					 return res.json({
 								success: false,
 								err:'verify failed'
 					})
 				}
-
-				console.log("-----------",result,hash)
-
 
 				let child_wallet = new AsimovWallet({
 					name: 'test',
@@ -876,10 +874,10 @@ wallet.all('/sendrawtransaction/coin2asset_v2/:signature/:address/:token_name/:a
                     mnemonic:mist_config.bridge_word,
                     // storage: 'localforage',
                 });
-				 await master_wallet.account.createAccount()
-				let balance2 = await master_wallet.account.balance();
+			await master_wallet.account.createAccount()
+			//	let balance2 = await master_wallet.account.balance();
 
-				 console.log("666666666----------%o-",balance2)
+			//	 console.log("666666666----------%o-",balance2)
 				let [master_err,master_txid] = await to(master_wallet.commonTX.transfer(address,amount,tokens[0].asim_assetid))	
 				console.log("--------------err,master_txid",master_err,master_txid,tokens[0].asim_assetid);
 
