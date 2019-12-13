@@ -153,7 +153,6 @@ export default class utils{
 		let from = txinfo.vin[0].prevOut.addresses[0];
 		let asset_id;   
 		for(let vin of txinfo.vin){
-			console.log("--vinnnnnnn--",vin.prevOut.addresses[0])	
 			if(vin.prevOut.addresses[0] != from){
 			 throw new Error('decode failed,inputs contained Multiple addresses')
 			}else if(vin.prevOut.asset == '000000000000000000000000'){
@@ -186,7 +185,6 @@ export default class utils{
 				vout_remain_amount += out.value	
 			}else if( to_address == undefined ){
 				to_address = out.scriptPubKey.addresses[0];
-				console.log("78787778888-----",out.scriptPubKey.addresses[0])
 				vout_to_amount += +out.value
 			}else if(  to_address !=  undefined && to_address == out.scriptPubKey.addresses[0]){
 				 vout_to_amount += +out.value
