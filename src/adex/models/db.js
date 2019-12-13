@@ -614,6 +614,82 @@ export default class db{
 		}
 
 
+		async filter_bridge(filter_info) {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_bridge  where side=$1 and master_txid_status=$2 and child_txid_status=$3 order by created_at desc limit 1',filter_info)); 
+			if(err) {
+				return console.error('list_borrows_查询失败', err,filter_info);
+			}
+
+			return result.rows;
+
+		}
+
+		async update_asset2coin_bridge(info) {
+			let [err,result] = await to(this.clientDB.query('UPDATE mist_bridge SET (child_txid,child_txid_status,updated_at)=($1,$2,$3) WHERE id=$4',info)); 
+			if(err) {
+				return console.error('list_borrows_查询失败', err,info);
+			}
+
+			return result.rows;
+
+		}
+
+		/*
+		
+		 let info = {
+                         id:null,
+                         address:from,
+                         token_name:transfer_tokens[0].symbol,
+                         amount:to_amount,
+                         side:'asset2coin',
+                         master_txid:master_txid,
+                         master_txid_status:"successful",
+                         child_txid:null,
+                         child_txid_status: "pending",
+                         fee_asset:fee_tokens[0].symbol,
+                         fee_amount:fee_amount
+                    };
+
+
+					ddress:from,
+                         token_name:transfer_tokens[0].symbol,
+                         amount:to_amount,
+                         master_txid_status:master_txid_status,
+                         child_txid_status: "pending",
+                         fee_asset:fee_tokens[0].symbol,
+                         fee_amount:fee_amount,
+                         updated_at:current_time,
+                         id:info.id
+
+		
+		*/
+
+		async update_asset2coin_decode(info) {
+			let [err,result] = await to(this.clientDB.query('UPDATE mist_bridge SET (address,token_name,amount,master_txid_status,child_txid_status,fee_asset,fee_amount,updated_at)=($1,$2,$3,$4,$5,$6,$7,$8) WHERE id=$9',info)); 
+			if(err) {
+				return console.error('update_asset2coin_decode失败', err,info);
+			}
+
+			return result.rows;
+
+		}
+
+
+		async update_coin2asset_bridge(info) {
+			let [err,result] = await to(this.clientDB.query('UPDATE mist_birdge SET (master_txid,master_txid_status,child_txid,child_txid_status,updated_at)=($1,$2,$3,$4,$5) WHERE id=$6',info)); 
+			if(err) {
+				return console.error('update_coin2asset_bridge', err,info);
+			}
+
+			return result.rows;
+
+		}
+
+
+
+
+
+
 		async my_bridge_v3(filter_info) {
 			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_bridge  where address=$1 and token_name=$2 order by created_at desc limit $4 offset $3',filter_info)); 
 			if(err) {

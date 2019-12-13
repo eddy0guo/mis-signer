@@ -19,6 +19,7 @@ import mist_config from '../cfg'
 import mist10 from './contract/mist_ex10'
 import cdp from './contract/cdp'
 import adex_utils from '../adex/api/utils'
+import watcher1 from './watcher'
 import psql from '../adex/models/db'
 import mist_wallet1 from '../adex/api/mist_wallet'
 import NP from 'number-precision'
@@ -72,6 +73,8 @@ export default ({ config, db }) => {
 	let psql_db = new psql();
 	let utils = new adex_utils();
 	let mist_wallet = new mist_wallet1();
+	let watcher = new watcher1();
+	watcher.start();
 
 	wallet.all('/', async (req, res) => {
 		walletInst = await getTestInst();
@@ -749,70 +752,76 @@ wallet.all('/sendrawtransaction/asset2coin_v2/:sign_data',async (req, res) => {
 			console.log("1111111-----------",master_err,master_txid);
 
 			if( master_err == undefined){
+				//临时代码
+				let current_time = utils.get_current_time();
+				let tmp_info = {
+					txid:master_txid,
+					time:current_time
+					}
+				let tmp_id = utils.get_hash(tmp_info);
 
-
-				//console.log("-------txid2222---",txid)
-			setTimeout(async ()=>{
-				let [decode_err,decode_info] = await to(utils.decode_transfer_info(master_txid));
-				console.log("---------------",decode_err,decode_info)
-				let {from,asset_id,vin_amount,to_amount,remain_amount,fee_amount,fee_asset} = decode_info;
-				if(decode_err){
-					return res.json({
-							success: false,
-							err:err.message
-						})	
-				}
+				setTimeout(async ()=>{
+					let [decode_err,decode_info] = await to(utils.decode_transfer_info(master_txid));
+					console.log("---------------",decode_err,decode_info)
+					let {from,asset_id,vin_amount,to_amount,remain_amount,fee_amount,fee_asset} = decode_info;
+					if(decode_err){
+						return res.json({
+								success: false,
+								err:err.message
+							})	
+					}
+					
+					if(decode_info.to  != mist_config.bridge_address){
+						return res.json({
+								success: false,
+								err:'reciver ' + decode_info.to +  ' is not official address'
+							})
+					}
 				
-				if(decode_info.to  != mist_config.bridge_address){
-					return res.json({
-                            success: false,
-                            err:'reciver ' + decode_info.to +  ' is not official address'
-                        })
-				}
-			
-				let transfer_tokens = await psql_db.get_tokens([asset_id])
-				let fee_tokens = await psql_db.get_tokens([fee_asset])
-				let wallet = new AsimovWallet({
-					name: 'test',
-					rpc: mist_config.asimov_child_rpc,
-					mnemonic: mist_config.bridge_word,
-					// storage: 'localforage',
-				});
-				 let balance = await wallet.account.balance();
+					let transfer_tokens = await psql_db.get_tokens([asset_id])
+					let fee_tokens = await psql_db.get_tokens([fee_asset])
+					let wallet = new AsimovWallet({
+						name: 'test',
+						rpc: mist_config.asimov_child_rpc,
+						mnemonic: mist_config.bridge_word,
+						// storage: 'localforage',
+					});
+					 let balance = await wallet.account.balance();
 
-				let [child_err,child_txid] = await to(wallet.contractCall.call(
-					transfer_tokens[0].address,
-					'mint(address,uint256)',
-					[from,NP.times(to_amount,100000000)],
-					AsimovConst.DEFAULT_GAS_LIMIT,0,
-					AsimovConst.DEFAULT_ASSET_ID,
-					AsimovConst.DEFAULT_FEE_AMOUNT,
-					AsimovConst.DEFAULT_ASSET_ID,
-					AsimovConst.CONTRACT_TYPE.CALL))
-				console.log("---------------------------------child_err,child_txid",child_err,child_txid)
-                let info = {
-                     id:null,
-                     address:from,
-                     token_name:transfer_tokens[0].symbol,
-					 amount:to_amount,
-					 side:'asset2coin',
-                     master_txid:master_txid,
-                     master_txid_status:"successful",
-					 child_txid:child_txid,
-                     child_txid_status: child_txid == undefined ? "failed" : "successful",
-					 fee_asset:fee_tokens[0].symbol,
-					 fee_amount:fee_amount
-                };
-                info.id = utils.get_hash(info);
-                 let info_arr = utils.arr_values(info);
-                let [err3,result3] = await to(psql_db.insert_bridge(info_arr));
-				console.log("----------------info----",info)
-				return  res.json({
-					 		success: err3 == undefined ? true : false,
-							err: err3
-						});
+					let [child_err,child_txid] = await to(wallet.contractCall.call(
+						transfer_tokens[0].address,
+						'mint(address,uint256)',
+						[from,NP.times(to_amount,100000000)],
+						AsimovConst.DEFAULT_GAS_LIMIT,0,
+						AsimovConst.DEFAULT_ASSET_ID,
+						AsimovConst.DEFAULT_FEE_AMOUNT,
+						AsimovConst.DEFAULT_ASSET_ID,
+						AsimovConst.CONTRACT_TYPE.CALL))
+					console.log("---------------------------------child_err,child_txid",child_err,child_txid)
+					let info = {
+						 id:null,
+						 address:from,
+						 token_name:transfer_tokens[0].symbol,
+						 amount:to_amount,
+						 side:'asset2coin',
+						 master_txid:master_txid,
+						 master_txid_status:"successful",
+						 child_txid:child_txid,
+						 child_txid_status: child_txid == undefined ? "failed" : "successful",
+						 fee_asset:fee_tokens[0].symbol,
+						 fee_amount:fee_amount
+					};
+					//info.id = utils.get_hash(info);
+					info.id = tmp_id;
+					 let info_arr = utils.arr_values(info);
+					let [err3,result3] = await to(psql_db.insert_bridge(info_arr));
+					console.log("----------------info----",info)
+					return  res.json({
+								success: err3 == undefined ? true : false,
+								err: err3
+							});
 				},10000);
-				return res.json({ success: true,result:"converting..."});
+				return res.json({ success: true,id:tmp_id});
 			}
 		
             //res.json({ success:false, err:"111"});
@@ -874,10 +883,7 @@ wallet.all('/sendrawtransaction/coin2asset_v2',async (req, res) => {
                     mnemonic:mist_config.bridge_word,
                     // storage: 'localforage',
                 });
-			await master_wallet.account.createAccount()
-			//	let balance2 = await master_wallet.account.balance();
-
-			//	 console.log("666666666----------%o-",balance2)
+				await master_wallet.account.createAccount()
 				let [master_err,master_txid] = await to(master_wallet.commonTX.transfer(address,amount,tokens[0].asim_assetid))	
 				console.log("--------------err,master_txid",master_err,master_txid,tokens[0].asim_assetid);
 
@@ -904,13 +910,168 @@ wallet.all('/sendrawtransaction/coin2asset_v2',async (req, res) => {
 								 success: result3 == undefined ? false:true,
 								 id: insert_info.id
 							});
-
-
-		//	}
-		
-        //    res.json({ success:false, err:"111"});
-            //res.json({ success: false,err:master_err});
       });
+
+
+
+
+//只有广播失败和解析失败的的不存表，其他会存
+wallet.all('/sendrawtransaction/asset2coin_v3/:sign_data',async (req, res) => {
+            let sign_data = [req.params.sign_data];
+           let [master_err,master_txid] = await to(chain.sendrawtransaction(sign_data));
+
+			console.log("1111111-----------",master_err,master_txid);
+
+			if( master_err == undefined){
+				//临时代码
+					let current_time = utils.get_current_time();
+					let info = {
+						 id:null,
+						 address:null,
+						 token_name:null,
+						 amount:null,
+						 side:'asset2coin',
+						 master_txid:master_txid,
+						 master_txid_status:"pending",
+						 child_txid:null,
+						 child_txid_status: "pending",
+						 fee_asset:null,
+						 fee_amount:null
+					};
+					info.id = utils.get_hash(info);
+					let info_arr = utils.arr_values(info);
+					let [err3,result3] = await to(psql_db.insert_bridge(info_arr));
+					console.log("--------------insert_bridge--",err3,result3)
+
+				setTimeout(async ()=>{
+					let [decode_err,decode_info] = await to(utils.decode_transfer_info(master_txid));
+					console.log("---------------",decode_err,decode_info)
+					let {from,asset_id,vin_amount,to_amount,remain_amount,fee_amount,fee_asset} = decode_info;
+					let master_txid_status;
+					if(!decode_err){
+						master_txid_status = 'successful';
+					}else{
+						master_txid_status = 'illegaled';
+					}
+
+					if(decode_info.to  != mist_config.bridge_address){
+						master_txid_status = 'illegaled';
+						console.error(`reciver ${decode_info.to}  is not official address`);
+					}
+				
+					let transfer_tokens = await psql_db.get_tokens([asset_id])
+					let fee_tokens = await psql_db.get_tokens([fee_asset])
+
+					let current_time = utils.get_current_time();
+					let update_info = {
+						 address:from,
+						 token_name:transfer_tokens[0].symbol,
+						 amount:to_amount,
+						 master_txid_status:master_txid_status,
+						 child_txid_status: "pending",
+						 fee_asset:fee_tokens[0].symbol,
+						 fee_amount:fee_amount,
+						 updated_at:current_time,
+						 id:info.id
+					};
+					//info.id = utils.get_hash(info);
+					let update_info_arr = utils.arr_values(update_info);
+					let [err3,result3] = await to(psql_db.update_asset2coin_decode(update_info_arr));
+					console.log("psql_db.update_asset2coin_decode----",err3,result3)
+				},10000);
+				return res.json({ success: true,id:info.id});
+			}
+		
+            //res.json({ success:false, err:"111"});
+            res.json({ success: false,err:master_err});
+      });
+
+wallet.all('/sendrawtransaction/coin2asset_v3',async (req, res) => {
+				let {signature,address,token_name,amount,expire_time} =  req.body;
+				//let {signature,address,token_name,amount,expire_time} = req.params;
+            	let current_time = new Date().getTime();
+				if(+current_time > +expire_time ){
+					return res.json({ success: false,err:"sign data expire"});	
+					
+				}
+
+				let tokens = await psql_db.get_tokens([token_name]);
+
+
+				let info = ['MIST_BURN',tokens[0].address,mist_config.bridge_address,amount,expire_time];
+				let str = info.join("");
+            	let root_hash = crypto_sha256.createHmac('sha256', '123')
+            	let hash = root_hash.update(str, 'utf8').digest('hex');
+
+
+			
+				//let result = utils.verify(hash,JSON.parse(signature));
+				let result = utils.verify(hash,signature);
+				if(!result){
+					 return res.json({
+								success: false,
+								err:'verify failed'
+					})
+				}
+
+				let child_wallet = new AsimovWallet({
+					name: 'test',
+					rpc: mist_config.asimov_child_rpc,
+					mnemonic: mist_config.bridge_word,
+					// storage: 'localforage',
+				});
+				 let balance = await child_wallet.account.balance();
+
+				let [child_err,child_txid] = await to(child_wallet.contractCall.call(
+					tokens[0].address,
+					'burn(address,uint256)',
+					[address,NP.times(amount,100000000)],
+					AsimovConst.DEFAULT_GAS_LIMIT,0,
+					AsimovConst.DEFAULT_ASSET_ID,
+					AsimovConst.DEFAULT_FEE_AMOUNT,
+					AsimovConst.DEFAULT_ASSET_ID,
+					AsimovConst.CONTRACT_TYPE.CALL))
+				console.log("---------child_err---child_txid",child_err,child_txid)
+
+
+
+				 let master_wallet = new AsimovWallet({
+                    name: 'test3',
+                    rpc:mist_config.asimov_master_rpc,
+                    mnemonic:mist_config.bridge_word,
+                    // storage: 'localforage',
+                });
+				await master_wallet.account.createAccount()
+				let [master_err,master_txid] = await to(master_wallet.commonTX.transfer(address,amount,tokens[0].asim_assetid))	
+				console.log("--------------err,master_txid",master_err,master_txid,tokens[0].asim_assetid);
+
+				//
+				let insert_info = {
+                     id:null,
+                     address:address,
+                     token_name:tokens[0].symbol,
+					 amount:amount,
+					 side:'coin2asset',
+                     master_txid:master_txid,
+                     master_txid_status:"successful",
+					 child_txid:child_txid,
+                     child_txid_status: child_txid == undefined ? "failed" : "successful",
+					 fee_asset:'ASIM',
+					 fee_amount:0.02
+                };
+                insert_info.id = utils.get_hash(insert_info);
+                 let info_arr = utils.arr_values(insert_info);
+                let [err3,result3] = await to(psql_db.insert_bridge(info_arr));
+
+
+				return     res.json({
+								 success: result3 == undefined ? false:true,
+								 id: insert_info.id
+							});
+      });
+
+
+
 
 
 
