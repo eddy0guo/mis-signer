@@ -1047,7 +1047,7 @@ wallet.all('/sendrawtransaction/coin2asset_v3',async (req, res) => {
 	wallet.all('/find_convert/:id',async (req, res) => {
             let [err,result] = await to(psql_db.find_bridge([req.params.id]));
 			let success = (result == undefined || result.length == 0) ? false:true
-            res.json({ success: success,result:result,err:err});
+            res.json({ success: success,result:result[0],err:err});
 		});
 
 
