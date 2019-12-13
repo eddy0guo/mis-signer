@@ -938,23 +938,12 @@ export default ({
 	});
 
 
-	router.all('/burn_coin_tohex/:token_name/:amount', passport.authenticate('jwt', {session: false}),async (req, res) => {
-			let user =  req.user;	
+	router.all('/burn_coin_tohex/:token_name/:amount',async (req, res) => {
 			let {token_name,amount} = req.params
 			// let erc20 = new Erc20(asim_address);
 			let expire_time = 600;
-            let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
             let tokens = await psql_db.get_tokens([token_name])
 
-			const wallet = new AsimovWallet({
-				name: 'test',
-				// rpc:'https://rpc-master.mistabit.com',
-				rpc:'http://119.23.215.121:18545',
-				address:user.address
-			})
-
-			console.log("wallet------",wallet,user,tokens[0].address)
-			await wallet.account.createAccount()
 
 			if(expire_time <= 0 || expire_time > 3600){
 				return res.json({
