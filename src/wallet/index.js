@@ -1014,51 +1014,20 @@ wallet.all('/sendrawtransaction/coin2asset_v3',async (req, res) => {
 					})
 				}
 
-				let child_wallet = new AsimovWallet({
-					name: 'test',
-					rpc: mist_config.asimov_child_rpc,
-					mnemonic: mist_config.bridge_word,
-					// storage: 'localforage',
-				});
-				 let balance = await child_wallet.account.balance();
-
-				let [child_err,child_txid] = await to(child_wallet.contractCall.call(
-					tokens[0].address,
-					'burn(address,uint256)',
-					[address,NP.times(amount,100000000)],
-					AsimovConst.DEFAULT_GAS_LIMIT,0,
-					AsimovConst.DEFAULT_ASSET_ID,
-					AsimovConst.DEFAULT_FEE_AMOUNT,
-					AsimovConst.DEFAULT_ASSET_ID,
-					AsimovConst.CONTRACT_TYPE.CALL))
-				console.log("---------child_err---child_txid",child_err,child_txid)
-
-
-
-				 let master_wallet = new AsimovWallet({
-                    name: 'test3',
-                    rpc:mist_config.asimov_master_rpc,
-                    mnemonic:mist_config.bridge_word,
-                    // storage: 'localforage',
-                });
-				await master_wallet.account.createAccount()
-				let [master_err,master_txid] = await to(master_wallet.commonTX.transfer(address,amount,tokens[0].asim_assetid))	
-				console.log("--------------err,master_txid",master_err,master_txid,tokens[0].asim_assetid);
-
-				//
 				let insert_info = {
                      id:null,
                      address:address,
                      token_name:tokens[0].symbol,
 					 amount:amount,
 					 side:'coin2asset',
-                     master_txid:master_txid,
-                     master_txid_status:"successful",
-					 child_txid:child_txid,
-                     child_txid_status: child_txid == undefined ? "failed" : "successful",
+                     master_txid:null,
+                     master_txid_status:"pending",
+					 child_txid:null,
+                     child_txid_status: "pending",
 					 fee_asset:'ASIM',
 					 fee_amount:0.02
                 };
+
                 insert_info.id = utils.get_hash(insert_info);
                  let info_arr = utils.arr_values(insert_info);
                 let [err3,result3] = await to(psql_db.insert_bridge(info_arr));
@@ -1066,7 +1035,7 @@ wallet.all('/sendrawtransaction/coin2asset_v3',async (req, res) => {
 
 				return     res.json({
 								 success: result3 == undefined ? false:true,
-								 id: insert_info.id
+								 id: result3 == undefined ? "":insert_info.id
 							});
       });
 

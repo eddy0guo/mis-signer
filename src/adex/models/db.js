@@ -676,7 +676,7 @@ export default class db{
 
 
 		async update_coin2asset_bridge(info) {
-			let [err,result] = await to(this.clientDB.query('UPDATE mist_birdge SET (master_txid,master_txid_status,child_txid,child_txid_status,updated_at)=($1,$2,$3,$4,$5) WHERE id=$6',info)); 
+			let [err,result] = await to(this.clientDB.query('UPDATE mist_bridge SET (master_txid,master_txid_status,child_txid,child_txid_status,updated_at)=($1,$2,$3,$4,$5) WHERE id=$6',info)); 
 			if(err) {
 				return console.error('update_coin2asset_bridge', err,info);
 			}
@@ -684,6 +684,20 @@ export default class db{
 			return result.rows;
 
 		}
+
+
+		async update_coin2asset_failed(info) {
+			let [err,result] = await to(this.clientDB.query('UPDATE mist_bridge SET (master_txid,master_txid_status,updated_at)=($1,$2,$3) WHERE id=$4',info)); 
+			if(err) {
+				return console.error('update_coin2asset_bridge', err,info);
+			}
+
+			return result.rows;
+
+		}
+
+
+
 
 
 
