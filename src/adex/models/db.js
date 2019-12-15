@@ -634,35 +634,6 @@ export default class db{
 
 		}
 
-		/*
-		
-		 let info = {
-                         id:null,
-                         address:from,
-                         token_name:transfer_tokens[0].symbol,
-                         amount:to_amount,
-                         side:'asset2coin',
-                         master_txid:master_txid,
-                         master_txid_status:"successful",
-                         child_txid:null,
-                         child_txid_status: "pending",
-                         fee_asset:fee_tokens[0].symbol,
-                         fee_amount:fee_amount
-                    };
-
-
-					ddress:from,
-                         token_name:transfer_tokens[0].symbol,
-                         amount:to_amount,
-                         master_txid_status:master_txid_status,
-                         child_txid_status: "pending",
-                         fee_asset:fee_tokens[0].symbol,
-                         fee_amount:fee_amount,
-                         updated_at:current_time,
-                         id:info.id
-
-		
-		*/
 
 		async update_asset2coin_decode(info) {
 			let [err,result] = await to(this.clientDB.query('UPDATE mist_bridge SET (address,token_name,amount,master_txid_status,child_txid_status,fee_asset,fee_amount,updated_at)=($1,$2,$3,$4,$5,$6,$7,$8) WHERE id=$9',info)); 
@@ -695,13 +666,6 @@ export default class db{
 			return result.rows;
 
 		}
-
-
-
-
-
-
-
 
 
 		async my_bridge_v3(filter_info) {
@@ -766,5 +730,30 @@ export default class db{
 			}
 			return JSON.stringify(result.rows);
         }
+
+
+		async update_assets_total(info) {
+			let [err,result] = await to(this.clientDB.query('UPDATE asim_assets_info SET (total,updated_at)=($1,$2) WHERE asset_name=$3',info)); 
+			if(err) {
+				return console.error('update_asset_info', err,info);
+			}
+
+			return result.rows;
+
+		}
+
+		async update_assets_yesterday_total(info) {
+			let [err,result] = await to(this.clientDB.query('UPDATE asim_assets_info SET (yesterday_total,updated_at)=($1,$2) WHERE asset_name=$3',info)); 
+			if(err) {
+				return console.error('update_asset_info', err,info);
+			}
+
+			return result.rows;
+
+		}
+
+
+
+
 
 }

@@ -123,13 +123,12 @@ create table mist_users(
 );
 
 create table asim_assets_info(
-  id text PRIMARY KEY,
+  asset_name text PRIMARY KEY,
   asset_id text default '',
-  asset_name text default '',
-  producer text default '',
+  contract_address text default '',
   total text default '',
-  producer_amount text default '' ,
-  circulation_amount text default '' ,--circulation_amount + producer_amount = total
+  yesterday_total text default '',
+  updated_at  timestamp default now(),
   created_at  timestamp default now()
 );
 

@@ -9,6 +9,11 @@ import mist_config from '../../cfg'
 import Asset from '../../wallet/asset/Asset'
 import fake_token from '../../wallet/contract/AssetToken'
 import walletHelper from '../../wallet/lib/walletHelper'
+import AsimovWallet from  '../../../node_modules/asimov-wallet/lib/AsimovWallet'
+import AsimovConst from  '../../../node_modules/asimov-wallet/lib/lib/AsimovConst'
+import NP from 'number-precision'
+
+
 var date = require("silly-datetime");
 let walletInst;
 async function getTestInst(){
@@ -21,10 +26,12 @@ export default class assets{
 	exchange;
 	root_hash;
 	mist_wallet;
+	times;
 	constructor() {
 		this.db = new client();
 		this.utils = new utils2;
 		this.mist_wallet = new mist_wallet1();
+		this.times = 0;
 	}
 
 	async status_flushing() {
@@ -34,52 +41,49 @@ export default class assets{
 	async loop() {
 	
 
-		let create_time = this.utils.get_current_time();
+		let update_time = this.utils.get_current_time();
 		let token_arr = await this.mist_wallet.list_tokens();
 		//asim的先不管
 		token_arr.splice(1,1);
 		console.log("-asset_info---gxyyyyyy---",token_arr);
-		let inserts = [];
+		let assets_info = [];
 		for(var i in token_arr){
-			let asset = new Asset(token_arr[i].asim_assetid)
-			let [err4,assets_balance] = await to(asset.balanceOf(mist_config.fauct_address))
-			let asset_balance=0;
-			//z这里返回了所以币种的asset余额
-			for(let j in assets_balance){
-				if( token_arr[i].asim_assetid == assets_balance[j].asset){
-					asset_balance = assets_balance[j].value;
+			if(token_arr[i].symbol != 'ASIM'){
+				const wallet = new AsimovWallet({
+					name: 'test',
+					// rpc:'https://rpc-master.mistabit.com',
+					rpc:'http://119.23.215.121:18545',
+					address:'0x66381fed979566a0656a3b422706072915a452ba6b'
+					// mnemonic:'cannon club beach denial swear fantasy donate bag fiscal arrive hole reopen',
+				});
+				let index = +token_arr[i].asim_assetid % 100000; 
+
+				console.log(`--index=${index}--times=${this.times}-`)
+				let balance = await wallet.contractCall.callReadOnly(token_arr[i].asim_address,'totalSupply(uint32)',[index])
+				let total_balance = NP.divide(+balance,100000000)
+				console.log("balance------",balance)
+				this.db.update_assets_total([total_balance,update_time,token_arr[i].symbol]);
+				let asset_info = {
+						symbol:token_arr[i].symbol,
+						total: total_balance
 				}
+				assets_info.push(asset_info);
 			}
-			let assetToken = new fake_token(token_arr[i].asim_address);
-			walletInst = await getTestInst();
-			assetToken.unlock(walletInst,'111111')
-			let [err,result] = await to(assetToken.getAssetInfo())
-			console.log("asset_info----",result,err)
-
-			let circulation_amount = +result[5]/100000000 - +asset_balance;
-			let asset_info={
-				id:null,
-				asset_id:token_arr[i].asim_assetid,
-				asset_name:token_arr[i].symbol,
-				producer:mist_config.fauct_address,
-				total: +result[5]/100000000,
-				producer_amount:asset_balance,
-				circulation_amount: circulation_amount,
-				created_at:create_time
-			}
-			console.log("gxy-----asset_info-",asset_info);
-			asset_info.id = this.utils.get_hash(asset_info); 
-			inserts.push(asset_info);
 		}
 
-		for(var i in inserts){
-			this.db.insert_assets_info(this.utils.arr_values(inserts[i]));
+		//if(this.times == 24*60){
+		if(this.times == 1*60){
+				for( let asset of assets_info)
+				this.db.update_assets_yesterday_total([asset.total,update_time,asset.symbol]);
+				this.times = 0;
 		}
+
+		this.times++;
 
 		setTimeout(()=>{
 			this.loop.call(this)
 		//间隔时间随着用户量的增长而降低
-		},1000 * 10);
+		},1000 * 60);
 
 	}
 
