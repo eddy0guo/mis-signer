@@ -75,6 +75,7 @@ export default class watcher{
 		});
 		 let balance = await wallet.account.balance();
 
+		console.log("--------child_err----",pending_trade[0])
 		let [child_err,child_txid] = await to(wallet.contractCall.call(
 			transfer_tokens[0].address,
 			'mint(address,uint256)',
@@ -104,7 +105,7 @@ export default class watcher{
 	 async coin2asset_loop() {
 
         let [failed_err,failed_trade] = await to(this.psql_db.filter_bridge(['coin2asset','failed','successful']));
-        console.log("err,pending_trade",err,pending_trade);
+        console.log("err,pending_trade",failed_err,failed_trade);
 		if(failed_trade.length != 0){
 			 let {id,address,amount,token_name} = failed_trade[0];
 			 let tokens = await this.psql_db.get_tokens([token_name])
