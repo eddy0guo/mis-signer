@@ -110,15 +110,12 @@ export default ({
 		var sig = ECDSA.sign(hashbuf, new bitcore_lib_1.PrivateKey(privatekey))
 		let sign_r = ECDSA.sign(hashbuf, new bitcore_lib_1.PrivateKey(privatekey)).r.toString('hex')
 		let sign_s = ECDSA.sign(hashbuf, new bitcore_lib_1.PrivateKey(privatekey)).s.toString('hex')
-		console.log("sssssssssssss", privatekey);
 		let pubkey = new bitcore_lib_1.PrivateKey(privatekey).toPublicKey().toString('hex');
-		console.log("sssssssssssss", pubkey);
 		let sig_rs = {
 			r: sign_r,
 			s: sign_s,
 			pubkey: pubkey
 		};
-		console.log("222222sig------", sig_rs);
 		return sig_rs;
 	}
 
@@ -982,12 +979,9 @@ export default ({
 	});
 
 	    router.all('/sign/:hex_data', passport.authenticate('jwt', {session: false}),async (req, res) => {
-			//let user = req.user;
 			let {user,hex_data} = req.params
-        //let{inputs,outpus,gaslimit} = req.body;
 			user = req.user;
-	   		console.log("\n\n\n",user.username)
-            let mnemonic =  user.mnemonic.length == 160 ? Decrypt(user.mnemonic):user.mnemonic;
+			 let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
 
              let  seed = bip39.mnemonicToSeedHex(mnemonic);
             let  hdPrivateKey = HDPrivateKey.fromSeed(seed).derive(`m/44'/10003'/0'/0/0`);
