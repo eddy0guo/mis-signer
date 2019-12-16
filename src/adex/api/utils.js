@@ -146,6 +146,10 @@ export default class utils{
 
 		let sto =  child.execSync(cmd)
         let txinfo = JSON.parse(sto).result;
+		let asset_set = new Set(); 
+		for(let vin of txinfo.vin){
+			asset_set.add(vin.prevOut.asset);
+		}
 
 		console.log("---------------%o\n",txinfo)
 		//vins的所有address和assetid必须一致才去处理,且只考虑主网币做手续费这一种情况
@@ -155,15 +159,15 @@ export default class utils{
 		for(let vin of txinfo.vin){
 			if(vin.prevOut.addresses[0] != from){
 			 throw new Error('decode failed,inputs contained Multiple addresses')
-			}else if(vin.prevOut.asset == '000000000000000000000000'){
+			}else if(vin.prevOut.asset == '000000000000000000000000' &&  asset_set.size > 1){
 				console.log("this is a fee utxo");	
 				continue;
-			}else if(vin.prevOut.asset != '000000000000000000000000' &&  asset_id !=  undefined  && vin.prevOut.asset != asset_id){
+			}else if(vin.prevOut.asset != '000000000000000000000000' && asset_set.size > 1 &&  asset_id !=  undefined  && vin.prevOut.asset != asset_id){
 				 throw new Error('decode failed,inputs contained Multiple asset')
 			}else if(asset_id ==  undefined){
 				 asset_id = vin.prevOut.asset;
 				  vin_amount += +vin.prevOut.value
-			}else if(asset_id != undefined && vin.prevOut.asset != '000000000000000000000000'){	
+			}else if((asset_id != undefined && vin.prevOut.asset != '000000000000000000000000') || asset_set.size == 1){	
 				vin_amount += +vin.prevOut.value	
 			}else{
 			console.log("unknown case happened")
@@ -176,9 +180,12 @@ export default class utils{
 		let vout_to_amount = 0;
 		let to_address;
 		for(let out of txinfo.vout){
-			if(out.asset == '000000000000000000000000' ){
+			if(out.asset == '000000000000000000000000' && out.scriptPubKey.addresses[0] == from){
+				if(asset_set.size == 1){
+					 vout_remain_amount += out.value	
+				}else{
 				console.log("this is a fee out")
-				continue;
+				}	
 			}else if(  to_address !=  undefined && to_address != out.scriptPubKey.addresses[0] && from != out.scriptPubKey.addresses[0]){
 			 	throw new Error('decode failed,outputss contained Multiple addresses')
 			}else if(out.scriptPubKey.addresses[0] == from){
