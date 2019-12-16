@@ -281,7 +281,7 @@ export default ({ config, db }) => {
     });
 
 
-	express.all('/sendrawtransaction/build_express_v2/:sign_data/:quote_token_name',async (req, res) => {
+	express.all('/sendrawtransaction/build_express_v2/:quote_token_name/:sign_data',async (req, res) => {
 		console.log("1111",req.params)
 		let {quote_token_name,sign_data} = req.params;
 		let [base_err,base_txid] = await to(chain.sendrawtransaction([sign_data]));
