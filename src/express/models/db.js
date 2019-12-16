@@ -1,4 +1,5 @@
 import to from 'await-to-js'
+const express_params = 'trade_id,address,base_asset_name,cast(base_amount as float8),cast(price as float8),quote_asset_name,cast(quote_amount as float8),cast(fee_rate as float8),fee_token,cast(fee_amount as float8),base_txid,base_tx_status,quote_txid,quote_tx_status,updated_at,created_at';
 
 export default class db{
         clientDB;
@@ -28,7 +29,7 @@ export default class db{
 
 		async my_express(filter_info) {
 			console.log("11223344",filter_info);
-			let [err,result] = await to(this.clientDB.query('SELECT * FROM asim_express_records  where address=$1 order by created_at desc limit $3 offset $2',filter_info)); 
+			let [err,result] = await to(this.clientDB.query(`SELECT ${express_params} FROM asim_express_records  where address=$1 order by created_at desc limit $3 offset $2`,filter_info)); 
 			if(err) {
 				return console.error('list_borrows_查询失败', err);
 			}
@@ -39,7 +40,7 @@ export default class db{
 		}
 
 		async find_express(trade_id) {
-			let [err,result] = await to(this.clientDB.query('SELECT * FROM asim_express_records  where trade_id=$1',trade_id)); 
+			let [err,result] = await to(this.clientDB.query(`SELECT ${express_params} FROM asim_express_records  where trade_id=$1`,trade_id)); 
 			if(err) {
 				return console.error('list_borrows_查询失败', err);
 			}
