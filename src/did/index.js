@@ -831,7 +831,7 @@ export default ({
              let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
             let tokens = await psql_db.get_tokens([token_name])
 				 let wallet = new AsimovWallet({
-                    name: 'test3',
+                    name: user.address,
                     rpc:'https://rpc-child.mistabit.com',
                     mnemonic:mnemonic,
                     // storage: 'localforage',
@@ -890,7 +890,7 @@ export default ({
             let tokens = await psql_db.get_tokens([token_name])
 
 			const wallet = new AsimovWallet({
-				name: 'test',
+				name: user.address,
 				// rpc:'https://rpc-master.mistabit.com',
 				rpc:'http://119.23.215.121:18545',
 				address:user.address
