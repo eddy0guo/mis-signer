@@ -36,7 +36,6 @@ export default class launcher {
 	async loop() {
 	
             let trades = await this.db.get_laucher_trades();
-            console.log("time--gxygxylaunchertrades=", trades);
 			let current_time = this.utils.get_current_time();
 			if (trades.length == 0) {
 					   setTimeout(()=>{
@@ -54,7 +53,6 @@ export default class launcher {
 						 let index = trades[0].transaction_id % 3;
 						 let trades_hash = [];
 						 let markets = await this.db.list_markets();
-						 console.log("time--markets",markets);
 							for (let i in trades) {
 								//耗时
 								//let token_address = await this.db.get_market([trades[i].market_id]);
