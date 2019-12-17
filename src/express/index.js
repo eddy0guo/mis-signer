@@ -339,7 +339,7 @@ export default ({ config, db }) => {
                   base_tx_status = 'illegaled' 
 				}
 
-                if(decode_info.to  != mist_config.bridge_address){
+                if(decode_info.to  != mist_config.express_address){
 					 base_tx_status = 'illegaled';
                             console.error(`reciver ${decode_info.to}  is not official address`)
                 }
