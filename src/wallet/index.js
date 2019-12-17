@@ -38,6 +38,29 @@ let taker_word = 'enhance donor garment gospel loop purse pumpkin bag oven bone 
 let taker_wallet;
 let cdp_address = '0x6367f3c53e65cce5769166619aa15e7da5acf9623d';
 
+let coin2asset_fee = [
+    {
+        token:"CNYc",
+        amount: 10,
+    },{
+        token:"USDT",
+        amount: 1.5,
+    },{
+         token:"ASIM",
+       amount: 0.6,
+    },{
+         token:"MT",
+        amount: 0.2,
+    },{
+         token:"ETH",
+        amount: 0.01,
+    },{
+         token:"BTC",
+        amount: 0.0002,
+    }
+]
+
+
 // 避免重复创建Taker Wallet Instance
 async function getTakerWallet() {
 	if( taker_wallet ) return taker_wallet;
@@ -1013,19 +1036,25 @@ wallet.all('/sendrawtransaction/coin2asset_v3',async (req, res) => {
 								err:'verify failed'
 					})
 				}
+				let fee_amount = 0;
+				for(let fee of coin2asset_fee){
+					if(token_name == fee.token){
+					fee_amount = fee.amount;	
+					}
+				}
 
 				let insert_info = {
                      id:null,
                      address:address,
                      token_name:tokens[0].symbol,
-					 amount:amount,
+					 amount:amount - fee_amount,
 					 side:'coin2asset',
                      master_txid:null,
                      master_txid_status:"pending",
 					 child_txid:null,
                      child_txid_status: "pending",
-					 fee_asset:'ASIM',
-					 fee_amount:0.02
+					 fee_asset:tokens[0].symbol,
+					 fee_amount:fee_amount
                 };
 
                 insert_info.id = utils.get_hash(insert_info);
@@ -1069,6 +1098,13 @@ wallet.all('/sendrawtransaction/coin2asset_v3',async (req, res) => {
 			let success = (result == undefined || result.length == 0) ? false:true
             res.json({ success: success,result:result,err:err});
 		});
+
+    wallet.all('/coin2asset_fee_config', async (req, res) => {
+         res.json({
+            success: true,
+            result: coin2asset_fee
+        });
+   	 });
 
 
 
