@@ -155,7 +155,6 @@ var product = {
         word:"toss uniform manage bar circle shine project method danger replace capable bicycle",
         address:"0x66ac76c2aea20aafb807fa2ac7fbeba44507d0e4a0"
     }],
-	*/
 
 	bridge_word:"sound mandate urban welcome grass gospel gather shoulder hunt catch host second",
 	bridge_address:"0x66a5e2e1d9243f9dfd1d54b31952d94043a105188f",
