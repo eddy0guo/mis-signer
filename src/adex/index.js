@@ -281,6 +281,33 @@ did对order_id进行签名，获取rsv
        res.json(order_id);
 	});
 
+	adex.all('/get_order_id_v2/:trader_address/:marketID/:side/:price/:amount', async (req, res) => {
+	   let {trader_address,marketID,side,price,amount} = req.params;
+       let message = {
+                      id:null,
+                      trader_address: trader_address,
+                      market_id: marketID,
+                      side: side,
+                      price: price,
+                      amount: amount,
+                      status:'pending',
+                      type:'limit',
+                      available_amount:amount,
+                      confirmed_amount:0,
+                      canceled_amount:0,
+                      pending_amount:0,
+                      updated_at:null,
+                      created_at:null,
+       };
+	   let order_id = utils.get_hash(message);
+	   res.json({
+              success: true,
+              result: order_id,
+       });
+	});
+
+
+
 
   
 
@@ -387,6 +414,64 @@ did对order_id进行签名，获取rsv
                 err:err
        });
 	});
+
+
+
+	adex.all('/build_order_v3', async (req, res) => {
+		let {trader_address,market_id,side,price,amount,order_id,signature} =  req.body
+		//let {trader_address,market_id,side,price,amount,order_id,signature} = req.params;
+
+		let result = utils.verify(order_id,signature);
+		if(!result){
+			 return res.json({
+                        success: false,
+                        err:'verify failed'
+            })
+		}
+		if(!(utils.judge_legal_num(+amount) && utils.judge_legal_num(+price))){
+			 return res.json({
+                        success: false,
+                        err:'amount or price is cannt support'
+            })
+		}
+		/*
+		var arr = obj.market.toString().split("-");
+		let token_info = mist_wallet.get_token(arr[1]);
+		let token = new Token(token_info[0].address);
+        let balance = await token.balanceOf(obj.address);
+		if(NP.times(+obj.amount, +obj.price) > balance){
+			return res.json("balance is not enoungh");
+		}
+		*/
+
+
+       let message = {
+                      id:order_id,
+                      trader_address: trader_address,
+                      market_id: market_id,
+                      side: side,
+                      price: price,
+                      amount: amount,
+                      status:'pending',
+                      type:'limit',
+                      available_amount: amount,
+                      confirmed_amount:0,
+                      canceled_amount:0,
+                      pending_amount:0,
+                      updated_at:null,
+                      created_at:null,
+       };
+
+
+       let [err,result2] = await to(order.build(message))
+       console.log(result2,err);
+       res.json({
+                 success: result == undefined ? false:true,
+                result: result2,
+                err:err
+       });
+	});
+
 
 
 
@@ -750,6 +835,41 @@ did对order_id进行签名，获取rsv
        }
 	});
 
+
+	adex.all('/trading_view_v2/:granularity/:number/:market_id',cache('10 second'), async (req, res) => {
+
+		let {granularity,number,market_id} = req.params;
+
+		let [err,result] = await to(market.get_market(market_id));
+		if(err || result.length == 0){
+			res.json({
+                 success: false,
+                err: err + ' or have no this market'
+            });	
+		}
+
+		let current_time = Math.floor(new Date().getTime() / 1000);
+		let message = {
+		market_id: market_id,   
+		from: current_time - current_time%granularity - granularity*number,   //当前所在的时间区间不计算  
+		to: current_time - current_time%granularity,
+		granularity: granularity,
+		};
+	   
+
+		let [err2,result2] = await to(trades.trading_view(message));
+		 if(err2){
+            res.json({
+                 success: false,
+                err:err2
+            });
+       }else{
+           res.json({
+                     success: true,
+                    result: result2
+           });
+       }
+	});
 
 	return adex;
 };
