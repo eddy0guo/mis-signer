@@ -1040,6 +1040,12 @@ wallet.all('/sendrawtransaction/coin2asset_v3',async (req, res) => {
 				for(let fee of coin2asset_fee){
 					if(token_name == fee.token){
 					fee_amount = fee.amount;	
+						if( amount <= fee_amount){
+							return res.json({
+                                success: false,
+                                err:'fee is not enough'
+                    		})	
+						}
 					}
 				}
 
