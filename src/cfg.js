@@ -5,7 +5,7 @@ var local = {
     fauct_word:'tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook',
     fauct_prikey:'0x47c98c143179d48664dfc2f029a8583cb6a394a94037e06f0658dcf18ed6c66a',
 
-
+/*
 	relayers:[
 		 {
             prikey:"0xb4969d5aeb8c0bcc833b9537e38c60e2ba01cd45ae7a3e77e3d936252209ca49",
@@ -20,7 +20,7 @@ var local = {
             word:"inmate truly february tray slim receive secret route clutch magnet bike inform",
             address:"0x66a1c3eeaa9dddec4e1fc3a352a3250d8da91bce31"
     }],
-/*
+*/
  	relayers:[
 		{
 			prikey:"0xb74dec46bddca59a39bbbb309ccf48f97be5ca5f980c62fab635a749f5f317ce",
@@ -37,7 +37,7 @@ var local = {
 			word:"setup letter modify bronze embark label elegant crash argue glare amazing photo",
 			address:"0x66c84eef87209999154a108ee968ef81ce690dcb20"
     }],
-	*/
+	
 	//0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c
 	bridge_word:"sound mandate urban welcome grass gospel gather shoulder hunt catch host second",
     bridge_address:"0x66a5e2e1d9243f9dfd1d54b31952d94043a105188f",
@@ -123,6 +123,7 @@ var product = {
     fauct_address:'0x666234b6348c10fed282b95c1f1768aa3113eb96b2',
     fauct_word:'tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook',
     fauct_prikey:'0x47c98c143179d48664dfc2f029a8583cb6a394a94037e06f0658dcf18ed6c66a',
+	/*
 	relayers:[
 		{
             prikey:"0x1f06c8b003fa13b3ae74dd8e2320468da652ed40899d8b4eec4279de75bf6030",
@@ -137,7 +138,7 @@ var product = {
             word:"setup letter modify bronze embark label elegant crash argue glare amazing photo",
             address:"0x66c84eef87209999154a108ee968ef81ce690dcb20"
     }],
-/*
+*/
  relayers:[
     {
         prikey:"0xbbb56da9edd3cac9e7c1e9f991d4bc51f5c9dde9a6e3122fbd53b5f8cce6799b",
@@ -155,7 +156,7 @@ var product = {
         address:"0x66ac76c2aea20aafb807fa2ac7fbeba44507d0e4a0"
     }],
 	*/
-	//0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c
+
 	bridge_word:"sound mandate urban welcome grass gospel gather shoulder hunt catch host second",
 	bridge_address:"0x66a5e2e1d9243f9dfd1d54b31952d94043a105188f",
 
@@ -167,8 +168,8 @@ var product = {
 	asimov_chain_rpc:"http://119.23.215.121:18545",
 	asimov_master_rpc:"http://119.23.215.121:18545",
 	asimov_child_rpc:"https://rpc-child.mistabit.com",
-    mist_server_port:16000,
-    websocket_port:16001
+    mist_server_port:21000,
+    websocket_port:21001
 }
 
 var mist_config;

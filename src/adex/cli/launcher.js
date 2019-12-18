@@ -122,9 +122,9 @@ export default class launcher {
 									}
 								*/		
 							}
-						setTimeout(()=>{
+					//	setTimeout(()=>{
 							this.loop.call(this)
-						}, 7000);
+					//	}, 7000);
 					},2000);
 
 
