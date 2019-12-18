@@ -1,5 +1,10 @@
 import to from 'await-to-js'
 
+const order_params = 'id,trader_address,market_id,side,cast(price as float8),cast(amount as float8),status,type,cast(available_amount as float8),cast(confirmed_amount as float8),cast(canceled_amount as float8),cast(pending_amount as float8),updated_at,created_at'
+const trade_params = 'id,trade_hash,transaction_id,transaction_hash,status,market_id,maker,taker,cast(price as float8),cast(amount as float8),taker_side,maker_order_id,taker_order_id,updated_at,created_at';
+const bridge_params = 'id,address,token_name,cast(amount as float8),side,master_txid,master_txid_status,child_txid,child_txid_status,fee_asset,fee_amount,updated_at,created_at';
+const express_params = 'trade_id,address,base_asset_name,cast(base_amount as float8),cast(price as float8),quote_asset_name,cast(quote_amount as float8),cast(fee_rate as float8),fee_token,cast(fee_amount as float8),base_txid,base_tx_status,quote_txid,quote_tx_status,updated_at,created_at';
+
 export default class db{
         clientDB;
         constructor() {
@@ -151,10 +156,10 @@ export default class db{
 
         }
 
-	  async get_tokens(symbol) {
-			let [err,result] = await to(this.clientDB.query('select * from mist_tokens where symbol=$1',symbol)); 
+	  async get_tokens(filter) {
+			let [err,result] = await to(this.clientDB.query('select * from mist_tokens where symbol=$1 or asim_assetid=$1 or address=$1',filter)); 
 			if(err) {
-				return console.error('get_tokens_查询失败', err,symbol);
+				return console.error('get_tokens_查询失败', err,filter);
 			}
 			return result.rows;
 
@@ -188,7 +193,7 @@ export default class db{
 		async get_market_current_price(marketID) {
 			//数据后期数据上来了，sql会卡，fixme
 			
-			let [err,result] = await to(this.clientDB.query('select cast(price as float8) from mist_trades where (current_timestamp - created_at) < \'24 hours\' and market_id=$1 order by created_at desc limit 1',marketID)); 
+			let [err,result] = await to(this.clientDB.query('select cast(price as float8) from mist_trades where (current_timestamp - created_at) < \'4 minutes\' and market_id=$1 order by created_at desc limit 1',marketID)); 
 			if(err) {
 				return console.error('get_market_current_price_查询失败', err,marketID);
 			}
@@ -203,7 +208,7 @@ export default class db{
 
 		async get_market_quotations(marketID) {
 
-            let [err,result] = await to(this.clientDB.query('select * from (select s.market_id,s.price as current_price,t.price as old_price,(s.price-t.price)/t.price as ratio from (select * from mist_trades where market_id=$1 order by created_at desc limit 1)s left join (select * from mist_trades where market_id=$1 and (current_timestamp - created_at) > \'24 hours\' order by created_at desc limit 1)t on s.market_id=t.market_id)k left join (select base_token_symbol,quote_token_symbol,id  from    mist_markets where id=$1)l on k.market_id=l.id',marketID));
+            let [err,result] = await to(this.clientDB.query('select * from (select s.market_id,s.price as current_price,t.price as old_price,(s.price-t.price)/t.price as ratio from (select * from mist_trades where market_id=$1 order by created_at desc limit 1)s left join (select * from mist_trades where market_id=$1 and (current_timestamp - created_at) > \'4 minutes\' order by created_at desc limit 1)t on s.market_id=t.market_id)k left join (select base_token_symbol,quote_token_symbol,id  from    mist_markets where id=$1)l on k.market_id=l.id',marketID));
             if(err) {
                 return console.error('get_market_quotations_查询失败', err,marketID);
             }
@@ -219,12 +224,35 @@ export default class db{
          *
          *trades
          */
-        async insert_trades(trade_info) {
-			let [err,result] = await to(this.clientDB.query('insert into mist_trades values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)',trade_info));
-			if(err) {
-				return console.error('insert_traders_查询失败', err,trade_info);
+        async insert_trades(trades_info) {
+			let query = 'insert into mist_trades values(';
+			let trades_arr = [];
+			for(var index in trades_info){
+				
+				let temp_value = '';
+				for(let i = 1;i<=15;i++){
+					if(i < 15){
+					temp_value += '$' + (i + 15 * index) + ','
+					}else{
+						temp_value += '$' + (i + 15 * index)	
+					}
+				}
+				if(index < trades_info.length -1){
+				query =  query + temp_value + '),('
+				}else{
+					query =  query + temp_value + ')'	
+				}
+				trades_arr = trades_arr.concat(trades_info[index]);
 			}
-			console.log('insert_trades_成功',JSON.stringify(result),"info",trade_info); 
+
+			//console.error("-----------------------------insert_trades-----query---trades_arr---",query,trades_arr);
+
+			//let [err,result] = await to(this.clientDB.query('insert into mist_trades values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)',trades_info));
+			let [err,result] = await to(this.clientDB.query(query,trades_arr));
+			if(err) {
+				return console.error('insert_traders_查询失败', err,trades_info);
+			}
+			console.log('insert_trades_成功',JSON.stringify(result),"info",trades_info); 
 			return JSON.stringify(result.rows);
 
 
@@ -270,7 +298,7 @@ export default class db{
 
 
 		async list_all_trades() {
-			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_trades where status!=\'matched\' order by transaction_id desc limit 100')); 
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_trades where status!=\'matched\' and (current_timestamp - created_at) < \'1 hours\' order by transaction_id desc limit 100')); 
 			if(err) {
 				return console.error('list_all_trades_查询失败', err);
 			}
@@ -329,10 +357,12 @@ export default class db{
 
 
 		async get_laucher_trades() {
-			let [err,result] = await to(this.clientDB.query('select * from mist_trades left join (SELECT transaction_id as right_id  FROM mist_trades where status=\'matched\'  order by transaction_id limit 1)s on mist_trades.transaction_id=s.right_id where s.right_id is not null')); 
+			//容错laucher过程中进程重启的情况
+			let [err,result] = await to(this.clientDB.query('select t.*,s.right_id from (select * from mist_trades where status!=\'successful\' and transaction_hash is null)t left join (SELECT transaction_id as right_id  FROM mist_trades where status!=\'successful\'  and transaction_hash is null order by transaction_id  limit 1)s on t.transaction_id=s.right_id where s.right_id is not null')); 
 			if(err) {
 				return console.error('get_laucher_trades_查询失败', err);
 			}
+
 			return result.rows;
 
 		} 
@@ -366,7 +396,7 @@ export default class db{
          *
          * */
         async insert_transactions(TXinfo) {
-			let [err,result] = await to(this.clientDB.query('insert into mist_transactions values($1,$2,$3,$4,$5,$6)',TXinfo));
+			let [err,result] = await to(this.clientDB.query('insert into mist_transactions values($1,$2,$3,$4,$5,$6,$7)',TXinfo));
 			if(err) {
 				return console.error('insert_transactions_查询失败', err,TXinfo);
 			}
@@ -403,7 +433,7 @@ export default class db{
 	
         async update_transactions(update_info) {
 			let [err,result] = await to(this.clientDB
-				.query('UPDATE mist_transactions SET (status,updated_at)=($1,$2) WHERE  id=$3',update_info)); 
+				.query('UPDATE mist_transactions SET (status,contract_status,updated_at)=($1,$2,$3) WHERE  id=$4',update_info)); 
 
 			if(err) {
 				return console.error('update_transactions_查询失败', err,update_info);
@@ -567,6 +597,95 @@ export default class db{
 
 		}
 
+		async find_bridge(filter_info) {
+			let [err,result] = await to(this.clientDB.query(`SELECT ${bridge_params} FROM mist_bridge  where id=$1`,filter_info)); 
+			if(err) {
+				return console.error('find_bridge_查询失败', err,filter_info);
+			}
+
+			return result.rows;
+
+		}
+
+		async my_bridge(filter_info) {
+			let [err,result] = await to(this.clientDB.query(`SELECT ${bridge_params} FROM mist_bridge  where address=$1 order by created_at desc limit $3 offset $2`,filter_info)); 
+			if(err) {
+				return console.error('list_borrows_查询失败', err,filter_info);
+			}
+
+			return result.rows;
+
+		}
+
+
+		async filter_bridge(filter_info) {
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_bridge  where side=$1 and master_txid_status=$2 and child_txid_status=$3 order by created_at desc limit 1',filter_info)); 
+			if(err) {
+				return console.error('list_borrows_查询失败', err,filter_info);
+			}
+
+			return result.rows;
+
+		}
+
+		async update_asset2coin_bridge(info) {
+			let [err,result] = await to(this.clientDB.query('UPDATE mist_bridge SET (child_txid,child_txid_status,updated_at)=($1,$2,$3) WHERE id=$4',info)); 
+			if(err) {
+				return console.error('list_borrows_查询失败', err,info);
+			}
+
+			return result.rows;
+
+		}
+
+
+		async update_asset2coin_decode(info) {
+			let [err,result] = await to(this.clientDB.query('UPDATE mist_bridge SET (address,token_name,amount,master_txid_status,child_txid_status,fee_asset,fee_amount,updated_at)=($1,$2,$3,$4,$5,$6,$7,$8) WHERE id=$9',info)); 
+			if(err) {
+				return console.error('update_asset2coin_decode失败', err,info);
+			}
+
+			return result.rows;
+
+		}
+
+
+		async update_coin2asset_bridge(info) {
+			let [err,result] = await to(this.clientDB.query('UPDATE mist_bridge SET (master_txid,master_txid_status,child_txid,child_txid_status,updated_at)=($1,$2,$3,$4,$5) WHERE id=$6',info)); 
+			if(err) {
+				return console.error('update_coin2asset_bridge', err,info);
+			}
+
+			return result.rows;
+
+		}
+
+
+		async update_coin2asset_failed(info) {
+			let [err,result] = await to(this.clientDB.query('UPDATE mist_bridge SET (master_txid,master_txid_status,updated_at)=($1,$2,$3) WHERE id=$4',info)); 
+			if(err) {
+				return console.error('update_coin2asset_bridge', err,info);
+			}
+
+			return result.rows;
+
+		}
+
+
+		async my_bridge_v3(filter_info) {
+			let [err,result] = await to(this.clientDB.query(`SELECT ${bridge_params} FROM mist_bridge  where address=$1 and token_name=$2 order by created_at desc limit $4 offset $3`,filter_info)); 
+			if(err) {
+				return console.error('list_borrows_查询失败', err,filter_info);
+			}
+
+			return result.rows;
+
+		}
+
+
+
+
+
 		
 		 async insert_converts(info) {
 			let [err,result] = await to(this.clientDB.query('insert into mist_token_convert values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)',info));
@@ -576,6 +695,17 @@ export default class db{
 			//console.log('insert_borrows_成功',JSON.stringify(result),"info",borrow_info); 
 			return JSON.stringify(result.rows);
         } 
+
+		 async insert_bridge(info) {
+			let [err,result] = await to(this.clientDB.query('insert into mist_bridge values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)',info));
+			if(err) {
+				return console.error('insert_mist_bridge_查询失败', err);
+			}
+			//console.log('insert_borrows_成功',JSON.stringify(result),"info",borrow_info); 
+			return JSON.stringify(result.rows);
+        } 
+
+
 
 
 		 async get_engine_info() {
@@ -604,5 +734,30 @@ export default class db{
 			}
 			return JSON.stringify(result.rows);
         }
+
+
+		async update_assets_total(info) {
+			let [err,result] = await to(this.clientDB.query('UPDATE asim_assets_info SET (total,updated_at)=($1,$2) WHERE asset_name=$3',info)); 
+			if(err) {
+				return console.error('update_asset_info', err,info);
+			}
+
+			return result.rows;
+
+		}
+
+		async update_assets_yesterday_total(info) {
+			let [err,result] = await to(this.clientDB.query('UPDATE asim_assets_info SET (yesterday_total,updated_at)=($1,$2) WHERE asset_name=$3',info)); 
+			if(err) {
+				return console.error('update_asset_info', err,info);
+			}
+
+			return result.rows;
+
+		}
+
+
+
+
 
 }

@@ -33,63 +33,62 @@ export default class watcher {
 
 			return;
 		}
-		
-		let id =  transaction[0].id;
-		
-		console.log("watche running11111111",transaction);
+		setTimeout( async ()=>{
+				let id =  transaction[0].id;
+				
+				console.log("watche running11111111",transaction);
 
-		let [err, result] = await to(chain.getrawtransaction([transaction[0].transaction_hash, true, true]))
+				let [err, result] = await to(chain.getrawtransaction([transaction[0].transaction_hash, true, true],'child_poa'))
 
-		//          console.log("chain.getrawtransaction",result,err);
-		//检测txid失败之后，更新为failed就不再管了,暂定为8个区块确认
-		//无论是失败还是成功，都会更新orders的confirm_amount,一个transaction确认成功，去更新一个taker和多个maker的order
-		//多个进程同时走的话可能多次更新表信息，对于做了加减运算的地方，可能会导致出现负值
-		let update_time = this.utils.get_current_time();
-		if (!err && result.confirmations >= 1) {
-			let status = 'successful';
-			let info = [status, update_time, id]
-			await this.db.update_transactions(info);
-			await this.db.update_trades(info);
+				let update_time = this.utils.get_current_time();
+				if (!err && result.confirmations >= 1) {
+					let status = 'successful';
+					let contract_status = this.utils.get_receipt_log(transaction[0].transaction_hash);
+					let info = [status,update_time, id]
+					let transaction_info = [status,contract_status,update_time, id]
+					await this.db.update_transactions(transaction_info);
+					await this.db.update_trades(info);
 
-			let trades = await this.db.transactions_trades([id]);
-				console.log("have n666666666666666666",trades);			
-			for(var index in trades){
-				let update_maker_orders_info = [0,+trades[index].amount,0,-+trades[index].amount,update_time,trades[index].maker_order_id];
-            	let update_taker_orders_info = [0,+trades[index].amount,0,-+trades[index].amount,update_time,trades[index].taker_order_id];
-				await this.db.update_order_confirm(update_maker_orders_info);
-                await this.db.update_order_confirm(update_taker_orders_info);
-			}
+					let trades = await this.db.transactions_trades([id]);
+						console.log("have n666666666666666666",trades);			
+					for(var index in trades){
+						let update_maker_orders_info = [0,+trades[index].amount,0,-+trades[index].amount,update_time,trades[index].maker_order_id];
+						let update_taker_orders_info = [0,+trades[index].amount,0,-+trades[index].amount,update_time,trades[index].taker_order_id];
+						await this.db.update_order_confirm(update_maker_orders_info);
+						await this.db.update_order_confirm(update_taker_orders_info);
+					}
 
-		} else if (err) {
-			/**
-			let status = 'failed';
-			let info = [status, update_time, id]
-			await this.db.update_transactions(info);
-			await this.db.update_trades(info);
+				} else if (err) {
+					/**
+					let status = 'failed';
+					let info = [status, update_time, id]
+					await this.db.update_transactions(info);
+					await this.db.update_trades(info);
 
-			let trades = await this.db.transactions_trades([id]);
-				console.log("have n666666666666666666",trades);			
-			//失败的交易更改可用数量和状态后重新放入交易池中
-			for(var index in trades){
-				restore_order(trades[index].taker_order_id,trades[index].amount);
-				restore_order(trades[index].maker_order_id,trades[index].amount);
-			console.log("chain.getrawtransaction-------restore_order--err",trades[index]);
-			}**/
-			//失败了订单状态重新改为matched，等待下次打包,此failed为中间状态
-			await this.db.update_transactions(["failed", update_time, id]);
-			await this.db.update_trades(["matched", update_time, id]);
+					let trades = await this.db.transactions_trades([id]);
+						console.log("have n666666666666666666",trades);			
+					//失败的交易更改可用数量和状态后重新放入交易池中
+					for(var index in trades){
+						restore_order(trades[index].taker_order_id,trades[index].amount);
+						restore_order(trades[index].maker_order_id,trades[index].amount);
+					console.log("chain.getrawtransaction-------restore_order--err",trades[index]);
+					}**/
+					//失败了订单状态重新改为matched，等待下次打包,此failed为中间状态
+					await this.db.update_transactions(["failed",undefined,update_time, id]);
+		//			await this.db.update_trades(["matched", update_time, id]);
 
-			console.log("chain.getrawtransaction--err", err);
-		} else {
-			console.log("have n66666",id);
-			console.log("pending transaction", transaction[0].transaction_hash);
-		}
+					console.log("chain.getrawtransaction--err", err);
+				} else {
+					console.log("have n66666",id);
+					console.log("pending transaction", transaction[0].transaction_hash);
+				}
 
 
 
-		setTimeout(()=>{
-			this.loop.call(this)
-		}, 1000);
+				//setTimeout(()=>{
+					this.loop.call(this)
+				//}, 1000);
+			 }, 5000);
 
 	}
 

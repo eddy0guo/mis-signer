@@ -75,8 +75,7 @@ export default class engine {
 			let maker_status = 'full_filled';
 
 			//最低价格的一单最后成交，成交数量按照吃单剩下的额度成交,并且更新最后一个order的可用余额fixme__gxy
-			amount += find_orders[item].available_amount;
-
+			 amount = NP.plus(amount,find_orders[item].available_amount);
 
 			//吃单全部成交,挂单有剩余的场景,
 			if (item == find_orders.length - 1 && amount > my_order.amount) {
@@ -102,7 +101,7 @@ export default class engine {
 				taker: my_order.trader_address,
 				price: find_orders[item].price,
 				amount: find_orders[item].available_amount,
-				taker_side: find_orders[item].side,
+				taker_side: my_order.side,
 				maker_order_id: find_orders[item].id,
 				taker_order_id: my_order.id,
 				created_at: create_time,
@@ -135,13 +134,11 @@ export default class engine {
 		console.log("dex_match_order----gxy---22", trades);
 		let token_address = await this.db.get_market([trades[0].market_id]);
 
-		//这里合约逻辑写反了。参数顺序也故意写反，使整体没问题，等下次合约更新调整过来，fixme
-		//let order_address_set = [token_address[0].base_token_address,token_address[0].quote_token_address,index.relayer];
-
 		let transactions = await this.db.list_all_trades();
 		let matched_trades = await this.db.list_matched_trades();
-
-		let add_queue_num  = Math.floor(matched_trades.length / 1000 ) + 1;
+		//累计没超过100+1,粒度小，relayer高频，粒度大relayer低频
+		//新加坡服务器访问慢，先调大
+		let add_queue_num  = Math.floor(matched_trades.length / 300 ) + 1;
 
 		let transaction_id = transactions.length == 0 ?  0 : transactions[0].transaction_id + add_queue_num;
 
@@ -151,11 +148,12 @@ export default class engine {
 		//为了保证relayer的轮番顺序打包，这里和transaction_id关联
 		let index = transaction_id % 3;
 		console.log("gxyrelayers-engine-1",transaction_id,index,mist_config.relayers[index]);
-		let order_address_set = [token_address[0].quote_token_address, token_address[0].base_token_address, mist_config.relayers[index].address];
+		let order_address_set = [token_address[0].base_token_address, token_address[0].quote_token_address, mist_config.relayers[index].address];
 
 
 
-
+	
+		let trades_arr= [];
 		for (var i in trades) {
 
 			let trade_info ={
@@ -164,18 +162,20 @@ export default class engine {
 			baseToken: order_address_set[0],
 			quoteToken: order_address_set[1],
 			relayer: order_address_set[2],
-			baseTokenAmount: NP.times(trades[i].amount, trades[i].price, 100000000), //    uint256 baseTokenAmount;
-			quoteTokenAmount: NP.times(trades[i].amount, 100000000), // quoteTokenAmount;
+			baseTokenAmount: NP.times(trades[i].amount, 100000000), //    uint256 baseTokenAmount;
+			quoteTokenAmount: NP.times(trades[i].amount, trades[i].price,100000000), // quoteTokenAmount;
 			takerSide:	trades[i].taker_side
 			};
 
-			trades[i].trade_hash = await this.utils.orderhashbytes(trade_info);
 			trades[i].transaction_id = transaction_id;
+			trades[i].trade_hash = await this.utils.orderhashbytes(trade_info);
 
-			await this.db.insert_trades(this.utils.arr_values(trades[i]));
-
-			console.log("dex_match_order----gxy---333333",trades[i]);
+			trades_arr.push(this.utils.arr_values(trades[i]))
 		}
+
+		console.log("-call_asimov_result33333----------",transaction_id + 'gxyyyyy',mist_config.relayers[index].address,index)
+
+		await this.db.insert_trades(trades_arr);
 
 	}
 

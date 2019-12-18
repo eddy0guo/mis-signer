@@ -84,7 +84,7 @@ export default class order{
             let result = await this.db.insert_order(arr_message);
 
            //settimeout 的原因暂时不返回txid
-          await this.exchange.call_asimov(trades,id);
+          	this.exchange.call_asimov(trades,id);
 /**
 		
 		 for(var i in trades){

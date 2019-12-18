@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const bcrypt = require('bcrypt-nodejs');
-import db from './db'
+import {local_db,origin_db} from './db'
 
 let UserSchema = new Schema({
-    username: {
+    username: {        //手机或者邮箱
         type: String,
         unique: true,
         required: true
@@ -17,30 +17,17 @@ let UserSchema = new Schema({
         type: String,
         required: true
     },
-    id: {
-        type: Number,
-        required: true
-    },
-	asim_address: {
+	address: {
         type: String,
         required: true
     },
-
-    btc_address: {
-        type: String,
-        required: true
-    },
-    eth_address: {
-        type: String,
-        required: true
-    },
- 
- 
     mobile: String, // 绑定手机，一般同账户，需要唯一
     email: String,  // 绑定email，需要唯一
     nickname:String,
     avatar: String, // 头像地址
-    amount: Number, // 账户余额
+	home_address: String, //kyc家庭住址
+	identity_card: String, //身份证
+	name:String  //姓名
 });
 
 UserSchema.pre('save', function (next) {
@@ -72,4 +59,7 @@ UserSchema.methods.comparePassword = function (passw, cb) {
     });
 };
 
-module.exports = mongoose.model('User', UserSchema);
+let User = local_db.model('fingo_user', UserSchema);
+let origin_user = origin_db.model('fingo_user', UserSchema);
+
+export {User,origin_user}

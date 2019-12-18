@@ -30,7 +30,7 @@ export default class Price {
         await this.updatePrice()
         this.timer = setTimeout(() => {
             this.loop.call(this)
-        }, 15000);
+        }, 1500);
     }
 
     async updatePrice() {
@@ -45,9 +45,9 @@ export default class Price {
             this.prices[info.symbol+'-USDT'] = info.price_usd
         }
 
-        let asim = this.prices["ASIM-PI"]
-        let usdt = this.prices["USDT-PI"]
-        let mt = this.prices["MT-PI"]
+        let asim = this.prices["ASIM-CNYc"]
+        let usdt = this.prices["USDT-CNYc"]
+        let mt = this.prices["MT-CNYc"]
 
         asim*=1+(Math.random()-0.5)/100*3
         usdt*=1+(Math.random()-0.5)/100
@@ -57,11 +57,11 @@ export default class Price {
         let btc_usdt = this.prices["BTC-USDT"]
 
         let markets = {
-            "BTC-PI":btc_usdt*usdt,
-            "ETH-PI":eth_usdt*usdt,
-            "ASIM-PI":asim,
-            "USDT-PI":usdt,
-            "MT-PI":mt,
+            "BTC-CNYc":btc_usdt*usdt,
+            "ETH-CNYc":eth_usdt*usdt,
+            "ASIM-CNYc":asim,
+            "USDT-CNYc":usdt,
+            "MT-CNYc":mt,
             
             "BTC-USDT":btc_usdt,
             "ETH-USDT":eth_usdt,

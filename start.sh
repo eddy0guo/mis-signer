@@ -1,1 +1,1 @@
-nohup npm run dev  > mist_ex.log 2>&1 &
+nohup npm run server-hqpd > mist_ex.log 2>&1 &

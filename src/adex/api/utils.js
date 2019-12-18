@@ -55,7 +55,7 @@ export default class utils{
 			return result;
 	}
 	get_receipt(txid){
-		let cmd = 'curl -X POST --data \'\{\"id\":1, \"jsonrpc\":\"2.0\",\"method\":\"asimov_getTransactionReceipt\",\"params\":\[\"' + txid + '\"\]\}\}\' -H \"Content-type: application\/json\" ' + mist_config.asimov_chain_rpc;
+		let cmd = 'curl -X POST --data \'\{\"id\":1, \"jsonrpc\":\"2.0\",\"method\":\"asimov_getTransactionReceipt\",\"params\":\[\"' + txid + '\"\]\}\}\' -H \"Content-type: application\/json\" ' + mist_config.asimov_child_rpc;
 		
 		console.log("ssss---",cmd);
 		let sto =  child.execSync(cmd)
@@ -70,6 +70,22 @@ export default class utils{
     	console.log("222222222222222",datas);//sto才是真正的输出，要不要打印到控制台，由你自己啊
 		return datas;
 	}
+
+
+	get_receipt_log(txid){
+		let cmd = 'curl -X POST --data \'\{\"id\":1, \"jsonrpc\":\"2.0\",\"method\":\"asimov_getTransactionReceipt\",\"params\":\[\"' + txid + '\"\]\}\}\' -H \"Content-type: application\/json\" ' + mist_config.asimov_child_rpc;
+		
+		console.log("ssss---",cmd);
+		let sto =  child.execSync(cmd)
+		let logs = JSON.parse(sto).result.logs;
+		if(!logs){
+			console.error(`${cmd} result  have no logs`);
+		}
+    	console.log("log22222222222222222",logs.length,logs);//sto才是真正的输出，要不要打印到控制台，由你自己啊
+		return logs.length > 0 ? 'successful':'failed';
+	}
+
+
 
 	async orderTobytes(order){
 
@@ -121,5 +137,111 @@ export default class utils{
 		}else{}
 		return result;
 	}	
-	
+
+
+	async decode_transfer_info(txid){
+		console.log("-------txid---",txid)
+		let cmd = 'curl -X POST --data \'\{\"id\":1, \"jsonrpc\":\"2.0\",\"method\":\"asimov_getRawTransaction\",\"params\":\[\"' + txid + '\",true,true\]\}\}\' -H \"Content-type: application\/json\" ' + mist_config.asimov_chain_rpc;
+		console.log("cmd--------------",cmd)
+
+		let sto =  child.execSync(cmd)
+        let txinfo = JSON.parse(sto).result;
+		let asset_set = new Set(); 
+		for(let vin of txinfo.vin){
+			asset_set.add(vin.prevOut.asset);
+		}
+
+		console.log("---------------%o\n",txinfo)
+		//vins的所有address和assetid必须一致才去处理,且只考虑主网币做手续费这一种情况
+		let vin_amount = 0;
+		let from = txinfo.vin[0].prevOut.addresses[0];
+		let asset_id;   
+		for(let vin of txinfo.vin){
+			if(vin.prevOut.addresses[0] != from){
+			 throw new Error('decode failed,inputs contained Multiple addresses')
+			}else if(vin.prevOut.asset == '000000000000000000000000' &&  asset_set.size > 1){
+				console.log("this is a fee utxo");	
+				continue;
+			}else if(vin.prevOut.asset != '000000000000000000000000' && asset_set.size > 1 &&  asset_id !=  undefined  && vin.prevOut.asset != asset_id){
+				 throw new Error('decode failed,inputs contained Multiple asset')
+			}else if(asset_id ==  undefined){
+				 asset_id = vin.prevOut.asset;
+				  vin_amount += +vin.prevOut.value
+			}else if((asset_id != undefined && vin.prevOut.asset != '000000000000000000000000') || asset_set.size == 1){	
+				vin_amount += +vin.prevOut.value	
+			}else{
+			console.log("unknown case happened")
+			 throw new Error('decode failed')	
+			}
+		}
+
+		//vin里已经排除了多个asset的情况，vout就不判断了
+		let vout_remain_amount = 0;
+		let vout_to_amount = 0;
+		let to_address;
+		for(let out of txinfo.vout){
+			if(out.asset == '000000000000000000000000' && out.scriptPubKey.addresses[0] == from){
+				if(asset_set.size == 1){
+					 vout_remain_amount += out.value	
+				}else{
+				console.log("this is a fee out")
+				}	
+			}else if(  to_address !=  undefined && to_address != out.scriptPubKey.addresses[0] && from != out.scriptPubKey.addresses[0]){
+			 	throw new Error('decode failed,outputss contained Multiple addresses')
+			}else if(out.scriptPubKey.addresses[0] == from){
+				vout_remain_amount += out.value	
+			}else if( to_address == undefined ){
+				to_address = out.scriptPubKey.addresses[0];
+				vout_to_amount += +out.value
+			}else if(  to_address !=  undefined && to_address == out.scriptPubKey.addresses[0]){
+				 vout_to_amount += +out.value
+			}else{
+			 	throw new Error('decode failed')
+			}
+		}
+
+		let transfer_info = {
+				from:from,
+				to:to_address,
+				asset_id: txinfo.vout[0].asset, 
+				vin_amount: vin_amount,
+				to_amount: vout_to_amount,
+				remain_amount: vout_remain_amount,
+				fee_amount: txinfo.fee[0].value,   //TODO: 兼容多个fee的情况
+				fee_asset: txinfo.fee[0].asset
+		};	
+
+		console.log("111-----------",transfer_info);
+
+		return transfer_info;	
+	}
+/*
+----mint--"logs":[{"address":"0x63d202a9f65a4de95f7b2ea1ea632bfc27f10dff8c","topics":["0xce39aadd0e6aca7dcec6b4f53b1a15e20e545cad46a10664ad0af416cb0ac936"],"data":"0x0000000000000000000000000000000000000000000000000000000000000001000000000000000000000066202fab701a58b4b622ee07ac8ac11b872d727ced000000000000000000000066202fab701a58b4b622ee07ac8ac11b872d727ced0000000000000000000000000000000000000000000000000000000000989680","blockNumber":"0x1c1d7","transactionHash":"7f082454b220151a52f8b2241b0d47b6ac17ab6f13e47693d945b1de0744d028","transactionIndex":"0x2","blockHash":"dee5e73731f5396465117d0eaee83e0797160a8215c985b458ee72fecd087e0c","logIndex":"0x0","removed":false}]
+
+--transfer--
+logs":[{"address":"0x63d202a9f65a4de95f7b2ea1ea632bfc27f10dff8c","topics":["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef","0x000000000000000000000066202fab701a58b4b622ee07ac8ac11b872d727ced","0x000000000000000000000066da67bf3462da51f083b5fed4662973a62701a687"],"data":"0x0000000000000000000000000000000000000000000000000000000000989680","blockNumber":"0x2f75f","transactionHash":"1794093892b16f6e141b69ab5289ed45b537098fe0bad3abf8d7e9ca32054618","transactionIndex":"0x2","blockHash":"63593807ccf41ce984d86a85b7ccfb475c29e43af2a8e9c423a82d44405e09ee","logIndex":"0x0","removed":false}]
+*/
+	async decode_erc20_transfer(txid){
+		let cmd = 'curl -X POST --data \'\{\"id\":1, \"jsonrpc\":\"2.0\",\"method\":\"asimov_getTransactionReceipt\",\"params\":\[\"' + txid + '\"\]\}\}\' -H \"Content-type: application\/json\" ' + mist_config.asimov_child_rpc;
+		console.log("cmd--------",cmd);
+		let sto =  child.execSync(cmd)
+        let logs = JSON.parse(sto).result.logs;
+        if(logs){
+            console.error(`${cmd} result  have no logs`);
+       	} 
+	   console.log("contractaddress-----data--------------",logs[0].address,logs[0].data)
+	   let amount = parseInt(logs[0].data,16);
+	   console.log("----------amount",amount)
+		let info = {
+				contract_address: logs[0].address,
+				from: '0x' + logs[0].topics[1].substring(24), 
+				to: '0x' + logs[0].topics[2].substring(24),
+				amount: NP.divide(amount,100000000)
+		};	
+
+		console.log("erc--transferinfo=---------",info);
+		return info;
+	}
+
+
 }

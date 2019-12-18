@@ -4,8 +4,8 @@
 import PJWT from 'passport-jwt'
 
 // load up the user model
-import User from '../models/user'
-import DBConfig from './database'
+import {User} from '../models/user'
+import {local} from './database'
 
 const JwtStrategy = PJWT.Strategy
 const ExtractJwt = PJWT.ExtractJwt
@@ -13,7 +13,7 @@ const ExtractJwt = PJWT.ExtractJwt
 export default (passport) => {
     let opts = {};
     opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
-    opts.secretOrKey = DBConfig.secret;
+    opts.secretOrKey = local.secret;
     passport.use(new JwtStrategy(opts, function (jwt_payload, done) {
         console.log('----------------JWT----------------');
         console.log(jwt_payload)

@@ -49,7 +49,7 @@ module.exports = {
     },
     env_production: {
       NODE_ENV: "production",
-      MIST_MODE: "mist_hqtn",
+      MIST_MODE: "product",
     }
   },
   {
@@ -61,7 +61,7 @@ module.exports = {
     },
     env_production: {
       NODE_ENV: "production",
-      MIST_MODE: "mist_hqtn",
+      MIST_MODE: "product",
     }
   },
   {
@@ -73,7 +73,7 @@ module.exports = {
     },
     env_production: {
       NODE_ENV: "production",
-      MIST_MODE: "mist_hqtn",
+      MIST_MODE: "product",
     }
   },
     // {

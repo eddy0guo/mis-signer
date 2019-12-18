@@ -1,13 +1,13 @@
 import client from '../models/db'
 import utils2 from '../api/utils'
 import {restore_order} from '../api/order'
-import { chain } from '../../wallet/api/chain'
-import walletHelper from '../../wallet/lib/walletHelper'
+import { chain } from '../../wallet_child/api/chain'
+import walletHelper from '../../wallet_child/lib/walletHelper'
 import to from 'await-to-js'
 const crypto = require('crypto');
 var date = require("silly-datetime");
 import mist_config  from '../../cfg';
-import mist_ex10 from '../../wallet/contract/mist_ex10'
+import mist_ex10 from '../../wallet_child/contract/mist_ex10'
 
 import NP from 'number-precision'
 let walletInst;
@@ -36,76 +36,99 @@ export default class launcher {
 	async loop() {
 	
             let trades = await this.db.get_laucher_trades();
-            console.log("launchertrades=", trades);
 			let current_time = this.utils.get_current_time();
 			if (trades.length == 0) {
-				console.log("111111111111-launcher--",trades)
 					   setTimeout(()=>{
 						this.loop.call(this)
-						}, 5000);
+						}, 3000);
 				return
 			}
 
-						console.log("gxyrelayers-aa--launcher0000",mist_config.relayers);
-						let token_address = await this.db.get_market([trades[0].market_id]);
-
-					//这里合约逻辑写反了。参数顺序也故意写反，使整体没问题，等下次合约更新调整过来，fixme
-					//let order_address_set = [token_address[0].base_token_address,token_address[0].quote_token_address,index.relayer];
-					    let index = trades[0].transaction_id % 3;
-						let order_address_set = [token_address[0].quote_token_address, token_address[0].base_token_address, mist_config.relayers[index].address];
-
-						 let trades_hash = [];
-						for (var i in trades) {
-							let trade_info = [
-								trades[i].trade_hash,
-								trades[i].taker,
-								trades[i].maker,
-								NP.times(+trades[i].amount, +trades[i].price, 100000000), //    uint256 baseTokenAmount;
-								NP.times(+trades[i].amount, 100000000), // quoteTokenAmount;
-								trades[i].taker_side
-							];
-							   //后边改合约传结构体数据
-							trades_hash.push(trade_info);
-						}
-
-						 let mist = new mist_ex10(mist_config.ex_address);
-						 walletInst = await getTestInst(mist_config.relayers[index].word);
-						mist.unlock(walletInst, "111111");
-						let [err2, result] = await to(walletInst.queryAllBalance());
-
-						//let [err, txid] = await to(mist.matchorder(trades_hash, order_address_set));
-						console.log("relayers------",mist_config.relayers[index]);
-						let [err, txid] = await to(mist.matchorder(trades_hash, order_address_set,mist_config.relayers[index].prikey));
-						console.log("gxy---engine-call_asimov_result33333 = -", txid, err);
-
-						if(!err){
-						let update_trade_info = ['pending',txid,current_time,trades[0].transaction_id];
+						//只要进入laucher阶段就先把状态设置为pending，防止engine那边在laucher的时候，继续在当前transaction_id里继续插数据
+						let update_trade_info = ['pending',undefined,current_time,trades[0].transaction_id];
 						await this.db.launch_update_trades(update_trade_info);
-
-						console.log("trades[i]=22222222222222", trades);
-						let TXinfo = [trades[0].transaction_id, txid, trades[0].market_id, "pending", trades[0].created_at, trades[0].created_at];
-						this.db.insert_transactions(TXinfo);
-						}else{
-							//失败了不做任何处理，等待下次被laucher打包
-						//	let update_trade_info = ['failed',txid,current_time,trades[0].transaction_id];
-						//	await this.db.launch_update_trades(update_trade_info);
-							/*
-							console.log("trades[i]=22222222222222", trades);
-							//交易失败分为两种情况，transaction里的交易回滚和交易打包失败，watcher处理前者
-						//	let TXinfo = [trades[0].transaction_id, txid, trades[0].market_id, "failed", trades[0].created_at, trades[0].created_at];
-							  for(var index in trades){
-									console.log("restore_order2222222222222", trades);
-									restore_order(trades[index].taker_order_id,trades[index].amount);
-									restore_order(trades[index].maker_order_id,trades[index].amount);
+					//准备laucher之前先延时2秒	
+					setTimeout(async ()=>{
+							  let trades = await this.db.get_laucher_trades();
+						 let index = trades[0].transaction_id % 3;
+						 let trades_hash = [];
+						 let markets = await this.db.list_markets();
+							for (let i in trades) {
+								//耗时
+								//let token_address = await this.db.get_market([trades[i].market_id]);
+								let token_address;
+								for(let j in markets){
+									if (trades[i].market_id	== markets[j].id){
+										 token_address = markets[j];	
+									}
 								}
-							*/		
-						}
+
+								if( token_address ==  undefined){
+									console.error("not support market id");	
+									continue;
+								}
+
+								let trade_info ={
+									trade_hash: trades[i].trade_hash,
+									taker: trades[i].taker,
+									maker: trades[i].maker,
+									base_token_address: token_address.base_token_address,
+									quote_token_address: token_address.quote_token_address,
+									relayer: mist_config.relayers[index].address,
+									base_token_amount: NP.times(+trades[i].amount, 100000000), //    uint256 baseTokenAmount;
+									quote_token_amount: NP.times(+trades[i].amount, +trades[i].price, 100000000), // quoteTokenAmount;
+									r: null,
+									s: null,
+									side: trades[i].taker_side,
+									v: null
+								};
+								   //后边改合约传结构体数据
+								trades_hash.push(trade_info);
+							}
+
+							 let mist = new mist_ex10(mist_config.ex_address);
+							 walletInst = await getTestInst(mist_config.relayers[index].word);
+							mist.unlock(walletInst, "111111");
+							let [err2, result] = await to(walletInst.queryAllBalance());
+							let [err, txid] = await to(mist.matchorder(trades_hash,mist_config.relayers[index].prikey));
+							console.log("gxy---engine-call_asimov_result33333 = -", txid,mist_config.relayers[index].address,trades[0].transaction_id + 'gxyyyy',index);
+
+							console.log("time--222--",this.utils.get_current_time())
+
+							if(!err){
+							let update_trade_info = ['pending',txid,current_time,trades[0].transaction_id];
+							await this.db.launch_update_trades(update_trade_info);
+
+							console.log("time-4444--",this.utils.get_current_time())
+
+							let TXinfo = [trades[0].transaction_id, txid, trades[0].market_id, "pending","pending", trades[0].created_at, trades[0].created_at];
+							this.db.insert_transactions(TXinfo);
+							}else{
+
+							let update_trade_info = ['matched',,current_time,trades[0].transaction_id];
+							await this.db.launch_update_trades(update_trade_info);
+							console.log("---call_asimov_result33333time--sendraw--err--",trades[0].transaction_id,mist_config.relayers[index].address)
+								//失败了不做任何处理，等待下次被laucher打包
+							//	let update_trade_info = ['failed',txid,current_time,trades[0].transaction_id];
+							//	await this.db.launch_update_trades(update_trade_info);
+								/*
+								console.log("trades[i]=22222222222222", trades);
+								//交易失败分为两种情况，transaction里的交易回滚和交易打包失败，watcher处理前者
+							//	let TXinfo = [trades[0].transaction_id, txid, trades[0].market_id, "failed", trades[0].created_at, trades[0].created_at];
+								  for(var index in trades){
+										console.log("restore_order2222222222222", trades);
+										restore_order(trades[index].taker_order_id,trades[index].amount);
+										restore_order(trades[index].maker_order_id,trades[index].amount);
+									}
+								*/		
+							}
+					//	setTimeout(()=>{
+							this.loop.call(this)
+					//	}, 7000);
+					},2000);
 
 
-		setTimeout(()=>{
-			this.loop.call(this)
-		}, 12000);
-		//}, 6000000);
+//		}, 1800000);
 
 	}
 
