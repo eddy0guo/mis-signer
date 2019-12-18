@@ -47,8 +47,8 @@ var local = {
 
 	wallet_default_passwd:"111111",
 	did_seed_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
-	asimov_chain_rpc:"http://119.23.215.121:18545",
-    asimov_master_rpc:"http://119.23.215.121:18545",
+	asimov_chain_rpc:"https://rpc-master.mistabit.com",
+    asimov_master_rpc:"https://rpc-master.mistabit.com",
     asimov_child_rpc:"https://rpc-child.mistabit.com",
 
     mist_server_port:15000,
@@ -105,8 +105,8 @@ var dev = {
 
 	wallet_default_passwd:"111111",
 	did_seed_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
-	asimov_chain_rpc:"http://119.23.215.121:18545",
-    asimov_master_rpc:"http://119.23.215.121:18545",
+	asimov_chain_rpc:"https://rpc-master.mistabit.com",
+    asimov_master_rpc:"https://rpc-master.mistabit.com",
     asimov_child_rpc:"https://rpc-child.mistabit.com",
     mist_server_port:16000,
     websocket_port:16001
@@ -164,8 +164,8 @@ var product = {
 
 	wallet_default_passwd:"111111",
 	did_seed_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
-	asimov_chain_rpc:"http://119.23.215.121:18545",
-	asimov_master_rpc:"http://119.23.215.121:18545",
+	asimov_chain_rpc:"https://rpc-master.mistabit.com",
+	asimov_master_rpc:"https://rpc-master.mistabit.com",
 	asimov_child_rpc:"https://rpc-child.mistabit.com",
     mist_server_port:21000,
     websocket_port:21001
