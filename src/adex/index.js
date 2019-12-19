@@ -196,11 +196,27 @@ export default ({ config, db,logger}) => {
 									asset_balance = assets_balance[j].value;	
 								}
 							}
+							
+							let freeze_amount = 0;
+							let freeze_result = await client.get_freeze_amount([obj.address,token_arr[i].symbol])
+							if(freeze_result.length > 0){
+								for(let freeze of freeze_result){
+									if(freeze.side == 'buy'){
+										freeze_amount = NP.plus(freeze_amount,freeze.quote_amount);	
+									}else if (freeze.side == 'sell'){
+										freeze_amount = NP.plus(freeze_amount,freeze.base_amount);	
+									}else{
+										console.error(`${freeze.side} error`)	
+									}
+								}	
+								
+							}
 
 							let balance_info ={
 								token_symbol: token_arr[i].symbol,   
 								erc20_address: token_arr[i].address,
 								erc20_balance:result / (1 * 10 ** 8),
+								erc20_freeze_amount: freeze_amount,
 								asim_assetid: token_arr[i].asim_assetid,
 								asim_asset_balance: asset_balance,
 								token_icon: 'https://www.mist.exchange/res/icons/logo_' + token_arr[i].symbol.toLowerCase() + '@1x.png'

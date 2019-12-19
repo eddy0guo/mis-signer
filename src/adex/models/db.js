@@ -715,6 +715,17 @@ export default class db{
 			}
 			return JSON.stringify(result.rows);
         } 
+
+
+		async get_freeze_amount(filter_info) {
+			let [err,result] = await to(this.clientDB.query('select market_id,side,sum(pending_amount) as base_amount,sum(pending_amount * price) as quote_amount from mist_orders where trader_address=$1 group by market_id,side having (position($2 in market_id)=1 and side=\'sell\') or (position($2 in market_id)>1 and side=\'buy\')',filter_info));
+			if(err) {
+				return console.error('get_freeze_amount查询失败', err,filter_info);
+			}
+			return result.rows;
+        } 
+
+
 		/*
 		assets
 		*/
