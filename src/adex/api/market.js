@@ -2,6 +2,7 @@ import client from '../models/db'
 import utils2 from './utils'
 const crypto = require('crypto');
 import to from 'await-to-js';
+import mist_wallet from './mist_wallet'
 
 var date = require("silly-datetime");
 
@@ -30,10 +31,15 @@ export default class makets{
 	async list_market_quotations() {
 
 		let markets = await this.list_markets();
+		let quotation = new mist_wallet;
 		let quotations = [];
 		for(var index in markets){
 			let [err,result] = await to(this.db.get_market_quotations([markets[index].id]));
 			if(!err){
+				let base_token = result[0].market_id.split('-')[0];
+				console.log("base_token====",base_token);
+				console.log("--------------",await quotation.get_token_price2pi(base_token))
+				result[0].CNYc_price = await quotation.get_token_price2pi(base_token);
 				quotations.push(result[0]);	
 			}
 		}
