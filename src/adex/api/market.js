@@ -31,12 +31,10 @@ export default class makets{
 
 		let markets = await this.list_markets();
 		let quotations = [];
-        console.log("cancle_order--result22223333=",markets);
 		for(var index in markets){
 			let [err,result] = await to(this.db.get_market_quotations([markets[index].id]));
-        	 console.log("get_market_quotations--result=",result,err);
 			if(!err){
-				quotations.push(result);	
+				quotations.push(result[0]);	
 			}
 		}
         return quotations;

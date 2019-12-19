@@ -193,7 +193,7 @@ export default class db{
 		async get_market_current_price(marketID) {
 			//数据后期数据上来了，sql会卡，fixme
 			
-			let [err,result] = await to(this.clientDB.query('select cast(price as float8) from mist_trades where (current_timestamp - created_at) < \'4 minutes\' and market_id=$1 order by created_at desc limit 1',marketID)); 
+			let [err,result] = await to(this.clientDB.query('select cast(price as float8) from mist_trades where (current_timestamp - created_at) < \'24 hours\' and market_id=$1 order by created_at desc limit 1',marketID)); 
 			if(err) {
 				return console.error('get_market_current_price_查询失败', err,marketID);
 			}
@@ -208,7 +208,7 @@ export default class db{
 
 		async get_market_quotations(marketID) {
 
-            let [err,result] = await to(this.clientDB.query('select * from (select s.market_id,s.price as current_price,t.price as old_price,(s.price-t.price)/t.price as ratio from (select * from mist_trades where market_id=$1 order by created_at desc limit 1)s left join (select * from mist_trades where market_id=$1 and (current_timestamp - created_at) > \'4 minutes\' order by created_at desc limit 1)t on s.market_id=t.market_id)k left join (select base_token_symbol,quote_token_symbol,id  from    mist_markets where id=$1)l on k.market_id=l.id',marketID));
+            let [err,result] = await to(this.clientDB.query('select s.market_id,s.price,cast((s.price-t.price)/t.price as decimal(10,6)) ratio from (select * from mist_trades where market_id=$1 order by created_at desc limit 1)s left join (select * from mist_trades where market_id=$1 and (current_timestamp - created_at) < \'24 hours\' order by created_at asc  limit 1)t on s.market_id=t.market_id',marketID));
             if(err) {
                 return console.error('get_market_quotations_查询失败', err,marketID);
             }
