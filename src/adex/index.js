@@ -494,8 +494,8 @@ did对order_id进行签名，获取rsv
        res.json({result,err });
 	});
 
-	adex.all('/cancle_order_v2/:order_id/:signature', async (req, res) => {
-	    let {order_id,signature} = req.params; 
+	adex.all('/cancle_order_v2', async (req, res) => {
+	    let {order_id,signature} = req.body; 
 		let success = utils.verify(order_id,JSON.parse(signature));
 		if(!success){
 			return res.json({
