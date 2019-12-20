@@ -109,16 +109,22 @@ export default class db{
         } 
 
 
-		 async update_order_confirm(update_info) {
-
-			let [err,result] = await to(this.clientDB
-				.query('UPDATE mist_orders SET (available_amount,confirmed_amount,canceled_amount,\
-				pending_amount,updated_at)=(available_amount+$1,confirmed_amount+$2,canceled_amount+$3,pending_amount+$4,$5) WHERE id=$6',update_info)); 
+		 async update_order_confirm(updates_info) {
+			let query = 'update mist_orders set (confirmed_amount,pending_amount)=(mist_orders.confirmed_amount+tmp.confirmed_amount,mist_orders.pending_amount+tmp.pending_amount) from (values (';
+            for(var index in updates_info){
+                let temp_value =  updates_info[index].info[0] +  ',' + updates_info[index].info[1] + ',$1' +',\''  + updates_info[index].info[3] + "\'";
+                if(index < updates_info.length -1){
+                query =  query + temp_value + '),('
+                }else{
+                    query =  query + temp_value + ')'
+                }
+            }
+			query += ') as tmp (confirmed_amount,pending_amount,id) where mist_orders.id=tmp.id'
+			let [err,result] = await to(this.clientDB.query(query,[updates_info[0].info[2]]));
 
 			if(err) {
-				return console.error('update_order_confirm_查询失败', err,update_info);
+				return console.error('update_order_confirm', err,updates_info);
 			}
-			//console.log('update_order_confirm成功',JSON.stringify(result),"info",update_info); 
 			return result.rows;
 
         } 

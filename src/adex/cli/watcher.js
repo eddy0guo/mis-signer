@@ -51,12 +51,23 @@ export default class watcher {
 
 					let trades = await this.db.transactions_trades([id]);
 						console.log("have n666666666666666666",trades);			
+					let updates = [];
 					for(var index in trades){
-						let update_maker_orders_info = [0,+trades[index].amount,0,-+trades[index].amount,update_time,trades[index].maker_order_id];
+						/*let update_maker_orders_info = [0,+trades[index].amount,0,-+trades[index].amount,update_time,trades[index].maker_order_id];
 						let update_taker_orders_info = [0,+trades[index].amount,0,-+trades[index].amount,update_time,trades[index].taker_order_id];
 						await this.db.update_order_confirm(update_maker_orders_info);
 						await this.db.update_order_confirm(update_taker_orders_info);
+						*/
+						let update_maker = {
+								info:[+trades[index].amount,-+trades[index].amount,update_time,trades[index].maker_order_id],
+							}
+						let update_taker = {
+								info:[+trades[index].amount,-+trades[index].amount,update_time,trades[index].taker_order_id],
+							} 
+						updates.push(update_maker);
+						updates.push(update_taker);
 					}
+					await this.db.update_order_confirm(updates);
 
 				} else if (err) {
 					/**
