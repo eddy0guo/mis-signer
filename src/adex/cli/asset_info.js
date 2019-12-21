@@ -51,8 +51,7 @@ export default class assets{
 			if(token_arr[i].symbol != 'ASIM'){
 				const wallet = new AsimovWallet({
 					name: 'test',
-					// rpc:'https://rpc-master.mistabit.com',
-					rpc:'http://119.23.215.121:18545',
+					rpc:'https://rpc-master.mistabit.com',
 					address:'0x66381fed979566a0656a3b422706072915a452ba6b'
 					// mnemonic:'cannon club beach denial swear fantasy donate bag fiscal arrive hole reopen',
 				});

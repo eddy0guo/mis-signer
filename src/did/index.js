@@ -891,8 +891,7 @@ export default ({
 
 			const wallet = new AsimovWallet({
 				name: user.address,
-				// rpc:'https://rpc-master.mistabit.com',
-				rpc:'http://119.23.215.121:18545',
+				rpc:'https://rpc-master.mistabit.com',
 				address:user.address
 			})
 
