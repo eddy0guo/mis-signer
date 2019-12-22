@@ -627,6 +627,36 @@ did对order_id进行签名，获取rsv
        res.json({result,err });
 	});
 
+	adex.all('/my_orders_length/:address', async (req, res) => {
+       
+	   let {address} = req.params;
+       let [err,result] = await to(order.my_orders_length(address));
+
+	   res.json({
+			 success: result == undefined ? false:true,
+			 result:result,
+			 err:err
+		});
+
+	});
+
+	adex.all('/my_trades_length/:address', async (req, res) => {
+       
+	   let {address} = req.params;
+       let [err,result] = await to(trades.my_trades_length(address));
+
+	   res.json({
+			 success: result == undefined ? false:true,
+			 result:result,
+			 err:err
+		});
+
+	});
+
+
+
+
+
 	adex.all('/my_orders', async (req, res) => {
        
 	   /**

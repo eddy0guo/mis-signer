@@ -57,6 +57,41 @@ export default class db{
 
 		} 
 
+		async my_orders_length(address) {
+			let [err,result] = await to(this.clientDB.query('SELECT count(1) FROM mist_orders where trader_address=$1',address)); 
+			if(err) {
+				return console.error('my_order_查询失败', err,address);
+			}
+
+			return result.rows[0].count;
+
+		} 
+
+		async my_trades_length(address) {
+			let [err,result] = await to(this.clientDB.query('SELECT count(1) FROM mist_trades where taker=$1 or maker=$1',address)); 
+			if(err) {
+				return console.error('my_order_查询失败', err,address);
+			}
+
+			return result.rows[0].count;
+
+		} 
+
+		async my_bridge_length(address) {
+			let [err,result] = await to(this.clientDB.query('SELECT count(1) FROM mist_bridge where address=$1',address)); 
+			if(err) {
+				return console.error('my_order_查询失败', err,address);
+			}
+
+			return result.rows[0].count;
+
+		} 
+
+
+
+
+
+
 		async my_orders2(filter_info) {
 			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where trader_address=$1 and (status=$4 or status=$5)order by updated_at desc limit $3 offset $2',filter_info)); 
 			if(err) {

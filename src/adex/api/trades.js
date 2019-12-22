@@ -30,6 +30,14 @@ export default class trades{
         return result;
     }
 
+	async my_trades_length(address) {
+
+		let result = await this.db.my_trades_length([address]);
+        return result;
+    }
+
+
+
 	async my_trades(message) {
 
             console.log("cancle_order--message=",message);

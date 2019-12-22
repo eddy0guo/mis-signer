@@ -133,10 +133,15 @@ export default class order{
         return result;
     }
 
-	 async my_orders2(address,page,perpage,status1,status2) {
+	async my_orders2(address,page,perpage,status1,status2) {
         let offset = (+page - 1) * perpage;
         let result = await this.db.my_orders2([address,offset,perpage,status1,status2]);
             console.log("my_orders2--result=",result,address,offset,perpage);
+        return result;
+    }
+
+	async my_orders_length(address) {
+        let result = await this.db.my_orders_length([address]);
         return result;
     }
 
