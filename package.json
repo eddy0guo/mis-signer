@@ -85,6 +85,7 @@
     "passport": "^0.4.0",
     "passport-jwt": "^4.0.0",
     "pg": "^7.12.1",
+    "postgres-pool": "^2.0.2",
     "qrcode.vue": "^1.6.1",
     "qs": "^6.6.0",
     "resource-router-middleware": "^0.6.0",

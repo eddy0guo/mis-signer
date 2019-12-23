@@ -9,15 +9,13 @@ export default class db{
         clientDB;
         constructor() {
 				let db = process.env.MIST_MODE;
-				const pg=require('pg')
+				//const pg=require('pg')
+				const { Pool } = require('postgres-pool');
+
 				var conString = "postgres://postgres:postgres@119.23.181.166/" + db + "?sslmode=disable";
                 // var conString = "postgres://postgres:postgres@127.0.0.1/" + db + "?sslmode=disable";
-                let client = new pg.Client(conString);
-                client.connect(function(err) {
-                                if(err) {
-                                return console.error('连接postgreSQL数据库失败', err);
-                                }   
-                                });
+                //let client = new pg.Client(conString);
+				const client = new Pool({connectionString: conString});
                 this.clientDB  = client;
         }
 
