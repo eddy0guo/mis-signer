@@ -15,6 +15,22 @@ import express1 from './express'
 import mist_config from './cfg'
 const log4js = require('log4js');
 
+var responseTime = function () {
+    return function (req, res, next) {
+            req._startTime = new Date() // 获取时间 t1
+
+        var calResponseTime = function () {
+        var now = new Date(); 2
+        var deltaTime = now - req._startTime;
+                console.log(`--deltaTime-----${deltaTime}--------`);
+        }
+
+        res.once('finish', calResponseTime);
+        res.once('close', calResponseTime);
+        return next();
+   }
+
+}
 
 let app = express();
 
@@ -91,6 +107,8 @@ const logger = {
 	}
 logger.error('I will be error logged in mist_ex.log');
 logger.info('I will be info logged in mist_ex.log');
+app.use(responseTime())
+
 
 // connect to db
 initializeDb( db => {
@@ -116,3 +134,4 @@ initializeDb( db => {
 
 
 export default app;
+
