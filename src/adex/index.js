@@ -161,31 +161,6 @@ export default ({ config, db,logger}) => {
  	 				 console.log("obj11111111133=",token_arr);
 					
                     for(var i in token_arr){
-
-						/*
-							let master_wallet = new AsimovWallet({
-								name: 'test',
-								rpc:'https://rpc-master.mistabit.com',
-								mnemonic:'tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook',
-								// storage: 'localforage',
-							})
-
-
-						   let child_wallet = new AsimovWallet({
-								name: 'test2',
-								rpc:'https://rpc-child.mistabit.com',
-								mnemonic:'tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook',
-								// storage: 'localforage',
-							})
-
-						   let balance = await master_wallet.account.balance()
-						   console.log("balanceeeeeeee----asset--",balance,master_wallet.address)
-						   let res = await child_wallet.contractCall.callReadOnly('0x63720b32964170980b216cabbb4ecdd0979f8c9c17','balanceOf(address)',['0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c'])
-						   console.log("erc20---child--------",res)
-						   let res2 = await child_wallet.contractCall.callReadOnly('0x63720b32964170980b216cabbb4ecdd0979f8c9c17','balanceOf()',['0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c'])
-						   console.log("erc20---child--------",res2)
-						*/
-							
                     	    let token = new Token(token_arr[i].address);
                             let [err,result] = await to(token.balanceOf(obj.address,'child_poa'));
 							let asset = new Asset(token_arr[i].asim_assetid)
@@ -230,6 +205,90 @@ export default ({ config, db,logger}) => {
 							result: balances
 						});
      });
+
+
+	adex.all('/asset_balances/:address',async (req, res) => {
+					let {address} = req.params;
+                    let token_arr = await mist_wallet.list_tokens();
+					let balances = [];
+ 	 				 console.log("obj11111111133=",token_arr);
+					
+                    for(var i in token_arr){
+							let asset = new Asset(token_arr[i].asim_assetid)
+        					let [err4,assets_balance] = await to(asset.balanceOf(address))
+							let asset_balance=0;
+							for(let j in assets_balance){
+								if( token_arr[i].asim_assetid == assets_balance[j].asset){
+									asset_balance = assets_balance[j].value;	
+								}
+							}
+							
+							let balance_info ={
+								token_symbol: token_arr[i].symbol,   
+								asim_assetid: token_arr[i].asim_assetid,
+								asim_asset_balance: asset_balance,
+								token_icon: 'https://www.mist.exchange/res/icons/logo_' + token_arr[i].symbol.toLowerCase() + '@1x.png'
+							};
+							
+							balances.push(balance_info);
+                    }
+
+					  res.json({
+							success: true,
+							result: balances
+						});
+     });
+
+
+	adex.all('/erc20_balances/:address',async (req, res) => {
+					let {address} = req.params;
+                    let token_arr = await mist_wallet.list_tokens();
+					let balances = [];
+ 	 				 console.log("obj11111111133=",token_arr);
+					
+                    for(var i in token_arr){
+                    	    let token = new Token(token_arr[i].address);
+                            let [err,result] = await to(token.balanceOf(address,'child_poa'));
+							
+							let freeze_amount = 0;
+							let freeze_result = await client.get_freeze_amount([address,token_arr[i].symbol])
+							if(freeze_result.length > 0){
+								for(let freeze of freeze_result){
+									if(freeze.side == 'buy'){
+										freeze_amount = NP.plus(freeze_amount,freeze.quote_amount);	
+									}else if (freeze.side == 'sell'){
+										freeze_amount = NP.plus(freeze_amount,freeze.base_amount);	
+									}else{
+										console.error(`${freeze.side} error`)	
+									}
+								}	
+								
+							}
+
+							let balance_info ={
+								token_symbol: token_arr[i].symbol,   
+								erc20_address: token_arr[i].address,
+								erc20_balance:result / (1 * 10 ** 8),
+								erc20_freeze_amount: freeze_amount,
+								token_icon: 'https://www.mist.exchange/res/icons/logo_' + token_arr[i].symbol.toLowerCase() + '@1x.png'
+							};
+							
+							balances.push(balance_info);
+                    }
+
+					  res.json({
+							success: true,
+							result: balances
+						});
+     });
+
+
+
+
+
+
+
+
 
 
 
