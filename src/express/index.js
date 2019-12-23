@@ -179,6 +179,19 @@ export default ({ config, db }) => {
 
 	});
 
+	express.all('/my_express_length/:address', async (req, res) => {
+		let {address} = req.params;
+		let [err,result] = await to(psql_db.my_express_length([address]))
+		res.json({
+            success: result == undefined ? false:true,
+            result: result,
+			err:err
+        });
+
+	});
+
+
+
 	express.all('/get_pool_info', async (req, res) => {
 		  let token_arr = await mist_wallet.list_tokens();
 		

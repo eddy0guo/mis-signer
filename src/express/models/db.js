@@ -50,6 +50,19 @@ export default class db{
 
 		}
 
+		async my_express_length(address) {
+			let [err,result] = await to(this.clientDB.query(`SELECT count(1) FROM asim_express_records  where address=$1`,address)); 
+			if(err) {
+				return console.error('list_borrows_查询失败', err);
+			}
+
+			console.log("1122334455",result.rows);
+			return result.rows[0].count;
+
+		}
+
+
+
 		async laucher_pending_trade() {
 			let [err,result] = await to(this.clientDB.query('SELECT * FROM asim_express_records  where quote_tx_status in (\'pending\',\'failed\') order by created_at limit 1')); 
 			if(err) {
