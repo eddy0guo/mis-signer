@@ -87,7 +87,7 @@ async function getTestInst(){
 }
 //PI,ASIM,BTC.USDT,ETH,MT
 let faucet_amount = [600,100,0.1,1000,5,1000]
-let big_faucet_amount = [20000,200000,5,200000,200000,200000]
+let big_faucet_amount = [500000,200000,5,200000,200000,200000]
 
 export default ({ config, db }) => {
 	let wallet = Router();
@@ -1175,6 +1175,17 @@ wallet.all('/sendrawtransaction/coin2asset_v3',async (req, res) => {
             let [err2,result2] = await to(chain.getblockchaininfo(undefined,'child_poa'));
             res.json({ result:result,result2:result2,err:err});
 	});
+
+	wallet.all('/my_bridge_length/:address',async (req, res) => {
+			let {address} = req.params;
+            let [err,result] = await to(psql_db.my_bridge_length([address]));
+
+			  return     res.json({
+                                 success: result == undefined ? false:true,
+                                 result: result,
+								 err:err
+                            });
+    });
 
 
 

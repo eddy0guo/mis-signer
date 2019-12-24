@@ -289,9 +289,48 @@ export const CONSTANT = {
       asset: '000000000000000900000000',
       unit: "fee",
       balance: 0
+    },
+	{
+      name: "hqmt",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000000c00000000',
+      unit: "fee",
+      balance: 0
+    },{
+      name: "hqmt",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000000b00000001',
+      unit: "fee",
+      balance: 0
+    },{
+      name: "hqmt",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000000b00000002',
+      unit: "fee",
+      balance: 0
+    },{
+      name: "hqmt",
+      coinSlug: "fbtctoken",
+      coinName: "FEE",
+      coinType: 10005,
+      icon: "default",
+      addressPrefix: "feecoin",
+      asset: '000000000000000b00000003',
+      unit: "fee",
+      balance: 0
     }
-
-
 
 
   ],
