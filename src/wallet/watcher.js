@@ -136,10 +136,11 @@ export default class watcher{
             return;
         }
 
-		  let {id,address,amount,token_name} = pending_trade[0];
+		  let {id,address,fee_amount,amount,token_name} = pending_trade[0];
         console.log("---------6666666",pending_trade[0])
         let current_time = this.utils.get_current_time();
         let tokens = await this.psql_db.get_tokens([token_name])
+		let burn_amount = NP.plus(fee_amount,amount);
 				
 
 		let child_wallet = new AsimovWallet({
@@ -153,7 +154,7 @@ export default class watcher{
 		let [child_err,child_txid] = await to(child_wallet.contractCall.call(
 			tokens[0].address,
 			'burn(address,uint256)',
-			[address,NP.times(amount,100000000)],
+			[address,NP.times(burn_amount,100000000)],
 			AsimovConst.DEFAULT_GAS_LIMIT,0,
 			AsimovConst.DEFAULT_ASSET_ID,
 			AsimovConst.DEFAULT_FEE_AMOUNT,

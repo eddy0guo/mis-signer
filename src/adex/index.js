@@ -102,6 +102,17 @@ export default ({ config, db,logger}) => {
        res.json({result});
 	});
 
+
+	    adex.all('/get_token_price_v2/:symbol', async (req, res) => {
+        let {symbol} = req.params;
+        let result = await mist_wallet.get_token_price2pi(symbol);
+        res.json({
+                success: true,
+                result: result
+            });
+    });
+
+
 	adex.all('/get_token_price2btc', async (req, res) => {
 			var obj = urllib.parse(req.url,true).query;
  	 				  console.log("obj=",obj);

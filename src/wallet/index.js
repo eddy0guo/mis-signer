@@ -1053,7 +1053,7 @@ wallet.all('/sendrawtransaction/coin2asset_v3',async (req, res) => {
                      id:null,
                      address:address,
                      token_name:tokens[0].symbol,
-					 amount:amount - fee_amount,
+					 amount:NP.minus(amount,fee_amount),
 					 side:'coin2asset',
                      master_txid:null,
                      master_txid_status:"pending",
