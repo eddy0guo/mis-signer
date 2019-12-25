@@ -6,7 +6,7 @@ export default class db{
         constructor() {
 				let db = process.env.MIST_MODE;
 				const pg=require('pg')
-				var conString = "postgres://postgres:postgres@119.23.181.166/" + db + "?sslmode=disable";
+				var conString = "postgres://postgres:postgres@127.0.0.1/" + db + "?sslmode=disable";
                 // var conString = "postgres://postgres:postgres@127.0.0.1/" + db + "?sslmode=disable";
                 let client = new pg.Client(conString);
                 client.connect(function(err) {

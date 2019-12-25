@@ -12,7 +12,7 @@ export default class db{
 				//const pg=require('pg')
 				const { Pool } = require('postgres-pool');
 
-				var conString = "postgres://postgres:postgres@119.23.181.166/" + db + "?sslmode=disable";
+				var conString = "postgres://postgres:postgres@127.0.0.1/" + db + "?sslmode=disable";
                 // var conString = "postgres://postgres:postgres@127.0.0.1/" + db + "?sslmode=disable";
                 //let client = new pg.Client(conString);
 				const client = new Pool({connectionString: conString});
@@ -115,10 +115,10 @@ export default class db{
 			let err;
 			let result;
 			if(filter[1] == 'sell'){
-				[err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where price<=$1 and side=$2 and available_amount>0 and market_id=$3 order by price asc',filter)); 
+				[err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where price<=$1 and side=$2 and available_amount>0 and market_id=$3 order by price asc limit 1000',filter)); 
 			}else{
 				
-				[err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where price>=$1 and side=$2 and available_amount>0 and market_id=$3 order by price desc',filter)); 
+				[err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where price>=$1 and side=$2 and available_amount>0 and market_id=$3 order by price desc limit 1000',filter)); 
 			}
 			if(err) {
 				return console.error('filter_orders_查询失败11',err,filter);
@@ -337,7 +337,7 @@ export default class db{
 
 
 		async list_all_trades() {
-			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_trades where status!=\'matched\' and (current_timestamp - created_at) < \'1 hours\' order by transaction_id desc limit 100')); 
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_trades where status!=\'matched\' and (current_timestamp - created_at) < \'10 hours\' order by transaction_id desc limit 100')); 
 			if(err) {
 				return console.error('list_all_trades_查询失败', err);
 			}
@@ -346,7 +346,7 @@ export default class db{
 		} 
 
 		async list_matched_trades() {
-			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_trades where status=\'matched\' order by created_at  desc')); 
+			let [err,result] = await to(this.clientDB.query('SELECT count(1) FROM mist_trades where status=\'matched\'')); 
 			if(err) {
 				return console.error('list_all_trades_查询失败', err);
 			}
