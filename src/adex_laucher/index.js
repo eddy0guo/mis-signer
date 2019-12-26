@@ -22,8 +22,8 @@ class launcher {
 	db;
 	exchange;
 	root_hash;
-	constructor(client) {
-		this.db = client;
+	constructor() {
+		this.db = new client;
 		this.utils = new utils2;
 		this.start();
 	}
@@ -39,6 +39,7 @@ class launcher {
             let trades = await this.db.get_laucher_trades();
 			let current_time = this.utils.get_current_time();
 			if (trades.length == 0) {
+				console.log("have no matched trades")
 					   setTimeout(()=>{
 						this.loop.call(this)
 						}, 3000);

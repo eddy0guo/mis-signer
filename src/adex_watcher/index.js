@@ -10,8 +10,9 @@ class watcher {
 	db;
 	exchange;
 	root_hash;
-	constructor(client) {
-		this.db = client;
+	constructor() {
+
+		this.db = new client;
 		this.utils = new utils2;
 		this.start();
 	}
