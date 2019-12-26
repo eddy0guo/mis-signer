@@ -12,7 +12,18 @@
     "test": "eslint src",
     "bot": "nodemon -w src/bot --exec \"babel-node src/bot --presets es2015,stage-0\"",
     "ws": "source ./product.env && nodemon -w src/ws --exec \"babel-node src/ws --presets es2015,stage-0\"",
-    "engine": "source ./local.env && nodemon -w src/engine --exec \"babel-node src/engine --presets es2015,stage-0\"",
+    "engine-local": "source ./local.env && nodemon -w src/adex_engine --exec \"babel-node src/adex_engine --presets es2015,stage-0\"",
+    "engine-dev": "source ./dev.env && nodemon -w src/adex_engine --exec \"babel-node src/adex_engine --presets es2015,stage-0\"",
+    "engine-product": "source ./product.env && nodemon -w src/adex_engine --exec \"babel-node src/adex_engine --presets es2015,stage-0\"",
+    "watcher-local": "source ./local.env && nodemon -w src/adex_watcher --exec \"babel-node src/adex_watcher --presets es2015,stage-0\"",
+    "watcher-dev": "source ./dev.env && nodemon -w src/adex_watcher --exec \"babel-node src/adex_watcher --presets es2015,stage-0\"",
+    "watcher-product": "source ./product.env && nodemon -w src/adex_watcher --exec \"babel-node src/adex_watcher --presets es2015,stage-0\"",
+
+    "laucher-local": "source ./local.env && nodemon -w src/adex_laucher --exec \"babel-node src/adex_laucher --presets es2015,stage-0\"",
+    "laucher-dev": "source ./dev.env && nodemon -w src/adex_laucher --exec \"babel-node src/adex_laucher --presets es2015,stage-0\"",
+    "laucher-product": "source ./product.env && nodemon -w src/adex_laucher --exec \"babel-node src/adex_laucher --presets es2015,stage-0\"",
+
+
     "ws-poa": "source ./dev.env && nodemon -w src/ws --exec \"babel-node src/ws --presets es2015,stage-0\"",
     "bridge": "nodemon -w src/did/bridge --exec \"babel-node src/did/bridge --presets es2015,stage-0\"",
     "server-local": "source ./local.env && babel-node src --presets es2015,stage-0",
