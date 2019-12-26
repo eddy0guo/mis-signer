@@ -205,7 +205,7 @@ export default ({ config, db,logger}) => {
 								erc20_freeze_amount: freeze_amount,
 								asim_assetid: token_arr[i].asim_assetid,
 								asim_asset_balance: asset_balance,
-								token_icon: 'https://www.mist.exchange/res/icons/logo_' + token_arr[i].symbol.toLowerCase() + '@1x.png'
+								token_icon: 'https://www.mist.exchange/res/icons/' + token_arr[i].symbol + 'a.png'
 							};
 							
 							balances.push(balance_info);
@@ -238,7 +238,7 @@ export default ({ config, db,logger}) => {
 								token_symbol: token_arr[i].symbol,   
 								asim_assetid: token_arr[i].asim_assetid,
 								asim_asset_balance: asset_balance,
-								token_icon: 'https://www.mist.exchange/res/icons/logo_' + token_arr[i].symbol.toLowerCase() + '@1x.png'
+								token_icon: 'https://www.mist.exchange/res/icons/' + token_arr[i].symbol + 'a.png'
 							};
 							
 							balances.push(balance_info);
@@ -281,7 +281,8 @@ export default ({ config, db,logger}) => {
 								erc20_address: token_arr[i].address,
 								erc20_balance:result / (1 * 10 ** 8),
 								erc20_freeze_amount: freeze_amount,
-								token_icon: 'https://www.mist.exchange/res/icons/logo_' + token_arr[i].symbol.toLowerCase() + '@1x.png'
+								asim_assetid: token_arr[i].asim_assetid,
+								token_icon: 'https://www.mist.exchange/res/icons/' + token_arr[i].symbol + 'm.png'
 							};
 							
 							balances.push(balance_info);
