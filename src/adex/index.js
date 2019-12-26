@@ -233,11 +233,13 @@ export default ({ config, db,logger}) => {
 									asset_balance = assets_balance[j].value;	
 								}
 							}
+							let price = await mist_wallet.get_token_price2pi(token_arr[i].symbol);
 							
 							let balance_info ={
 								token_symbol: token_arr[i].symbol,   
 								asim_assetid: token_arr[i].asim_assetid,
 								asim_asset_balance: asset_balance,
+								value: NP.times(asset_balance,price),
 								token_icon: 'https://www.mist.exchange/res/icons/' + token_arr[i].symbol + 'a.png'
 							};
 							
@@ -275,13 +277,16 @@ export default ({ config, db,logger}) => {
 								}	
 								
 							}
+							let price = await mist_wallet.get_token_price2pi(token_arr[i].symbol);
+							let erc20_balance = result / (1 * 10 ** 8);
 
 							let balance_info ={
 								token_symbol: token_arr[i].symbol,   
 								erc20_address: token_arr[i].address,
-								erc20_balance:result / (1 * 10 ** 8),
+								erc20_balance: erc20_balance,
 								erc20_freeze_amount: freeze_amount,
 								asim_assetid: token_arr[i].asim_assetid,
+								value: NP.times(erc20_balance,price),
 								token_icon: 'https://www.mist.exchange/res/icons/' + token_arr[i].symbol + 'm.png'
 							};
 							
