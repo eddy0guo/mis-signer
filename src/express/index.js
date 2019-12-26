@@ -136,21 +136,33 @@ export default ({ config, db }) => {
 	express.all('/get_express_trade/:trade_id', async (req, res) => {
 		  let {trade_id} = req.params;
 			let [err,record] = await to(psql_db.find_express([trade_id]));
+			console.log("get_express_trade55---------%o-----%o-",err,record);
 			if(err){
+
+			console.log("get_express_trade44---------%o-----%o-",err,record);
 				return res.json({
 				success: false,
 				err:err
 				})
 			}
 
+			console.log("get_express_trade33---------%o-----%o-",err,record);
 			if(record.length == 0 ){
 				return res.json({
 				success: false,
 				err:'cann\'t find this trade'
 				})
 			}
+
+			console.log("get_express_trade22---------%o-----%o-",err,record);
+			if(record[0].base_asset_name && record[0].quote_asset_name){
 			record[0].base_token_icon =  'https://www.mist.exchange/res/icons/logo_' + record[0].base_asset_name.toLowerCase() + '@1x.png'
 			record[0].quote_token_icon = 'https://www.mist.exchange/res/icons/logo_' + record[0].quote_asset_name.toLowerCase() + '@1x.png'
+			}else{
+				record[0].base_token_icon = null;	
+				record[0].quote_token_icon = null;
+			}
+			console.log("get_express_trade11---------%o-----%o-",err,record);
 			res.json({
             success: record == undefined ? false:true,
             result: record[0],
