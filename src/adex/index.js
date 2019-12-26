@@ -30,6 +30,43 @@ async function my_wallet(word){
                 return await walletHelper.testWallet(word,'111111')
 }
 
+async function get_available_erc20_amount(address,symbol){
+
+
+	console.log("-----------------------",address,symbol)
+    let mist_wallet = new mist_wallet1();
+
+	let client = new client1();
+	let token_info = await mist_wallet.get_token(symbol);
+
+	console.log("-----------------------",token_info)
+	let token = new Token(token_info[0].address);
+	let [err,balance] = await to(token.balanceOf(address,'child_poa'));
+
+
+
+	let freeze_amount = 0;
+	let freeze_result = await client.get_freeze_amount([address,symbol])
+	console.log("--freeze_result--%o-",freeze_result)
+	if(freeze_result.length > 0){
+		for(let freeze of freeze_result){
+			if(freeze.side == 'buy'){
+				freeze_amount = NP.plus(freeze_amount,freeze.quote_amount);	
+			}else if (freeze.side == 'sell'){
+				freeze_amount = NP.plus(freeze_amount,freeze.base_amount);	
+			}else{
+				console.error(`${freeze.side} error`)	
+			}
+		}	
+		
+	}
+
+	console.log("------balance=%o----freeze=%o--",balance,freeze_amount);
+	return NP.minus(balance,freeze_amount);
+}
+
+
+
 
 export default ({ config, db,logger}) => {
 	let adex  = Router();
@@ -512,7 +549,14 @@ did对order_id进行签名，获取rsv
 
 	adex.all('/build_order_v3', async (req, res) => {
 		let {trader_address,market_id,side,price,amount,order_id,signature} =  req.body
-		//let {trader_address,market_id,side,price,amount,order_id,signature} = req.params;
+
+		if(!(trader_address && market_id && side && price && amount && order_id && signature)){
+			  return res.json({
+                        success: false,
+                        err:'body\'s params mistake'
+            })	
+			
+		}
 
 		let result = utils.verify(order_id,signature);
 		if(!result){
@@ -527,15 +571,27 @@ did对order_id进行签名，获取rsv
                         err:'amount or price is cannt support'
             })
 		}
-		/*
-		var arr = obj.market.toString().split("-");
-		let token_info = mist_wallet.get_token(arr[1]);
-		let token = new Token(token_info[0].address);
-        let balance = await token.balanceOf(obj.address);
-		if(NP.times(+obj.amount, +obj.price) > balance){
-			return res.json("balance is not enoungh");
+		
+		var [base_token,quota_token] = market_id.split("-");
+		if(side == 'buy'){
+			let available_quota = await get_available_erc20_amount(trader_address,quota_token);
+			if(NP.times(+obj.amount, +obj.price) > available_quota){
+				return res.json("quotation  balance is not enoungh");
+			}
+			
+		}else if( side == 'sell'){
+			let available_base = await get_available_erc20_amount(trader_address,base_token);
+			if(amount > available_base){
+				return res.json("base  balance is not enoungh");
+			}
+			
+		}else{
+			return res.json({
+                        success: false,
+                        err:`side ${side} is not supported`
+            })
+			
 		}
-		*/
 
 
        let message = {

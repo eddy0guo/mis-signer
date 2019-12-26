@@ -17,16 +17,6 @@ export default class db{
                 this.clientDB  = client;
         }
 
-		   async get_tokens(symbol) {
-            let [err,result] = await to(this.clientDB.query('select * from mist_tokens where symbol=$1',symbol));
-            if(err) {
-                return console.error('get_tokens_查询失败', err);
-            }
-            return result.rows;
-
-        }
-
-
 		async my_express(filter_info) {
 			console.log("11223344",filter_info);
 			let [err,result] = await to(this.clientDB.query(`SELECT ${express_params} FROM asim_express_records  where address=$1 order by created_at desc limit $3 offset $2`,filter_info)); 

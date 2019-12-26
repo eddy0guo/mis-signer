@@ -34,7 +34,7 @@ export default class mist_wallet{
     }
 
 	async get_token(symbol) {
-		 let result = await this.db.get_token([symbol]);	
+		 let result = await this.db.get_tokens([symbol]);	
         console.log("cancle_order--result=");
         return result;
     }
