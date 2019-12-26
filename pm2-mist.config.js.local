@@ -6,7 +6,7 @@
 module.exports = {
   apps: [
   {
-    name: "mist-poa",
+    name: "mist-poa-local",
     script: "./dist",
     env: {
       NODE_ENV: "development",
@@ -18,7 +18,7 @@ module.exports = {
     }
   },
   {
-    name: "mist-poa-bot",
+    name: "mist-poa-bot-local",
     script: "./dist/bot",
     env: {
       NODE_ENV: "development",
@@ -30,7 +30,7 @@ module.exports = {
     }
   },
   {
-    name: "mist-poa-engine",
+    name: "mist-poa-engine-local",
     script: "./dist/adex_engine",
     env: {
       NODE_ENV: "development",
@@ -43,7 +43,7 @@ module.exports = {
   },
 
   {
-    name: "mist-poa-watcher",
+    name: "mist-poa-watcher-local",
     script: "./dist/adex_watcher",
     env: {
       NODE_ENV: "development",
@@ -57,7 +57,7 @@ module.exports = {
 
 
   {
-    name: "mist-poa-laucher",
+    name: "mist-poa-laucher-local",
     script: "./dist/adex_laucher",
     env: {
       NODE_ENV: "development",
