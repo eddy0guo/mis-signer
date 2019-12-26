@@ -12,16 +12,27 @@
     "test": "eslint src",
     "bot": "nodemon -w src/bot --exec \"babel-node src/bot --presets es2015,stage-0\"",
     "ws": "source ./product.env && nodemon -w src/ws --exec \"babel-node src/ws --presets es2015,stage-0\"",
-    "engine-local": "source ./local.env && nodemon -w src/adex_engine --exec \"babel-node src/adex_engine --presets es2015,stage-0\"",
-    "engine-dev": "source ./dev.env && nodemon -w src/adex_engine --exec \"babel-node src/adex_engine --presets es2015,stage-0\"",
-    "engine-product": "source ./product.env && nodemon -w src/adex_engine --exec \"babel-node src/adex_engine --presets es2015,stage-0\"",
-    "watcher-local": "source ./local.env && nodemon -w src/adex_watcher --exec \"babel-node src/adex_watcher --presets es2015,stage-0\"",
-    "watcher-dev": "source ./dev.env && nodemon -w src/adex_watcher --exec \"babel-node src/adex_watcher --presets es2015,stage-0\"",
-    "watcher-product": "source ./product.env && nodemon -w src/adex_watcher --exec \"babel-node src/adex_watcher --presets es2015,stage-0\"",
+    "engine-local": "source ./local.env && node dist/adex_engine",
+    "engine-dev": "source ./dev.env && node dist/adex_engine", 
+    "engine-product": "source ./product.env && node dist/adex_engine", 
+    "watcher-local": "source ./local.env && node dist/adex_watcher",
+    "watcher-dev": "source ./dev.env && node dist/adex_watcher",
+    "watcher-product": "source ./product.env && node dist/adex_watcher",
 
-    "laucher-local": "source ./local.env && nodemon -w src/adex_laucher --exec \"babel-node src/adex_laucher --presets es2015,stage-0\"",
-    "laucher-dev": "source ./dev.env && nodemon -w src/adex_laucher --exec \"babel-node src/adex_laucher --presets es2015,stage-0\"",
-    "laucher-product": "source ./product.env && nodemon -w src/adex_laucher --exec \"babel-node src/adex_laucher --presets es2015,stage-0\"",
+    "laucher-local": "source ./local.env && node dist/adex_laucher",
+    "laucher-dev": "source ./dev.env && node dist/adex_laucher",
+    "laucher-product": "source ./product.env && node dist/adex_laucher",
+
+    "express-local": "source ./local.env && node dist/express_watcher",
+    "express-dev": "source ./dev.env && node dist/express_watcher",
+    "express-product": "source ./product.env && node dist/express_watcher",
+
+
+    "bridge-local": "source ./local.env && node dist/bridge_watcher",
+    "bridge-dev": "source ./dev.env && node dist/bridge_watcher",
+    "bridge-product": "source ./product.env && node dist/bridge_watcher",
+
+
 
 
     "ws-poa": "source ./dev.env && nodemon -w src/ws --exec \"babel-node src/ws --presets es2015,stage-0\"",

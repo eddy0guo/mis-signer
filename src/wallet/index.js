@@ -97,7 +97,7 @@ export default ({ config, db }) => {
 	let utils = new adex_utils();
 	let mist_wallet = new mist_wallet1();
 	let watcher = new watcher1();
-	watcher.start();
+//	watcher.start();
 
 	wallet.all('/', async (req, res) => {
 		walletInst = await getTestInst();

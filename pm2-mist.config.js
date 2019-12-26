@@ -68,5 +68,29 @@ module.exports = {
       MIST_MODE: "product",
     }
   },
+  {
+    name: "mist-poa-express",
+    script: "./dist/express_watcher",
+    env: {
+      NODE_ENV: "development",
+      MIST_MODE: "local",
+    },
+    env_production: {
+      NODE_ENV: "production",
+      MIST_MODE: "product",
+    }
+  },
+{
+    name: "mist-poa-bridge",
+    script: "./dist/bridge_watcher",
+    env: {
+      NODE_ENV: "development",
+      MIST_MODE: "local",
+    },
+    env_production: {
+      NODE_ENV: "production",
+      MIST_MODE: "product",
+    }
+  },
   ]
 }

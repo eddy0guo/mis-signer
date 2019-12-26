@@ -114,7 +114,7 @@ export default ({ config, db }) => {
 	let utils = new utils1();
 	let watcher = new watcher1();
 	let order = new order1(psql_db);
-	watcher.start()
+//	watcher.start()
 
 
 	express.all('/my_records/:address/:page/:perpage', async (req, res) => {
