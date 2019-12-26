@@ -205,7 +205,8 @@ export default ({ config, db,logger}) => {
 								erc20_freeze_amount: freeze_amount,
 								asim_assetid: token_arr[i].asim_assetid,
 								asim_asset_balance: asset_balance,
-								token_icon: 'https://www.mist.exchange/res/icons/' + token_arr[i].symbol + 'a.png'
+								asset_icon: 'https://www.mist.exchange/res/icons/' + token_arr[i].symbol + 'a.png'
+								coin_icon: 'https://www.mist.exchange/res/icons/' + token_arr[i].symbol + 'm.png'
 							};
 							
 							balances.push(balance_info);
