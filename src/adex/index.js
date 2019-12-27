@@ -42,7 +42,7 @@ async function get_available_erc20_amount(address,symbol){
 	console.log("-----------------------",token_info)
 	let token = new Token(token_info[0].address);
 	let [err,balance] = await to(token.balanceOf(address,'child_poa'));
-
+	balance = NP.divide(balance,1 * 10 ** 8)
 
 
 	let freeze_amount = 0;
@@ -575,14 +575,20 @@ did对order_id进行签名，获取rsv
 		var [base_token,quota_token] = market_id.split("-");
 		if(side == 'buy'){
 			let available_quota = await get_available_erc20_amount(trader_address,quota_token);
-			if(NP.times(+obj.amount, +obj.price) > available_quota){
-				return res.json("quotation  balance is not enoungh");
+			let quota_amount = NP.times(+amount, +price);
+			if(quota_amount > available_quota){
+				return res.json({
+				success: false,
+				err: `quotation  balance is not enoungh,available amount is ${available_quota},but your order value is ${quota_amount}`
+				});
 			}
 			
 		}else if( side == 'sell'){
 			let available_base = await get_available_erc20_amount(trader_address,base_token);
 			if(amount > available_base){
-				return res.json("base  balance is not enoungh");
+				return res.json({
+					 success: false,
+					err: `base  balance is not enoungh,available amount is ${available_base},but your want to sell ${amount}`});
 			}
 			
 		}else{
