@@ -337,7 +337,7 @@ export default class db{
 
 
 		async list_all_trades() {
-			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_trades where status!=\'matched\' and (current_timestamp - created_at) < \'10 hours\' order by transaction_id desc limit 100')); 
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_trades where status=\'matched\' order by transaction_id  limit 1')); 
 			if(err) {
 				return console.error('list_all_trades_查询失败', err);
 			}
