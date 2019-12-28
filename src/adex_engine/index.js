@@ -24,7 +24,7 @@ import Queue from 'bull'
 class enginer {
 
 	constructor() {
-    this.orderQueue = new Queue('OrderQueue', 'redis://127.0.0.1:6379');
+    this.orderQueue = new Queue('OrderQueue'+process.env.MIST_MODE, 'redis://127.0.0.1:6379');
 	this.db = new client();
 	this.exchange = new engine(this.db);
 	this.utils = new utils2();

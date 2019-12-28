@@ -4,7 +4,7 @@ import utils2 from './utils'
 const crypto = require('crypto');
 var date = require("silly-datetime");
 var Queue = require('bull');
-var orderQueue = new Queue('OrderQueue', 'redis://127.0.0.1:6379');
+var orderQueue = new Queue('OrderQueue'+process.env.MIST_MODE, 'redis://127.0.0.1:6379');
 
 //require('babel-polyfill');
 //require('babel-register');
