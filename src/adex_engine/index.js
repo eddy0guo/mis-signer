@@ -77,7 +77,7 @@ class enginer {
 
 		let updated_at = this.utils.get_current_time();
 
-		let update_info = [-amount,0,0,amount,updated_at,message.id];
+		let update_info = [-amount,0,0,amount,order_status,updated_at,message.id];
 
         let result = await this.db.update_orders(update_info);
 
