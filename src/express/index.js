@@ -214,17 +214,13 @@ export default ({ config, db }) => {
 	express.all('/get_express_trade/:trade_id', async (req, res) => {
 		  let {trade_id} = req.params;
 			let [err,record] = await to(psql_db.find_express([trade_id]));
-			console.log("get_express_trade55---------%o-----%o-",err,record);
 			if(err){
-
-			console.log("get_express_trade44---------%o-----%o-",err,record);
 				return res.json({
 				success: false,
 				err:err
 				})
 			}
 
-			console.log("get_express_trade33---------%o-----%o-",err,record);
 			if(record.length == 0 ){
 				return res.json({
 				success: false,
@@ -232,7 +228,6 @@ export default ({ config, db }) => {
 				})
 			}
 
-			console.log("get_express_trade22---------%o-----%o-",err,record);
 			if(record[0].base_asset_name && record[0].quote_asset_name){
 			record[0].base_token_icon =  'https://www.mist.exchange/res/icons/' + record[0].base_asset_name + 'a.png'
 			record[0].quote_token_icon = 'https://www.mist.exchange/res/icons/' + record[0].quote_asset_name + 'a.png'
@@ -240,7 +235,6 @@ export default ({ config, db }) => {
 				record[0].base_token_icon = null;	
 				record[0].quote_token_icon = null;
 			}
-			console.log("get_express_trade11---------%o-----%o-",err,record);
 			res.json({
             success: record == undefined ? false:true,
             result: record[0],
@@ -254,6 +248,8 @@ export default ({ config, db }) => {
  * @apiName config
  * @apiGroup express
  * @apiSuccess {json} result
+   @apiHeader {String} Authorization 用户授权token
+   @apiPermission token
  * @apiSuccessExample {json} Success-Response:
  *  {
 		"success": true,
@@ -301,6 +297,30 @@ export default ({ config, db }) => {
         });
 	});
 
+/**
+ * @api {post} /express/get_price/:base_token_name/:quote_token_name/:base_amount 获取兑换价格
+ * @apiDescription 根据币种和深度获取对应的兑换比例
+ * @apiName get_price
+ * @apiGroup express
+ * @apiParam {string} base_token_name 兑出币种
+ * @apiParam {string} quote_token_name 兑入币种
+ * @apiParam {string} base_amount  兑换数量
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+ *  {
+     "success": true,
+    "result":
+        {
+			"success": true,
+    		"result": "15.70000000",
+    		"err": null
+        },
+    "err": null
+
+ *  }
+ * @apiSampleRequest http://119.23.181.166:21000/express/get_price/ASIM/CNYc/1 
+ * @apiVersion 1.0.0
+ */
 
 
 	express.all('/get_price/:base_token_name/:quote_token_name/:base_amount', async (req, res) => {
@@ -314,6 +334,30 @@ export default ({ config, db }) => {
 
 	});
 
+
+
+/**
+ * @api {post} /express/my_express_length/:address 获取记录长度
+ * @apiDescription 获取兑换记录的条数
+ * @apiName my_express_length
+ * @apiGroup express
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+ *  {
+     "success": true,
+    "result":
+        {
+            "success": true,
+            "result": "0",
+            "err": null
+        },
+    "err": null
+
+ *  }
+ * @apiSampleRequest http://119.23.181.166:21000/express/my_express_length/0x6665bc429f51bdb3b95dac156c1c4b396c0b695162
+ * @apiVersion 1.0.0
+ */
+
 	express.all('/my_express_length/:address', async (req, res) => {
 		let {address} = req.params;
 		let [err,result] = await to(psql_db.my_express_length([address]))
@@ -326,7 +370,28 @@ export default ({ config, db }) => {
 	});
 
 
+/**
+ * @api {post} /express/get_pool_info 获取资产池情况
+ * @apiDescription 获取当前闪兑资金池各币种储备量
+ * @apiName get_pool_info
+ * @apiGroup express
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+ *  {
+     "success": true,
+    "result":
+        {
+            "token_symbol": "CNYc",
+            "asim_asset_id": "000000000000000c00000000",
+            "asim_asset_balance": 0,
+            "icon": "https://www.mist.exchange/res/icons/CNYca.png"
+        },
+    "err": null
 
+ *  }
+ * @apiSampleRequest http://119.23.181.166:21000/express/get_pool_info
+ * @apiVersion 1.0.0
+ */
 	express.all('/get_pool_info', async (req, res) => {
 		  let token_arr = await mist_wallet.list_tokens();
 		
@@ -427,6 +492,22 @@ export default ({ config, db }) => {
 			quote_err:quote_err
         });
     });
+
+
+/**
+ * @api {post} /express/sendrawtransaction/build_express_v2/:quote_token_name/:sign_data 广播闪兑交易
+ * @apiDescription 广播向官方地址的转账并获取目标币种的入账
+ * @apiName build_express_v2
+ * @apiGroup express
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+ *  {
+	 "success": true,
+	 "trade_id": "3882ef7e018ed713963ae2495687276936c5e87be42f52aaee3537549e2176eb"
+ *  }
+ * @apiSampleRequest http://119.23.181.166:21000/express/sendrawtransaction/build_express_v2/ETH/01000000052eaec5adabda0ad548dc425d6f15fe342f975d54eded038549634da938e0f426000000006b483045022100bcf4ddd36ef656bf91e355d665a006c8aa0ea2bbed7e1a1b45b66c17de03bb3502207fa89b658b672360504d4becc30afc3099718495d2a3b8a69825e27bb18d9f66012103b225a0756af3fbc2563b966bc900ef7858c0f0f6edc85f82d0ccca45c79a0590ffffffffedb1f3eea1b30a16988b3b750576a80cb3ed8b4cc741e779c73e6bd27b9c0ea1000000006a47304402207eb92260aa94d462c317ae1f5dc88d56dc1b5333bef10fdcc07205816e42e6dd0220700eaeb64526f2b310912cbf148d433b86bd1cce71159782eade1e24fd838287012103b225a0756af3fbc2563b966bc900ef7858c0f0f6edc85f82d0ccca45c79a0590ffffffff978d3189a845c9174ce5d1075cb7ba1ae3603a4048facecb160d911642f9679f020000006a47304402207356f954f8b45b2f6db0104a042abeebafae3a83b288c289b60a740ac5e10038022037e29b5e12c73386cbd6a91bb29faf979b335e45ec64eb160ca52403d59a40fd012103b225a0756af3fbc2563b966bc900ef7858c0f0f6edc85f82d0ccca45c79a0590ffffffffcf9fba221c9006a9ebc467a5b64b11722d50e0f909e5c0d4e5f70b2d8a162fe8010000006b48304502210097a6c0a03eac98a53c88717c7da10370a289c55ffea6cd014d991205ff48d9cd02204335530afc7830a0ee46547b1cb3ddc3817ce18a892adb11d82b7c19d759feeb012103b225a0756af3fbc2563b966bc900ef7858c0f0f6edc85f82d0ccca45c79a0590ffffffffbfa02ed068eab48da533d6a842374348d1b55e3d3a07d3868887f626bb24ea3b000000006a473044022040d60d81524e7dd5a55ec97bb7af6574638d3d823cf51edf972f5099f69c382a02206ad4a704fc5e190d912958713aa2c7e0150e07ca1b5e35d016bc88b90cd7762e012103b225a0756af3fbc2563b966bc900ef7858c0f0f6edc85f82d0ccca45c79a0590ffffffff03a0860100000000001a76a91566b7a9a597306b5fb16909b515c654f30a4c2eb74cc5ac0c000000000000000b00000001006463ba00000000001a76a9156602ca6e2820ec98cc68909fdd9f87c7bd23b62000c5ac0c000000000000000b000000010080b63908000000001a76a9156602ca6e2820ec98cc68909fdd9f87c7bd23b62000c5ac0c000000000000000000000000000852000000000000 
+ * @apiVersion 1.0.0
+ */
 
 
 	express.all('/sendrawtransaction/build_express_v2/:quote_token_name/:sign_data',async (req, res) => {
