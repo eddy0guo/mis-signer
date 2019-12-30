@@ -143,17 +143,18 @@ export default class db{
 
 
 		 async update_order_confirm(updates_info) {
-			let query = 'update mist_orders set (confirmed_amount,pending_amount)=(mist_orders.confirmed_amount+tmp.confirmed_amount,mist_orders.pending_amount+tmp.pending_amount) from (values (';
+			let query = 'update mist_orders set (confirmed_amount,pending_amount,updated_at)=(mist_orders.confirmed_amount+tmp.confirmed_amount,mist_orders.pending_amount+tmp.pending_amount,tmp.updated_at) from (values (';
             for(var index in updates_info){
-                let temp_value =  updates_info[index].info[0] +  ',' + updates_info[index].info[1] + ',$1' +',\''  + updates_info[index].info[3] + "\'";
+                let temp_value =  updates_info[index].info[0] +  ',' + updates_info[index].info[1] + ',now()' +',\''  + updates_info[index].info[3] + "\'";
                 if(index < updates_info.length -1){
                 query =  query + temp_value + '),('
                 }else{
                     query =  query + temp_value + ')'
                 }
             }
-			query += ') as tmp (confirmed_amount,pending_amount,id) where mist_orders.id=tmp.id'
-			let [err,result] = await to(this.clientDB.query(query,[updates_info[0].info[2]]));
+			query += ') as tmp (confirmed_amount,pending_amount,updated_at,id) where mist_orders.id=tmp.id'
+			console.log("--update_order_confirm-query=---",query);
+			let [err,result] = await to(this.clientDB.query(query));
 
 			if(err) {
 				return console.error('update_order_confirm', err,updates_info);
