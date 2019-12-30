@@ -45,7 +45,12 @@ class watcher {
 				let update_time = this.utils.get_current_time();
 				if (!err && result.confirmations >= 1) {
 					let status = 'successful';
-					let contract_status = this.utils.get_receipt_log(transaction[0].transaction_hash);
+					let [get_receipt_err,contract_status] = await to(this.utils.get_receipt_log(transaction[0].transaction_hash));
+					if(get_receipt_err){
+						 console.log(`get_receipt_err--${get_receipt_err}`);	
+						 this.loop.call(this)
+						return;
+					}
 					let info = [status,update_time, id]
 					let transaction_info = [status,contract_status,update_time, id]
 					await this.db.update_transactions(transaction_info);

@@ -54,7 +54,7 @@ export default class utils{
 		 console.log('签名验证==',result)	
 			return result;
 	}
-	get_receipt(txid){
+	async get_receipt(txid){
 		let cmd = 'curl -X POST --data \'\{\"id\":1, \"jsonrpc\":\"2.0\",\"method\":\"asimov_getTransactionReceipt\",\"params\":\[\"' + txid + '\"\]\}\}\' -H \"Content-type: application\/json\" ' + mist_config.asimov_child_rpc;
 		
 		console.log("ssss---",cmd);
@@ -72,7 +72,7 @@ export default class utils{
 	}
 
 
-	get_receipt_log(txid){
+	async get_receipt_log(txid){
 		let cmd = 'curl -X POST --data \'\{\"id\":1, \"jsonrpc\":\"2.0\",\"method\":\"asimov_getTransactionReceipt\",\"params\":\[\"' + txid + '\"\]\}\}\' -H \"Content-type: application\/json\" ' + mist_config.asimov_child_rpc;
 		
 		console.log("ssss---",cmd);
