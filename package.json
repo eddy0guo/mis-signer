@@ -31,16 +31,14 @@
     "bridge-local": "source ./local.env && node dist/bridge_watcher",
     "bridge-dev": "source ./dev.env && node dist/bridge_watcher",
     "bridge-product": "source ./product.env && node dist/bridge_watcher",
-
-
-
-
+	
     "ws-poa": "source ./dev.env && nodemon -w src/ws --exec \"babel-node src/ws --presets es2015,stage-0\"",
     "bridge": "nodemon -w src/did/bridge --exec \"babel-node src/did/bridge --presets es2015,stage-0\"",
     "server-local": "source ./local.env && babel-node src --presets es2015,stage-0",
     "server-dev": "source ./dev.env && babel-node src --presets es2015,stage-0",
     "server-product": "source ./product.env && babel-node src --presets es2015,stage-0",
-    "sdk-test": "nodemon -w src/test --exec \"babel-node src/test --presets es2015,stage-0\""
+    "sdk-test": "nodemon -w src/test --exec \"babel-node src/test --presets es2015,stage-0\"",
+	"doc": "npx compodoc -p tsconfig.json"
   },
   "eslintConfig": {
     "extends": "eslint:recommended",
@@ -62,6 +60,7 @@
   "dependencies": {
     "@alicloud/sms-sdk": "^1.1.6",
     "@asimovdev/asimovjs": "^1.0.121",
+	 "@compodoc/compodoc": "^1.1.11",
     "@spinlee/ethers": "^1.0.12",
     "apicache": "^1.5.2",
     "asimov-wallet": "^1.0.21",
@@ -129,5 +128,9 @@
     "eslint": "^3.1.1",
     "ethereumjs-tx": "^2.1.1",
     "nodemon": "^1.9.2"
+  },
+  "apidoc": {  
+    "title": "接口文档",
+    "url": "http://119.23.181.166:3000"
   }
 }

@@ -116,7 +116,46 @@ export default ({ config, db }) => {
 	let order = new order1(psql_db);
 //	watcher.start()
 
+/**
+ * @api {post} /express/my_records 用户兑换记录
+ * @apiDescription 用户登录
+ * @apiName my_records
+ * @apiGroup express
+ * @apiParam {string} address 用户地址
+ * @apiParam {string} page 第几页
+ * @apiParam {string} perpage 每页记录数
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+ *  {
+	 "success": true,
+    "result": [
+        {
+            "trade_id": "4e6b881de2eb3b9e8bdb4baefac9d5182c54eb274c821ca43e04301c9a7e2497",
+            "address": "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
+            "base_asset_name": "ETH",
+            "base_amount": 0.01,
+            "price": 141.9571231,
+            "quote_asset_name": "USDT",
+            "quote_amount": 1.41247337,
+            "fee_rate": 0.005,
+            "fee_token": "USDT",
+            "fee_amount": 0.00709786,
+            "base_txid": null,
+            "base_tx_status": "failed",
+            "quote_txid": null,
+            "quote_tx_status": null,
+            "updated_at": "2019-12-16T06:43:29.022Z",
+            "created_at": "2019-12-16T06:43:29.022Z",
+            "base_token_icon": "https://www.mist.exchange/res/icons/ETHa.png",
+            "quote_token_icon": "https://www.mist.exchange/res/icons/USDTa.png"
+        }
+    ],
+    "err": null
 
+ *  }
+ * @apiSampleRequest http://119.23.181.166:21000/express/my_records/0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9/1/3
+ * @apiVersion 1.0.0
+ */
 	express.all('/my_records/:address/:page/:perpage', async (req, res) => {
 		  let {address,page,perpage} = req.params;
             let offset = (+page - 1) * +perpage;
@@ -132,6 +171,45 @@ export default ({ config, db }) => {
             err:err
         });
 	});
+
+/**
+ * @api {post} /express/get_express_trade 获取单个交易详情
+ * @apiDescription 获取单个交易详情
+ * @apiName get_express_trade
+ * @apiGroup express
+ * @apiParam {string} trade_id 交易ID
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+ *  {
+	 "success": true,
+    "result": 
+        {
+            "trade_id": "4e6b881de2eb3b9e8bdb4baefac9d5182c54eb274c821ca43e04301c9a7e2497",
+            "address": "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
+            "base_asset_name": "ETH",
+            "base_amount": 0.01,
+            "price": 141.9571231,
+            "quote_asset_name": "USDT",
+            "quote_amount": 1.41247337,
+            "fee_rate": 0.005,
+            "fee_token": "USDT",
+            "fee_amount": 0.00709786,
+            "base_txid": null,
+            "base_tx_status": "failed",
+            "quote_txid": null,
+            "quote_tx_status": null,
+            "updated_at": "2019-12-16T06:43:29.022Z",
+            "created_at": "2019-12-16T06:43:29.022Z",
+            "base_token_icon": "https://www.mist.exchange/res/icons/ETHa.png",
+            "quote_token_icon": "https://www.mist.exchange/res/icons/USDTa.png"
+        },
+    "err": null
+
+ *  }
+ * @apiSampleRequest http://119.23.181.166:21000/express/get_express_trade/4e6b881de2eb3b9e8bdb4baefac9d5182c54eb274c821ca43e04301c9a7e2497
+ * @apiVersion 1.0.0
+ */
+
 
 	express.all('/get_express_trade/:trade_id', async (req, res) => {
 		  let {trade_id} = req.params;
@@ -170,7 +248,52 @@ export default ({ config, db }) => {
         });
 	});
 
+/**
+ * @api {post} /express/config 
+ * @apiDescription 获取手续费详情
+ * @apiName config
+ * @apiGroup express
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+ *  {
+		"success": true,
+    "result": [
+        {
+            "token": "CNYc",
+            "min": 60,
+            "max": 60000
+        },
+        {
+            "token": "USDT",
+            "min": 10,
+            "max": 10000
+        },
+        {
+            "token": "ASIM",
+            "min": 1,
+            "max": 1000
+        },
+        {
+            "token": "MT",
+            "min": 1,
+            "max": 1000
+        },
+        {
+            "token": "ETH",
+            "min": 0.06,
+            "max": 60
+        },
+        {
+            "token": "BTC",
+            "min": 0.001,
+            "max": 1
+        }
+    ]
 
+ *  }
+ * @apiSampleRequest http://119.23.181.166:21000/express/config
+ * @apiVersion 1.0.0
+ */
 	express.all('/config', async (req, res) => {
 		 res.json({
             success: true,
