@@ -117,13 +117,10 @@ export default ({ config, db }) => {
 //	watcher.start()
 
 /**
- * @api {post} /express/my_records 用户兑换记录
+ * @api {post} /express/my_records/:page/:perpage 用户兑换记录
  * @apiDescription 用户登录
  * @apiName my_records
  * @apiGroup express
- * @apiParam {string} address 用户地址
- * @apiParam {string} page 第几页
- * @apiParam {string} perpage 每页记录数
  * @apiSuccess {json} result
  * @apiSuccessExample {json} Success-Response:
  *  {
@@ -248,7 +245,6 @@ export default ({ config, db }) => {
  * @apiName config
  * @apiGroup express
  * @apiSuccess {json} result
-   @apiHeader {String} Authorization 用户授权token
    @apiPermission token
  * @apiSuccessExample {json} Success-Response:
  *  {
