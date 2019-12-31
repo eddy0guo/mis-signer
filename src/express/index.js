@@ -170,7 +170,7 @@ export default ({ config, db }) => {
 	});
 
 /**
- * @api {post} /express/get_express_trade 获取单个交易详情
+ * @api {post} /express/get_express_trade/:trade_id 获取单个交易详情
  * @apiDescription 获取单个交易详情
  * @apiName get_express_trade
  * @apiGroup express
