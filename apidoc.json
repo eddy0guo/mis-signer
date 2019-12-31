@@ -1,0 +1,7 @@
+{
+  "name": "FINGO API",
+  "version": "0.1.0",
+  "description": "fingo API basic example",
+  "title": "Custom apiDoc browser title",
+  "url" : "https://poa.mist.exchange/api"
+}
