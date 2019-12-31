@@ -8,14 +8,23 @@ const express_params = 'trade_id,address,base_asset_name,cast(base_amount as flo
 export default class db{
         clientDB;
         constructor() {
-				let db = process.env.MIST_MODE;
-				//const pg=require('pg')
-				const { Pool } = require('postgres-pool');
+				 let db = process.env.MIST_MODE;
+                //const pg=require('pg')
+                const { Pool } = require('postgres-pool');
 
-				var conString = "postgres://postgres:postgres@127.0.0.1/" + db + "?sslmode=disable";
+                //var conString = "postgres://postgres:postgres@127.0.0.1/" + db + "?sslmode=disable";
+
+                const client = new Pool({
+                  host: 'pgm-wz9m1yb4h5g4sl7x127770.pg.rds.aliyuncs.com',
+                  database: process.env.MIST_MODE,
+                  user: 'product',
+                  password: 'myHzSesQc7TXSS5HOXZDsgq7SNUHY2',
+                  port: 1433,
+                });
+
                 // var conString = "postgres://postgres:postgres@127.0.0.1/" + db + "?sslmode=disable";
                 //let client = new pg.Client(conString);
-				const client = new Pool({connectionString: conString});
+                //const client = new Pool({connectionString: conString});
                 this.clientDB  = client;
         }
 

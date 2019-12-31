@@ -4,17 +4,25 @@ const express_params = 'trade_id,address,base_asset_name,cast(base_amount as flo
 export default class db{
         clientDB;
         constructor() {
-				let db = process.env.MIST_MODE;
-				const pg=require('pg')
-				var conString = "postgres://postgres:postgres@127.0.0.1/" + db + "?sslmode=disable";
+			    let db = process.env.MIST_MODE;
+                //const pg=require('pg')
+                const { Pool } = require('postgres-pool');
+
+                //var conString = "postgres://postgres:postgres@127.0.0.1/" + db + "?sslmode=disable";
+
+                const client = new Pool({
+                  host: 'pgm-wz9m1yb4h5g4sl7x127770.pg.rds.aliyuncs.com',
+                  database: process.env.MIST_MODE,
+                  user: 'product',
+                  password: 'myHzSesQc7TXSS5HOXZDsgq7SNUHY2',
+                  port: 1433,
+                });
+
                 // var conString = "postgres://postgres:postgres@127.0.0.1/" + db + "?sslmode=disable";
-                let client = new pg.Client(conString);
-                client.connect(function(err) {
-                                if(err) {
-                                return console.error('连接postgreSQL数据库失败', err);
-                                }   
-                                });
+                //let client = new pg.Client(conString);
+                //const client = new Pool({connectionString: conString});
                 this.clientDB  = client;
+
         }
 
 		async my_express(filter_info) {
