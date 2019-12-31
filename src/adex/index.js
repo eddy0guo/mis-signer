@@ -778,6 +778,20 @@ did对order_id进行签名，获取rsv
  * @apiParam {string} amount            买卖数量
  * @apiParam {string} price             价格
  * @apiParam {string} order_id          订单ID
+  * @apiParamExample {json} Request-Example:
+  {"signature":
+ 	{
+        "r": "19e54db2a1871c6ea22f4b195598a3f368c5d7b6dd65e89deeb764ccc5782d73",
+        "s": "13f2bb87c30fb3967ee0607a4acb1c42df988c4601bd0b920736da85fdea04e4",
+        "pubkey": "037cfb1769aa470e139c30f8cfd17d47f44e5317ad7f5b6e31e358d1e6e3df2832"
+    },
+ "trader_address":"0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
+ "market_id":"ASIM-CNYc",
+ "side":"sell",
+ "price":10000,
+ "amount":6,
+ "order_id":"1bc97051c8e0693d03fb5fe27430bead5a11ea4047e07abba162b4a83807118e"
+ }
  * @apiSuccess {json} result
  * @apiSuccessExample {json} Success-Response:
 {
@@ -1054,6 +1068,21 @@ did对order_id进行签名，获取rsv
        res.json({result,err });
 	});
 
+/**
+ * @api {post} /adex/my_orders_length/:address 用户订单数
+ * @apiDescription 获取用户订单总个数
+ * @apiName my_orders_length
+ * @apiGroup adex
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+{
+    "success": true,
+    "result": "1210666",
+    "err": null
+}
+ * @apiSampleRequest https://poa.mist.exchange/api/adex/my_orders_length/0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9
+ * @apiVersion 1.0.0
+ */
 	adex.all('/my_orders_length/:address', async (req, res) => {
        
 	   let {address} = req.params;
@@ -1067,6 +1096,21 @@ did对order_id进行签名，获取rsv
 
 	});
 
+/**
+ * @api {post} /adex/my_trades_length/:address 用户历史成交数
+ * @apiDescription 获取用户历史成交总数
+ * @apiName my_trades_length
+ * @apiGroup adex
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+{
+    "success": true,
+    "result": "748549",
+    "err": null
+}
+ * @apiSampleRequest https://poa.mist.exchange/api/adex/my_trades_length/0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9
+ * @apiVersion 1.0.0
+ */
 	adex.all('/my_trades_length/:address', async (req, res) => {
        
 	   let {address} = req.params;
@@ -1105,6 +1149,39 @@ did对order_id进行签名，获取rsv
        let [err,result] = await to(order.my_orders2(address,page,perpage,status1,status2));
        res.json({result,err });
 	});
+
+/**
+ * @api {post} /adex/my_orders_v2/:address/:page/:perpage/:status1/:status2 获取订单列表
+ * @apiDescription 获取用户历史成交列表,status包含4种:pending,partial_filled,cancled，full_filled
+ * @apiName my_orders_v2
+ * @apiGroup adex
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+ {
+    "success": true,
+    "result": [
+        {
+            "id": "eca409738aca8385fbf77f5dcd6c629be220fbefe8b423ed1db412f118e9b774",
+            "trader_address": "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
+            "market_id": "ETH-USDT",
+            "side": "sell",
+            "price": "136.47000000",
+            "amount": "36.42330000",
+            "status": "pending",
+            "type": "limit",
+            "available_amount": "36.42330000",
+            "confirmed_amount": "0.00000000",
+            "canceled_amount": "0.00000000",
+            "pending_amount": "0.00000000",
+            "updated_at": "2019-12-31T05:28:10.644Z",
+            "created_at": "2019-12-31T05:28:10.644Z"
+        }
+    ],
+    "err": null
+}
+ * @apiSampleRequest https://poa.mist.exchange/api/adex/my_orders_v2/0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9/1/1/pending/fullfuilled
+ * @apiVersion 1.0.0
+ */
 
 
 	adex.all('/my_orders_v2/:address/:page/:perpage/:status1/:status2', async (req, res) => {
@@ -1243,6 +1320,41 @@ did对order_id进行签名，获取rsv
             err:err
         });
     });
+
+	 /**
+ * @api {post} /adex/my_trades_v2/:address/:page/:perpage/ 获取历史成交列表
+ * @apiDescription 获取用户历史成交列表
+ * @apiName my_trades_v2
+ * @apiGroup adex
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+ {
+    "success": true,
+    "result": [
+        {
+            "id": "a55b5c0b6e269a5851ecb40def6191a77c5c6e4d57106f402339edbe60a51fa9",
+            "trade_hash": "0x53f3fe73e5a90292070f168fc22786208532b80d5207e195cacb9c98ddc4ffde",
+            "transaction_id": 40717,
+            "transaction_hash": null,
+            "status": "matched",
+            "market_id": "ETH-USDT",
+            "maker": "0x66b7637198aee4fffa103fc0082e7a093f81e05a64",
+            "taker": "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
+            "price": "126.66000000",
+            "amount": "3.39450000",
+            "taker_side": "buy",
+            "maker_order_id": "32eb0fb52699a456f51f605b8190b823c56b780da6fa4a60e8b58006f059e702",
+            "taker_order_id": "1fc99c3ef934b4f5055bf70d8d21ba0b2bac93cfdedfd7a0b9003c021aa721e4",
+            "updated_at": "2019-12-31T05:32:41.699Z",
+            "created_at": "2019-12-31T05:32:41.699Z"
+        }
+    ],
+    "err": null
+}
+
+ * @apiSampleRequest https://poa.mist.exchange/api/adex/my_trades_v2/0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9/1/1
+ * @apiVersion 1.0.0
+ */
 
 	adex.all('/my_trades_v2/:address/:page/:per_page', async (req, res) => {
        let [err,result] = await to(trades.my_trades2(req.params.address,req.params.page,req.params.per_page));

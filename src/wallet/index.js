@@ -1034,6 +1034,19 @@ wallet.all('/sendrawtransaction/asset2coin_v3/:sign_data',async (req, res) => {
  * @apiParam {string} token_name  目标币种
  * @apiParam {string} amount  兑换数量
  * @apiParam {string} expire_time  过期时间
+  @apiParamExample {json} Request-Example:
+  {"signature":
+	{
+			"r": "9ab18bf2783b6586391ea190c2b31ef060347dd085071f849e5c8909aa09f201",
+			"s": "8732b9921e50ea6de592dcfa6c90c3214b6424aecf3388a7d1064828a0307ca",
+			"pubkey": "02078e749afa7a3e869f8b2889aedd637adae74134165810f03e72e98a0564c0de"
+		},
+	 "address":"0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
+	 "token_name":"ETH",
+	 "amount":"0.08",
+	 "expire_time":"1577755470236"
+  }
+ *     
  * @apiSuccess {json} result
  * @apiSuccessExample {json} Success-Response:
  {
