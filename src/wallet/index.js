@@ -1009,6 +1009,26 @@ wallet.all('/sendrawtransaction/asset2coin_v3/:sign_data',async (req, res) => {
             res.json({ success: false,err:master_err});
       });
 
+/**
+ * @api {post} /wallet/sendrawtransaction/coin2asset_v3/ 广播币币划转
+ * @apiDescription 广播币币划转的兑入，并且进行目标币种的兑出
+ * @apiName coin2asset_v3
+ * @apiGroup wallet
+ * @apiParam {json} signature 签名信息
+ * @apiParam {string} address 兑入地址
+ * @apiParam {string} token_name  目标币种
+ * @apiParam {string} amount  兑换数量
+ * @apiParam {string} expire_time  过期时间
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+ {
+    "success": true,
+    "id": "aa5a2f00f03616f02bde85b5a804d096ff4a23a227a8c972d26e26ba486ba940"
+}
+ * @apiSampleRequest https://poa.mist.exchange/api/wallet/sendrawtransaction/coin2asset_v3
+ * @apiVersion 1.0.0
+ */
+
 wallet.all('/sendrawtransaction/coin2asset_v3',async (req, res) => {
 				let {signature,address,token_name,amount,expire_time} =  req.body;
 				//let {signature,address,token_name,amount,expire_time} = req.params;
@@ -1077,7 +1097,36 @@ wallet.all('/sendrawtransaction/coin2asset_v3',async (req, res) => {
 
 
 
-
+/**
+ * @api {post} /wallet/find_convert/:id 划转订单详情
+ * @apiDescription 单笔划转订单的详情
+ * @apiName find_convert
+ * @apiGroup wallet
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+ {
+    "success": true,
+    "result": [
+        {
+            "id": "8c4ddabebe95718a37aea074120d3bd133196c01812935ddef42dffcdfd431ac",
+            "address": "0x6602ca6e2820ec98cc68909fdd9f87c7bd23b62000",
+            "token_name": "ETH",
+            "amount": 1,
+            "side": "asset2coin",
+            "master_txid": "225a905c4e7fe2579f0217b49af2496f57424e512eacf2718ef2348a28cabb68",
+            "master_txid_status": "successful",
+            "child_txid": "dc5bf2c1208a832d898bff32e7118f0d558b8c66e26c4bb1e729f3caeebffffe",
+            "child_txid_status": "successful",
+            "fee_asset": "ASIM",
+            "fee_amount": "0.00105252",
+            "updated_at": "2019-12-18T10:06:45.317Z",
+            "created_at": "2019-12-18T10:06:34.273Z"
+        },
+    "err": null
+}
+ * @apiSampleRequest https://poa.mist.exchange/api/wallet/find_convert/8c4ddabebe95718a37aea074120d3bd133196c01812935ddef42dffcdfd431ac
+ * @apiVersion 1.0.0
+ */
 
 	wallet.all('/find_convert/:id',async (req, res) => {
             let [err,result] = await to(psql_db.find_bridge([req.params.id]));
@@ -1085,6 +1134,38 @@ wallet.all('/sendrawtransaction/coin2asset_v3',async (req, res) => {
             res.json({ success: success,result:result[0],err:err});
 		});
 
+
+/**
+ * @api {post} /wallet/my_converts_v3/:address/:page/:perpage 全币种用户划转记录
+ * @apiDescription 获取用户的所有币种的币币划转和资产划转的记录分页查询
+ * @apiName my_converts_v2
+ * @apiGroup wallet
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+ {
+    "success": true,
+    "result": [
+        {
+            "id": "8c4ddabebe95718a37aea074120d3bd133196c01812935ddef42dffcdfd431ac",
+            "address": "0x6602ca6e2820ec98cc68909fdd9f87c7bd23b62000",
+            "token_name": "ETH",
+            "amount": 1,
+            "side": "asset2coin",
+            "master_txid": "225a905c4e7fe2579f0217b49af2496f57424e512eacf2718ef2348a28cabb68",
+            "master_txid_status": "successful",
+            "child_txid": "dc5bf2c1208a832d898bff32e7118f0d558b8c66e26c4bb1e729f3caeebffffe",
+            "child_txid_status": "successful",
+            "fee_asset": "ASIM",
+            "fee_amount": "0.00105252",
+            "updated_at": "2019-12-18T10:06:45.317Z",
+            "created_at": "2019-12-18T10:06:34.273Z"
+        }
+    ],
+    "err": null
+}
+ * @apiSampleRequest https://poa.mist.exchange/api/wallet/my_converts_v2/0x6602ca6e2820ec98cc68909fdd9f87c7bd23b62000/1/10
+ * @apiVersion 1.0.0
+ */
 
 
 	wallet.all('/my_converts_v2/:address/:page/:perpage',async (req, res) => {
@@ -1095,6 +1176,38 @@ wallet.all('/sendrawtransaction/coin2asset_v3',async (req, res) => {
             res.json({ success: success,result:result,err:err});
 		});
 
+/**
+ * @api {post} /wallet/my_converts_v3/:address/:token_name/:page/:perpage 单币种用户划转记录
+ * @apiDescription 获取用户的指定币种的币币划转和资产划转的记录分页查询
+ * @apiName my_converts_v3
+ * @apiGroup wallet
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+ {
+    "success": true,
+    "result": [
+        {
+            "id": "8c4ddabebe95718a37aea074120d3bd133196c01812935ddef42dffcdfd431ac",
+            "address": "0x6602ca6e2820ec98cc68909fdd9f87c7bd23b62000",
+            "token_name": "ETH",
+            "amount": 1,
+            "side": "asset2coin",
+            "master_txid": "225a905c4e7fe2579f0217b49af2496f57424e512eacf2718ef2348a28cabb68",
+            "master_txid_status": "successful",
+            "child_txid": "dc5bf2c1208a832d898bff32e7118f0d558b8c66e26c4bb1e729f3caeebffffe",
+            "child_txid_status": "successful",
+            "fee_asset": "ASIM",
+            "fee_amount": "0.00105252",
+            "updated_at": "2019-12-18T10:06:45.317Z",
+            "created_at": "2019-12-18T10:06:34.273Z"
+        }
+    ],
+    "err": null
+}
+ * @apiSampleRequest https://poa.mist.exchange/api/wallet/my_converts_v3/0x6602ca6e2820ec98cc68909fdd9f87c7bd23b62000/ETH/1/10 
+ * @apiVersion 1.0.0
+ */
+
 
 
 	wallet.all('/my_converts_v3/:address/:token_name/:page/:perpage',async (req, res) => {
@@ -1104,6 +1217,48 @@ wallet.all('/sendrawtransaction/coin2asset_v3',async (req, res) => {
 			let success = (result == undefined || result.length == 0) ? false:true
             res.json({ success: success,result:result,err:err});
 		});
+
+
+/**
+ * @api {post} /wallet/coin2asset_fee_config 币币划转手续费
+ * @apiDescription 获取币币划转的手续费信息
+ * @apiName coin2asset_fee_config
+ * @apiGroup wallet
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+{
+    "success": true,
+    "result": [
+        {
+            "token": "CNYc",
+            "amount": 10
+        },
+        {
+            "token": "USDT",
+            "amount": 1.5
+        },
+        {
+            "token": "ASIM",
+            "amount": 0.6
+        },
+        {
+            "token": "MT",
+            "amount": 0.2
+        },
+        {
+            "token": "ETH",
+            "amount": 0.01
+        },
+        {
+            "token": "BTC",
+            "amount": 0.0002
+        }
+    ]
+}
+ * @apiSampleRequest https://poa.mist.exchange/api/wallet/coin2asset_fee_config
+ * @apiVersion 1.0.0
+ */
+
 
     wallet.all('/coin2asset_fee_config', async (req, res) => {
          res.json({
@@ -1176,6 +1331,26 @@ wallet.all('/sendrawtransaction/coin2asset_v3',async (req, res) => {
             res.json({ result:result,result2:result2,err:err});
 	});
 
+
+
+
+	/**
+ * @api {post} /wallet/my_bridge_length/:address 获取闪兑订单的记录条数
+ * @apiDescription 获取fingo相关配置
+ * @apiName my_bridge_length
+ * @apiGroup wallet
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+ *  {
+            "success": true,
+            "result": "30",
+            "err": null
+ *  }
+ * @apiSampleRequest https://poa.mist.exchange/api/wallet/my_bridge_length/0x66ea4b7f7ad33b0cc7ef94bef71bc302789b815c46
+ * @apiVersion 1.0.0
+ */
+
+
 	wallet.all('/my_bridge_length/:address',async (req, res) => {
 			let {address} = req.params;
             let [err,result] = await to(psql_db.my_bridge_length([address]));
@@ -1186,6 +1361,26 @@ wallet.all('/sendrawtransaction/coin2asset_v3',async (req, res) => {
 								 err:err
                             });
     });
+
+
+/**
+ * @api {post} /wallet/list_fingo_config 获取fingo相关配置
+ * @apiDescription 获取fingo相关配置
+ * @apiName list_fingo_config
+ * @apiGroup wallet
+ * @apiParam {string} base_token_name 兑出币种
+ * @apiParam {string} quote_token_name 兑入币种
+ * @apiParam {string} base_amount  兑换数量
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+ *  {
+            "success": true,
+            "result": "15.70000000",
+            "err": null
+ *  }
+ * @apiSampleRequest https://poa.mist.exchange/api/express/get_price/ASIM/CNYc/1
+ * @apiVersion 1.0.0
+ */
 
 
 
