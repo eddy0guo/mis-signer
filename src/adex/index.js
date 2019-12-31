@@ -32,14 +32,11 @@ async function my_wallet(word){
 
 async function get_available_erc20_amount(address,symbol){
 
-
-	console.log("-----------------------",address,symbol)
     let mist_wallet = new mist_wallet1();
 
 	let client = new client1();
 	let token_info = await mist_wallet.get_token(symbol);
 
-	console.log("-----------------------",token_info)
 	let token = new Token(token_info[0].address);
 	let [err,balance] = await to(token.balanceOf(address,'child_poa'));
 	balance = NP.divide(balance,1 * 10 ** 8)
@@ -47,7 +44,6 @@ async function get_available_erc20_amount(address,symbol){
 
 	let freeze_amount = 0;
 	let freeze_result = await client.get_freeze_amount([address,symbol])
-	console.log("--freeze_result--%o-",freeze_result)
 	if(freeze_result.length > 0){
 		for(let freeze of freeze_result){
 			if(freeze.side == 'buy'){
@@ -139,8 +135,23 @@ export default ({ config, db,logger}) => {
        res.json({result});
 	});
 
+/**
+ * @api {post} /adex/get_token_price_v2/:symbol 币种价格
+ * @apiDescription 获取币种当前对CNYc价格
+ * @apiName get_token_price_v2
+ * @apiGroup adex
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+ {
+    "success": true,
+    "result": 831.43
+ }
+ * @apiSampleRequest https://poa.mist.exchange/api/adex/get_token_price_v2/ETH 
+ * @apiVersion 1.0.0
+ */
 
-	    adex.all('/get_token_price_v2/:symbol', async (req, res) => {
+
+	adex.all('/get_token_price_v2/:symbol', async (req, res) => {
         let {symbol} = req.params;
         let result = await mist_wallet.get_token_price2pi(symbol);
         res.json({
@@ -200,7 +211,83 @@ export default ({ config, db,logger}) => {
 
                     res.json(balances);
                     });
-	//test，暂时无法查余额,http://119.23.181.166:16000/adex/balances_v2?address=111111111
+/**
+ * @api {post} /adex/balances_v2 全资产余额详情
+ * @apiDescription 返回托管资产，币币资产，币币冻结资产的详情(建议用asset_balances或者erc20_balances替换)
+ * @apiName balances_v
+ * @apiGroup adex
+  * @apiParam {string} address 用户地址
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+ {
+    "success": true,
+    "result": [
+        {
+            "token_symbol": "CNYc",
+            "erc20_address": "0x638374231575328e380610fbb12020c29e11afcd01",
+            "erc20_balance": 89.578222,
+            "erc20_freeze_amount": 0.17441799999999996,
+            "asim_assetid": "000000000000000c00000000",
+            "asim_asset_balance": "2904",
+            "asset_icon": "https://www.mist.exchange/res/icons/CNYca.png",
+            "coin_icon": "https://www.mist.exchange/res/icons/CNYcm.png"
+        },
+        {
+            "token_symbol": "ASIM",
+            "erc20_address": "0x637cffb37ebe8a19eb1d227e7678b27c60ad6be643",
+            "erc20_balance": 68.998,
+            "erc20_freeze_amount": 0,
+            "asim_assetid": "000000000000000000000000",
+            "asim_asset_balance": "751.1204214800001",
+            "asset_icon": "https://www.mist.exchange/res/icons/ASIMa.png",
+            "coin_icon": "https://www.mist.exchange/res/icons/ASIMm.png"
+        },
+        {
+            "token_symbol": "BTC",
+            "erc20_address": "0x63d202a9f65a4de95f7b2ea1ea632bfc27f10dff8c",
+            "erc20_balance": 0.002,
+            "erc20_freeze_amount": 0,
+            "asim_assetid": "000000000000000b00000001",
+            "asim_asset_balance": "0.03512235",
+            "asset_icon": "https://www.mist.exchange/res/icons/BTCa.png",
+            "coin_icon": "https://www.mist.exchange/res/icons/BTCm.png"
+        },
+        {
+            "token_symbol": "USDT",
+            "erc20_address": "0x634277ed606d5c01fa24e9e057fcfa7fedea36bc76",
+            "erc20_balance": 0,
+            "erc20_freeze_amount": 0,
+            "asim_assetid": "000000000000000b00000003",
+            "asim_asset_balance": 0,
+            "asset_icon": "https://www.mist.exchange/res/icons/USDTa.png",
+            "coin_icon": "https://www.mist.exchange/res/icons/USDTm.png"
+        },
+        {
+            "token_symbol": "ETH",
+            "erc20_address": "0x63720b32964170980b216cabbb4ecdd0979f8c9c17",
+            "erc20_balance": 0.0010989,
+            "erc20_freeze_amount": 0,
+            "asim_assetid": "000000000000000b00000002",
+            "asim_asset_balance": 0,
+            "asset_icon": "https://www.mist.exchange/res/icons/ETHa.png",
+            "coin_icon": "https://www.mist.exchange/res/icons/ETHm.png"
+        },
+        {
+            "token_symbol": "MT",
+            "erc20_address": "0x6382b81526d098e3ed8d013df2963c7410fea593d1",
+            "erc20_balance": 0.5005979,
+            "erc20_freeze_amount": 0,
+            "asim_assetid": "000000000000000300000003",
+            "asim_asset_balance": "0.93370587",
+            "asset_icon": "https://www.mist.exchange/res/icons/MTa.png",
+            "coin_icon": "https://www.mist.exchange/res/icons/MTm.png"
+        }
+    ]
+}
+
+ * @apiSampleRequest https://poa.mist.exchange/api/adex/balances_v2?address=0x66ea4b7f7ad33b0cc7ef94bef71bc302789b815c46
+ * @apiVersion 1.0.0
+ */
 	adex.all('/balances_v2',async (req, res) => {
 					var obj = urllib.parse(req.url,true).query;
  	 				  console.log("obj=",obj);
@@ -255,6 +342,66 @@ export default ({ config, db,logger}) => {
 						});
      });
 
+	/**
+ * @api {post} /adex/asset_balances/:address 托管资产余额
+ * @apiDescription 用户的托管资产余额
+ * @apiName asset_balances
+ * @apiGroup express
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+ {
+    "success": true,
+    "result": [
+        {
+            "token_symbol": "CNYc",
+            "asim_assetid": "000000000000000c00000000",
+            "asim_asset_balance": "2904",
+            "value": 2904,
+            "token_icon": "https://www.mist.exchange/res/icons/CNYca.png"
+        },
+        {
+            "token_symbol": "ASIM",
+            "asim_assetid": "000000000000000000000000",
+            "asim_asset_balance": "751.1212253599999",
+            "value": 11559.7556582904,
+            "token_icon": "https://www.mist.exchange/res/icons/ASIMa.png"
+        },
+        {
+            "token_symbol": "BTC",
+            "asim_assetid": "000000000000000b00000001",
+            "asim_asset_balance": "0.03512235",
+            "value": 1668.7271224005,
+            "token_icon": "https://www.mist.exchange/res/icons/BTCa.png"
+        },
+        {
+            "token_symbol": "USDT",
+            "asim_assetid": "000000000000000b00000003",
+            "asim_asset_balance": 0,
+            "value": 0,
+            "token_icon": "https://www.mist.exchange/res/icons/USDTa.png"
+        },
+        {
+            "token_symbol": "ETH",
+            "asim_assetid": "000000000000000b00000002",
+            "asim_asset_balance": 0,
+            "value": 0,
+            "token_icon": "https://www.mist.exchange/res/icons/ETHa.png"
+        },
+        {
+            "token_symbol": "MT",
+            "asim_assetid": "000000000000000300000003",
+            "asim_asset_balance": "0.93370587",
+            "value": 68.6740667385,
+            "token_icon": "https://www.mist.exchange/res/icons/MTa.png"
+        }
+    ]
+}
+
+ * @apiSampleRequest https://poa.mist.exchange/api/adex/asset_balances/0x66ea4b7f7ad33b0cc7ef94bef71bc302789b815c46
+ * @apiVersion 1.0.0
+ */
+
+
 
 	adex.all('/asset_balances/:address',async (req, res) => {
 					let {address} = req.params;
@@ -291,6 +438,75 @@ export default ({ config, db,logger}) => {
      });
 
 
+	 /**
+ * @api {post} /adex/erc20_balances/:address 币币资产余额
+ * @apiDescription 用户的币币资产余额
+ * @apiName erc20_balances
+ * @apiGroup express
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+{
+    "success": true,
+    "result": [
+        {
+            "token_symbol": "CNYc",
+            "erc20_address": "0x638374231575328e380610fbb12020c29e11afcd01",
+            "erc20_balance": 89.578222,
+            "erc20_freeze_amount": 0,
+            "asim_assetid": "000000000000000c00000000",
+            "value": 89.578222,
+            "token_icon": "https://www.mist.exchange/res/icons/CNYcm.png"
+        },
+        {
+            "token_symbol": "ASIM",
+            "erc20_address": "0x637cffb37ebe8a19eb1d227e7678b27c60ad6be643",
+            "erc20_balance": 68.998,
+            "erc20_freeze_amount": 0,
+            "asim_assetid": "000000000000000000000000",
+            "value": 977.01168,
+            "token_icon": "https://www.mist.exchange/res/icons/ASIMm.png"
+        },
+        {
+            "token_symbol": "BTC",
+            "erc20_address": "0x63d202a9f65a4de95f7b2ea1ea632bfc27f10dff8c",
+            "erc20_balance": 0.002,
+            "erc20_freeze_amount": 0,
+            "asim_assetid": "000000000000000b00000001",
+            "value": 95.0247,
+            "token_icon": "https://www.mist.exchange/res/icons/BTCm.png"
+        },
+        {
+            "token_symbol": "USDT",
+            "erc20_address": "0x634277ed606d5c01fa24e9e057fcfa7fedea36bc76",
+            "erc20_balance": 0,
+            "erc20_freeze_amount": 0,
+            "asim_assetid": "000000000000000b00000003",
+            "value": 0,
+            "token_icon": "https://www.mist.exchange/res/icons/USDTm.png"
+        },
+        {
+            "token_symbol": "ETH",
+            "erc20_address": "0x63720b32964170980b216cabbb4ecdd0979f8c9c17",
+            "erc20_balance": 0.0010989,
+            "erc20_freeze_amount": 0,
+            "asim_assetid": "000000000000000b00000002",
+            "value": 0.91406502,
+            "token_icon": "https://www.mist.exchange/res/icons/ETHm.png"
+        },
+        {
+            "token_symbol": "MT",
+            "erc20_address": "0x6382b81526d098e3ed8d013df2963c7410fea593d1",
+            "erc20_balance": 0.5005979,
+            "erc20_freeze_amount": 0,
+            "asim_assetid": "000000000000000300000003",
+            "value": 36.813969566,
+            "token_icon": "https://www.mist.exchange/res/icons/MTm.png"
+        }
+    ]
+}
+ * @apiSampleRequest https://poa.mist.exchange/api/adex/erc20_balances/0x66ea4b7f7ad33b0cc7ef94bef71bc302789b815c46
+ * @apiVersion 1.0.0
+ */
 	adex.all('/erc20_balances/:address',async (req, res) => {
 					let {address} = req.params;
                     let token_arr = await mist_wallet.list_tokens();
@@ -336,17 +552,6 @@ export default ({ config, db,logger}) => {
 							result: balances
 						});
      });
-
-
-
-
-
-
-
-
-
-
-
 
     //所有token合约赋予所有地址权限
     adex.all('/approves',async (req, res) => {
@@ -410,6 +615,21 @@ did对order_id进行签名，获取rsv
 
        res.json(order_id);
 	});
+
+	/**
+ * @api {post} /adex/get_order_id_v2/:trader_address/:marketID/:side/:price/:amount 获取撮合订单ID
+ * @apiDescription 获取撮合订单ID
+ * @apiName get_order_id_v2
+ * @apiGroup adex
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+ {
+    "success": true,
+    "result": "976528bf51cff225e267e54256191afb80c3845aa39656481dc0c6e792d8bbfa"
+ }
+ * @apiSampleRequest https://poa.mist.exchange/api/adex/get_order_id_v2/0x66a9ae316e1914dc8d835d5cd2ed57ab24b52a02c7/ASIM-CNYc/sell/100/6000
+ * @apiVersion 1.0.0
+ */
 
 	adex.all('/get_order_id_v2/:trader_address/:marketID/:side/:price/:amount', async (req, res) => {
 	   let {trader_address,marketID,side,price,amount} = req.params;
@@ -547,6 +767,29 @@ did对order_id进行签名，获取rsv
 
 
 
+/**
+ * @api {post} /adex/build_order_v3 创建撮合订单
+ * @apiDescription 广播币币资产的划入，并且进行托管资产的划出
+ * @apiName build_order_v3
+ * @apiGroup adex
+ * @apiParam {json}   signature         签名信息
+ * @apiParam {string} trader_address    交易地址
+ * @apiParam {string} market_id         交易对
+ * @apiParam {string} amount            买卖数量
+ * @apiParam {string} price             价格
+ * @apiParam {string} order_id          订单ID
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+{
+    "success": true,
+    "result": "[]",
+    "err": null
+}
+ * @apiSampleRequest https://poa.mist.exchange/api/adex/build_order_v3
+ * @apiVersion 1.0.0
+ */
+
+
 	adex.all('/build_order_v3', async (req, res) => {
 		let {trader_address,market_id,side,price,amount,order_id,signature} =  req.body
 
@@ -649,6 +892,27 @@ did对order_id进行签名，获取rsv
        res.json({result,err });
 	});
 
+
+
+/**
+ * @api {post} /adex/cancle_order_v2 取消撮合订单
+ * @apiDescription 取消撮合订单 
+ * @apiName cancle_order_v2
+ * @apiGroup adex
+ * @apiParam {json}   signature         签名信息
+ * @apiParam {string} order_id          订单ID
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+{
+    "success": true,
+    "result": "[]",
+    "err": null
+}
+ * @apiSampleRequest https://poa.mist.exchange/api/adex/cancle_order_v2
+ * @apiVersion 1.0.0
+ */
+
+
 	adex.all('/cancle_order_v2', async (req, res) => {
 	    let {order_id,signature} = req.body; 
 		let success = utils.verify(order_id,signature);
@@ -659,9 +923,7 @@ did对order_id进行签名，获取rsv
             })
 		}
 		
-		console.log("333",order);
 		let order_info = await order.get_order(order_id);
-		console.log("2222",order_info);
 		let message = {
 			 amount: order_info[0].available_amount,
 			 id: order_id,
@@ -675,6 +937,8 @@ did对order_id进行签名，获取rsv
                 err:err
        });
 	});
+
+
 
 	adex.all('/cancle_my_order/:address', async (req, res) => {
 
@@ -701,6 +965,30 @@ did对order_id进行签名，获取rsv
             success: true,
         });
     });
+
+
+/**
+ * @api {post} /adex/cancle_orders 取消用户所有撮合订单
+ * @apiDescription 取消用户所有撮合订单
+ * @apiName cancle_orders_v2
+ * @apiGroup adex
+ * @apiParam {json}   signature         签名信息
+ * @apiParam {String[]} orders_id          订单ID
+ * @apiParam {string} address           用户地址
+ * @apiParamExample {json} Request-Example:
+ *       {"address":"0x66e03763123f479fdb1ead7ad8a5b8a7d2f7cda64d","orders_id":["afe61f5c6197947f13d836bc89753d38e922e3e816ec5bb5bd8c74ccd5a9e0a1","6ceb8a97ac53567c6d79db09685b815a2708f845d427a7e0a3d9a4f0e89cb83c1"],"signature":{"r":"8761246c1539182ddbcaf5c2b36f17a188dbd26b3879267882375debe458e84a","s":"358f8cc504f83f426136b7999c931103ac81bfeb3e2d2fb0fd7eee8b4c43a2ac","pubkey":"036b5f0cac8c822c17f3eb6cba466dd8b4720e7450cd607cb69967fbeb9ec6b32d"}
+		}
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+{
+    "success": true,
+    "result": "[]",
+    "err": null
+}
+ * @apiSampleRequest https://poa.mist.exchange/api/adex/cancle_order_v2
+ * @apiVersion 1.0.0
+ */
+
 
 
     adex.all('/cancle_orders_v2', async (req, res) => {

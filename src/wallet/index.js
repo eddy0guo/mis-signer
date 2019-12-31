@@ -937,6 +937,21 @@ wallet.all('/sendrawtransaction/coin2asset_v2',async (req, res) => {
 
 
 
+/**
+ * @api {post} /wallet/sendrawtransaction/asset2coin_v3/:sign_data 广播资产划转
+ * @apiDescription 广播币币资产的划入，并且进行托管资产的划出
+ * @apiName asset2coin_v3
+ * @apiGroup wallet
+ * @apiSuccess {json} result
+ * @apiSuccessExample {json} Success-Response:
+	{
+		"success": true,
+		"id": "eac9fee0a83dd7ebc2ba67012b14175f2fddf3eabbcfe435cb11f105101af46d"
+	}
+ * @apiSampleRequest https://poa.mist.exchange/api/wallet/sendrawtransaction/asset2coin_v3/01000000023308230091b01e41177f18620dcb5634a18917f2074c22a38ae35f79dce321f3010000006b483045022100d8efbb3d5cedddd4f79baab71a00050889b39e53c49293344ed3fc22b4b18c5a0220246af4e62d66ed9a0ac1ed8bb6e5dd40d682be988103ce5a0257f725ff81e021012102078e749afa7a3e869f8b2889aedd637adae74134165810f03e72e98a0564c0deffffffffbf51ad22e9132ad71e8df1a9b7740e6616e17f8b5f07c2f5f0d8d45b8d386053020000006b483045022100aa930a8d993b1f0db3c7e323134626ed31e53e697b2ca42f72267a4fc662cf9d02205003aade060e893420edeee4463657ccc12d5285a9bf6e516037e2ae1a5defcf012102078e749afa7a3e869f8b2889aedd637adae74134165810f03e72e98a0564c0deffffffff0300e1f505000000001a76a91566a5e2e1d9243f9dfd1d54b31952d94043a105188fc5ac0c00000000000000030000000300007ef990301200001a76a9156632bd37c1331b34359920f1eaa18a38ba9ff203e9c5ac0c00000000000000030000000300002e6b9c301200001a76a9156632bd37c1331b34359920f1eaa18a38ba9ff203e9c5ac0c000000000000000000000000000852000000000000
+ * @apiVersion 1.0.0
+ */
+
 
 //只有广播失败和解析失败的的不存表，其他会存
 wallet.all('/sendrawtransaction/asset2coin_v3/:sign_data',async (req, res) => {
@@ -1011,7 +1026,7 @@ wallet.all('/sendrawtransaction/asset2coin_v3/:sign_data',async (req, res) => {
 
 /**
  * @api {post} /wallet/sendrawtransaction/coin2asset_v3/ 广播币币划转
- * @apiDescription 广播币币划转的兑入，并且进行目标币种的兑出
+ * @apiDescription 广播币币资产的划入，并且进行托管资产的划出
  * @apiName coin2asset_v3
  * @apiGroup wallet
  * @apiParam {json} signature 签名信息
@@ -1368,9 +1383,6 @@ wallet.all('/sendrawtransaction/coin2asset_v3',async (req, res) => {
  * @apiDescription 获取fingo相关配置
  * @apiName list_fingo_config
  * @apiGroup wallet
- * @apiParam {string} base_token_name 兑出币种
- * @apiParam {string} quote_token_name 兑入币种
- * @apiParam {string} base_amount  兑换数量
  * @apiSuccess {json} result
  * @apiSuccessExample {json} Success-Response:
  *  {
