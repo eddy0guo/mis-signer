@@ -9,9 +9,8 @@ import mist_config from '../../cfg'
 import Asset from '../../wallet/asset/Asset'
 import fake_token from '../../wallet/contract/AssetToken'
 import walletHelper from '../../wallet/lib/walletHelper'
-import AsimovWallet from  '../../../node_modules/asimov-wallet/lib/AsimovWallet'
-import AsimovConst from  '../../../node_modules/asimov-wallet/lib/lib/AsimovConst'
 import NP from 'number-precision'
+import {AsimovWallet, Transaction,AsimovConst} from '@fingo/asimov-wallet';
 
 
 var date = require("silly-datetime");
@@ -51,7 +50,7 @@ export default class assets{
 			if(token_arr[i].symbol != 'ASIM'){
 				const wallet = new AsimovWallet({
 					name: 'test',
-					rpc:'https://rpc-master.mistabit.com',
+					rpc:mist_config.asimov_master_rpc,
 					address:'0x66381fed979566a0656a3b422706072915a452ba6b'
 					// mnemonic:'cannon club beach denial swear fantasy donate bag fiscal arrive hole reopen',
 				});

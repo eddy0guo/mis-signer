@@ -105,9 +105,9 @@ var dev = {
 
 	wallet_default_passwd:"111111",
 	did_seed_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
-	asimov_chain_rpc:"https://rpc-master.mistabit.com",
-    asimov_master_rpc:"https://rpc-master.mistabit.com",
-    asimov_child_rpc:"https://rpc-child.mistabit.com",
+	asimov_chain_rpc:"https://rpc-fin.fingo.com",
+    asimov_master_rpc:"https://rpc-fin.fingo.com",
+    asimov_child_rpc:"https://rpc-mt.fingo.com",
     mist_server_port:16000,
     websocket_port:16001
 }

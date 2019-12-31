@@ -5,12 +5,12 @@ import Cache from './cache'
 const networkCache = Cache.getNetwork();
 const network = Cfg[networkCache.value]||networkCache.value;
 
-const RPC_ADDR = "https://rpc-child.mistabit.com"
-const CHAIN_RPC_ADDR = "https://rpc-child.mistabit.com";
+const RPC_ADDR = "https://rpc-mt.fingo.com"
+const CHAIN_RPC_ADDR = "https://rpc-mt.fingo.com";
 
 // create an axios instance
 const service = axios.create({
-  baseURL: "https://rpc-child.mistabit.com", // process.env.BASE_API, // api的base_url
+  baseURL: "https://rpc-mt.fingo.com", // process.env.BASE_API, // api的base_url
   timeout: 30000 // request timeout
 })
 

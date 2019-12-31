@@ -19,8 +19,7 @@ import client1 from './models/db'
 import mist_wallet1 from './api/mist_wallet'
 const urllib = require('url');
 import mist_config from '../cfg'
-import AsimovWallet from  '../../node_modules/asimov-wallet/lib/AsimovWallet'
-import AsimovConst from  '../../node_modules/asimov-wallet/lib/lib/AsimovConst'
+import {AsimovWallet, Transaction,AsimovConst} from '@fingo/asimov-wallet';
 
 import apicache from 'apicache'
 const crypto_sha256 = require('crypto');
@@ -300,6 +299,7 @@ export default ({ config, db,logger}) => {
                             let [err,result] = await to(token.balanceOf(obj.address,'child_poa'));
 							let asset = new Asset(token_arr[i].asim_assetid)
         					let [err4,assets_balance] = await to(asset.balanceOf(obj.address))
+							console.log("---balances=%o----------",assets_balance)
 							let asset_balance=0;
 							for(let j in assets_balance){
 								if( token_arr[i].asim_assetid == assets_balance[j].asset){
@@ -328,7 +328,7 @@ export default ({ config, db,logger}) => {
 								erc20_balance:result / (1 * 10 ** 8),
 								erc20_freeze_amount: freeze_amount,
 								asim_assetid: token_arr[i].asim_assetid,
-								asim_asset_balance: asset_balance,
+								asim_asset_balance: asset_balance / (1 * 10 ** 8),
 								asset_icon: 'https://www.mist.exchange/res/icons/' + token_arr[i].symbol + 'a.png',
 								coin_icon: 'https://www.mist.exchange/res/icons/' + token_arr[i].symbol + 'm.png'
 							};

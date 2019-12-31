@@ -26,8 +26,7 @@ import NP from 'number-precision'
 import users from '../adex/cli/users'
 const crypto_sha256 = require('crypto');
 //const  asimov_wallet = require("asimov-wallet");
-import AsimovWallet from  '../../node_modules/asimov-wallet/lib/AsimovWallet'
-import AsimovConst from  '../../node_modules/asimov-wallet/lib/lib/AsimovConst'
+import {AsimovWallet, Transaction,AsimovConst} from '@fingo/asimov-wallet';
 
 //import { btc_start,eth_start,asim_asset_start} from "../deposit";
 
@@ -87,7 +86,7 @@ async function getTestInst(){
 }
 //PI,ASIM,BTC.USDT,ETH,MT
 let faucet_amount = [600,100,0.1,1000,5,1000]
-let big_faucet_amount = [500000,200000,5,200000,200000,200000]
+let big_faucet_amount = [500000,1000,5,200000,200000,200000]
 
 export default ({ config, db }) => {
 	let wallet = Router();

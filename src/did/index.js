@@ -48,8 +48,7 @@ import psql from '../adex/models/db'
 import PassportPlugin from './config/passport'
 import Asset from '../wallet/asset/AssetDid'
 import asset_tohex from '../wallet/asset/asset_tohex'
-import AsimovWallet from  '../../node_modules/asimov-wallet/lib/AsimovWallet'
-import AsimovConst from  '../../node_modules/asimov-wallet/lib/lib/AsimovConst'
+import {AsimovWallet, Transaction,AsimovConst} from '@fingo/asimov-wallet';
 
 PassportPlugin(passport)
 
@@ -832,7 +831,7 @@ export default ({
             let tokens = await psql_db.get_tokens([token_name])
 				 let wallet = new AsimovWallet({
                     name: user.address,
-                    rpc:'https://rpc-child.mistabit.com',
+                    rpc: mist_config.asimov_child_rpc,
                     mnemonic:mnemonic,
                     // storage: 'localforage',
                 });
@@ -891,7 +890,7 @@ export default ({
 
 			const wallet = new AsimovWallet({
 				name: user.address,
-				rpc:'https://rpc-master.mistabit.com',
+				rpc:mist_config.asimov_master_rpc,
 				address:user.address
 			})
 

@@ -5,9 +5,7 @@ import psql from '../adex/models/db'
 import NP from 'number-precision'
 
 import mist_config from '../cfg'
-import AsimovWallet from  '../../node_modules/asimov-wallet/lib/AsimovWallet'
-import AsimovConst from  '../../node_modules/asimov-wallet/lib/lib/AsimovConst'
-
+import {AsimovWallet, Transaction,AsimovConst} from '@fingo/asimov-wallet';
 import apicache from 'apicache'
 let cache = apicache.middleware
 
