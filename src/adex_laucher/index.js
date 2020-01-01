@@ -92,8 +92,8 @@ class launcher {
 							 walletInst = await getTestInst(mist_config.relayers[index].word);
 							mist.unlock(walletInst, "111111");
 							let [err2, result] = await to(walletInst.queryAllBalance());
-							let [err, txid] = await to(mist.matchorder(trades_hash,mist_config.relayers[index].prikey));
-							console.log("gxy---engine-call_asimov_result33333 = -", txid,mist_config.relayers[index].address,trades[0].transaction_id + 'gxyyyy',index);
+							let [err, txid] = await to(mist.matchorder(trades_hash,mist_config.relayers[index].prikey,mist_config.relayers[index].word));
+							console.log("gxy---engine-call_asimov_result33333 = -", err,txid,mist_config.relayers[index].address,trades[0].transaction_id + 'gxyyyy',index);
 
 							console.log("time--222--",this.utils.get_current_time())
 

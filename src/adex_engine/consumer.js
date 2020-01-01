@@ -11,9 +11,7 @@ import engine from '../adex/api/engine'
 
 const urllib = require('url');
 import mist_config from '../cfg'
-import AsimovWallet from  '../../node_modules/asimov-wallet/lib/AsimovWallet'
-import AsimovConst from  '../../node_modules/asimov-wallet/lib/lib/AsimovConst'
-
+import {AsimovWallet, Transaction,AsimovConst} from '@fingo/asimov-wallet';
 import apicache from 'apicache'
 const crypto_sha256 = require('crypto');
 let cache = apicache.middleware

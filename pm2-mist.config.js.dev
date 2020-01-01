@@ -1,0 +1,67 @@
+// npm run build
+// pm2 start pm2-mist.config.js.dev --only mist --env production
+// pm2 start pm2-mist.config.js.dev --only mist-poa --env production
+// pm2 start pm2-mist.config.js.dev --env production
+
+module.exports = {
+  apps: [
+  {
+    name: "mist-poa-dev",
+    script: "./dist",
+    env: {
+      NODE_ENV: "development",
+      MIST_MODE: "dev",
+    },
+  },
+  {
+    name: "mist-poa-bot-dev",
+    script: "./dist/bot",
+    env: {
+      NODE_ENV: "development",
+      MIST_MODE: "dev",
+    },
+  },
+  {
+    name: "mist-poa-engine-dev",
+    script: "./dist/adex_engine",
+    env: {
+      NODE_ENV: "development",
+      MIST_MODE: "dev",
+    },
+  },
+
+  {
+    name: "mist-poa-watcher-dev",
+    script: "./dist/adex_watcher",
+    env: {
+      NODE_ENV: "development",
+      MIST_MODE: "dev",
+    },
+  },
+  {
+    name: "mist-poa-laucher-dev",
+    script: "./dist/adex_laucher",
+    env: {
+      NODE_ENV: "development",
+      MIST_MODE: "dev",
+    },
+  },
+{
+    name: "mist-poa-express-dev",
+    script: "./dist/express_watcher",
+    env: {
+      NODE_ENV: "development",
+      MIST_MODE: "dev",
+    },
+  },
+{
+    name: "mist-poa-bridge-dev",
+    script: "./dist/bridge_watcher",
+    env: {
+      NODE_ENV: "development",
+      MIST_MODE: "dev",
+    },
+  },
+
+  ]
+}

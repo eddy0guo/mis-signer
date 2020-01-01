@@ -56,7 +56,7 @@ var local = {
 }
 
 var dev = {
-    ex_address:'0x63722839a7d46e75e4cd9f40edc7680651143084ae',
+    ex_address:'0x63e475d5c27b5075e8cfb7e6e7ac78c8278ab16688',
     order_hash_word:'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
     fauct_address:'0x666234b6348c10fed282b95c1f1768aa3113eb96b2',
     fauct_word:'tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook',

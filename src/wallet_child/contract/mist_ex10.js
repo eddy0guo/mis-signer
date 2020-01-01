@@ -1,11 +1,14 @@
 import helper from '../lib/txHelper'
 import { chain } from '../api/chain'
+import mist_config from '../../cfg'
 import { TranService } from "../service/transaction";
 import { CONSTANT } from "../constant";
 import { btc2sts, isArrayType, callParamsConvert,signature,getWalletPubKey} from "../utils";
 const bitcore_lib_1 = require("bitcore-lib");
 import adex_utils from '../../adex/api/utils'
 const ECDSA = bitcore_lib_1.crypto.ECDSA;
+import to from 'await-to-js'
+
 var util =require('ethereumjs-util');
 var bip39 = require('bip39');
 var bip32 = require('bip32');
@@ -13,13 +16,15 @@ var bitcoin = require('bitcoinjs-lib');
 var ethers = require('ethers');
 
 let hdkey = require('ethereumjs-wallet/hdkey');
+import {AsimovWallet, Transaction,AsimovConst} from '@fingo/asimov-wallet';
+
 
 import { HDPrivateKey, crypto } from "bitcore-lib";
 
 
 export default class Token {
  abiStr='[{"constant":true,"inputs":[{"components":[{"name":"adr","type":"address"},{"name":"age","type":"uint256"},{"components":[{"name":"naem","type":"string"}],"name":"mg","type":"tuple"}],"name":"ab","type":"tuple"}],"name":"sdfs","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"components":[{"name":"taker","type":"address"},{"name":"maker","type":"address"},{"name":"baseToken","type":"address"},{"name":"quoteToken","type":"address"},{"name":"relayer","type":"address"},{"name":"baseTokenAmount","type":"uint256"},{"name":"quoteTokenAmount","type":"uint256"},{"name":"takerSide","type":"string"}],"name":"_order","type":"tuple"}],"name":"getorderhash","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"components":[{"name":"taker","type":"address"},{"name":"maker","type":"address"},{"name":"baseTokenAmount","type":"uint256"},{"name":"quoteTokenAmount","type":"uint256"},{"name":"takerSide","type":"string"},{"name":"r","type":"bytes32"},{"name":"s","type":"bytes32"},{"name":"v","type":"uint8"}],"name":"TradeParams","type":"tuple[]"},{"components":[{"name":"baseToken","type":"address"},{"name":"quoteToken","type":"address"},{"name":"relayer","type":"address"}],"name":"orderAddressSet","type":"tuple"}],"name":"matchOrder","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"getTemplateInfo","outputs":[{"name":"","type":"uint16"},{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"components":[{"name":"taker","type":"address"},{"name":"maker","type":"address"},{"name":"baseToken","type":"address"},{"name":"quoteToken","type":"address"},{"name":"relayer","type":"address"},{"name":"baseTokenAmount","type":"uint256"},{"name":"quoteTokenAmount","type":"uint256"},{"name":"takerSide","type":"string"}],"name":"_order","type":"tuple"}],"name":"hashordermsg","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_hashmsg","type":"bytes32"}],"name":"hashmsg","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"EIP712_ORDERTYPE","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_category","type":"uint16"},{"name":"_templateName","type":"string"}],"name":"initTemplate","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_hash","type":"bytes32"},{"components":[{"name":"taker","type":"address"},{"name":"maker","type":"address"},{"name":"baseTokenAmount","type":"uint256"},{"name":"quoteTokenAmount","type":"uint256"},{"name":"takerSide","type":"string"},{"name":"r","type":"bytes32"},{"name":"s","type":"bytes32"},{"name":"v","type":"uint8"}],"name":"_trade","type":"tuple"},{"components":[{"name":"baseToken","type":"address"},{"name":"quoteToken","type":"address"},{"name":"relayer","type":"address"}],"name":"_order","type":"tuple"}],"name":"isValidSignature","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor","name":"MistExchange"},{"anonymous":false,"inputs":[{"indexed":false,"name":"ads","type":"address"}],"name":"isValid","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"bs","type":"bytes32"}],"name":"orderhashmsg","type":"event"}]' 
- fee = 0.1
+ fee = 10000000;
  gasLimit = 100000000
 
  constructor(address) {
@@ -60,7 +65,7 @@ async executeContract(params) {
       });
 
       assetObjArr.push({
-        amount: 0.2,
+        amount: 20000000,
         asset: '000000000000000000000000'
       });
 
@@ -186,7 +191,7 @@ getHexData(abiInfo) {
 
 
 
-   async matchorder(trades_info,prikey){
+   async matchorder(trades_info,prikey,word){
 	   console.log("222trades_info--",trades_info,prikey);
 
 	    let utils = new adex_utils();
@@ -233,7 +238,26 @@ getHexData(abiInfo) {
 		"stateMutability":"nonpayable",
 		"type":"function"}
 
-	  return this.callContract(abiInfo);
+	//	  return this.callContract(abiInfo);
+	console.log("------mistconfig=-----%o----",mist_config);
+		   let child_wallet = new AsimovWallet({
+                    name: 'test',
+                    rpc: mist_config.asimov_child_rpc,
+                    mnemonic: word,
+                    // storage: 'localforage',
+                });
+                let [child_err,child_txid] = await to(child_wallet.contractCall.call(
+                    mist_config.ex_address,
+                    'matchorder(tuple[])',
+                    [trades_arr],
+                    AsimovConst.DEFAULT_GAS_LIMIT,0,
+                    AsimovConst.DEFAULT_ASSET_ID,
+                    AsimovConst.DEFAULT_FEE_AMOUNT,
+                    AsimovConst.DEFAULT_ASSET_ID,
+                    AsimovConst.CONTRACT_TYPE.CALL))
+                console.log("---66666------child_err---child_txid",child_err,child_txid)
+				return child_txid;
+
     }
     
    

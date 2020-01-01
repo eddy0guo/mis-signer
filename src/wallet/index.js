@@ -306,18 +306,20 @@ export default ({ config, db }) => {
 	
 		let token_arr = await mist_wallet.list_tokens();
 		let results = [];	
-		 for(let i in  token_arr){
+		const wallet = new AsimovWallet({
+            name: mist_config.fauct_address,
+            rpc: mist_config.asimov_master_rpc,
+            mnemonic:  mist_config.fauct_word,
+        });
+
 		let address = req.params.address; 
+	//	await wallet.account.createAccount();
+		 for(let i in  token_arr){
 			 setTimeout(async ()=>{
-			let asset = new Asset(token_arr[i].asim_assetid)	
 
-			let wallet = await getTestInst();
-			asset.unlock(wallet,"111111")
-			await wallet.queryAllBalance()
-			let [err,result] = await to(asset.transfer(address,big_faucet_amount[i]));
-
+			   let [err,result] =   await to(wallet.commonTX.transfer(address,big_faucet_amount[i],token_arr[i].asim_assetid));
 			 results.push[result];
-			console.log("---------erc20_token_arr--i=",i,asset,"err-result",err,result,"\n\n\n\n")
+			console.log("---------erc20_token_arr--i=",i,"err-result",err,result,"\n\n\n\n")
 			 },i*20000);
 		}
 		

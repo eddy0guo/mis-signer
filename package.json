@@ -54,7 +54,7 @@
   "license": "MIT",
   "dependencies": {
     "@alicloud/sms-sdk": "^1.1.6",
-    "@asimovdev/asimovjs": "^1.0.121",
+    "@asimovdev/asimovjs": "^1.0.132",
     "@compodoc/compodoc": "^1.1.11",
     "@fingo/asimov-wallet": "^0.2.0",
     "@spinlee/ethers": "^1.0.12",
