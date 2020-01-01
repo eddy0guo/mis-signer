@@ -1,13 +1,13 @@
 import client from '../adex/models/db'
 import utils2 from '../adex/api/utils'
 import {restore_order} from '../adex/api/order'
-import { chain } from '../wallet_child/api/chain'
-import walletHelper from '../wallet_child/lib/walletHelper'
+import { chain } from '../wallet/api/chain'
+import walletHelper from '../wallet/lib/walletHelper'
 import to from 'await-to-js'
 const crypto = require('crypto');
 var date = require("silly-datetime");
 import mist_config  from '../cfg';
-import mist_ex10 from '../wallet_child/contract/mist_ex10'
+import mist_ex10 from '../wallet/contract/mist_ex10'
 
 import NP from 'number-precision'
 let walletInst;

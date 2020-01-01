@@ -1,12 +1,14 @@
 import helper from '../lib/txHelper'
 import { chain } from '../api/chain'
-import { mist_config} from '../../cfg'
+import mist_config from '../../cfg'
 import { TranService } from "../service/transaction";
 import { CONSTANT } from "../constant";
 import { btc2sts, isArrayType, callParamsConvert,signature,getWalletPubKey} from "../utils";
 const bitcore_lib_1 = require("bitcore-lib");
 import adex_utils from '../../adex/api/utils'
 const ECDSA = bitcore_lib_1.crypto.ECDSA;
+import to from 'await-to-js'
+
 var util =require('ethereumjs-util');
 var bip39 = require('bip39');
 var bip32 = require('bip32');
@@ -189,7 +191,7 @@ getHexData(abiInfo) {
 
 
 
-   async matchorder(trades_info,prikey){
+   async matchorder(trades_info,prikey,word){
 	   console.log("222trades_info--",trades_info,prikey);
 
 	    let utils = new adex_utils();
@@ -237,14 +239,13 @@ getHexData(abiInfo) {
 		"type":"function"}
 
 	//	  return this.callContract(abiInfo);
+	console.log("------mistconfig=-----%o----",mist_config);
 		   let child_wallet = new AsimovWallet({
                     name: 'test',
                     rpc: mist_config.asimov_child_rpc,
-                    mnemonic: mist_config.bridge_word,
+                    mnemonic: word,
                     // storage: 'localforage',
                 });
-//                 let balance = await child_wallet.account.balance();
-
                 let [child_err,child_txid] = await to(child_wallet.contractCall.call(
                     mist_config.ex_address,
                     'matchorder(tuple[])',
@@ -254,7 +255,9 @@ getHexData(abiInfo) {
                     AsimovConst.DEFAULT_FEE_AMOUNT,
                     AsimovConst.DEFAULT_ASSET_ID,
                     AsimovConst.CONTRACT_TYPE.CALL))
-                console.log("---------child_err---child_txid",child_err,child_txid)
+                console.log("---66666------child_err---child_txid",child_err,child_txid)
+				return child_txid;
+
     }
     
    
