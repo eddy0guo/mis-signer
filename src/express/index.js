@@ -8,7 +8,6 @@ import { Router } from 'express'
 import Asset from '../wallet//asset/Asset'
 
 import client1 from './models/db'
-import watcher1 from './watcher'
 
 import mist_wallet1 from '../adex/api/mist_wallet'
 import order1 from '../adex/api/order'
@@ -112,9 +111,7 @@ export default ({ config, db }) => {
 	let mist_wallet = new mist_wallet1();
 	let psql_db = new psql();
 	let utils = new utils1();
-	let watcher = new watcher1();
 	let order = new order1(psql_db);
-//	watcher.start()
 
 /**
  * @api {post} /express/my_records/:page/:perpage 用户兑换记录

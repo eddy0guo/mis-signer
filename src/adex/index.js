@@ -7,12 +7,10 @@ import { Router } from 'express'
 import order1 from './api/order'
 import trades1 from './api/trades'
 import market1 from './api/market'
-import watcher1 from './cli/watcher'
 import utils1 from './api/utils'
 import user1 from './cli/users'
 import asset1 from './cli/asset_info'
 import Asset from '../wallet/asset/Asset'
-import launcher1 from './cli/launcher'
 import NP from 'number-precision'
 import client1 from './models/db'
 
@@ -69,17 +67,13 @@ export default ({ config, db,logger}) => {
     let order = new order1(client);
     let trades = new trades1(client);
     let market = new market1();
-    let wathcer = new watcher1(client);
     let user = new user1(client,logger);
     let asset = new asset1();
     let mist_wallet = new mist_wallet1();
     let tokenTest = new TokenTest()
 	let utils = new utils1();
-	let launcher = new launcher1(client);
-//	wathcer.start();
 //	user.start();
 //	asset.status_flushing();
-//	launcher.start();
 
 	adex.all('/mist_engine_info', async (req, res) => {
 					 let result = await trades.get_engine_info();

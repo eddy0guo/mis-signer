@@ -19,7 +19,6 @@ import mist_config from '../cfg'
 import mist10 from './contract/mist_ex10'
 import cdp from './contract/cdp'
 import adex_utils from '../adex/api/utils'
-import watcher1 from './watcher'
 import psql from '../adex/models/db'
 import mist_wallet1 from '../adex/api/mist_wallet'
 import NP from 'number-precision'
@@ -95,8 +94,6 @@ export default ({ config, db }) => {
 	let psql_db = new psql();
 	let utils = new adex_utils();
 	let mist_wallet = new mist_wallet1();
-	let watcher = new watcher1();
-//	watcher.start();
 
 	wallet.all('/', async (req, res) => {
 		walletInst = await getTestInst();
