@@ -131,7 +131,6 @@ export default class engine {
 	}
 
 	async call_asimov(trades) {
-		console.log("dex_match_order----gxy---22", trades);
 		let token_address = await this.db.get_market([trades[0].market_id]);
 
 		let transactions = await this.db.list_all_trades();
@@ -142,12 +141,8 @@ export default class engine {
 
 		let transaction_id = transactions.length == 0 ?  0 : transactions[0].transaction_id + add_queue_num;
 
-		console.log("index,transaction_id,=", add_queue_num,transaction_id);
-
-
 		//为了保证relayer的轮番顺序打包，这里和transaction_id关联
 		let index = transaction_id % 3;
-		console.log("gxyrelayers-engine-1",transaction_id,index,mist_config.relayers[index]);
 		let order_address_set = [token_address[0].base_token_address, token_address[0].quote_token_address, mist_config.relayers[index].address];
 
 
@@ -173,7 +168,7 @@ export default class engine {
 			trades_arr.push(this.utils.arr_values(trades[i]))
 		}
 
-		console.log("-call_asimov_result33333----------",transaction_id + 'gxyyyyy',mist_config.relayers[index].address,index)
+//		console.log("-formatchorder-trades_arr=%o----relayers=%o-transaction_id=%o--index=%o--",trades_arr,mist_config.relayers[index],transaction_id,index)
 
 		await this.db.insert_trades(trades_arr);
 

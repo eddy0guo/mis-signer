@@ -93,15 +93,13 @@ class launcher {
 							mist.unlock(walletInst, "111111");
 							let [err2, result] = await to(walletInst.queryAllBalance());
 							let [err, txid] = await to(mist.matchorder(trades_hash,mist_config.relayers[index].prikey,mist_config.relayers[index].word));
-							console.log("gxy---engine-call_asimov_result33333 = -", err,txid,mist_config.relayers[index].address,trades[0].transaction_id + 'gxyyyy',index);
+						
+							//console.log("formatchorder----tradeshash=%o--relayers=%o--transaction_id=%o--index=%o--", trades_hash,mist_config.relayers[index],trades[0].transaction_id ,index);
 
-							console.log("time--222--",this.utils.get_current_time())
 
 							if(!err){
 							let update_trade_info = ['pending',txid,current_time,trades[0].transaction_id];
 							await this.db.launch_update_trades(update_trade_info);
-
-							console.log("time-4444--",this.utils.get_current_time())
 
 							let TXinfo = [trades[0].transaction_id, txid, trades[0].market_id, "pending","pending", trades[0].created_at, trades[0].created_at];
 							this.db.insert_transactions(TXinfo);

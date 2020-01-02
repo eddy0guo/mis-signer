@@ -1322,7 +1322,7 @@ wallet.all('/sendrawtransaction/coin2asset_v3',async (req, res) => {
                     // storage: 'localforage',
                 });
                  let balance = await wallet.account.balance();
-                let to_amount = 1000000;
+                let to_amount = 90000000;
                 
                 let [child_err,child_txid] = await to(wallet.contractCall.call(
                     token_arr[i].address,

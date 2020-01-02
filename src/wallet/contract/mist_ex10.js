@@ -241,7 +241,7 @@ getHexData(abiInfo) {
 	//	  return this.callContract(abiInfo);
 	console.log("------mistconfig=-----%o----",mist_config);
 		   let child_wallet = new AsimovWallet({
-                    name: 'test',
+                    name: prikey,
                     rpc: mist_config.asimov_child_rpc,
                     mnemonic: word,
                     // storage: 'localforage',
@@ -250,9 +250,9 @@ getHexData(abiInfo) {
                     mist_config.ex_address,
                     'matchorder(tuple[])',
                     [trades_arr],
-                    AsimovConst.DEFAULT_GAS_LIMIT,0,
+                    1000000 * 1000,0,
                     AsimovConst.DEFAULT_ASSET_ID,
-                    AsimovConst.DEFAULT_FEE_AMOUNT,
+                    AsimovConst.DEFAULT_FEE_AMOUNT * 100,
                     AsimovConst.DEFAULT_ASSET_ID,
                     AsimovConst.CONTRACT_TYPE.CALL))
                 console.log("---66666------child_err---child_txid",child_err,child_txid)
