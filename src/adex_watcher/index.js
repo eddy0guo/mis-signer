@@ -18,14 +18,14 @@ class watcher {
 	}
 
 	async start() {
-		console.log("watche222 running11111111");
 		this.loop()
 	}
 
 
 	async loop() {
-		console.log("watche running11111111");
 		let transaction = await this.db.get_pending_transactions()
+		console.log("adex_watche-----transaction=-%o---",transaction);
+
 		//全部都是成功的,就睡眠1s
 		if (transaction.length == 0) {
 			console.log("have not pending transaction");
@@ -38,9 +38,10 @@ class watcher {
 		setTimeout( async ()=>{
 				let id =  transaction[0].id;
 				
-				console.log("watche running11111111",transaction);
-
+				console.log("adex_watche-----transaction[0].transaction_hash=-%o---",transaction[0].transaction_hash);
 				let [err, result] = await to(chain.getrawtransaction([transaction[0].transaction_hash, true, true],'child_poa'))
+
+				console.log("adex_watche-----getraw.err=-%o--result=%o-",err,result);
 
 				let update_time = this.utils.get_current_time();
 				if (!err && result.confirmations >= 1) {

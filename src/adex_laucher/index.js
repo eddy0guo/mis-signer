@@ -122,10 +122,10 @@ class launcher {
 									}
 								*/		
 							}
-					//	setTimeout(()=>{
+						setTimeout(()=>{
 							this.loop.call(this)
-					//	}, 7000);
-					},2000);
+						}, 10000);
+					},5000);
 
 	}
 
