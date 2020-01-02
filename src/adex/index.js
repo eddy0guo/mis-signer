@@ -323,8 +323,8 @@ export default ({ config, db,logger}) => {
 								erc20_freeze_amount: freeze_amount,
 								asim_assetid: token_arr[i].asim_assetid,
 								asim_asset_balance: asset_balance / (1 * 10 ** 8),
-								asset_icon: 'https://www.mist.exchange/res/icons/' + token_arr[i].symbol + 'a.png',
-								coin_icon: 'https://www.mist.exchange/res/icons/' + token_arr[i].symbol + 'm.png'
+								asset_icon: 'http://fingo-cdn.asimov.work/res/icons/' + token_arr[i].symbol + 'a.png',
+								coin_icon: 'http://fingo-cdn.asimov.work/res/icons/' + token_arr[i].symbol + 'm.png'
 							};
 							
 							balances.push(balance_info);
@@ -419,7 +419,7 @@ export default ({ config, db,logger}) => {
 								asim_assetid: token_arr[i].asim_assetid,
 								asim_asset_balance: asset_balance,
 								value: NP.times(asset_balance,price),
-								token_icon: 'https://www.mist.exchange/res/icons/' + token_arr[i].symbol + 'a.png'
+								token_icon: 'http://fingo-cdn.asimov.work/res/icons/' + token_arr[i].symbol + 'a.png'
 							};
 							
 							balances.push(balance_info);
@@ -535,7 +535,7 @@ export default ({ config, db,logger}) => {
 								erc20_freeze_amount: freeze_amount,
 								asim_assetid: token_arr[i].asim_assetid,
 								value: NP.times(erc20_balance,price),
-								token_icon: 'https://www.mist.exchange/res/icons/' + token_arr[i].symbol + 'm.png'
+								token_icon: 'http://fingo-cdn.asimov.work/res/icons/' + token_arr[i].symbol + 'm.png'
 							};
 							
 							balances.push(balance_info);

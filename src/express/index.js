@@ -156,8 +156,8 @@ export default ({ config, db }) => {
 			let [err,records] = await to(psql_db.my_express([address,offset,perpage]));
 
 			for(let record of records){
-				record.base_token_icon =  'https://www.mist.exchange/res/icons/' + record.base_asset_name + 'a.png'
-				record.quote_token_icon = 'https://www.mist.exchange/res/icons/' + record.quote_asset_name + 'a.png'
+				record.base_token_icon =  'http://fingo-cdn.asimov.work/res/icons/' + record.base_asset_name + 'a.png'
+				record.quote_token_icon = 'http://fingo-cdn.asimov.work/res/icons/' + record.quote_asset_name + 'a.png'
 			}
 			res.json({
             success: records == undefined ? false:true,
@@ -223,8 +223,8 @@ export default ({ config, db }) => {
 			}
 
 			if(record[0].base_asset_name && record[0].quote_asset_name){
-			record[0].base_token_icon =  'https://www.mist.exchange/res/icons/' + record[0].base_asset_name + 'a.png'
-			record[0].quote_token_icon = 'https://www.mist.exchange/res/icons/' + record[0].quote_asset_name + 'a.png'
+			record[0].base_token_icon =  'http://fingo-cdn.asimov.work/res/icons/' + record[0].base_asset_name + 'a.png'
+			record[0].quote_token_icon = 'http://fingo-cdn.asimov.work/res/icons/' + record[0].quote_asset_name + 'a.png'
 			}else{
 				record[0].base_token_icon = null;	
 				record[0].quote_token_icon = null;
@@ -393,7 +393,7 @@ export default ({ config, db }) => {
                                     asset_balance = assets_balance[j].value;
                                 }
                             }
-							let icon = 'https://www.mist.exchange/res/icons/' + token_arr[i].symbol + 'a.png'
+							let icon = 'http://fingo-cdn.asimov.work/res/icons/' + token_arr[i].symbol + 'a.png'
                             let balance_info ={
                                 token_symbol: token_arr[i].symbol,
                                 asim_asset_id: token_arr[i].asim_assetid,
