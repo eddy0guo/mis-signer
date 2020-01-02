@@ -204,10 +204,10 @@ export default class utils{
 				from:from,
 				to:to_address,
 				asset_id: txinfo.vout[0].asset, 
-				vin_amount: vin_amount,
-				to_amount: vout_to_amount,
-				remain_amount: vout_remain_amount,
-				fee_amount: txinfo.fee[0].value,   //TODO: 兼容多个fee的情况
+				vin_amount: NP.divide(vin_amount,100000000),
+				to_amount: NP.divide(vout_to_amount,100000000),
+				remain_amount: NP.divide(vout_remain_amount,100000000),
+				fee_amount: NP.divide(txinfo.fee[0].value,100000000),   //TODO: 兼容多个fee的情况
 				fee_asset: txinfo.fee[0].asset
 		};	
 

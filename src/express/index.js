@@ -546,7 +546,7 @@ export default ({ config, db }) => {
 		setTimeout(async ()=>{
 				//失败的记录也入表
 				let [decode_err,decode_info] = await to(utils.decode_transfer_info(base_txid));
-                console.log("---------------",decode_err,decode_info)
+                console.log("-expressdecode_transfer_info--------------",decode_err,decode_info)
                 let {from,asset_id,vin_amount,to_amount,remain_amount} = decode_info;
 				let base_tx_status;
                 if(!decode_err){

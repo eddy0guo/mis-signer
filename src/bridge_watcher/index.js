@@ -80,7 +80,7 @@ class watcher{
 		let [child_err,child_txid] = await to(wallet.contractCall.call(
 			transfer_tokens[0].address,
 			'mint(address,uint256)',
-			[address,Math.floor(amount)], //这里asset传过来的为10000000.00000
+			[address,NP.times(amount,100000000)], 
 			AsimovConst.DEFAULT_GAS_LIMIT,0,
 			AsimovConst.DEFAULT_ASSET_ID,
 			AsimovConst.DEFAULT_FEE_AMOUNT,
