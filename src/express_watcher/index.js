@@ -16,6 +16,7 @@ import NP from 'number-precision'
 import mist_config from '../cfg'
 
 import apicache from 'apicache'
+import {AsimovWallet, Transaction,AsimovConst} from '@fingo/asimov-wallet';
 let cache = apicache.middleware
 
 async function my_wallet(word){
@@ -51,12 +52,28 @@ async function my_wallet(word){
 		console.log("---------6666666",pending_trade[0])
 		let current_time = this.utils.get_current_time();
 
-		let walletInst = await my_wallet(mist_config.express_word);
 		let tokens = await this.psql_db.get_tokens([quote_asset_name]);
+
+
+/*
+		let walletInst = await my_wallet(mist_config.express_word);
 		let asset = new Asset(tokens[0].asim_assetid);
 		asset.unlock(walletInst,mist_config.wallet_default_passwd);
 		await walletInst.queryAllBalance();
 		let [quote_err,quote_txid] = await to(asset.transfer(address,quote_amount));
+*/
+		const wallet = new AsimovWallet({
+            name: mist_config.fauct_address,
+            rpc: mist_config.asimov_master_rpc,
+            mnemonic:  mist_config.fauct_word,
+        });
+
+		let [quote_err,quote_txid] =   await to(wallet.commonTX.transfer(address,quote_amount,tokens[0].asim_assetid));
+
+
+
+
+
 		let quote_tx_status = quote_txid == undefined ? "failed":"successful";
 
 		let info = [quote_txid,quote_tx_status,current_time,trade_id];

@@ -801,15 +801,40 @@ export default ({
 
 
             let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
-            let walletInst = await my_wallet(mnemonic);
+     //       let walletInst = await my_wallet(mnemonic);
             let tokens = await psql_db.get_tokens([token_name])
 
             console.log("username---",user.username,'\n');
 
+/*
             let asset = new asset_tohex(tokens[0].asim_assetid)
             asset.unlock(walletInst,mist_config.wallet_default_passwd)
             await walletInst.queryAllBalance()
             let [err2,result] = await to(asset.transfer(to_address,amount));
+
+			let hexTX = await wallet.commonTX.generateSignedHexTX('0x666234b6348c10fed282b95c1f1768aa3113eb96b2',0.1,
+AsimovConst.DEFAULT_ASSET_ID,'','',
+AsimovConst.DEFAULT_GAS_LIMIT,
+AsimovConst.DEFAULT_FEE_AMOUNT,
+AsimovConst.DEFAULT_ASSET_ID)
+
+			let hexTX = await wallet.commonTX.generateHexTX('0x666234b6348c10fed282b95c1f1768aa3113eb96b2',0.1,
+AsimovConst.DEFAULT_ASSET_ID,'','',
+AsimovConst.DEFAULT_GAS_LIMIT,
+AsimovConst.DEFAULT_FEE_AMOUNT,
+AsimovConst.DEFAULT_ASSET_ID)
+
+*/
+			const wallet = new AsimovWallet({
+            name: user.address,
+            rpc: mist_config.asimov_master_rpc,
+            mnemonic:  mnemonic,
+        });
+
+        let [err2,result] =   await to(wallet.commonTX.generateHexTX(to_address,amount,tokens[0].asim_assetid,'','',AsimovConst.DEFAULT_GAS_LIMIT,AsimovConst.DEFAULT_FEE_AMOUNT,AsimovConst.DEFAULT_ASSET_ID));
+
+
+
             console.log(result, err2);
 
             res.json({
@@ -981,6 +1006,7 @@ export default ({
 			user = req.user;
 			 let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
 
+			/*
              let  seed = bip39.mnemonicToSeedHex(mnemonic);
             let  hdPrivateKey = HDPrivateKey.fromSeed(seed).derive(`m/44'/10003'/0'/0/0`);
             let privatekey = hdPrivateKey.privateKey.toString();
@@ -988,6 +1014,22 @@ export default ({
             console.log("------------mnemonic-privatekey",mnemonic,privatekey);
             //let rawtx = signature(new bitcore_lib_1.PrivateKey(privatekey),hex_data);
             let rawtx = TranService.signHex([privatekey],hex_data);
+			*/
+
+			          const wallet = new AsimovWallet({
+            name: user.address,
+            rpc: mist_config.asimov_master_rpc,
+            mnemonic:  mnemonic,
+        });
+
+
+//			let tx = Transaction.fromHex(hex_data)
+
+			let rawtx = await wallet.commonTX.signHexTX(hex_data)
+
+
+
+
             console.log("rawtx=",rawtx);
 			
             res.json({
