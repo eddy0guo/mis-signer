@@ -522,7 +522,7 @@ export default ({ config, db }) => {
 					 base_txid:base_txid,       
 					 base_tx_status:'pending',
 					 quote_txid:null,      
-					 quote_tx_status:null
+					 quote_tx_status:'pending'
 					 //updated_at:current_time,
 					 //created_at:current_time      
 				};

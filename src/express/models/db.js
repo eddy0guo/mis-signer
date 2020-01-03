@@ -62,7 +62,7 @@ export default class db{
 
 
 		async laucher_pending_trade() {
-			let [err,result] = await to(this.clientDB.query('SELECT * FROM asim_express_records  where quote_tx_status in (\'pending\',\'failed\') order by created_at limit 1')); 
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM asim_express_records  where base_tx_status=\'successful\' and quote_tx_status in (\'pending\',\'failed\') order by created_at limit 1')); 
 			if(err) {
 				return console.error('list_borrows_查询失败', err);
 			}
