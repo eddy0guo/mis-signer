@@ -95,5 +95,5 @@ function Consumer() {
 
 orderQueue.add({test:'First Job from Consumer'})
 
-};
+}
 export default new Consumer();

@@ -35,20 +35,6 @@
     "sdk-test": "nodemon -w src/test --exec \"babel-node src/test\"",
     "doc": "npx compodoc -p tsconfig.json"
   },
-  "eslintConfig": {
-    "extends": "eslint:recommended",
-    "parserOptions": {
-      "ecmaVersion": 7,
-      "sourceType": "module"
-    },
-    "env": {
-      "node": true
-    },
-    "rules": {
-      "no-console": 0,
-      "no-unused-vars": 1
-    }
-  },
   "repository": "mistdex/mist-signer",
   "author": "Ryan",
   "license": "MIT",
@@ -122,7 +108,8 @@
     "@babel/plugin-transform-runtime": "^7.7.6",
     "@babel/preset-env": "^7.7.7",
     "babel-jest": "^24.9.0",
-    "eslint": "^3.1.1",
+    "eslint": "^6.8.0",
+    "eslint-plugin-jest": "^23.2.0",
     "ethereumjs-tx": "^2.1.1",
     "jest": "^24.9.0",
     "nodemon": "^1.9.2"

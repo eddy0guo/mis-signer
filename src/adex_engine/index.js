@@ -90,5 +90,5 @@ class enginer {
 	 }
 
 
-};
+}
 export default new enginer();
