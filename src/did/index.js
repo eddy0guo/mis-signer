@@ -957,11 +957,32 @@ AsimovConst.DEFAULT_ASSET_ID)
 	});
 
 
-	router.all('/burn_coin_tohex/:token_name/:amount',async (req, res) => {
+	router.all('/burn_coin_tohex/:token_name/:amount',passport.authenticate('jwt', {session: false}),async (req, res) => {
 			let {token_name,amount} = req.params
+			let user =  req.user;
 			// let erc20 = new Erc20(asim_address);
 			let expire_time = 600;
             let tokens = await psql_db.get_tokens([token_name])
+
+
+			const wallet = new AsimovWallet({
+                name: user.address,
+                rpc:mist_config.asimov_child_rpc,
+                address:user.address
+            })
+
+            await wallet.account.createAccount()
+
+            let balance = await wallet.contractCall.callReadOnly(tokens[0].address,'balanceOf(address)',[user.address])
+            console.log("balance------",balance)
+
+            if(NP.divide(balance,100000000) < amount){
+                return res.json({
+                 success:false,
+                 err:'Lack of balance'
+                });
+            }
+
 
 
 			if(expire_time <= 0 || expire_time > 3600){
