@@ -89,9 +89,6 @@ class launcher {
 							}
 
 							 let mist = new mist_ex10(mist_config.ex_address);
-							 walletInst = await getTestInst(mist_config.relayers[index].word);
-							mist.unlock(walletInst, "111111");
-							let [err2, result] = await to(walletInst.queryAllBalance());
 							let [err, txid] = await to(mist.matchorder(trades_hash,mist_config.relayers[index].prikey,mist_config.relayers[index].word));
 						
 							//console.log("formatchorder----tradeshash=%o--relayers=%o--transaction_id=%o--index=%o--", trades_hash,mist_config.relayers[index],trades[0].transaction_id ,index);

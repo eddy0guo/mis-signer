@@ -915,23 +915,22 @@ AsimovConst.DEFAULT_ASSET_ID)
 
 			const wallet = new AsimovWallet({
 				name: user.address,
-				rpc:mist_config.asimov_master_rpc,
+				rpc:mist_config.asimov_child_rpc,
 				address:user.address
 			})
 
 			console.log("wallet------",wallet,user,tokens[0].address)
 			await wallet.account.createAccount()
-/**
+
 			let balance = await wallet.contractCall.callReadOnly(tokens[0].address,'balanceOf(address)',[user.address])
 			console.log("balance------",balance)
 
-			if(balance < amount){
+			if(NP.divide(balance,100000000) < amount){
 				return res.json({
                  success:false,
                  err:'Lack of balance'
             	});	
 			}
-**/
 			if(expire_time <= 0 || expire_time > 3600){
 				return res.json({
                  success:false,

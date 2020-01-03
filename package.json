@@ -56,7 +56,6 @@
     "@alicloud/sms-sdk": "^1.1.6",
     "@asimovdev/asimovjs": "^1.0.132",
     "@compodoc/compodoc": "^1.1.11",
-    "@fingo/asimov-wallet": "^0.2.0",
     "@spinlee/ethers": "^1.0.12",
     "apicache": "^1.5.2",
     "await-to-js": "^2.1.1",
