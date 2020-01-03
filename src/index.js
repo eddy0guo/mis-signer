@@ -3,10 +3,8 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import bodyParser from 'body-parser';
-import consola from 'consola'
 import initializeDb from './db';
 import middleware from './middleware';
-import api from './api';
 import wallet from './wallet';
 import adex  from './adex';
 import config from './config.json';
@@ -117,7 +115,6 @@ initializeDb( db => {
 	app.use(middleware({ config, db }));
 
 	// api router
-	app.use('/api', api({ config, db }));
 	app.use('/wallet', wallet({ config, db }));
 	app.use('/adex',adex({ config, db,logger}));
 	app.use('/did',did({config,db}))
