@@ -768,16 +768,13 @@ export default ({
 	});
 
 //调试用
-//router.get('/asset2coin/:amount/:username/:token_name'
 
 	router.all('/genarate_asset2coin_hex_data/:amount/:username/:token_name', passport.authenticate('jwt', {session: false}),async (req, res) => {
 			let user =  req.user;	
-			// let erc20 = new Erc20(asim_address);
             let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
             let walletInst = await my_wallet(mnemonic);
             let tokens = await psql_db.get_tokens([req.params.token_name])
             console.log("7777777", user.username);
-            //walletHelper.testWallet('wing safe foster choose wisdom myth quality own gallery logic imitate pink','111111')
             let erc20 = new Erc20_gen_hex(tokens[0].address);
             erc20.unlock(walletInst, "111111")
             await walletInst.queryAllBalance()
@@ -797,34 +794,11 @@ export default ({
 	router.all('/genarate_transfer_hex/:to_address/:token_name/:amount', passport.authenticate('jwt', {session: false}),async (req, res) => {
 			let user =  req.user;	
 			let {to_address,token_name,amount} = req.params
-			// let erc20 = new Erc20(asim_address);
 
 
             let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
-     //       let walletInst = await my_wallet(mnemonic);
             let tokens = await psql_db.get_tokens([token_name])
 
-            console.log("username---",user.username,'\n');
-
-/*
-            let asset = new asset_tohex(tokens[0].asim_assetid)
-            asset.unlock(walletInst,mist_config.wallet_default_passwd)
-            await walletInst.queryAllBalance()
-            let [err2,result] = await to(asset.transfer(to_address,amount));
-
-			let hexTX = await wallet.commonTX.generateSignedHexTX('0x666234b6348c10fed282b95c1f1768aa3113eb96b2',0.1,
-AsimovConst.DEFAULT_ASSET_ID,'','',
-AsimovConst.DEFAULT_GAS_LIMIT,
-AsimovConst.DEFAULT_FEE_AMOUNT,
-AsimovConst.DEFAULT_ASSET_ID)
-
-			let hexTX = await wallet.commonTX.generateHexTX('0x666234b6348c10fed282b95c1f1768aa3113eb96b2',0.1,
-AsimovConst.DEFAULT_ASSET_ID,'','',
-AsimovConst.DEFAULT_GAS_LIMIT,
-AsimovConst.DEFAULT_FEE_AMOUNT,
-AsimovConst.DEFAULT_ASSET_ID)
-
-*/
 			const wallet = new AsimovWallet({
             name: user.address,
             rpc: mist_config.asimov_master_rpc,
@@ -885,10 +859,8 @@ AsimovConst.DEFAULT_ASSET_ID)
 
 
 			let hex1 = tx.toUnsignHex()
-			console.log("hex1------",hex1)
 			tx = await wallet.commonTX.signTX(tx)
 
-			console.log("hex2------",tx)
 			let hex2 = tx.toHex()
 
 
@@ -907,7 +879,6 @@ AsimovConst.DEFAULT_ASSET_ID)
 	router.all('/sign_burn/:token_name/:amount', passport.authenticate('jwt', {session: false}),async (req, res) => {
 			let user =  req.user;	
 			let {token_name,amount} = req.params
-			// let erc20 = new Erc20(asim_address);
 			 let expire_time = 600;
 
             let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
@@ -919,11 +890,8 @@ AsimovConst.DEFAULT_ASSET_ID)
 				address:user.address
 			})
 
-			console.log("wallet------",wallet,user,tokens[0].address)
 			await wallet.account.createAccount()
-
 			let balance = await wallet.contractCall.callReadOnly(tokens[0].address,'balanceOf(address)',[user.address])
-			console.log("balance------",balance)
 
 			if(NP.divide(balance,100000000) < amount){
 				return res.json({
@@ -960,7 +928,6 @@ AsimovConst.DEFAULT_ASSET_ID)
 	router.all('/burn_coin_tohex/:token_name/:amount',passport.authenticate('jwt', {session: false}),async (req, res) => {
 			let {token_name,amount} = req.params
 			let user =  req.user;
-			// let erc20 = new Erc20(asim_address);
 			let expire_time = 600;
             let tokens = await psql_db.get_tokens([token_name])
 
@@ -974,7 +941,6 @@ AsimovConst.DEFAULT_ASSET_ID)
             await wallet.account.createAccount()
 
             let balance = await wallet.contractCall.callReadOnly(tokens[0].address,'balanceOf(address)',[user.address])
-            console.log("balance------",balance)
 
             if(NP.divide(balance,100000000) < amount){
                 return res.json({
@@ -1026,32 +992,14 @@ AsimovConst.DEFAULT_ASSET_ID)
 			user = req.user;
 			 let mnemonic =  user.mnemonic.includes(' ') ? user.mnemonic:Decrypt(user.mnemonic);
 
-			/*
-             let  seed = bip39.mnemonicToSeedHex(mnemonic);
-            let  hdPrivateKey = HDPrivateKey.fromSeed(seed).derive(`m/44'/10003'/0'/0/0`);
-            let privatekey = hdPrivateKey.privateKey.toString();
+			const wallet = new AsimovWallet({
+            	name: user.address,
+           		 rpc: mist_config.asimov_master_rpc,
+            	mnemonic:  mnemonic,
+       		 });
 
-            console.log("------------mnemonic-privatekey",mnemonic,privatekey);
-            //let rawtx = signature(new bitcore_lib_1.PrivateKey(privatekey),hex_data);
-            let rawtx = TranService.signHex([privatekey],hex_data);
-			*/
-
-			          const wallet = new AsimovWallet({
-            name: user.address,
-            rpc: mist_config.asimov_master_rpc,
-            mnemonic:  mnemonic,
-        });
-
-
-//			let tx = Transaction.fromHex(hex_data)
 
 			let rawtx = await wallet.commonTX.signHexTX(hex_data)
-
-
-
-
-            console.log("rawtx=",rawtx);
-			
             res.json({
                 success: rawtx.length == 0 ? false:true,
                 result: rawtx

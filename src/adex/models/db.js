@@ -1,4 +1,5 @@
 import to from 'await-to-js'
+import utils2 from '../api/utils'
 
 const order_params = 'id,trader_address,market_id,side,cast(price as float8),cast(amount as float8),status,type,cast(available_amount as float8),cast(confirmed_amount as float8),cast(canceled_amount as float8),cast(pending_amount as float8),updated_at,created_at'
 const trade_params = 'id,trade_hash,transaction_id,transaction_hash,status,market_id,maker,taker,cast(price as float8),cast(amount as float8),taker_side,maker_order_id,taker_order_id,updated_at,created_at';
@@ -26,6 +27,7 @@ export default class db{
                 //let client = new pg.Client(conString);
                 //const client = new Pool({connectionString: conString});
                 this.clientDB  = client;
+				this.utils = new utils2;
         }
 
         /**
@@ -124,15 +126,14 @@ export default class db{
 			let err;
 			let result;
 			if(filter[1] == 'sell'){
-				[err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where price<=$1 and side=$2 and available_amount>0 and market_id=$3 order by price asc limit 1000',filter)); 
+				[err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where price<=$1 and side=$2 and available_amount>0 and market_id=$3 order by price asc limit 100',filter)); 
 			}else{
 				
-				[err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where price>=$1 and side=$2 and available_amount>0 and market_id=$3 order by price desc limit 1000',filter)); 
+				[err,result] = await to(this.clientDB.query('SELECT * FROM mist_orders where price>=$1 and side=$2 and available_amount>0 and market_id=$3 order by price desc limit 100',filter)); 
 			}
 			if(err) {
 				return console.error('filter_orders_查询失败11',err,filter);
 			}
-			//console.log('insert_order',JSON.stringify(result.rows)); 
 			return result.rows;
 
 		} 
