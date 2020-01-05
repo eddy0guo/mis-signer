@@ -464,7 +464,7 @@ export default class db{
 		} 
 
 		async get_pending_transactions() {
-			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_transactions where status=\'pending\' order by id  limit 1')); 
+			let [err,result] = await to(this.clientDB.query('SELECT * FROM mist_transactions where (current_timestamp - created_at) < \'24 hours\' and status!=\'successful\' order by id  limit 1')); 
 			if(err) {
 				return console.error('list_successful_transactions_查询失败', err);
 			}
