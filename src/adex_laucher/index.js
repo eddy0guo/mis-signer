@@ -7,6 +7,8 @@ import NP from 'number-precision'
 
 class launcher {
 
+	tmp_transaction_id;
+	
 	constructor() {
 		this.db = new client;
 		this.utils = new utils2;
@@ -30,11 +32,13 @@ class launcher {
 		}
 
 		//只要进入laucher阶段就先把状态设置为pending，防止engine那边在laucher的时候，继续在当前transaction_id里继续插数据
+		this.tmp_transaction_id = trades[0].transaction_id;
+
 		let update_trade_info = ['pending', undefined, current_time, trades[0].transaction_id];
 		await this.db.launch_update_trades(update_trade_info);
 		//准备laucher之前先延时2秒	
 		setTimeout(async () => {
-			let trades = await this.db.get_laucher_trades();
+			let trades = await this.db.transactions_trades([this.tmp_transaction_id]);
 			let index = trades[0].transaction_id % 3;
 			let trades_hash = [];
 			let markets = await this.db.list_markets();
