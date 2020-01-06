@@ -1126,6 +1126,60 @@ wallet.all('/sendrawtransaction/coin2asset_v3',async (req, res) => {
 
 
 
+
+    wallet.all('/burn_coin_tohex/:address/:token_name/:amount',async (req, res) => {
+            let {address,token_name,amount} = req.params
+            let expire_time = 600;
+            let tokens = await psql_db.get_tokens([token_name])
+
+
+            const wallet = new AsimovWallet({
+                name: address,
+                rpc:mist_config.asimov_child_rpc,
+                address:address
+            })
+
+            await wallet.account.createAccount()
+
+            let balance = await wallet.contractCall.callReadOnly(tokens[0].address,'balanceOf(address)',[address])
+			
+			let available_amount = NP.divide(balance,100000000); 
+			
+            if(available_amount < amount){
+                return res.json({
+                 success:false,
+                 err:`Lack of balance,you have ${available_amount} ${token_name} but want spend ${amount}`
+                });
+            }
+
+
+
+            if(expire_time <= 0 || expire_time > 3600){
+                return res.json({
+                 success:false,
+                 err:'the expire_time must be less than 1 hour and more than 0'
+                });
+            }
+
+            let expire_at = new Date().getTime() + expire_time*1000;
+            let info = ['MIST_BURN',tokens[0].address,mist_config.bridge_address,amount,expire_at]
+            console.log("info------",info)
+            let str = info.join("");
+            let root_hash = crypto_sha256.createHmac('sha256', '123')
+            let hash = root_hash.update(str, 'utf8').digest('hex');
+
+            res.json({
+                 success:true,
+                 hash:hash,
+                 expire_at:expire_at
+            });
+
+
+    });
+
+
+
+
 /**
  * @api {post} /wallet/find_convert/:id 划转订单详情
  * @apiDescription 单笔划转订单的详情
