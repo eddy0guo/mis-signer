@@ -822,6 +822,20 @@ did对order_id进行签名，获取rsv
                         err:'amount or price is cannt support'
             })
 		}
+
+		//参考binance下单价格限制在盘口的上下五倍
+		let last_trade = await trades.list_trades(market_id);
+		let max_limit = NP.times(last_trade[0].price,5);
+		let min_limit = NP.divide(last_trade[0].price,5);
+
+		if(price < min_limit || price > max_limit){
+			 return res.json({
+                        success: false,
+                        err:`The price must be between ${min_limit} and ${max_limit}`
+            })	
+		}
+
+
 		
 		var [base_token,quota_token] = market_id.split("-");
 		if(side == 'buy'){
