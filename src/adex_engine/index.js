@@ -2,6 +2,7 @@ import client from '../adex/models/db'
 import engine from '../adex/api/engine'
 import utils2 from '../adex/api/utils'
 import Queue from 'bull'
+
 class enginer {
 
     constructor() {
@@ -11,15 +12,11 @@ class enginer {
         this.utils = new utils2();
         this.start();
     }
+
     async start() {
-        console.log("start ")
         this.orderQueue.process(async (job, done) => {
 
             let message = job.data;
-            console.log(`-----engine job---%o---------`, message)
-
-            //job.progress(42);
-
             let find_orders = await this.exchange.match(message);
 
             if (find_orders.length == 0) {
@@ -35,7 +32,6 @@ class enginer {
             if (transactions.length != 0) {
                 id = transactions[0].id;
             }
-            console.log(`-----engine6666---%o-----111----`, message)
             let amount = 0;
             for (var i in trades) {
                 amount += trades[i].amount;
@@ -65,13 +61,12 @@ class enginer {
             //settimeout 的原因暂时不返回txid
             this.exchange.call_asimov(trades, id);
 
-            console.log(`-----engine6666---%o-----2222----`, message)
             done()
         });
 
-        // this.orderQueue.add({ test: 'First Job from Consumer' })
     }
 
 
 }
+
 export default new enginer();
