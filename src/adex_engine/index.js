@@ -17,10 +17,17 @@ class enginer {
     async start() {
         this.orderQueue.process(async (job, done) => {
 
-            let message = job.data;
+             let message = job.data;
+
+			 let create_time = this.utils.get_current_time();
+			 message.created_at = create_time;
+             message.updated_at = create_time;
+
             let find_orders = await this.exchange.match(message);
 
             if (find_orders.length == 0) {
+				let arr_message = this.utils.arr_values(message);
+				let result = await this.db.insert_order(arr_message);
                 done();
                 return
             }
@@ -38,28 +45,21 @@ class enginer {
                 amount = NP.plus(amount,trades[i].amount);
             }
 
-            //插入之前直接计算好额度,防止orderbook出现买一大于卖一的情况
             message.available_amount = NP.minus(message.available_amount,amount);
             message.pending_amount = NP.plus(message.available_amount,amount);
-            console.log(`111${message.id}111--message=%o---matchedamount=%o---trades=%o---`,message,amount,trades);
-            let order_status;
+
+            //console.log(`111${message.id}111--message=%o---matchedamount=%o---trades=%o---`,message,amount,trades);
             if (message.pending_amount == 0) {
-                order_status = "pending";
+                message.status   = "pending";
             } else if (message.available_amount == 0) {
-                order_status = "full_filled";
+                message.status  = "full_filled";
             } else {
-                order_status = "partial_filled";
+                message.status  = "partial_filled";
             }
-            message.status = order_status;
 
+			let arr_message = this.utils.arr_values(message);
+			let result = await this.db.insert_order(arr_message);
 
-            let updated_at = this.utils.get_current_time();
-
-            let update_info = [-amount, 0, 0, amount, order_status, updated_at, message.id];
-
-            let result = await this.db.update_orders(update_info);
-
-            //settimeout 的原因暂时不返回txid
             this.exchange.call_asimov(trades, id);
 
             done()

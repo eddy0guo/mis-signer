@@ -17,8 +17,7 @@ export default class order {
 
 
     async build(message) {
-
-        let create_time = this.utils.get_current_time();
+		/*暂时这块业务没做先去掉此逻辑
         let mist_user = await this.db.find_user([message.trader_address]);
         if (!mist_user[0]) {
             let address_info = {
@@ -27,16 +26,9 @@ export default class order {
             let result = await this.db.insert_users(this.utils.arr_values(address_info));
 
         }
-
-        message.created_at = create_time;
-        message.updated_at = create_time;
-        let arr_message1 = this.utils.arr_values(message);
-
+		*/
         orderQueue.add(message);
-
-        let result = await this.db.insert_order(arr_message1);
-        return result;
-
+        return;
     }
 
     async cancle_order(message) {
