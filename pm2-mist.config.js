@@ -30,6 +30,43 @@ module.exports = {
     }
   },
   {
+    name: "mist-poa-bot1",
+    script: "./dist/bot",
+    env: {
+      NODE_ENV: "development",
+      MIST_MODE: "local",
+    },
+    env_production: {
+      NODE_ENV: "production",
+      MIST_MODE: "product",
+    }
+  },
+  {
+    name: "mist-poa-bot2",
+    script: "./dist/bot",
+    env: {
+      NODE_ENV: "development",
+      MIST_MODE: "local",
+    },
+    env_production: {
+      NODE_ENV: "production",
+      MIST_MODE: "product",
+    }
+  },
+  {
+    name: "mist-poa-bot3",
+    script: "./dist/bot",
+    env: {
+      NODE_ENV: "development",
+      MIST_MODE: "local",
+    },
+    env_production: {
+      NODE_ENV: "production",
+      MIST_MODE: "product",
+    }
+  },
+
+  {
     name: "mist-poa-engine",
     script: "./dist/adex_engine",
     env: {
