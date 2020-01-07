@@ -36,7 +36,6 @@ class watcher {
 
 			return;
 		}
-		setTimeout( async ()=>{
 				let id =  transaction[0].id;
 				
 				console.log("adex_watche-----transaction[0].transaction_hash=-%o---",transaction[0].transaction_hash);
@@ -137,7 +136,6 @@ class watcher {
 				//setTimeout(()=>{
 					this.loop.call(this)
 				//}, 1000);
-			 }, 5000);
 
 	}
 

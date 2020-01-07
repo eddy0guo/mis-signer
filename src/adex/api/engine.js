@@ -93,7 +93,7 @@ export default class engine {
 
         let transactions = await this.db.list_all_trades();
         let matched_trades = await this.db.list_matched_trades();
-        let add_queue_num = Math.floor(matched_trades[0].count / 100) + 1;
+        let add_queue_num = Math.floor(matched_trades[0].count / 300) + 1;
 
         let transaction_id = transactions.length == 0 ? 0 : transactions[0].transaction_id + add_queue_num;
 
