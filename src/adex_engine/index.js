@@ -2,6 +2,7 @@ import client from '../adex/models/db'
 import engine from '../adex/api/engine'
 import utils2 from '../adex/api/utils'
 import Queue from 'bull'
+import NP from 'number-precision'
 
 class enginer {
 
@@ -34,13 +35,13 @@ class enginer {
             }
             let amount = 0;
             for (var i in trades) {
-                amount += trades[i].amount;
+                amount = NP.plus(amount,trades[i].amount);
             }
 
             //插入之前直接计算好额度,防止orderbook出现买一大于卖一的情况
-            message.available_amount -= amount;
-            message.pending_amount += amount;
-            console.log("string33333=", message);
+            message.available_amount = NP.minus(message.available_amount,amount);
+            message.pending_amount = NP.plus(message.available_amount,amount);
+            console.log(`111${message.id}111--message=%o---matchedamount=%o---trades=%o---`,message,amount,trades);
             let order_status;
             if (message.pending_amount == 0) {
                 order_status = "pending";
