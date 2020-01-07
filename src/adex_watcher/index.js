@@ -5,6 +5,7 @@ import { chain } from '../wallet/api/chain'
 import to from 'await-to-js'
 const crypto = require('crypto');
 var date = require("silly-datetime");
+import NP from 'number-precision'
 
 class watcher {
 	db;
@@ -61,20 +62,49 @@ class watcher {
 						console.log("have n666666666666666666",trades);			
 					let updates = [];
 					for(var index in trades){
-						/*let update_maker_orders_info = [0,+trades[index].amount,0,-+trades[index].amount,update_time,trades[index].maker_order_id];
-						let update_taker_orders_info = [0,+trades[index].amount,0,-+trades[index].amount,update_time,trades[index].taker_order_id];
-						await this.db.update_order_confirm(update_maker_orders_info);
-						await this.db.update_order_confirm(update_taker_orders_info);
-						*/
-						let update_maker = {
-								info:[+trades[index].amount,-+trades[index].amount,update_time,trades[index].maker_order_id],
-							}
-						let update_taker = {
-								info:[+trades[index].amount,-+trades[index].amount,update_time,trades[index].taker_order_id],
-							} 
-						updates.push(update_maker);
-						updates.push(update_taker);
+
+						let trade_amount = +trades[index].amount;
+
+						let index_taker;
+						var taker_ar = updates.find(function(elem,index_tmp){
+							index_taker = index_tmp;
+							
+							 return elem.info[3] == trades[index].taker_order_id;
+						 });
+
+
+
+						let index_maker;
+						var maker_ar = updates.find(function(elem,index_tmp){
+							index_maker = index_tmp;
+							 return elem.info[3] == trades[index].maker_order_id;;
+						 });
+
+						if(!taker_ar){
+
+							let update_taker = {
+									info:[+trade_amount,-trade_amount,update_time,trades[index].taker_order_id]
+								}
+							updates.push(update_taker);
+						}else{
+
+							//console.log(`--orderid11111index=${index}------index_taker=${index_taker}-----adex-watcher-start111${trades[index].taker_order_id}- updates[index_taker].info[0]----\n---`)
+							updates[index_taker].info[0]	= NP.plus(updates[index_taker].info[0],trade_amount);	
+							updates[index_taker].info[1]  = NP.minus( updates[index_taker].info[1],trade_amount);		
+						};
+
+
+						if(!maker_ar){
+							let update_maker = {
+									info:[+trade_amount,-trade_amount,update_time,trades[index].maker_order_id]
+								}
+							updates.push(update_maker);
+						}else{
+							updates[index_maker].info[0]	= NP.plus(updates[index_maker].info[0],trade_amount);	
+							updates[index_maker].info[1]  = NP.minus( updates[index_maker].info[1],trade_amount);		
+						};
 					}
+
 					await this.db.update_order_confirm(updates);
 
 				} else if (err) {
