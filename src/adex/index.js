@@ -705,62 +705,6 @@ did对order_id进行签名，获取rsv
 
 
 
-	adex.all('/build_order_v2/:trader_address/:market_id/:side/:price/:amount/:order_id/:signature', async (req, res) => {
-		let {trader_address,market_id,side,price,amount,order_id,signature} = req.params;
-
-		let result = utils.verify(order_id,JSON.parse(signature));
-		if(!result){
-			 return res.json({
-                        success: false,
-                        err:'verify failed'
-            })
-		}
-		if(!(utils.judge_legal_num(+amount) && utils.judge_legal_num(+price))){
-			 return res.json({
-                        success: false,
-                        err:'amount or price is cannt support'
-            })
-		}
-		/*
-		var arr = obj.market.toString().split("-");
-		let token_info = mist_wallet.get_token(arr[1]);
-		let token = new Token(token_info[0].address);
-        let balance = await token.balanceOf(obj.address);
-		if(NP.times(+obj.amount, +obj.price) > balance){
-			return res.json("balance is not enoungh");
-		}
-		*/
-
-
-       let message = {
-                      id:order_id,
-                      trader_address: trader_address,
-                      market_id: market_id,
-                      side: side,
-                      price: price,
-                      amount: amount,
-                      status:'pending',
-                      type:'limit',
-                      available_amount: amount,
-                      confirmed_amount:0,
-                      canceled_amount:0,
-                      pending_amount:0,
-                      updated_at:null,
-                      created_at:null,
-       };
-
-
-       let [err,result2] = await to(order.build(message))
-       console.log(result2,err);
-       res.json({
-                 success: result == undefined ? false:true,
-                result: result2,
-                err:err
-       });
-	});
-
-
-
 /**
  * @api {post} /adex/build_order_v3 创建撮合订单
  * @apiDescription 广播币币资产的划入，并且进行托管资产的划出

@@ -103,6 +103,9 @@ class watcher {
 
 
         let [err, pending_trade] = await to(this.psql_db.filter_bridge(['coin2asset', 'pending', 'successful']));
+		if(err){
+			console.error(`release bridge happened error ${err}`);	
+		}
         if (pending_trade.length == 0) {
 
             console.log("have not need release bridge");
