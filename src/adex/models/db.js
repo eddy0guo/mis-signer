@@ -34,11 +34,18 @@ export default class db {
         if (err) {
             return console.error(`insert_order_faied ${err},insert data= ${ordermessage}`);
         }
+
+
+        let [err_tmp, result_tmp] = await to(this.clientDB.query('insert into mist_orders_tmp values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)', ordermessage));
+        if (err_tmp) {
+            return console.error(`insert_order_tmp_faied ${err_tmp},insert data= ${ordermessage}`);
+        }
+
         return JSON.stringify(result.rows);
     }
 
     async list_orders() {
-        let [err, result] = await to(this.clientDB.query('SELECT * FROM mist_orders order by create_at desc limit 30'));
+        let [err, result] = await to(this.clientDB.query('SELECT * FROM mist_orders_tmp order by create_at desc limit 30'));
         if (err) {
             return console.error('list_order failed', err);
         }
@@ -110,10 +117,10 @@ export default class db {
         let err;
         let result;
         if (filter[1] == 'sell') {
-            [err, result] = await to(this.clientDB.query('SELECT * FROM mist_orders where price<=$1 and side=$2 and available_amount>0 and market_id=$3 order by price asc limit 100', filter));
+            [err, result] = await to(this.clientDB.query('SELECT * FROM mist_orders_tmp where price<=$1 and side=$2 and available_amount>0 and market_id=$3 order by price asc limit 100', filter));
         } else {
 
-            [err, result] = await to(this.clientDB.query('SELECT * FROM mist_orders where price>=$1 and side=$2 and available_amount>0 and market_id=$3 order by price desc limit 100', filter));
+            [err, result] = await to(this.clientDB.query('SELECT * FROM mist_orders_tmp where price>=$1 and side=$2 and available_amount>0 and market_id=$3 order by price desc limit 100', filter));
         }
         if (err) {
             return console.error('filter_orders failed', err, filter);
@@ -131,13 +138,24 @@ export default class db {
         if (err) {
             return console.error('update_orders failed', err, update_info);
         }
+
+
+	    let [err_tmp, result_tmp] = await to(this.clientDB
+            .query('UPDATE mist_orders_tmp SET (available_amount,confirmed_amount,canceled_amount,\
+				pending_amount,status,updated_at)=(available_amount+$1,confirmed_amount+$2,canceled_amount+$3,pending_amount+$4,$5,$6) WHERE id=$7', update_info));
+
+        if (err_tmp) {
+            return console.error('update_orders failed', err_tmp, update_info);
+        }
+
+
         return result.rows;
 
     }
 
 
     async update_order_confirm(updates_info) {
-        let query = 'update mist_orders set (confirmed_amount,pending_amount,updated_at)=(mist_orders.confirmed_amount+tmp.confirmed_amount,mist_orders.pending_amount+tmp.pending_amount,tmp.updated_at) from (values (';
+        let query = 'set (confirmed_amount,pending_amount,updated_at)=(mist_orders.confirmed_amount+tmp.confirmed_amount,mist_orders.pending_amount+tmp.pending_amount,tmp.updated_at) from (values (';
         for (var index in updates_info) {
             let temp_value = updates_info[index].info[0] + ',' + updates_info[index].info[1] + ',now()' + ',\'' + updates_info[index].info[3] + "\'";
             if (index < updates_info.length - 1) {
@@ -147,11 +165,19 @@ export default class db {
             }
         }
         query += ') as tmp (confirmed_amount,pending_amount,updated_at,id) where mist_orders.id=tmp.id'
-        let [err, result] = await to(this.clientDB.query(query));
+
+        let [err, result] = await to(this.clientDB.query('update mist_orders ' + query));
 
         if (err) {
             return console.error('update_order_confirm failed ', err, updates_info);
         }
+
+
+	    let [err_tmp,result_tmp] = await to(this.clientDB.query('update mist_orders_tmp ' + query));
+
+        if (err_tmp) {
+            return console.error('update_order_confirm failed ', err_tmp, updates_info);
+       } 
         return result.rows;
 
     }
@@ -161,11 +187,11 @@ export default class db {
         let err;
         let result;
         if (filter[0] == 'sell') {
-            [err, result] = await to(this.clientDB.query('SELECT price,sum(available_amount) as amount FROM mist_orders\
+            [err, result] = await to(this.clientDB.query('SELECT price,sum(available_amount) as amount FROM mist_orders_tmp\
             where market_id=$2 and available_amount>0  and side=$1 group by price order by price asc limit 100', filter));
         } else {
 
-            [err, result] = await to(this.clientDB.query('SELECT price,sum(available_amount) as amount FROM mist_orders\
+            [err, result] = await to(this.clientDB.query('SELECT price,sum(available_amount) as amount FROM mist_orders_tmp\
             where market_id=$2 and available_amount>0  and side=$1 group by price order by price desc limit 100', filter));
         }
         if (err) {
@@ -222,7 +248,7 @@ export default class db {
     async get_market_current_price(marketID) {
         //数据后期数据上来了，sql会卡，fixme
 
-        let [err, result] = await to(this.clientDB.query('select cast(price as float8) from mist_trades where (current_timestamp - created_at) < \'24 hours\' and market_id=$1 order by created_at desc limit 1', marketID));
+        let [err, result] = await to(this.clientDB.query('select cast(price as float8) from mist_trades_tmp where (current_timestamp - created_at) < \'24 hours\' and market_id=$1 order by created_at desc limit 1', marketID));
         if (err) {
             return console.error('get_market_current_price_ failed', err, marketID);
         }
@@ -236,7 +262,7 @@ export default class db {
 
     async get_market_quotations(marketID) {
 
-        let [err, result] = await to(this.clientDB.query('select * from (select s.market_id,s.price,cast((s.price-t.price)/t.price as decimal(10,8)) ratio from (select * from mist_trades where market_id=$1 order by created_at desc limit 1)s left join (select price,market_id from mist_trades where market_id=$1 and (current_timestamp - created_at) < \'24 hours\' order by created_at asc  limit 1)t on s.market_id=t.market_id)k left join (select market_id,sum(amount) as volume from mist_trades where market_id=$1 and (current_timestamp - created_at) < \'24 hours\' group by market_id)m on k.market_id=m.market_id', marketID));
+        let [err, result] = await to(this.clientDB.query('select * from (select s.market_id,s.price,cast((s.price-t.price)/t.price as decimal(10,8)) ratio from (select * from mist_trades_tmp where market_id=$1 order by created_at desc limit 1)s left join (select price,market_id from mist_trades_tmp where market_id=$1 and (current_timestamp - created_at) < \'24 hours\' order by created_at asc  limit 1)t on s.market_id=t.market_id)k left join (select market_id,sum(amount) as volume from mist_trades_tmp where market_id=$1 and (current_timestamp - created_at) < \'24 hours\' group by market_id)m on k.market_id=m.market_id', marketID));
         if (err) {
             return console.error('get_market_quotations_ failed', err, marketID);
         }
@@ -253,7 +279,7 @@ export default class db {
      *trades
      */
     async insert_trades(trades_info) {
-        let query = 'insert into mist_trades values(';
+        let query = 'values(';
         let trades_arr = [];
         for (var index in trades_info) {
 
@@ -276,18 +302,23 @@ export default class db {
         //console.error("-----------------------------insert_trades-----query---trades_arr---",query,trades_arr);
 
         //let [err,result] = await to(this.clientDB.query('insert into mist_trades values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)',trades_info));
-        let [err, result] = await to(this.clientDB.query(query, trades_arr));
+        let [err, result] = await to(this.clientDB.query('insert into mist_trades ' + query, trades_arr));
         if (err) {
             return console.error('insert_traders_ failed', err, trades_info);
         }
-        console.log('insert_trades_成功', JSON.stringify(result), "info", trades_info);
+
+		let [err_tmp, result_tmp] = await to(this.clientDB.query('insert into mist_trades_tmp ' + query, trades_arr));
+        if (err_tmp) {
+            return console.error('insert_traders_tmp failed', err_tmp, trades_info);
+        }
+
         return JSON.stringify(result.rows);
 
 
     }
 
     async list_trades(marketID) {
-        let [err, result] = await to(this.clientDB.query('SELECT * FROM mist_trades where market_id=$1 order by created_at desc limit 30', marketID));
+        let [err, result] = await to(this.clientDB.query('SELECT * FROM mist_trades_tmp where market_id=$1 order by created_at desc limit 30', marketID));
         if (err) {
             return console.error('list_trades_ failed', err, marketID);
         }
@@ -325,7 +356,7 @@ export default class db {
 
 
     async list_all_trades() {
-        let [err, result] = await to(this.clientDB.query('SELECT * FROM mist_trades where status!=\'matched\' and (current_timestamp - created_at) < \'100 hours\' order by transaction_id desc limit 1'));
+        let [err, result] = await to(this.clientDB.query('SELECT * FROM mist_trades_tmp where status!=\'matched\' and (current_timestamp - created_at) < \'100 hours\' order by transaction_id desc limit 1'));
         if (err) {
             return console.error('list_all_trades_ failed', err);
         }
@@ -334,7 +365,7 @@ export default class db {
     }
 
     async list_matched_trades() {
-        let [err, result] = await to(this.clientDB.query('SELECT count(1) FROM mist_trades where status=\'matched\''));
+        let [err, result] = await to(this.clientDB.query('SELECT count(1) FROM mist_trades_tmp where status=\'matched\''));
         if (err) {
             return console.error('list_all_trades_ failed', err);
         }
@@ -344,7 +375,8 @@ export default class db {
 
 
     async sort_trades(message, sort_by) {
-        let sql = 'SELECT * FROM mist_trades where market_id=$1  and created_at>=$2 and  created_at<=$3 order by ' + sort_by + ' desc limit 30';
+		//最近一天的k线从这里拿，在远的之前应该已经缓存了？
+        let sql = 'SELECT * FROM mist_trades_tmp where market_id=$1  and created_at>=$2 and  created_at<=$3 order by ' + sort_by + ' desc limit 30';
         let [err, result] = await to(this.clientDB.query(sql, message));
         if (err) {
             return console.error('sort_trades_ failed', err, message, sort_by);
@@ -353,7 +385,7 @@ export default class db {
 
     }
 
-
+	//todo:所有两表同时更新的操作应该保证原子性，现在先不管
     async update_trades(update_info) {
         let [err, result] = await to(this.clientDB
             .query('UPDATE mist_trades SET (status,updated_at)=($1,$2) WHERE  transaction_id=$3', update_info));
@@ -361,10 +393,21 @@ export default class db {
         if (err) {
             return console.error('update_trades_ failed', err, update_info);
         }
+
+
+
+	    let [err_tmp, result_tmp] = await to(this.clientDB
+            .query('UPDATE mist_trades_tmp SET (status,updated_at)=($1,$2) WHERE  transaction_id=$3', update_info));
+
+        if (err_tmp) {
+            return console.error('update_trades_ failed', err_tmp, update_info);
+        }
+
         //console.log('update_trades_成功',JSON.stringify(result),"info",update_info);
         return result.rows;
 
     }
+
 
     async launch_update_trades(update_info) {
         let [err, result] = await to(this.clientDB
@@ -373,6 +416,15 @@ export default class db {
         if (err) {
             return console.error('launch_update_trades_ failed', err, update_info);
         }
+
+
+		let [err_tmp, result_tmp] = await to(this.clientDB
+            .query('UPDATE mist_trades_tmp SET (status,transaction_hash,updated_at)=($1,$2,$3) WHERE  transaction_id=$4', update_info));
+
+        if (err_tmp) {
+            return console.error('launch_update_trades_ failed', err_tmp, update_info);
+        }
+
         //console.log('launch_update_trades_成功',JSON.stringify(result),"info",update_info);
         return result.rows;
 
@@ -382,7 +434,7 @@ export default class db {
     async get_laucher_trades() {
         //容错laucher过程中进程重启的情况
         //let [err,result] = await to(this.clientDB.query('select t.*,s.right_id from (select * from mist_trades where status!=\'successful\' and transaction_hash is null)t left join (SELECT transaction_id as right_id  FROM mist_trades where status!=\'successful\'  and transaction_hash is null order by transaction_id  limit 1)s on t.transaction_id=s.right_id where s.right_id is not null'));
-        let [err, result] = await to(this.clientDB.query(' SELECT distinct(transaction_id)  FROM mist_trades where status in (\'pending\',\'matched\') and transaction_hash is null order by transaction_id  limit 1'));
+        let [err, result] = await to(this.clientDB.query(' SELECT distinct(transaction_id)  FROM mist_trades_tmp where status in (\'pending\',\'matched\') and transaction_hash is null order by transaction_id  limit 1'));
         if (err) {
             return console.error('get_laucher_trades_ failed', err);
         }
@@ -392,7 +444,7 @@ export default class db {
     }
 
     async get_matched_trades() {
-        let [err, result] = await to(this.clientDB.query('SELECT *  FROM mist_trades where status=\'matched\''));
+        let [err, result] = await to(this.clientDB.query('SELECT *  FROM mist_trades_tmp where status=\'matched\''));
         if (err) {
             return console.error('get_laucher_trades_ failed', err);
         }
@@ -722,7 +774,7 @@ export default class db {
 
 
     async get_engine_info() {
-        let [err, result] = await to(this.clientDB.query('select status,count(1) from mist_trades group by status'));
+        let [err, result] = await to(this.clientDB.query('select status,count(1) from mist_trades_tmp group by status'));
         if (err) {
             return console.error('insert_traders_ failed', err);
         }
@@ -731,7 +783,7 @@ export default class db {
 
 
     async get_freeze_amount(filter_info) {
-        let [err, result] = await to(this.clientDB.query('select market_id,side,sum(pending_amount+available_amount) as base_amount,sum((pending_amount+available_amount) * price) as quote_amount from mist_orders where trader_address=$1 group by market_id,side having (position($2 in market_id)=1 and side=\'sell\') or (position($2 in market_id)>1 and side=\'buy\')', filter_info));
+        let [err, result] = await to(this.clientDB.query('select market_id,side,sum(pending_amount+available_amount) as base_amount,sum((pending_amount+available_amount) * price) as quote_amount from mist_orders_tmp where trader_address=$1 group by market_id,side having (position($2 in market_id)=1 and side=\'sell\') or (position($2 in market_id)>1 and side=\'buy\')', filter_info));
         if (err) {
             return console.error('get_freeze_amount failed', err, filter_info);
         }

@@ -246,7 +246,7 @@ getHexData(abiInfo) {
                     mnemonic: word,
                     // storage: 'localforage',
                 });
-                let [child_err,child_txid] = await to(child_wallet.contractCall.call(
+             return await child_wallet.contractCall.call(
                     mist_config.ex_address,
                     'matchorder(tuple[])',
                     [trades_arr],
@@ -254,9 +254,7 @@ getHexData(abiInfo) {
                     AsimovConst.DEFAULT_ASSET_ID,
                     AsimovConst.DEFAULT_FEE_AMOUNT * 100,
                     AsimovConst.DEFAULT_ASSET_ID,
-                    AsimovConst.CONTRACT_TYPE.CALL))
-                console.log("---66666------child_err---child_txid",child_err,child_txid)
-				return child_txid;
+                    AsimovConst.CONTRACT_TYPE.CALL)
 
     }
     
