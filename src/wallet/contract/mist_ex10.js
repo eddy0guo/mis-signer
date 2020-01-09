@@ -250,9 +250,9 @@ getHexData(abiInfo) {
                     mist_config.ex_address,
                     'matchorder(tuple[])',
                     [trades_arr],
-                    1000000 * 20,0,
+                    1000000 * 40,0,
                     AsimovConst.DEFAULT_ASSET_ID,
-                    AsimovConst.DEFAULT_FEE_AMOUNT * 50,
+                    AsimovConst.DEFAULT_FEE_AMOUNT * 100,
                     AsimovConst.DEFAULT_ASSET_ID,
                     AsimovConst.CONTRACT_TYPE.CALL))
                 console.log("---66666------child_err---child_txid",child_err,child_txid)

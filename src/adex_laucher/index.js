@@ -85,7 +85,7 @@ class launcher {
                 let update_trade_info = ['pending', txid, current_time, trades[0].transaction_id];
                 await this.db.launch_update_trades(update_trade_info);
 
-                let TXinfo = [trades[0].transaction_id, txid, trades[0].market_id, "pending", "pending", trades[0].created_at, trades[0].created_at];
+                let TXinfo = [trades[0].transaction_id, txid, trades[0].market_id, "pending", "pending", current_time, current_time];
                 this.db.insert_transactions(TXinfo);
             } else {
 
