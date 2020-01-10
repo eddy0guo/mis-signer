@@ -155,7 +155,7 @@ export default ({ config, db,logger}) => {
 
 /**
  * @api {post} /adex/get_token_price_v2/:symbol 币种价格
- * @apiDescription 获取币种当前对CNYc价格
+ * @apiDescription 获取币种当前对CNYC价格
  * @apiName get_token_price_v2
  * @apiGroup adex
  * @apiSuccess {json} result
@@ -241,14 +241,14 @@ export default ({ config, db,logger}) => {
     "success": true,
     "result": [
         {
-            "token_symbol": "CNYc",
+            "token_symbol": "CNYC",
             "erc20_address": "0x638374231575328e380610fbb12020c29e11afcd01",
             "erc20_balance": 89.578222,
             "erc20_freeze_amount": 0.17441799999999996,
             "asim_assetid": "000000000000000c00000000",
             "asim_asset_balance": "2904",
-            "asset_icon": "https://www.mist.exchange/res/icons/CNYca.png",
-            "coin_icon": "https://www.mist.exchange/res/icons/CNYcm.png"
+            "asset_icon": "https://www.mist.exchange/res/icons/CNYCa.png",
+            "coin_icon": "https://www.mist.exchange/res/icons/CNYCm.png"
         },
         {
             "token_symbol": "ASIM",
@@ -372,11 +372,11 @@ export default ({ config, db,logger}) => {
     "success": true,
     "result": [
         {
-            "token_symbol": "CNYc",
+            "token_symbol": "CNYC",
             "asim_assetid": "000000000000000c00000000",
             "asim_asset_balance": "2904",
             "value": 2904,
-            "token_icon": "https://www.mist.exchange/res/icons/CNYca.png"
+            "token_icon": "https://www.mist.exchange/res/icons/CNYCa.png"
         },
         {
             "token_symbol": "ASIM",
@@ -468,13 +468,13 @@ export default ({ config, db,logger}) => {
     "success": true,
     "result": [
         {
-            "token_symbol": "CNYc",
+            "token_symbol": "CNYC",
             "erc20_address": "0x638374231575328e380610fbb12020c29e11afcd01",
             "erc20_balance": 89.578222,
             "erc20_freeze_amount": 0,
             "asim_assetid": "000000000000000c00000000",
             "value": 89.578222,
-            "token_icon": "https://www.mist.exchange/res/icons/CNYcm.png"
+            "token_icon": "https://www.mist.exchange/res/icons/CNYCm.png"
         },
         {
             "token_symbol": "ASIM",
@@ -646,7 +646,7 @@ did对order_id进行签名，获取rsv
     "success": true,
     "result": "976528bf51cff225e267e54256191afb80c3845aa39656481dc0c6e792d8bbfa"
  }
- * @apiSampleRequest https://poa.mist.exchange/api/adex/get_order_id_v2/0x66a9ae316e1914dc8d835d5cd2ed57ab24b52a02c7/ASIM-CNYc/sell/100/6000
+ * @apiSampleRequest https://poa.mist.exchange/api/adex/get_order_id_v2/0x66a9ae316e1914dc8d835d5cd2ed57ab24b52a02c7/ASIM-CNYC/sell/100/6000
  * @apiVersion 1.0.0
  */
 
@@ -749,7 +749,7 @@ did对order_id进行签名，获取rsv
         "pubkey": "037cfb1769aa470e139c30f8cfd17d47f44e5317ad7f5b6e31e358d1e6e3df2832"
     },
  "trader_address":"0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
- "market_id":"ASIM-CNYc",
+ "market_id":"ASIM-CNYC",
  "side":"sell",
  "price":10000,
  "amount":6,

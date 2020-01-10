@@ -33,7 +33,7 @@ export default class makets {
             let [err, result] = await to(this.db.get_market_quotations([markets[index].id]));
             if (!err) {
                 let base_token = result[0].market_id.split('-')[0];
-                result[0].CNYc_price = await quotation.get_token_price2pi(base_token);
+                result[0].CNYC_price = await quotation.get_token_price2pi(base_token);
                 quotations.push(result[0]);
             }
         }

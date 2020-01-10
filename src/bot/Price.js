@@ -45,9 +45,9 @@ export default class Price {
             this.prices[info.symbol+'-USDT'] = info.price_usd
         }
 
-        let asim = this.prices["ASIM-CNYc"]
-        let usdt = this.prices["USDT-CNYc"]
-        let mt = this.prices["MT-CNYc"]
+        let asim = this.prices["ASIM-CNYC"]
+        let usdt = this.prices["USDT-CNYC"]
+        let mt = this.prices["MT-CNYC"]
 
         asim*=1+(Math.random()-0.5)/100*3
         usdt*=1+(Math.random()-0.5)/100
@@ -57,11 +57,11 @@ export default class Price {
         let btc_usdt = this.prices["BTC-USDT"]
 
         let markets = {
-            "BTC-CNYc":btc_usdt*usdt,
-            "ETH-CNYc":eth_usdt*usdt,
-            "ASIM-CNYc":asim,
-            "USDT-CNYc":usdt,
-            "MT-CNYc":mt,
+            "BTC-CNYC":btc_usdt*usdt,
+            "ETH-CNYC":eth_usdt*usdt,
+            "ASIM-CNYC":asim,
+            "USDT-CNYC":usdt,
+            "MT-CNYC":mt,
             
             "BTC-USDT":btc_usdt,
             "ETH-USDT":eth_usdt,

@@ -32,7 +32,7 @@ let cdp_address = '0x6367f3c53e65cce5769166619aa15e7da5acf9623d';
 
 let coin2asset_fee = [
     {
-        token: "CNYc",
+        token: "CNYC",
         amount: 10,
     }, {
         token: "USDT",
@@ -801,7 +801,7 @@ export default ({config, db}) => {
     "success": true,
     "result": [
         {
-            "token": "CNYc",
+            "token": "CNYC",
             "amount": 10
         },
         {
@@ -937,7 +937,7 @@ export default ({config, db}) => {
             "result": "15.70000000",
             "err": null
      *  }
-     * @apiSampleRequest https://poa.mist.exchange/api/express/get_price/ASIM/CNYc/1
+     * @apiSampleRequest https://poa.mist.exchange/api/express/get_price/ASIM/CNYC/1
      * @apiVersion 1.0.0
      */
 

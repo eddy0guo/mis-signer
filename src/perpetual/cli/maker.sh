@@ -5,8 +5,8 @@
 #curl -v http://119.23.181.166:13000/adex/list_trades
 i=1;
 init_price=0;
-markets_arr=("ASIM-CNYc" "USDT-CNYc" "MT-CNYc"  "ASIM-USDT" "ETH-USDT" "BTC-MT" "ETH-MT" "BTC-CNYc" "ETH-CNYc" "BTC-USDT")
-#markets_arr=("ASIM-CNYc")
+markets_arr=("ASIM-CNYC" "USDT-CNYC" "MT-CNYC"  "ASIM-USDT" "ETH-USDT" "BTC-MT" "ETH-MT" "BTC-CNYC" "ETH-CNYC" "BTC-USDT")
+#markets_arr=("ASIM-CNYC")
 account_arr=("13682471710" "13682471711")
 address_arr=("0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9" "0x66b7637198aee4fffa103fc0082e7a093f81e05a64")
 side_arr=("buy" "sell")
@@ -16,11 +16,11 @@ do
 	for marketID in ${markets_arr[@]}
 	do
 		init_price=0;
-		if [ "${marketID}" == "USDT-CNYc" ];then
+		if [ "${marketID}" == "USDT-CNYC" ];then
 		 	init_price=7;
-		elif [ "${marketID}" == "BTC-CNYc" ];then
+		elif [ "${marketID}" == "BTC-CNYC" ];then
 		 	init_price=700;
-		elif [ "${marketID}" == "ETH-CNYc" ];then
+		elif [ "${marketID}" == "ETH-CNYC" ];then
 		 	init_price=1400;
 		elif [ "${marketID}" == "BTC-USDT" ];then
 		 	init_price=90;

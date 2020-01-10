@@ -9,11 +9,11 @@ import CloudBot from './CloudBot'
 console.log = ()=>{}
 
 let markets = {
-	"ASIM-CNYc":15,
-	"USDT-CNYc":7,
-	"MT-CNYc":50,
-	"BTC-CNYc":63861,
-	"ETH-CNYc":1290,
+	"ASIM-CNYC":15,
+	"USDT-CNYC":7,
+	"MT-CNYC":50,
+	"BTC-CNYC":63861,
+	"ETH-CNYC":1290,
 
 	"ASIM-USDT":2,
 	"ETH-USDT":185,
@@ -24,11 +24,11 @@ let markets = {
 }
 
 let amounts = {
-	"ASIM-CNYc":0,
-	"USDT-CNYc":0,
-	"MT-CNYc":0,
-	"BTC-CNYc":0,
-	"ETH-CNYc":0,
+	"ASIM-CNYC":0,
+	"USDT-CNYC":0,
+	"MT-CNYC":0,
+	"BTC-CNYC":0,
+	"ETH-CNYC":0,
 
 	"ASIM-USDT":0,
 	"ETH-USDT":0,

@@ -17,7 +17,7 @@ import mist_config from '../cfg'
 
 let express_config = [
     {
-        token: "CNYc",
+        token: "CNYC",
         min: 60,
         max: 60000,
     }, {
@@ -50,8 +50,8 @@ async function my_wallet(word) {
 async function get_price(base_token_name, quote_token_name, amount, order) {
     let base_value = 0;
     let base_amount = 0;
-    if (base_token_name != 'CNYc') {
-        let base_book = await order.order_book(base_token_name + '-CNYc');
+    if (base_token_name != 'CNYC') {
+        let base_book = await order.order_book(base_token_name + '-CNYC');
         let base_bids = base_book.bids;
         //模拟先卖掉所有base，再全部买quote
         for (let index in base_bids) {
@@ -72,8 +72,8 @@ async function get_price(base_token_name, quote_token_name, amount, order) {
 
     let quote_value = 0;
     let quote_amount = 0;
-    if (quote_token_name != 'CNYc') {
-        let quote_book = await order.order_book(quote_token_name + '-CNYc');
+    if (quote_token_name != 'CNYC') {
+        let quote_book = await order.order_book(quote_token_name + '-CNYC');
         let quote_asks = quote_book.asks.reverse();
 
         for (let index in quote_asks) {
@@ -238,7 +238,7 @@ export default ({config, db}) => {
 		"success": true,
     "result": [
         {
-            "token": "CNYc",
+            "token": "CNYC",
             "min": 60,
             "max": 60000
         },
@@ -295,7 +295,7 @@ export default ({config, db}) => {
     		"result": "15.70000000",
     		"err": null
      *  }
-     * @apiSampleRequest https://poa.mist.exchange/api/express/get_price/ASIM/CNYc/1
+     * @apiSampleRequest https://poa.mist.exchange/api/express/get_price/ASIM/CNYC/1
      * @apiVersion 1.0.0
      */
 
@@ -357,10 +357,10 @@ export default ({config, db}) => {
      "success": true,
     "result":
         {
-            "token_symbol": "CNYc",
+            "token_symbol": "CNYC",
             "asim_asset_id": "000000000000000c00000000",
             "asim_asset_balance": 0,
-            "icon": "https://www.mist.exchange/res/icons/CNYca.png"
+            "icon": "https://www.mist.exchange/res/icons/CNYCa.png"
         },
     "err": null
 
