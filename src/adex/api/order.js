@@ -62,6 +62,11 @@ export default class order {
         let orders = await this.db.my_orders2([address, offset, perpage, status1, status2]);
 		for(let order_index in orders){
         	let trades = await this.db.order_trades([orders[order_index].id]);
+			if(trades.length == 0){
+				 orders[order_index].average_price = "--";	
+				 orders[order_index].confirm_value = "--";	
+				 continue;
+			}
 			let amount = 0;
 			let value = 0;
 			for(let trade_index in trades){
@@ -70,6 +75,7 @@ export default class order {
 				value = NP.plus(value,trade_value)
 			}
 			orders[order_index].average_price = NP.divide(value,amount).toFixed(8); 
+			orders[order_index].confirm_value = value.toFixed(8); 
 		}
 
         return orders;

@@ -82,7 +82,7 @@ export default ({ config, db,logger}) => {
 	});
 
 	adex.all('/mist_user_overview/:address', async (req, res) => {
-	   let address = req.params;
+	   let address = req.params.address;
 	   let [current_order_err,current_orders_length] = await to(order.my_orders_length(address,"pending","partial_filled"));
 	   let [history_order_err,history_orders_length] = await to(order.my_orders_length(address,"cancled","full_filled"));
 	   let [trades_err,trades_length] = await to(trades.my_trades_length(address));
