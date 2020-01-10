@@ -1,4 +1,6 @@
 import client from '../models/db'
+import NP from 'number-precision'
+
 import engine from './engine'
 import utils2 from './utils'
 var Queue = require('bull');
@@ -57,8 +59,20 @@ export default class order {
 
     async my_orders2(address, page, perpage, status1, status2) {
         let offset = (+page - 1) * perpage;
-        let result = await this.db.my_orders2([address, offset, perpage, status1, status2]);
-        return result;
+        let orders = await this.db.my_orders2([address, offset, perpage, status1, status2]);
+		for(let order_index in orders){
+        	let trades = await this.db.order_trades([orders[order_index].id]);
+			let amount = 0;
+			let value = 0;
+			for(let trade_index in trades){
+				amount = NP.plus(amount,trades[trade_index].amount)
+				let trade_value = NP.times(trades[trade_index].amount,trades[trade_index].price)
+				value = NP.plus(value,trade_value)
+			}
+			orders[order_index].average_price = NP.divide(value,amount).toFixed(8); 
+		}
+
+        return orders;
     }
 
     async my_orders_length(address,status1,status2) {

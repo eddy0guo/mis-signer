@@ -335,6 +335,19 @@ export default class db {
 
     }
 
+
+	async order_trades(order_id) {
+        let [err, result] = await to(this.clientDB.query('SELECT price,amount FROM mist_trades where taker_order_id=$1 or maker_order_id=$1', order_id));
+        if (err) {
+            return console.error('my_trades_ failed', err, address);
+        }
+        return result.rows;
+
+    }
+
+
+
+
     async my_trades2(filter_info) {
         let [err, result] = await to(this.clientDB.query('SELECT * FROM mist_trades where taker=$1 or maker=$1 order by created_at desc limit $3 offset $2', filter_info));
         if (err) {
