@@ -81,6 +81,31 @@ export default ({ config, db,logger}) => {
        res.json({result});
 	});
 
+	adex.all('/mist_user_overview/:address', async (req, res) => {
+	   let address = req.params;
+	   let [current_order_err,current_orders_length] = await to(order.my_orders_length(address,"pending","partial_filled"));
+	   let [history_order_err,history_orders_length] = await to(order.my_orders_length(address,"cancled","full_filled"));
+	   let [trades_err,trades_length] = await to(trades.my_trades_length(address));
+	   let [birdge_err, bridge_length] = await to(client.my_bridge_length([address]));
+		
+	   if(current_order_err || history_order_err || trades_err || birdge_err){
+		   console.error("get fingo_user_overview error",current_order_err,history_order_err,trades_err,birdge_err)
+	   		return  res.json({
+					success: false,
+			});
+       }	   
+       res.json({
+		   		success:true,
+				current_orders_length:current_orders_length,
+				history_orders_length:history_orders_length,
+				trades_length:trades_length,
+				bridge_length:bridge_length
+		   });
+	});
+
+
+
+
 
 	        
    	adex.all('/list_market_quotations', async (req, res) => {
@@ -1020,33 +1045,7 @@ did对order_id进行签名，获取rsv
        res.json({result,err });
 	});
 
-/**
- * @api {post} /adex/my_orders_length/:address 用户订单数
- * @apiDescription 获取用户订单总个数
- * @apiName my_orders_length
- * @apiGroup adex
- * @apiSuccess {json} result
- * @apiSuccessExample {json} Success-Response:
-{
-    "success": true,
-    "result": "1210666",
-    "err": null
-}
- * @apiSampleRequest https://poa.mist.exchange/api/adex/my_orders_length/0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9
- * @apiVersion 1.0.0
- */
-	adex.all('/my_orders_length/:address', async (req, res) => {
-       
-	   let {address} = req.params;
-       let [err,result] = await to(order.my_orders_length(address));
 
-	   res.json({
-			 success: result == undefined ? false:true,
-			 result:result,
-			 err:err
-		});
-
-	});
 
 /**
  * @api {post} /adex/my_trades_length/:address 用户历史成交数

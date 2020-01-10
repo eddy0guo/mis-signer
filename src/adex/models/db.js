@@ -62,8 +62,8 @@ export default class db {
 
     }
 
-    async my_orders_length(address) {
-        let [err, result] = await to(this.clientDB.query('SELECT count(1) FROM mist_orders where trader_address=$1', address));
+    async my_orders_length(info) {
+        let [err, result] = await to(this.clientDB.query('SELECT count(1) FROM mist_orders where trader_address=$1 and status in ($2,$3)', info));
         if (err) {
             return console.error('my_order_length failed', err, address);
         }
