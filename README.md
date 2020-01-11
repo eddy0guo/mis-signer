@@ -71,6 +71,11 @@ docker run -p 8080:8080 mist/api-service
 - [ ] USDT（ERC20）充提币
 - [ ] DB的安全部署
 
+## Init 
+目前配置的是RDS，注意不要在生产环境下make seed或者其他的删数据的情况，
+source dev.env(or local.env)
+cd  src/adex/models/ && make seed 
+
 ## Deploy
 
 ```bash

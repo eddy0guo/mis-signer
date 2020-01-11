@@ -173,7 +173,7 @@ export default class db {
         }
 
 
-	    let [err_tmp,result_tmp] = await to(this.clientDB.query('update mist_orders_tmp ' + query));
+	    let [err_tmp,result_tmp] = await to(this.clientDB.query('update mist_orders_tmp as mist_orders ' + query));
 
         if (err_tmp) {
             return console.error('update_order_confirm failed ', err_tmp, updates_info);

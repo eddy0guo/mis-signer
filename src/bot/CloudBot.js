@@ -56,7 +56,7 @@ export default class CloudBot {
         this.amount = amount
 
         this.maxOrderPrice = 5000
-        this.loopDepay = 60 * 100
+        this.loopDepay = 60 * 1000
 
         this.$axios = axios
 
