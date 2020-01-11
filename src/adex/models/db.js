@@ -359,7 +359,7 @@ export default class db {
 
 
     async transactions_trades(id) {
-        let [err, result] = await to(this.clientDB.query('SELECT * FROM mist_trades where transaction_id=$1', id));
+        let [err, result] = await to(this.clientDB.query('SELECT * FROM mist_trades_tmp where transaction_id=$1', id));
         if (err) {
             return console.error('transactions_trades_ failed', err, id);
         }

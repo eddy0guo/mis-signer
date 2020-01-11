@@ -192,15 +192,10 @@ getHexData(abiInfo) {
 
 
    async matchorder(trades_info,prikey,word){
-	   console.log("222trades_info--",trades_info,prikey);
-
 	    let utils = new adex_utils();
 	   let trades_arr = [];
 	   for(var index in trades_info){
-		   console.log("1111i44444444",trades_info[index].trade_hash.slice(2,66));
 		   var hashbuf=Buffer.alloc(32,trades_info[index].trade_hash.slice(2,66),'hex');
-		   console.log("1111155555",hashbuf); //2a0a3943217145950ad81b04c82aabd2a6e3c098b9ec20500b070d4ef0bb4031
-
 		   var sign = util.ecsign(hashbuf, util.toBuffer(prikey));
 		   trades_info[index].v = sign.v.toString();
 		   trades_info[index].r = '0x' + sign.r.toString("hex");
@@ -209,13 +204,8 @@ getHexData(abiInfo) {
 
 		   let trade_arr = utils.arr_values(trades_info[index]);
 		   trades_arr.push(trade_arr);
-
-		   //去掉id
-		   console.log("1111",index,trade_arr);
-
 	   }
 
-	   console.log("gxygxy2---trades_info",trades_arr);
 		let abiInfo = 
 		{"constant":false,
 		"inputs":[{"components":
@@ -238,13 +228,10 @@ getHexData(abiInfo) {
 		"stateMutability":"nonpayable",
 		"type":"function"}
 
-	//	  return this.callContract(abiInfo);
-	console.log("------mistconfig=-----%o----",mist_config);
 		   let child_wallet = new AsimovWallet({
                     name: prikey,
                     rpc: mist_config.asimov_child_rpc,
                     mnemonic: word,
-                    // storage: 'localforage',
                 });
              return await child_wallet.contractCall.call(
                     mist_config.ex_address,

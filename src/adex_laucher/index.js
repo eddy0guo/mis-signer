@@ -75,10 +75,11 @@ class launcher {
                 trades_hash.push(trade_info);
             }
 
+
             let mist = new mist_ex10(mist_config.ex_address);
             let [err, txid] = await to(mist.matchorder(trades_hash, mist_config.relayers[index].prikey, mist_config.relayers[index].word));
 
-            //console.log("formatchorder----tradeshash=%o--relayers=%o--transaction_id=%o--index=%o--", trades_hash,mist_config.relayers[index],trades[0].transaction_id ,index);
+//            console.log("formatchorder----tradeshash=%o--relayers=%o--transaction_id=%o--index=%o--", trades_hash,mist_config.relayers[index],trades[0].transaction_id ,index);
 
 
             if (!err) {
@@ -91,7 +92,7 @@ class launcher {
 
                 let update_trade_info = ['matched', , current_time, trades[0].transaction_id];
                 await this.db.launch_update_trades(update_trade_info);
-                //  console.log("---call_asimov_result33333time--sendraw--err--", trades[0].transaction_id, mist_config.relayers[index].address)
+                console.log("---call dex matchorder--err=%o-transaction_id=%o--relayers=%o\n", err,trades[0].transaction_id, mist_config.relayers[index].address)
             }
             setTimeout(() => {
                 this.loop.call(this)
