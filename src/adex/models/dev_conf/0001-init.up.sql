@@ -42,6 +42,7 @@ create table mist_trades(
 );
 create index idx_mist_trades_mine on mist_trades (taker, maker);
 create index idx_mist_trades_order on mist_trades (taker_order_id, maker_order_id);
+create index idx_mist_trades_transaction_id on mist_trades (transaction_id);
 
 create table mist_trades_tmp(
   id text PRIMARY KEY,
