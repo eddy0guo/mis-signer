@@ -40,8 +40,10 @@ create table mist_trades(
   updated_at timestamp ,
   created_at timestamp
 );
-create index idx_mist_trades_mine on mist_trades (taker, maker);
-create index idx_mist_trades_order on mist_trades (taker_order_id, maker_order_id);
+create index idx_mist_trades_taker on mist_trades (taker);
+create index idx_mist_trades_maker on mist_trades (maker);
+create index idx_mist_trades_taker_order_id  on mist_trades (taker_order_id);
+create index idx_mist_trades_maker_order_id on mist_trades (maker_order_id);
 create index idx_mist_trades_transaction_id on mist_trades (transaction_id);
 
 create table mist_trades_tmp(
