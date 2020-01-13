@@ -56,7 +56,7 @@ var local = {
 }
 
 var dev = {
-    ex_address:'0x63e475d5c27b5075e8cfb7e6e7ac78c8278ab16688',
+    ex_address:'0x630329112990e5246f67ae0de752225d56e33e3121',
     order_hash_word:'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
     fauct_address:'0x666234b6348c10fed282b95c1f1768aa3113eb96b2',
     fauct_word:'tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook',
@@ -118,7 +118,7 @@ var dev = {
 
 
 var product = {
-    ex_address:'0x63e475d5c27b5075e8cfb7e6e7ac78c8278ab16688',
+    ex_address:'0x630329112990e5246f67ae0de752225d56e33e3121',
     order_hash_word:'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
     fauct_address:'0x666234b6348c10fed282b95c1f1768aa3113eb96b2',
     fauct_word:'tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook',
