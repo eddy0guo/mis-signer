@@ -45,6 +45,7 @@ create index idx_mist_trades_maker on mist_trades (maker);
 create index idx_mist_trades_taker_order_id  on mist_trades (taker_order_id);
 create index idx_mist_trades_maker_order_id on mist_trades (maker_order_id);
 create index idx_mist_trades_transaction_id on mist_trades (transaction_id);
+create index idx_mist_trades_quotation  on mist_trades (market_id, created_at);
 
 create table mist_trades_tmp(
   id text PRIMARY KEY,

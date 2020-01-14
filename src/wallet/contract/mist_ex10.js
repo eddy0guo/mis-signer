@@ -228,6 +228,8 @@ getHexData(abiInfo) {
 		"stateMutability":"nonpayable",
 		"type":"function"}
 
+		console.log("matchorder----%o\n",trades_arr);
+
 		   let child_wallet = new AsimovWallet({
                     name: prikey,
                     rpc: mist_config.asimov_child_rpc,

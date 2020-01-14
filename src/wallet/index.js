@@ -701,7 +701,7 @@ export default ({config, db}) => {
 
     wallet.all('/find_convert/:id', async (req, res) => {
         let [err, result] = await to(psql_db.find_bridge([req.params.id]));
-        let success = (result == undefined || result.length == 0) ? false : true
+        let success = result == undefined  ? false : true
         res.json({success: success, result: result[0], err: err});
     });
 
@@ -743,7 +743,7 @@ export default ({config, db}) => {
         let {address, page, perpage} = req.params;
         let offset = (+page - 1) * +perpage;
         let [err, result] = await to(psql_db.my_bridge([address, offset, perpage]));
-        let success = (result == undefined || result.length == 0) ? false : true
+        let success = result == undefined ? false : true
         res.json({success: success, result: result, err: err});
     });
 
@@ -785,7 +785,7 @@ export default ({config, db}) => {
         let {address, token_name, page, perpage} = req.params;
         let offset = (+page - 1) * +perpage;
         let [err, result] = await to(psql_db.my_bridge_v3([address, token_name, offset, perpage]));
-        let success = (result == undefined || result.length == 0) ? false : true
+        let success = result == undefined  ? false : true
         res.json({success: success, result: result, err: err});
     });
 

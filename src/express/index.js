@@ -207,8 +207,8 @@ export default ({config, db}) => {
 
         if (record.length == 0) {
             return res.json({
-                success: false,
-                err: 'cann\'t find this trade'
+                success: true,
+                result: []
             })
         }
 
@@ -220,7 +220,7 @@ export default ({config, db}) => {
             record[0].quote_token_icon = null;
         }
         res.json({
-            success: record == undefined ? false : true,
+            success: true,
             result: record[0],
             err: err
         });
