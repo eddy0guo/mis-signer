@@ -700,9 +700,23 @@ export default ({config, db}) => {
      */
 
     wallet.all('/find_convert/:id', async (req, res) => {
-        let [err, result] = await to(psql_db.find_bridge([req.params.id]));
-        let success = result == undefined  ? false : true
-        res.json({success: success, result: result[0], err: err});
+        let [err, convert] = await to(psql_db.find_bridge([req.params.id]));
+		if(err){
+			return res.json({
+					success: false,
+					err:err
+				})	
+		}else if(convert && convert.length == 0){
+			return res.json({
+					success:true,
+					result:[]
+				})	
+		}else{
+			return res.json({
+					success:true,
+					result:convert[0]
+				})	
+		}
     });
 
 
