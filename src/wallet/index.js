@@ -173,6 +173,27 @@ export default ({config, db}) => {
 
     });
 
+	wallet.all('/faucet_asim/:address', async (req, res) => {
+        console.log(req.params)
+
+        let token_arr = await mist_wallet.list_tokens();
+        let results = [];
+        const wallet = new AsimovWallet({
+            name: mist_config.fauct_address,
+            rpc: mist_config.asimov_child_rpc,
+            mnemonic: mist_config.fauct_word,
+        });
+
+        let address = req.params.address;
+
+            let token_info = await psql_db.get_tokens(['ASIM']);
+        let [err, result] = await to(wallet.commonTX.transfer(address, 10000, token_info[0].asim_assetid));
+        console.log(result);
+        res.json({result: result});
+
+
+    });
+
     wallet.all('/faucet3/:address', async (req, res) => {
         console.log(req.params)
 
