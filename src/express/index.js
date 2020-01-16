@@ -372,7 +372,6 @@ export default ({config, db}) => {
         let token_arr = await mist_wallet.list_tokens();
 
         let balances = [];
-        console.log("obj11111111133=", token_arr);
         for (var i in token_arr) {
             let asset = new Asset(token_arr[i].asim_assetid)
             let [err4, assets_balance] = await to(asset.balanceOf(mist_config.express_address))
@@ -390,7 +389,6 @@ export default ({config, db}) => {
                 icon: icon
             };
 
-            console.log("obj111111111=", token_arr[i]);
             balances.push(balance_info);
             console.log(balance_info);
         }

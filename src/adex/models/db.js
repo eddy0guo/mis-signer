@@ -671,7 +671,6 @@ export default class db {
     }
 
     async my_converts2(filter_info) {
-        console.log("11223344", filter_info);
         let [err, result] = await to(this.clientDB.query('SELECT * FROM mist_token_convert  where address=$1 order by created_at desc limit $3 offset $2', filter_info));
         if (err) {
             return console.error('list_borrows_ failed', err, filter_info);

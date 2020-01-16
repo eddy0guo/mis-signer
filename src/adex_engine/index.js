@@ -16,7 +16,7 @@ class enginer {
 
     async start() {
         this.orderQueue.process(async (job, done) => {
-			 console.log(`receive a message %o from OrderQueue${process.env.MIST_MODE} \n`,job.data);
+			 //console.log(`receive a message %o from OrderQueue${process.env.MIST_MODE} \n`,job.data);
              let message = job.data;
 			
 			 let create_time = this.utils.get_current_time();

@@ -25,8 +25,6 @@ class watcher {
 
 	async loop() {
 		let transaction = await this.db.get_pending_transactions()
-		console.log("adex_watche-----transaction=-%o---",transaction);
-
 		//全部都是成功的,就睡眠1s
 		if (transaction.length == 0) {
 			console.log("have not pending transaction");
@@ -38,10 +36,10 @@ class watcher {
 		}
 				let id =  transaction[0].id;
 				
-				console.log("adex_watche-----transaction[0].transaction_hash=-%o---",transaction[0].transaction_hash);
+//				console.log("adex_watche-----transaction[0].transaction_hash=-%o---",transaction[0].transaction_hash);
 				let [err, result] = await to(chain.getrawtransaction([transaction[0].transaction_hash, true, true],'child_poa'))
 
-				console.log("adex_watche-----getraw.err=-%o--result=%o-",err,result);
+//				console.log("adex_watche-----getraw.err=-%o--result=%o-",err,result);
 
 				let update_time = this.utils.get_current_time();
 				if (!err && result.confirmations >= 1) {
@@ -58,7 +56,6 @@ class watcher {
 					await this.db.update_trades(info);
 
 					let trades = await this.db.transactions_trades([id]);
-						console.log("have n666666666666666666",trades);			
 					let updates = [];
 					for(var index in trades){
 
@@ -114,7 +111,6 @@ class watcher {
 					await this.db.update_trades(info);
 
 					let trades = await this.db.transactions_trades([id]);
-						console.log("have n666666666666666666",trades);			
 					//失败的交易更改可用数量和状态后重新放入交易池中
 					for(var index in trades){
 						restore_order(trades[index].taker_order_id,trades[index].amount);

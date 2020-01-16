@@ -54,7 +54,6 @@ async function get_available_erc20_amount(address,symbol){
 		
 	}
 
-	console.log("------balance=%o----freeze=%o--",balance,freeze_amount);
 	return NP.minus(balance,freeze_amount);
 }
 
@@ -145,7 +144,6 @@ export default ({ config, db,logger}) => {
 
  	adex.all('/get_token_price', async (req, res) => {
 				var obj = urllib.parse(req.url,true).query;
- 	 				  console.log("obj=",obj);
 				let result = await mist_wallet.get_token_price2pi(obj.symbol);
                     console.log(result);
 
@@ -181,7 +179,6 @@ export default ({ config, db,logger}) => {
 
 	adex.all('/get_token_price2btc', async (req, res) => {
 			var obj = urllib.parse(req.url,true).query;
- 	 				  console.log("obj=",obj);
 			let result = await mist_wallet.get_token_price2btc(obj.symbol);
                     console.log(result);
 
@@ -194,14 +191,11 @@ export default ({ config, db,logger}) => {
 
     adex.all('/balances',async (req, res) => {
 					var obj = urllib.parse(req.url,true).query;
- 	 				  console.log("obj=",obj);
                     let token_arr = await mist_wallet.list_tokens();
 					let balances = [];
- 	 				  console.log("obj11111111133=",token_arr);
                     for(var i in token_arr){
                     	    let token = new Token(token_arr[i].address);
                             let [err,result] = await to(token.balanceOf(obj.address));
-							console.log("444444444",mist_config);
 							let [err3,allowance] = await to(token.allowance(obj.address,mist_config.ex_address));
 
 							let asset = new Asset(token_arr[i].asim_assetid)
@@ -222,7 +216,6 @@ export default ({ config, db,logger}) => {
 								asim_asset_balance: asset_balance
 							};
 
- 	 				  		console.log("obj111111111=",token_arr[i]);
 							balances.push(balance_info);
                             console.log(balance_info);
                     }
@@ -308,10 +301,8 @@ export default ({ config, db,logger}) => {
  */
 	adex.all('/balances_v2',async (req, res) => {
 					var obj = urllib.parse(req.url,true).query;
- 	 				  console.log("obj=",obj);
                     let token_arr = await mist_wallet.list_tokens();
 					let balances = [];
- 	 				 console.log("obj11111111133=",token_arr);
 					
                     for(var i in token_arr){
                     	    let token = new Token(token_arr[i].address);
@@ -426,7 +417,6 @@ export default ({ config, db,logger}) => {
 					let {address} = req.params;
                     let token_arr = await mist_wallet.list_tokens();
 					let balances = [];
- 	 				 console.log("obj11111111133=",token_arr);
 					
                     for(var i in token_arr){
 							let asset = new Asset(token_arr[i].asim_assetid)
@@ -530,7 +520,6 @@ export default ({ config, db,logger}) => {
 					let {address} = req.params;
                     let token_arr = await mist_wallet.list_tokens();
 					let balances = [];
- 	 				 console.log("obj11111111133=",token_arr);
 					
                     for(var i in token_arr){
                     	    let token = new Token(token_arr[i].address);
@@ -576,7 +565,6 @@ export default ({ config, db,logger}) => {
     adex.all('/approves',async (req, res) => {
                     
                    var obj = urllib.parse(req.url,true).query;
-                      console.log("obj=",obj);
 					let token_arr = await mist_wallet.list_tokens();
                     let txids =[];
                     for(let i in token_arr){
@@ -584,7 +572,6 @@ export default ({ config, db,logger}) => {
                                     let wallet = await my_wallet(obj.word);
                                     let address = await wallet.getAddress();
 
-                                    console.log("333--address",address);
                                     
                                      token.unlock(wallet,"111111")
                                    let [err,balance] = await to(token.balanceOf(address));
@@ -593,13 +580,10 @@ export default ({ config, db,logger}) => {
                                         await wallet.queryAllBalance()
                                         let [err2,txid] = await to(token.approve(mist_config.ex_address,9999999));
 
-                                    console.log("333--address---",err2,txid);
 
                                         txids.push(txid);
-                                        console.log("444--",err2,txid);
 
                                     }
-                                    console.log("444--",balance,allowance);
                     }
                     res.json(txids);
                     });
@@ -613,7 +597,6 @@ did对order_id进行签名，获取rsv
 	adex.all('/get_order_id', async (req, res) => {
 	   
 	     var obj = urllib.parse(req.url,true).query;
-       console.log("obj=",obj);
        let message = {
                       id:obj.null,
                       trader_address: obj.trader_address,
@@ -683,7 +666,6 @@ did对order_id进行签名，获取rsv
     adex.all('/build_order', async (req, res) => {
     	//打印键值对中的值
   		var obj = urllib.parse(req.url,true).query;
- 	   console.log("obj=",obj);
 	   //test model
 	  /** 
 		let result = utils.verify(obj.order_id,JSON.parse(obj.signature));
@@ -866,7 +848,6 @@ did对order_id进行签名，获取rsv
 
 	adex.all('/cancle_order', async (req, res) => {
 	    var obj = urllib.parse(req.url,true).query;
-       console.log("cancled_obj=",obj);
 	     /** 
 		let result = utils.verify(obj.order_id,JSON.parse(obj.signature));
 		if(!result){
@@ -1001,7 +982,6 @@ did对order_id进行签名，获取rsv
 		let errs = [];
 		for(let index in orders_id){
 			let order_info = await order.get_order(orders_id[index]);
-			console.log("2222",order_info);
 			//已经取消过的不报错直接跳过
 			if(order_info[0].available_amount <= 0){
 				continue;
@@ -1085,7 +1065,6 @@ did对order_id进行签名，获取rsv
 		let message = {address:"0x66b7637198aee4fffa103fc0082e7a093f81e05a64"}
 		**/
 		 var obj = urllib.parse(req.url,true).query;
-       console.log("obj=",obj);
 		let message = {address:obj.address}
 
        let [err,result] = await to(order.my_orders(message));
@@ -1152,7 +1131,6 @@ did对order_id进行签名，获取rsv
 	adex.all('/order_book', async (req, res) => {
 
 		var obj = urllib.parse(req.url,true).query;
-       console.log("obj=",obj);
 	
        let [err,result] = await to(order.order_book(obj.marketID));
        res.json({result,err });
@@ -1200,7 +1178,6 @@ did对order_id进行签名，获取rsv
        
 		
 		var obj = urllib.parse(req.url,true).query;
-       console.log("obj=",obj);
 
        let [err,result] = await to(trades.rollback_trades());
 
@@ -1213,7 +1190,6 @@ did对order_id进行签名，获取rsv
        
 		
 		var obj = urllib.parse(req.url,true).query;
-       console.log("obj=",obj);
 
        let [err,result] = await to(trades.list_trades(obj.marketID));
 
@@ -1256,7 +1232,6 @@ did对order_id进行签名，获取rsv
         let message = {address:"0x66b7637198aee4fffa103fc0082e7a093f81e05a64"}
 **/
         var obj = urllib.parse(req.url,true).query;
-       console.log("obj=",obj);
         let message = {address:obj.address};
        let [err,result] = await to(trades.my_trades(message));
 
@@ -1321,7 +1296,6 @@ did对order_id进行签名，获取rsv
 	adex.all('/trading_view',cache('10 second'), async (req, res) => {
 		let current_time = Math.floor(new Date().getTime() / 1000);
 		 var obj = urllib.parse(req.url,true).query;
-       console.log("obj=",obj);
 
 
 		let message = {

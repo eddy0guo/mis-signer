@@ -26,13 +26,11 @@ export default class db{
         }
 
 		async my_express(filter_info) {
-			console.log("11223344",filter_info);
 			let [err,result] = await to(this.clientDB.query(`SELECT ${express_params} FROM asim_express_records  where address=$1 order by created_at desc limit $3 offset $2`,filter_info)); 
 			if(err) {
 				return console.error('list_borrows_查询失败', err);
 			}
 
-			console.log("1122334455",result.rows);
 			return result.rows;
 
 		}
@@ -43,7 +41,6 @@ export default class db{
 				return console.error('list_borrows_查询失败', err);
 			}
 
-			console.log("1122334455",result.rows);
 			return result.rows;
 
 		}
@@ -54,7 +51,6 @@ export default class db{
 				return console.error('list_borrows_查询失败', err);
 			}
 
-			console.log("1122334455",result.rows);
 			return result.rows[0].count;
 
 		}
@@ -67,7 +63,6 @@ export default class db{
 				return console.error('list_borrows_查询失败', err);
 			}
 
-			console.log("1122334455",result.rows);
 			return result.rows;
 
 		}
