@@ -23,31 +23,29 @@ class enginer {
 			 message.created_at = create_time;
              message.updated_at = create_time;
 
-            let find_orders = await this.exchange.match(message);
+			//每次匹配100单，超过300的二次匹配知道匹配不到挂单
+			 while(true){
 
-            if (find_orders.length == 0) {
-				let arr_message = this.utils.arr_values(message);
-				let result = await this.db.insert_order(arr_message);
-                done();
-                return
-            }
+				let find_orders = await this.exchange.match(message);
 
-            let trades = await this.exchange.make_trades(find_orders, message);
+				if (find_orders.length == 0) {
+					break;
+				}
 
-            let transactions = await this.db.list_transactions();
-            let id = 0;
+				let trades = await this.exchange.make_trades(find_orders, message);
+				await this.exchange.call_asimov(trades);
 
-            if (transactions.length != 0) {
-                id = transactions[0].id;
-            }
-            let amount = 0;
-            for (var i in trades) {
-                amount = NP.plus(amount,trades[i].amount);
-            }
-
-            message.available_amount = NP.minus(message.available_amount,amount);
-            message.pending_amount = NP.plus(message.available_amount,amount);
-
+				let amount = 0;
+				for (var i in trades) {
+					amount = NP.plus(amount,trades[i].amount);
+				}
+	
+    	        message.available_amount = NP.minus(message.available_amount,amount);
+        	    message.pending_amount = NP.plus(message.available_amount,amount);
+				if( message.available_amount == 0){break;}
+				
+			}
+           
             //console.log(`111${message.id}111--message=%o---matchedamount=%o---trades=%o---`,message,amount,trades);
             if (message.pending_amount == 0) {
                 message.status   = "pending";
@@ -60,7 +58,6 @@ class enginer {
 			let arr_message = this.utils.arr_values(message);
 			let result = await this.db.insert_order(arr_message);
 
-            this.exchange.call_asimov(trades, id);
 
             done()
         });

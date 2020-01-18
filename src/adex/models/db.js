@@ -117,10 +117,10 @@ export default class db {
         let err;
         let result;
         if (filter[1] == 'sell') {
-            [err, result] = await to(this.clientDB.query('SELECT * FROM mist_orders_tmp where price<=$1 and side=$2 and available_amount>0 and market_id=$3 order by price asc limit 1000', filter));
+            [err, result] = await to(this.clientDB.query('SELECT * FROM mist_orders_tmp where price<=$1 and side=$2 and available_amount>0 and market_id=$3 order by price asc limit 100', filter));
         } else {
 
-            [err, result] = await to(this.clientDB.query('SELECT * FROM mist_orders_tmp where price>=$1 and side=$2 and available_amount>0 and market_id=$3 order by price desc limit 1000', filter));
+            [err, result] = await to(this.clientDB.query('SELECT * FROM mist_orders_tmp where price>=$1 and side=$2 and available_amount>0 and market_id=$3 order by price desc limit 100', filter));
         }
         if (err) {
             return console.error('filter_orders failed', err, filter);
