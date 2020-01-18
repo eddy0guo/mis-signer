@@ -52,7 +52,12 @@ var local = {
     asimov_child_rpc:"https://rpc-child.mistabit.com",
 
     mist_server_port:15000,
-    websocket_port:15001
+	pg_host: 'pgm-wz9m1yb4h5g4sl7x127770.pg.rds.aliyuncs.com',
+    pg_database: process.env.MIST_MODE,
+    pg_user: 'product',
+    pg_password: 'myHzSesQc7TXSS5HOXZDsgq7SNUHY2',
+    pg_port: 1433,
+
 }
 
 var dev = {
@@ -109,7 +114,11 @@ var dev = {
     asimov_master_rpc:"https://rpc-fin.fingo.com",
     asimov_child_rpc:"https://rpc-mt.fingo.com",
     mist_server_port:16000,
-    websocket_port:16001
+	pg_host: 'pgm-wz9m1yb4h5g4sl7x127770.pg.rds.aliyuncs.com',
+    pg_database: process.env.MIST_MODE,
+    pg_user: 'product',
+    pg_password: 'myHzSesQc7TXSS5HOXZDsgq7SNUHY2',
+    pg_port: 1433,
 }
 
 
@@ -164,11 +173,15 @@ var product = {
 
 	wallet_default_passwd:"111111",
 	did_seed_word:"wing safe foster choose wisdom myth quality own gallery logic imitate pink",
-	    asimov_chain_rpc:"https://rpc-fin.fingo.com",
+	asimov_chain_rpc:"https://rpc-fin.fingo.com",
     asimov_master_rpc:"https://rpc-fin.fingo.com",
     asimov_child_rpc:"https://rpc-mt.fingo.com",
     mist_server_port:21000,
-    websocket_port:21001
+	pg_host: 'pgm-wz9m1yb4h5g4sl7x127770.pg.rds.aliyuncs.com',
+    pg_database: process.env.MIST_MODE,
+    pg_user: 'product',
+    pg_password: 'myHzSesQc7TXSS5HOXZDsgq7SNUHY2',
+    pg_port: 1433,
 }
 
 var mist_config;

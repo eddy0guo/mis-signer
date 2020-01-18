@@ -1,5 +1,6 @@
 import to from 'await-to-js'
 import utils2 from '../api/utils'
+import mist_config from '../../cfg'
 
 const order_params = 'id,trader_address,market_id,side,cast(price as float8),cast(amount as float8),status,type,cast(available_amount as float8),cast(confirmed_amount as float8),cast(canceled_amount as float8),cast(pending_amount as float8),updated_at,created_at'
 const trade_params = 'id,trade_hash,transaction_id,transaction_hash,status,market_id,maker,taker,cast(price as float8),cast(amount as float8),taker_side,maker_order_id,taker_order_id,updated_at,created_at';
@@ -12,11 +13,11 @@ export default class db {
     constructor() {
         const {Pool} = require('postgres-pool');
         const client = new Pool({
-            host: 'pgm-wz9m1yb4h5g4sl7x127770.pg.rds.aliyuncs.com',
-            database: process.env.MIST_MODE,
-            user: 'product',
-            password: 'myHzSesQc7TXSS5HOXZDsgq7SNUHY2',
-            port: 1433,
+            host: mist_config.pg_host,
+            database: mist_config.pg_database,
+            user: mist_config.pg_user,
+            password: mist_config.pg_password,
+            port: mist_config.pg_port,
         });
         this.clientDB = client;
         this.utils = new utils2;
