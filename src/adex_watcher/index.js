@@ -15,6 +15,7 @@ class watcher {
 
 		this.db = new client;
 		this.utils = new utils2;
+		this.block_height = 0;
 		this.start();
 	}
 
@@ -24,6 +25,18 @@ class watcher {
 
 
 	async loop() {
+
+		 let [bestblock_err, bestblock_result] = await to(chain.getbestblock());
+         if(bestblock_result.height == this.block_height){
+            //console.log(`--------current height is ${bestblock_result.height} and last is ${this.block_height}----------`);
+             setTimeout(() => {
+                this.loop.call(this)
+            }, 500);
+            return
+         }
+         this.block_height  = bestblock_result.height;
+
+
 		let transaction = await this.db.get_pending_transactions()
 		//全部都是成功的,就睡眠1s
 		if (transaction.length == 0) {

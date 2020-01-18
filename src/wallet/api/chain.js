@@ -18,6 +18,12 @@ export const chain = {
         return network == 'child_poa' ?  child_rpc('asimov_decodeRawTransaction', params) : rpc('asimov_decodeRawTransaction', params);
     },
 
+	getbestblock: function(params) {
+        return child_rpc('asimov_getBestBlock', params);
+    },
+
+
+
     //marshalled:   {"jsonrpc":"1.0","method":"decodescript","params":["00"],"id":1},
     decodescript: function(params) {
         return rpc('decodescript', params);
