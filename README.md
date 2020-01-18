@@ -73,8 +73,10 @@ docker run -p 8080:8080 mist/api-service
 
 ## Init 
 目前配置的是RDS，注意不要在生产环境下make seed或者其他的删数据的情况，
-source dev.env(or local.env)
+source product.env
 cd  src/adex/models/ && make seed 
+cd -
+cd  src/express/models/ && make seed 
 
 ## Deploy
 
