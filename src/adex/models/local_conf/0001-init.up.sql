@@ -28,26 +28,48 @@ create table mist_trades(
   trade_hash text,
   transaction_id integer ,
   transaction_hash text,
-
   status text ,
   market_id text ,
-
   maker  text ,
   taker  text ,
   price numeric(32,8) ,
   amount numeric(32,8) ,
-
   taker_side text ,
   maker_order_id  text ,
   taker_order_id text ,
-
   updated_at timestamp ,
   created_at timestamp
 );
-create index idx_mist_trades_transaction_hash on mist_trades (transaction_hash);
-create index idx_mist_trades_taker on mist_trades (taker,market_id);
-create index idx_mist_trades_maker on mist_trades (maker,market_id);
-create index idx_mist_market_id_status_executed_at on mist_trades (market_id, status, created_at);
+create index idx_mist_trades_taker on mist_trades (taker);
+create index idx_mist_trades_maker on mist_trades (maker);
+create index idx_mist_trades_taker_order_id  on mist_trades (taker_order_id);
+create index idx_mist_trades_maker_order_id on mist_trades (maker_order_id);
+create index idx_mist_trades_transaction_id on mist_trades (transaction_id);
+create index idx_mist_trades_quotation  on mist_trades (market_id, created_at);
+
+create table mist_trades_tmp(
+  id text PRIMARY KEY,
+  trade_hash text,
+  transaction_id integer ,
+  transaction_hash text,
+  status text ,
+  market_id text ,
+  maker  text ,
+  taker  text ,
+  price numeric(32,8) ,
+  amount numeric(32,8) ,
+  taker_side text ,
+  maker_order_id  text ,
+  taker_order_id text ,
+  updated_at timestamp ,
+  created_at timestamp
+);
+create index idx_mist_trades_tmp_quotation on mist_trades_tmp (market_id,created_at);
+create index idx_mist_trades_tmp_recent on mist_trades_tmp (market_id);
+create index idx_mist_trades_tmp_launch on mist_trades_tmp (created_at,status);
+create index idx_mist_trades_tmp_status on mist_trades_tmp (status);
+create index idx_mist_trades_tmp_txid on mist_trades_tmp (transaction_id);
+create index idx_mist_trades_tmp_txhash on mist_trades_tmp (transaction_hash,status);
 
 -- orders table
 create table mist_orders(
@@ -67,8 +89,29 @@ create table mist_orders(
   updated_at  timestamp,
   created_at  timestamp
 );
-create index idx_mist_market_id_status on mist_orders (market_id, status);
-create index idx_mist_market_trader_address on mist_orders (trader_address, market_id, status, created_at);
+create index idx_mist_orders_myorders on mist_orders (trader_address, status);
+
+create table mist_orders_tmp(
+  id text  primary key,
+  trader_address text ,
+  market_id text ,
+  side text ,
+  price  numeric(32,8) ,
+  amount  numeric(32,8) ,
+  status text ,
+  type text ,
+  available_amount  numeric(32,8) ,
+  confirmed_amount  numeric(32,8) ,
+  canceled_amount  numeric(32,8) ,
+  pending_amount  numeric(32,8) ,
+
+  updated_at  timestamp,
+  created_at  timestamp
+);
+
+create index  idx_mist_trades_tmp_matche on mist_orders_tmp (market_id, side, price, available_amount);
+create index  idx_mist_trades_tmp_orderbook on mist_orders_tmp (market_id, available_amount, side);
+create index  idx_mist_trades_tmp_address on mist_orders_tmp (trader_address);
 
 -- transactions table
 create table mist_transactions(
