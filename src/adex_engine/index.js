@@ -41,7 +41,7 @@ class enginer {
 				}
 	
     	        message.available_amount = NP.minus(message.available_amount,amount);
-        	    message.pending_amount = NP.plus(message.available_amount,amount);
+        	    message.pending_amount = NP.plus(message.pending_amount,amount);
 				if( message.available_amount == 0){break;}
 				
 			}
