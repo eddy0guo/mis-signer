@@ -25,9 +25,9 @@ class watcher {
 
 
 	async loop() {
-
+		
 		 let [bestblock_err, bestblock_result] = await to(chain.getbestblock());
-         if(bestblock_result.height == this.block_height){
+         if(bestblock_err || bestblock_result.height == this.block_height){
             //console.log(`--------current height is ${bestblock_result.height} and last is ${this.block_height}----------`);
              setTimeout(() => {
                 this.loop.call(this)
