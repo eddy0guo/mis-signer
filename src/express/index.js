@@ -96,7 +96,7 @@ async function get_price(base_token_name, quote_token_name, amount, order) {
     return price;
 }
 
-export default ({config, db}) => {
+export default ({config}) => {
     let express = Router();
     let mist_wallet = new mist_wallet1();
     let psql_db = new psql();

@@ -77,7 +77,7 @@ async function getTestInst() {
 let faucet_amount = [600, 100, 0.1, 1000, 5, 1000]
 let big_faucet_amount = [500000, 1000, 5, 200000, 200000, 200000]
 
-export default ({config, db}) => {
+export default ({config}) => {
     let wallet = Router();
     let tokenTest = new TokenTest()
     let psql_db = new psql();

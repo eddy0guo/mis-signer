@@ -60,13 +60,13 @@ async function get_available_erc20_amount(address,symbol){
 
 
 
-export default ({ config, db,logger}) => {
+export default ({ config}) => {
 	let adex  = Router();
 	let client = new client1();
     let order = new order1(client);
     let trades = new trades1(client);
     let market = new market1();
-    let user = new user1(client,logger);
+    let user = new user1(client);
     let asset = new asset1();
     let mist_wallet = new mist_wallet1();
     let tokenTest = new TokenTest()
