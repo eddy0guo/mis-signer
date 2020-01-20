@@ -72,11 +72,14 @@ docker run -p 8080:8080 mist/api-service
 - [ ] DB的安全部署
 
 ## Init 
-目前配置的是RDS，注意不要在生产环境下make seed或者其他的删数据的情况，
 source product.env
 cd  src/adex/models/ && make seed 
 cd -
 cd  src/express/models/ && make seed 
+
+## clean data
+0 * * * *  psql "host=pgm-wz9m1yb4h5g4sl7x127770.pg.rds.aliyuncs.com port=1433 dbname=product user=product password=myHzSesQc7TXSS5HOXZDsgq7SNUHY2" < /opt/mist-signer_fingo_dev2/src/adex/models/mist_tmp_clean.sql
+
 
 ## Deploy
 
