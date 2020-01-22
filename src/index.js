@@ -58,9 +58,9 @@ app.all("*", function (req, res, next) {
 app.use(responseTime())
 
 // api router
-app.use('/wallet', wallet({ config }));
-app.use('/adex', adex({ config }));
-app.use('/express', express1({ config }))
+app.use('/wallet', wallet());
+app.use('/adex', adex());
+app.use('/express', express1())
 
 app.server.listen(process.env.PORT || mist_config.mist_server_port, () => {
     console.log(`Started on port ${app.server.address().port}`);

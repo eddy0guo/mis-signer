@@ -1,8 +1,8 @@
 import to from 'await-to-js'
-import {chain} from '../wallet/api/chain'
+import { chain } from '../wallet/api/chain'
 
 import walletHelper from '../wallet/lib/walletHelper'
-import {Router} from 'express'
+import { Router } from 'express'
 import Asset from '../wallet//asset/Asset'
 
 
@@ -96,7 +96,7 @@ async function get_price(base_token_name, quote_token_name, amount, order) {
     return price;
 }
 
-export default ({config}) => {
+export default () => {
     let express = Router();
     let mist_wallet = new mist_wallet1();
     let psql_db = new psql();
@@ -141,7 +141,7 @@ export default ({config}) => {
      * @apiVersion 1.0.0
      */
     express.all('/my_records/:address/:page/:perpage', async (req, res) => {
-        let {address, page, perpage} = req.params;
+        let { address, page, perpage } = req.params;
         let offset = (+page - 1) * +perpage;
         let [err, records] = await to(psql_db.my_express([address, offset, perpage]));
 
@@ -196,7 +196,7 @@ export default ({config}) => {
 
 
     express.all('/get_express_trade/:trade_id', async (req, res) => {
-        let {trade_id} = req.params;
+        let { trade_id } = req.params;
         let [err, record] = await to(psql_db.find_express([trade_id]));
         if (err) {
             return res.json({
@@ -301,7 +301,7 @@ export default ({config}) => {
 
 
     express.all('/get_price/:base_token_name/:quote_token_name/:base_amount', async (req, res) => {
-        let {base_token_name, quote_token_name, base_amount} = req.params;
+        let { base_token_name, quote_token_name, base_amount } = req.params;
         let [err, price] = await to(get_price(base_token_name, quote_token_name, base_amount, order))
         res.json({
             success: price == undefined ? false : true,
@@ -335,7 +335,7 @@ export default ({config}) => {
      */
 
     express.all('/my_express_length/:address', async (req, res) => {
-        let {address} = req.params;
+        let { address } = req.params;
         let [err, result] = await to(psql_db.my_express_length([address]))
         res.json({
             success: result == undefined ? false : true,
@@ -375,6 +375,7 @@ export default ({config}) => {
         for (var i in token_arr) {
             let asset = new Asset(token_arr[i].asim_assetid)
             let [err4, assets_balance] = await to(asset.balanceOf(mist_config.express_address))
+            if(err4)console.error(err4)
             let asset_balance = 0;
             for (let j in assets_balance) {
                 if (token_arr[i].asim_assetid == assets_balance[j].asset) {
@@ -401,17 +402,18 @@ export default ({config}) => {
 
 
     express.all('/sendrawtransaction/build_express/:base_token_name/:quote_token_name/:amount/:address/:sign_data', async (req, res) => {
-        let {base_token_name, quote_token_name, amount, address, sign_data} = req.params;
+        let { base_token_name, quote_token_name, amount, address, sign_data } = req.params;
         let [base_err, base_txid] = await to(chain.sendrawtransaction([sign_data]));
         let base_tx_status = base_txid == undefined ? "failed" : "successful";
 
         //失败的记录也入表
-        let current_time = utils.get_current_time();
-        let base_token_price = await mist_wallet.get_token_price2pi(base_token_name);
-        let quote_token_price = await mist_wallet.get_token_price2pi(quote_token_name);
-        //let price = NP.divide(base_token_price,quote_token_price);
+
+        // let base_token_price = await mist_wallet.get_token_price2pi(base_token_name);
+        // let quote_token_price = await mist_wallet.get_token_price2pi(quote_token_name);
+
         //根据深度取价格
         let [err, price] = await to(get_price(base_token_name, quote_token_name, amount, order));
+        if(err)console.error(err)
 
         let quote_amount = NP.times(amount, price, 0.995);
         let fee_amount = NP.times(amount, price, 0.005);
@@ -448,7 +450,7 @@ export default ({config}) => {
         let info_arr = utils.arr_values(info);
 
         let [err3, result3] = await to(psql_db.insert_express(info_arr));
-        console.log("info123", err3, result3)
+        if(err3)console.error( err3, result3)
         let success;
         if (base_tx_status == 'successful' && quote_tx_status == 'successful' && !err3) {
             success = true;
@@ -481,9 +483,9 @@ export default ({config}) => {
 
 
     express.all('/sendrawtransaction/build_express_v2/:quote_token_name/:sign_data', async (req, res) => {
-        let {quote_token_name, sign_data} = req.params;
+        let { quote_token_name, sign_data } = req.params;
         let [base_err, base_txid] = await to(chain.sendrawtransaction([sign_data]));
-        let trade_id, base_tx_status;
+        let trade_id;
         if (base_txid) {
             //只有decode成功才是成功
             let info = {
@@ -507,7 +509,7 @@ export default ({config}) => {
             let info_arr = utils.arr_values(info);
 
             let [err3, result3] = await to(psql_db.insert_express(info_arr));
-            console.log("info123", err3, result3)
+            if(err3)console.error(err3, result3)
             res.json({
                 success: true,
                 trade_id: info.trade_id,
@@ -522,11 +524,13 @@ export default ({config}) => {
         setTimeout(async () => {
             //失败的记录也入表
             let [decode_err, decode_info] = await to(utils.decode_transfer_info(base_txid));
-            let {from, asset_id, vin_amount, to_amount, remain_amount} = decode_info;
+            let { from, asset_id, vin_amount, to_amount, remain_amount } = decode_info;
+
             let base_tx_status;
             if (!decode_err) {
                 base_tx_status = 'successful'
             } else {
+                console.error(decode_err,from, asset_id, vin_amount, to_amount, remain_amount )
                 base_tx_status = 'illegaled'
             }
 
@@ -542,6 +546,7 @@ export default ({config}) => {
             }
 
             let [err, price] = await to(get_price(base_token[0].symbol, quote_token_name, to_amount, order));
+            if( err ) console.error(err)
             let current_time = utils.get_current_time();
 
             let quote_amount = NP.times(to_amount, price, 0.995);
@@ -560,8 +565,10 @@ export default ({config}) => {
                 trade_id: trade_id
             };
             let info_arr = utils.arr_values(info);
-          //  todo:deal error
+            //  todo:deal error
             let [err4, result4] = await to(psql_db.update_base(info_arr));
+
+            if( err4 ) console.error(err4,result4)
 
         }, 10000);
 
