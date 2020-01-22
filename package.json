@@ -36,6 +36,17 @@
   "repository": "mistdex/mist-signer",
   "author": "Ryan",
   "license": "MIT",
+  "husky": {
+    "hooks": {
+      "pre-commit": "eslint --fix --ext .js,.ts src"
+    }
+  },
+  "prettier": {
+    "printWidth": 80,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
   "dependencies": {
     "@alicloud/sms-sdk": "^1.1.6",
     "@asimovdev/asimovjs": "^1.0.132",
