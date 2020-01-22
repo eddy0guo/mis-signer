@@ -2,9 +2,7 @@ import client from '../models/db'
 import utils2 from './utils'
 
 export default class mist_wallet {
-    db;
-    exchange;
-    root_hash;
+
 
     constructor() {
         this.db = new client();

@@ -9,7 +9,6 @@ import NP from 'number-precision'
 import mist_config from '../../cfg';
 
 export default class utils {
-    root_hash;
 
     constructor() {
         this.root_hash = crypto.createHmac('sha256', '123')

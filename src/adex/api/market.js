@@ -5,9 +5,6 @@ import to from 'await-to-js';
 import mist_wallet from './mist_wallet'
 
 export default class makets {
-    db;
-    exchange;
-    root_hash;
 
     constructor() {
         this.db = new client();

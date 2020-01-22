@@ -7,9 +7,7 @@ var Queue = require('bull');
 var orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE, 'redis://127.0.0.1:6379');
 
 export default class order {
-    db;
-    exchange;
-    root_hash;
+
 
     constructor(client) {
         this.db = client;
