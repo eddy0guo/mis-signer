@@ -4,7 +4,7 @@ import NP from 'number-precision'
 import engine from './engine'
 import utils2 from './utils'
 var Queue = require('bull');
-var orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE, 'redis://127.0.0.1:6379');
+var orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE, {redis: {port: 6379, host: 'fingo-redis-master', password: 'LPJQoIcvl0'}});
 
 export default class order {
     db;

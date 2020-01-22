@@ -11,11 +11,11 @@ export default class db{
                 //var conString = "postgres://postgres:postgres@127.0.0.1/" + db + "?sslmode=disable";
 
                 const client = new Pool({
-                  host: 'pgm-wz9m1yb4h5g4sl7x127770.pg.rds.aliyuncs.com',
-                  database: process.env.MIST_MODE,
-                  user: 'product',
-                  password: 'myHzSesQc7TXSS5HOXZDsgq7SNUHY2',
-                  port: 1433,
+                  host: 'postgresql',
+                  database: 'mist',
+                  user: 'postgres',
+                  password: 'zXmBDOb52v',
+                  port: 5432,
                 });
 
                 // var conString = "postgres://postgres:postgres@127.0.0.1/" + db + "?sslmode=disable";

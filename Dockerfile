@@ -1,26 +1,14 @@
-FROM alpine:3.4
+FROM node:10-alpine as builder
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+RUN apk add  --no-cach git python3 build-base
+WORKDIR /build
+COPY package*.json ./
+COPY yarn.lock ./
+RUN npm set registry https://registry.npm.taobao.org/ && yarn
 
-# File Author / Maintainer
-LABEL authors="Zouhir Chahoud <zouhir@zouhir.org>"
+COPY . .
+RUN npm run build
 
-# Update & install required packages
-RUN apk add --update nodejs bash git
-
-# Install app dependencies
-COPY package.json /www/package.json
-RUN cd /www; npm install
-
-# Copy app source
-COPY . /www
-
-# Set work directory to /www
-WORKDIR /www
-
-# set your port
-ENV PORT 8080
-
-# expose the port to outside world
-EXPOSE  8080
-
-# start command as per package.json
-CMD ["npm", "start"]
+FROM node:10-alpine
+WORKDIR /app
+COPY --from=builder /build /app

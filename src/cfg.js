@@ -156,15 +156,15 @@ var product = {
 	express_address:"0x66da57e2f3de41861d69d233213894d4082c0822ee",
 
 	wallet_default_passwd:"111111",
-	asimov_chain_rpc:"https://rpc.fin.fingo.com",
-    asimov_master_rpc:"https://rpc.fin.fingo.com",
-    asimov_child_rpc:"https://rpc.mt.fingo.com",
+	asimov_chain_rpc:"http://rpc.poa-fin.svc.cluster.local",
+    asimov_master_rpc:"http://rpc.poa-fin.svc.cluster.local",
+    asimov_child_rpc:"http://rpc.poa-mt.svc.cluster.local",
     mist_server_port:21000,
-	pg_host: 'pgm-wz9m1yb4h5g4sl7x127770.pg.rds.aliyuncs.com',
-    pg_database: process.env.MIST_MODE,
-    pg_user: 'product',
-    pg_password: 'myHzSesQc7TXSS5HOXZDsgq7SNUHY2',
-    pg_port: 1433,
+	pg_host: 'postgresql',
+    pg_database: 'mist',
+    pg_user: 'postgres',
+    pg_password: 'zXmBDOb52v',
+    pg_port: 5432,
 }
 
 var mist_config;
