@@ -27,5 +27,6 @@ module.exports = {
         "jest/prefer-to-have-length": "warn",
         "jest/valid-expect": "error"
     },
+    "ignorePatterns": ["dist/"],
     "plugins": ["jest"]
 };
