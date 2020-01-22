@@ -7,14 +7,11 @@ import NP from 'number-precision'
 import { chain } from '../wallet/api/chain'
 
 class launcher {
-
-    tmp_transaction_id;
-
     constructor() {
         this.db = new client;
         this.utils = new utils2;
         this.start();
-		this.block_height = 0;
+        this.block_height = 0;
     }
 
     async start() {
@@ -22,15 +19,15 @@ class launcher {
     }
 
     async loop() {
-		 let [bestblock_err, bestblock_result] = await to(chain.getbestblock());
-		 if(bestblock_err || bestblock_result.height == this.block_height){
-		 	//console.log(`--------current height is ${bestblock_result.height} and last is ${this.block_height}----------`);
-			 setTimeout(() => {
+        let [bestblock_err, bestblock_result] = await to(chain.getbestblock());
+        if (bestblock_err || bestblock_result.height == this.block_height) {
+            //console.log(`--------current height is ${bestblock_result.height} and last is ${this.block_height}----------`);
+            setTimeout(() => {
                 this.loop.call(this)
             }, 500);
             return
-		 }
-		 this.block_height  = bestblock_result.height;
+        }
+        this.block_height = bestblock_result.height;
 
 
         let trades = await this.db.get_laucher_trades();
@@ -87,7 +84,7 @@ class launcher {
 
             let mist = new mist_ex10(mist_config.ex_address);
             let [err, txid] = await to(mist.matchorder(trades_hash, mist_config.relayers[index].prikey, mist_config.relayers[index].word));
-//            console.log("formatchorder----tradeshash=%o--relayers=%o--transaction_id=%o--index=%o--", trades_hash,mist_config.relayers[index],trades[0].transaction_id ,index);
+            //            console.log("formatchorder----tradeshash=%o--relayers=%o--transaction_id=%o--index=%o--", trades_hash,mist_config.relayers[index],trades[0].transaction_id ,index);
 
 
             if (!err) {
@@ -98,9 +95,9 @@ class launcher {
                 this.db.insert_transactions(TXinfo);
             } else {
 
-                let update_trade_info = ['matched', , current_time, trades[0].transaction_id];
+                let update_trade_info = ['matched', null , current_time, trades[0].transaction_id];
                 await this.db.launch_update_trades(update_trade_info);
-                console.log("---call dex matchorder--err=%o-transaction_id=%o--relayers=%o\n", err,trades[0].transaction_id, mist_config.relayers[index].address)
+                if(err)console.log("---call dex matchorder--err=%o-transaction_id=%o--relayers=%o\n", err, trades[0].transaction_id, mist_config.relayers[index].address)
             }
 			/*
             setTimeout(() => {
@@ -108,8 +105,8 @@ class launcher {
             }, 10000);
 			*/
 
-			console.log("after3--matchorder----",this.utils.get_current_time());
-             this.loop.call(this)
+            // console.log("after3--matchorder----", this.utils.get_current_time());
+            this.loop.call(this)
 
 
         }, 2000);
