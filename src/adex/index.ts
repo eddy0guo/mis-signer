@@ -34,7 +34,7 @@ async function get_available_erc20_amount(address, symbol) {
 
     const token = new Token(token_info[0].address);
     let [err, balance] = await to(token.balanceOf(address, 'child_poa'));
-    if (err)console.error(err);
+    if (err) console.error(err);
     balance = NP.divide(balance, 1 * 10 ** 8);
 
     let freeze_amount = 0;
@@ -171,12 +171,12 @@ export default () => {
         for (const i in token_arr as any[]) {
             const token = new Token(token_arr[i].address);
             const [err, result] = await to(token.balanceOf(obj.address));
-            if (err)console.error(err);
+            if (err) console.error(err);
             const [err3, allowance] = await to(token.allowance(obj.address, mist_config.ex_address));
-            if (err3)console.error(err3);
+            if (err3) console.error(err3);
             const asset = new Asset(token_arr[i].asim_assetid);
             const [err4, assets_balance] = await to(asset.balanceOf(obj.address));
-            if (err4)console.error(err4);
+            if (err4) console.error(err4);
             let asset_balance = 0;
             for (const j in assets_balance) {
                 if (token_arr[i].asim_assetid == assets_balance[j].asset) {
@@ -284,10 +284,10 @@ export default () => {
         for (const i in token_arr as any[]) {
             const token = new Token(token_arr[i].address);
             const [err, result] = await to(token.balanceOf(obj.address, 'child_poa'));
-            if (err)console.error(err);
+            if (err) console.error(err);
             const asset = new Asset(token_arr[i].asim_assetid);
             const [err4, assets_balance] = await to(asset.balanceOf(obj.address));
-            if (err4)console.error(err4);
+            if (err4) console.error(err4);
             console.log('---balances=%o----------', assets_balance);
             let asset_balance = 0;
             for (const j in assets_balance) {
@@ -398,7 +398,7 @@ export default () => {
         for (const i in token_arr as any[]) {
             const asset = new Asset(token_arr[i].asim_assetid);
             const [err4, assets_balance] = await to(asset.balanceOf(address));
-            if ( err4 ) console.error(err4);
+            if (err4) console.error(err4);
             let asset_balance = 0;
             for (const j in assets_balance) {
                 if (token_arr[i].asim_assetid == assets_balance[j].asset) {
@@ -501,7 +501,7 @@ export default () => {
         for (const i in token_arr as any[]) {
             const token = new Token(token_arr[i].address);
             const [err, result] = await to(token.balanceOf(address, 'child_poa'));
-            if ( err ) console.error(err);
+            if (err) console.error(err);
 
             let freeze_amount = 0;
             const freeze_result = await client.get_freeze_amount([address, token_arr[i].symbol]);
@@ -553,7 +553,7 @@ export default () => {
             token.unlock(wallet, '111111');
             const [err, balance] = await to(token.balanceOf(address));
             const [err3, allowance] = await to(token.allowance(address, mist_config.ex_address));
-            if (err || err3){
+            if (err || err3) {
                 console.error(err, err3);
             }
             if (balance != allowance) {

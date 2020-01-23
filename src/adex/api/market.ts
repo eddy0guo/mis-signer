@@ -4,7 +4,9 @@ import utils2 from './utils';
 import to from 'await-to-js';
 import mist_wallet from './mist_wallet';
 
-export default class makets {
+export default class Market {
+    private db;
+    private utils;
 
     constructor() {
         this.db = new client();

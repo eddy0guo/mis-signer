@@ -2,10 +2,12 @@ import client from '../models/db';
 import utils2 from './utils';
 
 export default class mist_wallet {
+    private db;
+    private utils;
 
     constructor() {
         this.db = new client();
-        this.utils = new utils2;
+        this.utils = new utils2();
     }
 
     async list_tokens() {

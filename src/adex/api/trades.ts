@@ -4,10 +4,12 @@ const date = require('silly-datetime');
 import {restore_order} from './order';
 
 export default class trades {
+    private db;
+    private utils;
 
     constructor(client) {
         this.db = client;
-        this.utils = new utils2;
+        this.utils = new utils2();
     }
 
     async get_engine_info() {

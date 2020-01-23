@@ -8,7 +8,10 @@ import { walletRPC } from '../api/wallet';
  * 处理链原生资产的转移等基础操作
  */
 export default class Asset {
-    fee = 0.05;
+    private fee = 0.05;
+    private assetId;
+    private wallet;
+    private password;
 
     constructor(assetId) {
         this.assetId = assetId;
@@ -47,15 +50,6 @@ export default class Asset {
         from,
       );
 
-/*
-        let { ins, changeOut } = await TranService.chooseUTXO(
-            wallet.walletId,
-            amount,
-            this.assetId,
-            from,
-            this.fee
-        );
-*/
         let outs = [{
             amount: btc2sts(parseFloat(amount)),
             assets: this.assetId,

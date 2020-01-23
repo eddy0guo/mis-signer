@@ -1,6 +1,5 @@
 import BigNumber from 'bignumber.js';
 import * as moment from 'moment';
-import { Address } from '@asimovdev/asimovjs';
 import * as bip39 from 'bip39';
 import { crypto } from 'bitcore-lib';
 
@@ -28,30 +27,6 @@ export const getWordlistLanguage = function (text) {
   return reg.test(text) ? 'chinese_simplified' : 'english';
 };
 
-export const getTimeInSection = function (timestamp) {
-  timestamp *= 1000; // 转化毫秒
-  const now = new Date();
-  const time = moment(timestamp);
-  const dist = now.getTime() - timestamp;
-  let result = '';
-  if (!time.isSame(now, 'year')) {
-    result = time.format('YYYY-MM-DD HH:mm');
-  } else if (dist <= 86400000) {
-    if (time.isSame(now, 'day')) {
-      result = time.format('HH:mm');
-    } else {
-      result = time.calendar();
-    }
-  } else {
-    result = time.format('MM-DD HH:mm');
-  }
-  return result;
-};
-
-export const checkContractAddress = function (addr) {
-  return Address.IsPayToContractHash(addr);
-};
-
 export const validateMnemonic = function (mnemonic) {
   const lang = CONSTANT.MNEMONICLANGUAGES;
   let valid = false;
@@ -70,17 +45,10 @@ export function signature(pk, message) {
   return crypto.ECDSA.sign(hashbuf, pk).toBuffer().toString('base64');
 }
 
-export async function getWalletAddr() {
-  const walletId = await Storage.get('activeWltId');
-  const addresses = await Storage.get('walletAddrs');
-  const { address } = addresses[walletId][0][0];
-  return address;
-}
-
 export async function getWalletPubKey() {
   const walletId = await Storage.get('activeWltId');
   const pubKeys = await Storage.getPubKeys();
-  const { pubKey } = pubKeys[walletId][0][0];
+  const { pubKey } = pubKeys[walletId as string][0][0];
   return pubKey;
 }
 
@@ -100,7 +68,7 @@ export function callParamsConvert(type, value) {
           result = '0x' + toHexString(data);
           break;*/
     case 'bool':
-      if (value == '0' || value == 'false') {
+      if (value === '0' || value === 'false') {
         result = 0;
       } else {
         result = 1;

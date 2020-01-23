@@ -45,7 +45,6 @@ service.interceptors.response.use( response => {
 export function child_rpc(url, params) {
   return service.request({
     url: '/',
-    host: Cfg.asimov_child_rpc,
     method: 'post',
     data: {
       jsonrpc: '2.0',
@@ -56,4 +55,3 @@ export function child_rpc(url, params) {
   });
 }
 
-export default service;

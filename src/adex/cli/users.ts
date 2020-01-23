@@ -5,19 +5,15 @@ import Token from '../../wallet/contract/Token';
 import Asset from '../../wallet/asset/Asset';
 import NP from 'number-precision';
 
-export default class users {
+export default class Users {
     private db;
     private utils;
     private mist_wallet;
-    private logger;
-    private exchange;
 
-    constructor(client?, logger?) {
+    constructor(client?) {
         this.db = client;
-        this.utils = new utils2;
+        this.utils = new utils2();
         this.mist_wallet = new mist_wallet1();
-        this.logger = logger;
-        this.exchange;
     }
 
     async start() {

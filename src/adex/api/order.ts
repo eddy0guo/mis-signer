@@ -9,10 +9,14 @@ const orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE, { redis: { po
 
 export default class order {
 
+    private db;
+    private exchange;
+    private utils;
+
     constructor(client) {
         this.db = client;
         this.exchange = new engine(this.db);
-        this.utils = new utils2;
+        this.utils = new utils2();
     }
 
     async build(message) {

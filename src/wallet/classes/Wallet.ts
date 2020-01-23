@@ -11,34 +11,32 @@ import { getWordlistLanguage } from '../utils';
 import AddressService from '../service/address';
 import { TranService } from '../service/transaction';
 
-const PATH = 'm/44\'';
-const PATH_FOR_ID = 'm/6\'/10003\'/0\'/0/0';
+const PATH = `m/44'`;
+const PATH_FOR_ID = `m/6'/10003'/0'/0/0`;
 
 export default class Wallet {
   // 钱包数据分四部分：此文件只保存基本 info ; 另外3个为 address , sendTransaction , UTXO
+  private isTestNet = false;
+  private walletId;
+  private entropy;
+  private seed;
+  private xpubkeys;
+  private name;
+  private lang;
+  private backupFlag = false;
+  private isImported = false;
+  private assets = CONSTANT.COINS;
+  private loadingInstance;
 
   constructor() {
-    this.isTestNet = false;
-    this.walletId;
-    this.entropy;
-    this.seed;
-    this.xpubkeys;
-    this.name;
-    this.lang;
     this.isTestNet = false;
     this.backupFlag = false;
     this.isImported = false;
     this.assets = CONSTANT.COINS;
-    this.loadingInstance;
   }
 
   async create(config) {
-    const {
-      walletName,
-      lang,
-      mnemonicLength = 12,
-      pwd,
-    } = config;
+    const { walletName, lang, mnemonicLength = 12, pwd } = config;
     this.name = walletName;
     this.lang = CONSTANT.WordListNameDict[lang];
     const mnemonic = this.generateMnemonic(mnemonicLength, pwd);
@@ -46,7 +44,7 @@ export default class Wallet {
     this.setWalletId(seed);
     this.setEntropy(
       bip39.mnemonicToEntropy(mnemonic, bip39.wordlists[this.lang]),
-      pwd,
+      pwd
     );
     this.setSeed(seed, pwd);
     this.setXpubkey(seed);
@@ -64,19 +62,19 @@ export default class Wallet {
       this.setWalletId(seed);
       this.setEntropy(
         bip39.mnemonicToEntropy(mnemonic, bip39.wordlists[this.lang]),
-        pwd,
+        pwd
       );
     } else {
       this.setWalletId(seed);
     }
     this.setSeed(seed, pwd);
     this.setXpubkey(seed);
-    const allWallet = await Storage.get('walletInfo') || {};
+    const allWallet = (await Storage.get('walletInfo')) || {};
     if (allWallet[this.walletId]) {
       delete allWallet[this.walletId];
     }
     // await this.storeWltInfo();
-    const allAddrs = await Storage.get('walletAddrs') || {};
+    const allAddrs = (await Storage.get('walletAddrs')) || {};
     if (!allAddrs[this.walletId]) {
       await AddressService.generateAddress();
     }
@@ -106,14 +104,13 @@ export default class Wallet {
 
     this.xpubkeys = xpubkeys;
     Wallets.addWallet(this, true);
-
   }
 
   generateMnemonic(length) {
     const mnemo = bip39.generateMnemonic(
       length == 24 ? 256 : 128,
       undefined,
-      bip39.wordlists[this.lang],
+      bip39.wordlists[this.lang]
     );
     return mnemo;
   }
@@ -124,23 +121,29 @@ export default class Wallet {
 
   async setXpubkey(seed) {
     const hdPrivateKey = HDPrivateKey.fromSeed(seed).derive(
-      `${PATH}/10003'/0'`);
+      `${PATH}/10003'/0'`
+    );
     const xpubkeys = hdPrivateKey.xpubkey;
     this.xpubkeys = xpubkeys;
 
-    const pubKey = hdPrivateKey.derive(0).derive(0).publicKey.toString();
+    const pubKey = hdPrivateKey
+      .derive(0)
+      .derive(0)
+      .publicKey.toString();
     await this.savePubKey(pubKey);
   }
 
   async savePubKey(pubKey) {
-    const pubKeys = await Storage.getPubKeys() || {};
+    const pubKeys = (await Storage.getPubKeys()) || {};
     const pubKeyArr = [];
     pubKeyArr.push([]);
     pubKeyArr[0].push({ pubKey });
 
-    await Storage.setPubKeys(Object.assign(pubKeys, {
-      [this.walletId]: pubKeyArr,
-    }));
+    await Storage.setPubKeys(
+      Object.assign(pubKeys, {
+        [this.walletId]: pubKeyArr,
+      })
+    );
   }
 
   setSeed(seed, pwd = '') {
@@ -153,7 +156,9 @@ export default class Wallet {
 
   setWalletId(seed) {
     const prvk = HDPrivateKey.fromSeed(seed).derive(PATH_FOR_ID);
-    this.walletId = crypto.Hash.sha256ripemd160(prvk.publicKey.toBuffer()).toString('hex');
+    this.walletId = crypto.Hash.sha256ripemd160(
+      prvk.publicKey.toBuffer()
+    ).toString('hex');
   }
 
   async getAddress() {
@@ -207,14 +212,15 @@ export default class Wallet {
   getMnemonic(pwd) {
     return bip39.entropyToMnemonic(
       this.getPristineEntropy(pwd),
-      bip39.wordlists[this.lang],
+      bip39.wordlists[this.lang]
     );
   }
 
   // for login
   validatePayPassword(payPassword) {
-    const xpub = HDPrivateKey.fromSeed(this.getPristineSeed(payPassword)).derive(
-      `${PATH}/10003'/0'`).xpubkey;
+    const xpub = HDPrivateKey.fromSeed(
+      this.getPristineSeed(payPassword)
+    ).derive(`${PATH}/10003'/0'`).xpubkey;
     return xpub == this.xpubkeys;
   }
   // TODO  password validate
@@ -242,13 +248,15 @@ export default class Wallet {
             if (index == undefined || changeType == undefined) {
               const pk = await this.getNoneBIP44PrivateKey(utxo.address, pwd);
               if (!pk) {
-                console.error('address ' + utxo.address + 'has no private key ');
+                console.error(
+                  'address ' + utxo.address + 'has no private key '
+                );
               } else {
                 temp_key = pk;
               }
             } else {
               const privateKey = rootkey.derive(
-                `${PATH}/${coinType}'/0'/${changeType}/${index}`,
+                `${PATH}/${coinType}'/0'/${changeType}/${index}`
               ).privateKey;
               //  const privkeyStr =privateKey.bn.toBuffer({ size: 32 });
               temp_key = privateKey.toString('hex');
@@ -266,9 +274,8 @@ export default class Wallet {
   getAuthPrivateKey(pwd, coinType) {
     const seed = this.getPristineSeed(pwd);
     const rootkey = HDPrivateKey.fromSeed(seed);
-    const hdprivateKey = rootkey.derive(
-      `${PATH}/${coinType}'/0'/0/0`,
-    ).privateKey;
+    const hdprivateKey = rootkey.derive(`${PATH}/${coinType}'/0'/0/0`)
+      .privateKey;
     return hdprivateKey;
   }
 
@@ -330,7 +337,6 @@ export default class Wallet {
       if (pa) {
         preAssetsMap[pa.asset] = pa;
       }
-
     });
 
     const temp = [];
@@ -365,9 +371,8 @@ export default class Wallet {
         utxoByKeys[key] = utxos || [];
       }
     }
-    await Storage.set(('walletTrans' + wltInst.walletId), trans);
+    await Storage.set('walletTrans' + wltInst.walletId, trans);
     await Storage.set('walletUTXO' + wltInst.walletId, utxoByKeys);
-
   }
 
   async getAssetsInfo(totalAssets) {

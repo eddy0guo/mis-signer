@@ -11,10 +11,11 @@ import mist_config from '../../cfg';
 
 // FIXME: change CUrl to axios
 
-export default class utils {
+export default class Utils {
 
+    private rootHash;
     constructor() {
-        this.root_hash = crypto.createHmac('sha256', '123');
+        this.rootHash = crypto.createHmac('sha256', '123');
     }
 
     arr_values(message) {
@@ -27,13 +28,12 @@ export default class utils {
     }
 
     get_hash(message) {
-        const create_time = this.get_current_time();
+        const createTime = this.get_current_time();
         const arr = this.arr_values(message);
-        arr.push(create_time);
+        arr.push(createTime);
         const str = arr.join('');
 
-        const root_hash = crypto.createHmac('sha256', '123');
-        const hash = root_hash.update(str, 'utf8').digest('hex');
+        const hash = this.rootHash.update(str, 'utf8').digest('hex');
         return hash;
 
     }

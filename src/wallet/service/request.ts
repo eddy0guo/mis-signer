@@ -60,5 +60,3 @@ export function rpc(url, params) {
     },
   });
 }
-
-export default service;

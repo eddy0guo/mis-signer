@@ -1,13 +1,14 @@
-
 import utils2 from './utils';
 import NP from 'number-precision';
 import mist_config from '../../cfg';
 
-export default class engine {
+export default class Engine {
+    private db;
+    private utils;
 
     constructor(client) {
         this.db = client;
-        this.utils = new utils2;
+        this.utils = new utils2();
     }
 
     async match(message) {

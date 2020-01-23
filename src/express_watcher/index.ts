@@ -1,19 +1,19 @@
 import to from 'await-to-js'
-import utils1 from '../adex/api/utils'
-import psql from '../express/models/db'
+import Utils from '../adex/api/utils'
+import DBClient from '../express/models/db'
 
 import mist_config from '../cfg'
 import { AsimovWallet } from '@fingo/asimov-wallet';
 
 
-class watcher {
+class Watcher {
 
-    private psql_db;
+    private db;
     private utils;
 
     constructor() {
-        this.psql_db = new psql();
-        this.utils = new utils1();
+        this.db = new DBClient();
+        this.utils = new Utils();
         this.start();
     }
 
@@ -23,9 +23,9 @@ class watcher {
 
     async loop() {
 
-        const [err, pending_trade] = await to(this.psql_db.laucher_pending_trade());
+        const [err, pendingTrade] = await to(this.db.laucher_pending_trade());
         if (err) console.error(err)
-        if (!pending_trade || pending_trade.length == 0) {
+        if (!pendingTrade || pendingTrade.length <= 0) {
 
             console.log('[Express Watcher]No pending trade');
             setTimeout(() => {
@@ -34,10 +34,10 @@ class watcher {
 
             return;
         }
-        const { trade_id, address, quote_amount, quote_asset_name } = pending_trade[0];
+        const { trade_id, address, quote_amount, quote_asset_name } = pendingTrade[0];
         const current_time = this.utils.get_current_time();
 
-        const tokens = await this.psql_db.get_tokens([quote_asset_name]);
+        const tokens = await this.db.get_tokens([quote_asset_name]);
 
         const wallet = new AsimovWallet({
             name: mist_config.fauct_address,
@@ -52,7 +52,7 @@ class watcher {
 
         const info = [quote_txid, quote_tx_status, current_time, trade_id];
 
-        const [err3, result3] = await to(this.psql_db.update_quote(info));
+        const [err3, result3] = await to(this.db.update_quote(info));
         if (err3) console.error(err3, result3)
         setTimeout(() => {
             this.loop.call(this)
@@ -63,4 +63,4 @@ class watcher {
     }
 
 }
-export default new watcher();
+export default new Watcher();
