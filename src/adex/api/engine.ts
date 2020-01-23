@@ -13,7 +13,7 @@ export default class Engine {
 
     async match(message) {
         let side = 'buy';
-        if (message.side == 'buy') {
+        if (message.side === 'buy') {
             side = 'sell';
         }
 
@@ -51,7 +51,7 @@ export default class Engine {
             amount = NP.plus(amount, find_orders[item].available_amount);
 
             // 吃单全部成交,挂单有剩余的场景,
-            if (item == find_orders.length - 1 && amount > my_order.amount) {
+            if (item === find_orders.length - 1 && amount > my_order.amount) {
                 const overflow_amount = NP.minus(amount, my_order.amount);
                 find_orders[item].available_amount = NP.minus(find_orders[item].available_amount, overflow_amount);
                 maker_status = 'partial_filled';
@@ -95,7 +95,7 @@ export default class Engine {
         const matched_trades = await this.db.list_matched_trades();
         const add_queue_num = Math.floor(matched_trades[0].count / 300) + 1;
 
-        const transaction_id = transactions.length == 0 ? 0 : transactions[0].transaction_id + add_queue_num;
+        const transaction_id = transactions.length === 0 ? 0 : transactions[0].transaction_id + add_queue_num;
 
         const index = transaction_id % 3;
         const order_address_set = [token_address[0].base_token_address, token_address[0].quote_token_address, mist_config.relayers[index].address];

@@ -29,19 +29,19 @@ service.interceptors.response.use(
 
     if (data.error) {
       console.error('err' + data.error);
-      if (data.error.code == -32000) {
+      if (data.error.code === -32000) {
         return Promise.reject(data.error);
       }
       console.error(data);
       return Promise.reject(data.error);
     } else {
-      return data.result !== undefined ? data.result : response;
+      return data.result !=== undefined ? data.result : response;
     }
   },
 
   error => {
     //    console.log('err' + error) // for debug
-    if (error.code == -5) {
+    if (error.code === -5) {
       return Promise.reject(error);
     }
     console.error(error);

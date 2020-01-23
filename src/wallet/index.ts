@@ -123,86 +123,6 @@ export default () => {
         res.json({ result, err });
     });
 
-    wallet.all('/faucet/:address', async (req, res) => {
-        console.log(req.params);
-
-        const token_arr = await mist_wallet.list_tokens();
-        const results = [];
-        const wallet = new AsimovWallet({
-            name: mist_config.fauct_address,
-            rpc: mist_config.asimov_master_rpc,
-            mnemonic: mist_config.fauct_word,
-        });
-
-        const address = req.params.address;
-        for (const i in token_arr as any[]) {
-            setTimeout(async () => {
-                const [err, result] = await to(
-                    wallet.commonTX.transfer(
-                        address,
-                        faucet_amount[i],
-                        token_arr[i].asim_assetid
-                    )
-                );
-                results.push[result];
-                if (err) console.error(err);
-            }, Number(i) * 20000);
-        }
-
-        console.log(results);
-        res.json({ result: results });
-    });
-
-    wallet.all('/faucet_asim/:address', async (req, res) => {
-        console.log(req.params);
-
-        await mist_wallet.list_tokens();
-
-        const wallet = new AsimovWallet({
-            name: mist_config.fauct_address,
-            rpc: mist_config.asimov_child_rpc,
-            mnemonic: mist_config.fauct_word,
-        });
-
-        const address = req.params.address;
-
-        const token_info = await psql_db.get_tokens(['ASIM']);
-        const [err, result] = await to(
-            wallet.commonTX.transfer(address, 10000, token_info[0].asim_assetid)
-        );
-        if (err) console.log(err);
-        res.json({ result });
-    });
-
-    wallet.all('/faucet3/:address', async (req, res) => {
-        console.log(req.params);
-
-        const token_arr = await mist_wallet.list_tokens();
-        const results = [];
-        const wallet = new AsimovWallet({
-            name: mist_config.fauct_address,
-            rpc: mist_config.asimov_master_rpc,
-            mnemonic: mist_config.fauct_word,
-        });
-
-        const address = req.params.address;
-        for (const i in token_arr as any[]) {
-            setTimeout(async () => {
-                const [err, result] = await to(
-                    wallet.commonTX.transfer(
-                        address,
-                        big_faucet_amount[i],
-                        token_arr[i].asim_assetid
-                    )
-                );
-                results.push[result];
-                if (err) console.log(err);
-            }, Number(i) * 20000);
-        }
-
-        console.log(results);
-        res.json({ result: results });
-    });
 
     // 资产转币币
     wallet.all(
@@ -303,7 +223,7 @@ export default () => {
                 chain.sendrawtransaction(sign_data)
             );
 
-            if (master_err == undefined) {
+            if (master_err === undefined) {
                 // 临时代码
                 const current_time = utils.get_current_time();
                 const tmp_info = {
@@ -341,7 +261,7 @@ export default () => {
                         });
                     }
 
-                    if (decode_info.to != mist_config.bridge_address) {
+                    if (decode_info.to !== mist_config.bridge_address) {
                         return res.json({
                             success: false,
                             err: 'reciver ' + decode_info.to + ' is not official address',
@@ -384,7 +304,7 @@ export default () => {
                         master_txid_status: 'successful',
                         child_txid,
                         child_txid_status:
-                            child_txid == undefined ? 'failed' : 'successful',
+                            child_txid === undefined ? 'failed' : 'successful',
                         fee_asset: fee_tokens[0].symbol,
                         fee_amount,
                     };
@@ -393,7 +313,7 @@ export default () => {
                     const [err3, result3] = await to(psql_db.insert_bridge(info_arr));
                     if (err3) console.log(err3, result3);
                     return res.json({
-                        success: err3 == undefined ? true : false,
+                        success: err3 === undefined ? true : false,
                         err: err3,
                     });
                 }, 10000);
@@ -484,7 +404,7 @@ export default () => {
             master_txid,
             master_txid_status: 'successful',
             child_txid,
-            child_txid_status: child_txid == undefined ? 'failed' : 'successful',
+            child_txid_status: child_txid === undefined ? 'failed' : 'successful',
             fee_asset: 'ASIM',
             fee_amount: 0.02,
         };
@@ -495,7 +415,7 @@ export default () => {
         if (err3) console.log(err3, result3);
 
         return res.json({
-            success: result3 == undefined ? false : true,
+            success: result3 === undefined ? false : true,
             id: insert_info.id,
         });
     });
@@ -525,7 +445,7 @@ export default () => {
                 chain.sendrawtransaction(sign_data)
             );
 
-            if (master_err == undefined) {
+            if (master_err === undefined) {
                 // 临时代码，这个临时代码具体需要改动什么？
                 const info = {
                     id: null,
@@ -567,7 +487,7 @@ export default () => {
                         master_txid_status = 'illegaled';
                     }
 
-                    if (decode_info.to != mist_config.bridge_address) {
+                    if (decode_info.to !== mist_config.bridge_address) {
                         master_txid_status = 'illegaled';
                         console.error(`reciver ${decode_info.to}  is not official address`);
                         return; // 应该要return吧这里
@@ -666,7 +586,7 @@ export default () => {
         }
         let fee_amount = 0;
         for (const fee of Coin2AssetFee) {
-            if (token_name == fee.token) {
+            if (token_name === fee.token) {
                 fee_amount = fee.amount;
                 if (amount <= fee_amount) {
                     return res.json({
@@ -698,8 +618,8 @@ export default () => {
         if (err3) console.log(err3);
 
         return res.json({
-            success: result3 == undefined ? false : true,
-            id: result3 == undefined ? '' : insert_info.id,
+            success: result3 === undefined ? false : true,
+            id: result3 === undefined ? '' : insert_info.id,
         });
     });
 
@@ -799,7 +719,7 @@ export default () => {
                 success: false,
                 err,
             });
-        } else if (convert && convert.length == 0) {
+        } else if (convert && convert.length === 0) {
             return res.json({
                 success: true,
                 result: [],
@@ -850,7 +770,7 @@ export default () => {
         const [err, result] = await to(
             psql_db.my_bridge([address, offset, perpage])
         );
-        const success = result == undefined ? false : true;
+        const success = result === undefined ? false : true;
         res.json({ success, result, err });
     });
 
@@ -894,7 +814,7 @@ export default () => {
             const [err, result] = await to(
                 psql_db.my_bridge_v3([address, token_name, offset, perpage])
             );
-            const success = result == undefined ? false : true;
+            const success = result === undefined ? false : true;
             res.json({ success, result, err });
         }
     );
@@ -1030,7 +950,7 @@ export default () => {
         const [err, result] = await to(psql_db.my_bridge_length([address]));
 
         return res.json({
-            success: result == undefined ? false : true,
+            success: result === undefined ? false : true,
             result,
             err,
         });

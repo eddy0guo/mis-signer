@@ -25,7 +25,7 @@ class launcher {
 
     async loop() {
         const [bestblock_err, bestblock_result] = await to(chain.getbestblock());
-        if (bestblock_err || bestblock_result.height == this.block_height) {
+        if (bestblock_err || bestblock_result.height === this.block_height) {
             // console.log(`--------current height is ${bestblock_result.height} and last is ${this.block_height}----------`);
             setTimeout(() => {
                 this.loop.call(this)
@@ -37,7 +37,7 @@ class launcher {
 
         const trades = await this.db.get_laucher_trades();
         const current_time = this.utils.get_current_time();
-        if (trades.length == 0) {
+        if (trades.length === 0) {
             console.log('[Launcher] No matched trades')
             setTimeout(() => {
                 this.loop.call(this)
@@ -59,12 +59,12 @@ class launcher {
             for (const i in trades) {
                 let token_address;
                 for (const j in markets) {
-                    if (trades[i].market_id == markets[j].id) {
+                    if (trades[i].market_id === markets[j].id) {
                         token_address = markets[j];
                     }
                 }
 
-                if (token_address == undefined) {
+                if (token_address === undefined) {
                     console.error('not support market id');
                     continue;
                 }

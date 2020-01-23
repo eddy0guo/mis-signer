@@ -40,10 +40,6 @@ switch (process.env.MIST_MODE) {
 	case 'local':
 		mist_config = config_local;
 		break;
-	// old product
-	case 'postgres':
-		mist_config = config_postgres;
-		break;
 	// hongqiaotestnet
 	case 'dev':
 		mist_config = config_dev;

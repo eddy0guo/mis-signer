@@ -28,7 +28,8 @@ class Watcher {
 	async loop() {
 
 		const [bestblock_err, bestblock_result] = await to(chain.getbestblock());
-		if (bestblock_err || bestblock_result.height == this.blockHeight) {
+
+		if (bestblock_err || bestblock_result.height === this.blockHeight) {
 			// console.log(`--------current height is ${bestblock_result.height} and last is ${this.blockHeight}----------`);
 			setTimeout(() => {
 				this.loop.call(this)
@@ -40,7 +41,7 @@ class Watcher {
 
 		const transaction = await this.db.get_pending_transactions()
 		// 全部都是成功的,就睡眠1s
-		if (!transaction || transaction.length == 0) {
+		if (!transaction || transaction.length === 0) {
 			console.log('[ADEX WATCHER]:no pending transaction');
 			setTimeout(() => {
 				this.loop.call(this)
@@ -75,13 +76,13 @@ class Watcher {
 				const taker_ar = updates.find(function (elem, index_tmp) {
 					index_taker = index_tmp;
 
-					return elem.info[3] == trades[index].taker_order_id;
+					return elem.info[3] === trades[index].taker_order_id;
 				});
 
 				let index_maker;
 				const maker_ar = updates.find(function (elem, index_tmp) {
 					index_maker = index_tmp;
-					return elem.info[3] == trades[index].maker_order_id;
+					return elem.info[3] === trades[index].maker_order_id;
 				});
 
 				if (!taker_ar) {

@@ -100,7 +100,7 @@ export default class db {
 	async order_book(filter) {
 		let err;
 		let result;
-		if (filter[0] == 'sell') {
+		if (filter[0] === 'sell') {
 			[err, result] = await to(this.clientDB.query('SELECT price,sum(available_amount) as amount FROM mist_orders_tmp\
             where market_id=$2 and available_amount>0  and side=$1 group by price  order by price asc limit 100', filter));
 		} else {

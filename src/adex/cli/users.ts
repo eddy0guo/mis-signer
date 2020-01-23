@@ -33,7 +33,7 @@ export default class Users {
         if (err4)console.error(err4);
         let asset_balance = 0;
         for (const j in assets_balance) {
-            if (token_info.asim_assetid == assets_balance[j].asset) {
+            if (token_info.asim_assetid === assets_balance[j].asset) {
                 asset_balance = assets_balance[j].value;
             }
         }

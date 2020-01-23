@@ -38,7 +38,7 @@ class watcher {
 
         const [err, pending_trade] = await to(this.psql_db.filter_bridge(['asset2coin', 'successful', 'pending']));
         console.log('err,pending_trade', err, pending_trade);
-        if (pending_trade.length == 0) {
+        if (pending_trade.length === 0) {
 
             console.log('[BRIDGE WATCHER] No pending trade');
             setTimeout(() => {
@@ -85,7 +85,7 @@ class watcher {
 
         const [failed_err, failed_trade] = await to(this.psql_db.filter_bridge(['coin2asset', 'failed', 'successful']));
         if(failed_err)console.error('err,pending_trade', failed_err, failed_trade);
-        if (failed_trade.length != 0) {
+        if (failed_trade.length !== 0) {
             const { id, address, amount, token_name } = failed_trade[0];
             const tokens = await this.psql_db.get_tokens([token_name])
             const current_time = this.utils.get_current_time();
@@ -108,7 +108,7 @@ class watcher {
         if (err) {
             console.error(`release bridge happened error ${err}`);
         }
-        if (pending_trade.length == 0) {
+        if (pending_trade.length === 0) {
 
             console.log('have not need release bridge');
             setTimeout(() => {
@@ -123,7 +123,7 @@ class watcher {
         const tokens = await this.psql_db.get_tokens([token_name])
 
         let [master_err, master_txid] = await send_asset(address, tokens[0].asim_assetid, amount);
-        const master_txid_status = master_txid == null ? 'failed' : 'successful';
+        const master_txid_status = master_txid === null ? 'failed' : 'successful';
 
         if (master_err) {
             master_txid = null;
@@ -147,7 +147,7 @@ class watcher {
 
         const [err, pending_trade] = await to(this.psql_db.filter_bridge(['coin2asset', 'pending', 'pending']));
         if (err) console.error(err)
-        if (pending_trade.length == 0) {
+        if (pending_trade.length === 0) {
 
             console.log('[WATCHER] No pending burn bridge');
             setTimeout(() => {
@@ -194,7 +194,7 @@ class watcher {
                 return;
             }
             const current_time = this.utils.get_current_time();
-            if (child_txid_status == 'successful') {
+            if (child_txid_status === 'successful') {
                 const [err3, result3] = await to(this.psql_db.update_coin2asset_bridge([null, 'pending', child_txid, 'successful', current_time, id]));
                 if (err3) console.error(err3, result3)
             } else {

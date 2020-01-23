@@ -1,4 +1,4 @@
-import helper from '../lib/txHelper';
+import * as helper from '../lib/txHelper';
 import { chain } from '../api/chain';
 import { TranService } from '../service/transaction';
 import { CONSTANT } from '../constant';
@@ -40,7 +40,7 @@ export default class Token {
 
             console.log('params.data:', params.data);
 
-            if (abiInfo.stateMutability == 'view' || abiInfo.stateMutability == 'pure') {
+            if (abiInfo.stateMutability === 'view' || abiInfo.stateMutability === 'pure') {
             console.log('callContractig2222:');
             return chain.callreadonlyfunction([this.address, this.address, params.data, abiInfo.name, this.abiStr], network_flag);
         } else {

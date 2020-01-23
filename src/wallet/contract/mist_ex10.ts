@@ -1,9 +1,9 @@
-import helper from '../lib/txHelper'
+
 import { chain } from '../api/chain'
 import mist_config from '../../cfg'
 import { TranService } from '../service/transaction';
 import { CONSTANT } from '../constant';
-import { btc2sts, isArrayType, callParamsConvert,signature,getWalletPubKey} from '../utils';
+import { btc2sts, isArrayType, callParamsConvert} from '../utils';
 const bitcore_lib_1 = require('bitcore-lib');
 import adex_utils from '../../adex/api/utils'
 const ECDSA = bitcore_lib_1.crypto.ECDSA;
@@ -44,7 +44,7 @@ async callContract(abiInfo) {
         data: this.getHexData(abiInfo)
       };
       console.log('params.data',params.data)
-    if (abiInfo.stateMutability == 'view' || abiInfo.stateMutability == 'pure') {
+    if (abiInfo.stateMutability === 'view' || abiInfo.stateMutability === 'pure') {
         return chain.callreadonlyfunction([this.address, this.address, params.data, abiInfo.name, this.abiStr])
     } else {
         params.from = await this.wallet.getAddress()

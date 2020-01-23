@@ -33,7 +33,7 @@ class enginer {
 
                 const find_orders = await this.exchange.match(message);
 
-                if (find_orders.length == 0) {
+                if (find_orders.length === 0) {
                     break;
                 }
 
@@ -51,9 +51,9 @@ class enginer {
             }
 
             // console.log(`111${message.id}111--message=%o---matchedamount=%o---trades=%o---`,message,amount,trades);
-            if (message.pending_amount == 0) {
+            if (message.pending_amount === 0) {
                 message.status = 'pending';
-            } else if (message.available_amount == 0) {
+            } else if (message.available_amount === 0) {
                 message.status = 'full_filled';
             } else {
                 message.status = 'partial_filled';

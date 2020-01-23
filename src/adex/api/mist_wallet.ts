@@ -22,19 +22,19 @@ export default class mist_wallet {
 
     // 寻找交易对的优先级依次为，PI,USDT,MT
     async get_token_price2pi(symbol) {
-        if (symbol == 'CNYC') {
+        if (symbol === 'CNYC') {
             return 1;
         }
         let marketID = symbol + '-CNYC';
         let [result, err] = await this.db.get_market_current_price([marketID]);
         if (err)console.error(err);
         // 如果24小时没有成交的交易对，对应的价格为0,如果交易对不存在也是这样判断,fixme
-        if (result.length == 0) {
+        if (result.length === 0) {
             marketID = symbol + '-USDT';
             const price2usdt = await this.db.get_market_current_price([marketID]);
             const price_usdt2pi = await this.db.get_market_current_price(['USDT-CNYC']);
 
-            if (price2usdt.length == 0) {
+            if (price2usdt.length === 0) {
                 marketID = symbol + '-MT';
                 const price2mt = await this.db.get_market_current_price([marketID]);
                 const price_mt2pi = await this.db.get_market_current_price(['MT-CNYC']);
@@ -54,7 +54,7 @@ export default class mist_wallet {
         const price2pi = await this.get_token_price2pi(symbol);
 
         const btc2pi = await this.get_token_price2pi('BTC');
-        if (price2pi == 0 || btc2pi == 0) {
+        if (price2pi === 0 || btc2pi === 0) {
             return 0;
         }
 

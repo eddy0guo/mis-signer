@@ -1,7 +1,6 @@
 import BigNumber from 'bignumber.js';
 import * as moment from 'moment';
 import * as bip39 from 'bip39';
-import { crypto } from 'bitcore-lib';
 
 import { CONSTANT } from '../constant';
 import Storage from '../service/storage';
@@ -16,22 +15,20 @@ export const sts2btc = value => {
 };
 export const btc2sts = value => {
   if (!value) return value;
-  // validateNumber(value)
-  // console.log("btc2sts:",value)
   const v = new BigNumber(value.toString());
-  return parseInt(v.times(SATOSHI_BTC).toFixed(0));
+  return v.times(SATOSHI_BTC).toFixed(0);
 };
 
-export const getWordlistLanguage = function (text) {
+export function getWordlistLanguage (text) {
   const reg = new RegExp('[\\u4E00-\\u9FFF]+', 'g');
   return reg.test(text) ? 'chinese_simplified' : 'english';
 };
 
-export const validateMnemonic = function (mnemonic) {
+export function validateMnemonic (mnemonic) {
   const lang = CONSTANT.MNEMONICLANGUAGES;
   let valid = false;
-  for (let i = 0; i < lang.length; i++) {
-    const wordlist = bip39.wordlists[lang[i]];
+  for (const element of lang) {
+    const wordlist = bip39.wordlists[element];
     valid = bip39.validateMnemonic(mnemonic, wordlist);
     if (valid) {
       break;
@@ -39,11 +36,6 @@ export const validateMnemonic = function (mnemonic) {
   }
   return valid;
 };
-
-export function signature(pk, message) {
-  const hashbuf = crypto.Hash.sha256sha256(new Buffer(message));
-  return crypto.ECDSA.sign(hashbuf, pk).toBuffer().toString('base64');
-}
 
 export async function getWalletPubKey() {
   const walletId = await Storage.get('activeWltId');
@@ -60,13 +52,6 @@ export function isArrayType(type) {
 export function callParamsConvert(type, value) {
   let result;
   switch (type) {
-    /*    case 'address':
-          let data = encoding.Base58.decode(value);
-          //remove vertion and checksum bytes
-          data = data.slice(1, data.length - 4);
-
-          result = '0x' + toHexString(data);
-          break;*/
     case 'bool':
       if (value === '0' || value === 'false') {
         result = 0;

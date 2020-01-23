@@ -48,7 +48,7 @@ class Watcher {
         const [quote_err, quote_txid] = await to(wallet.commonTX.transfer(address, quote_amount, tokens[0].asim_assetid));
         if (quote_err) console.error(quote_err)
 
-        const quote_tx_status = quote_txid == undefined ? 'failed' : 'successful';
+        const quote_tx_status = quote_txid === undefined ? 'failed' : 'successful';
 
         const info = [quote_txid, quote_tx_status, current_time, trade_id];
 

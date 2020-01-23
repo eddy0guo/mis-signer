@@ -48,7 +48,7 @@ async function my_wallet(word) {
 async function get_price(base_token_name, quote_token_name, amount, order) {
     let base_value = 0;
     let base_amount = 0;
-    if (base_token_name != 'CNYC') {
+    if (base_token_name !== 'CNYC') {
         const base_book = await order.order_book(base_token_name + '-CNYC');
         const base_bids = base_book.bids;
         // 模拟先卖掉所有base，再全部买quote
@@ -70,7 +70,7 @@ async function get_price(base_token_name, quote_token_name, amount, order) {
 
     let quote_value = 0;
     let quote_amount = 0;
-    if (quote_token_name != 'CNYC') {
+    if (quote_token_name !== 'CNYC') {
         const quote_book = await order.order_book(quote_token_name + '-CNYC');
         const quote_asks = quote_book.asks.reverse();
 
@@ -148,7 +148,7 @@ export default () => {
             record.quote_token_icon = 'http://fingo-cdn.asimov.work/res/icons/' + record.quote_asset_name + 'a.png'
         }
         res.json({
-            success: records == undefined ? false : true,
+            success: records === undefined ? false : true,
             result: records,
             err
         });
@@ -203,7 +203,7 @@ export default () => {
             })
         }
 
-        if (record && record.length == 0) {
+        if (record && record.length === 0) {
             return res.json({
                 success: true,
                 result: []
@@ -302,7 +302,7 @@ export default () => {
         const { base_token_name, quote_token_name, base_amount } = req.params;
         const [err, price] = await to(get_price(base_token_name, quote_token_name, base_amount, order))
         res.json({
-            success: price == undefined ? false : true,
+            success: price === undefined ? false : true,
             result: price,
             err
         });
@@ -336,7 +336,7 @@ export default () => {
         const { address } = req.params;
         const [err, result] = await to(psql_db.my_express_length([address]))
         res.json({
-            success: result == undefined ? false : true,
+            success: result === undefined ? false : true,
             result,
             err
         });
@@ -376,7 +376,7 @@ export default () => {
             if(err4)console.error(err4)
             let asset_balance = 0;
             for (const j in assets_balance) {
-                if (token_arr[i].asim_assetid == assets_balance[j].asset) {
+                if (token_arr[i].asim_assetid === assets_balance[j].asset) {
                     asset_balance = assets_balance[j].value;
                 }
             }
@@ -402,7 +402,7 @@ export default () => {
     express.all('/sendrawtransaction/build_express/:base_token_name/:quote_token_name/:amount/:address/:sign_data', async (req, res) => {
         const { base_token_name, quote_token_name, amount, address, sign_data } = req.params;
         const [base_err, base_txid] = await to(chain.sendrawtransaction([sign_data]));
-        const base_tx_status = base_txid == undefined ? 'failed' : 'successful';
+        const base_tx_status = base_txid === undefined ? 'failed' : 'successful';
 
         // 失败的记录也入表
 
@@ -424,7 +424,7 @@ export default () => {
             asset.unlock(walletInst, mist_config.wallet_default_passwd);
             await walletInst.queryAllBalance();
             [quote_err, quote_txid] = await to(asset.transfer(address, quote_amount));
-            quote_tx_status = quote_txid == undefined ? 'failed' : 'successful';
+            quote_tx_status = quote_txid === undefined ? 'failed' : 'successful';
         }
 
 
@@ -450,7 +450,7 @@ export default () => {
         const [err3, result3] = await to(psql_db.insert_express(info_arr));
         if(err3)console.error( err3, result3)
         let success;
-        if (base_tx_status == 'successful' && quote_tx_status == 'successful' && !err3) {
+        if (base_tx_status === 'successful' && quote_tx_status === 'successful' && !err3) {
             success = true;
         } else {
             success = false;
@@ -532,13 +532,13 @@ export default () => {
                 base_tx_status = 'illegaled'
             }
 
-            if (decode_info.to != mist_config.express_address) {
+            if (decode_info.to !== mist_config.express_address) {
                 base_tx_status = 'illegaled';
                 console.error(`reciver ${decode_info.to}  is not official address`)
             }
 
             const [err3, base_token] = await to(psql_db.get_tokens([asset_id]));
-            if (err3 || !base_token || base_token.length == 0) {
+            if (err3 || !base_token || base_token.length === 0) {
                 base_tx_status = 'illegaled';
                 console.error(`asset ${asset_id}  is not support`)
             }

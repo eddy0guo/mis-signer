@@ -41,9 +41,9 @@ async function get_available_erc20_amount(address, symbol) {
     const freeze_result = await client.get_freeze_amount([address, symbol]);
     if (freeze_result && freeze_result.length > 0) {
         for (const freeze of freeze_result) {
-            if (freeze.side == 'buy') {
+            if (freeze.side === 'buy') {
                 freeze_amount = NP.plus(freeze_amount, freeze.quote_amount);
-            } else if (freeze.side == 'sell') {
+            } else if (freeze.side === 'sell') {
                 freeze_amount = NP.plus(freeze_amount, freeze.base_amount);
             } else {
                 console.error(`${freeze.side} error`);
@@ -179,7 +179,7 @@ export default () => {
             if (err4) console.error(err4);
             let asset_balance = 0;
             for (const j in assets_balance) {
-                if (token_arr[i].asim_assetid == assets_balance[j].asset) {
+                if (token_arr[i].asim_assetid === assets_balance[j].asset) {
                     asset_balance = assets_balance[j].value;
                 }
             }
@@ -291,7 +291,7 @@ export default () => {
             console.log('---balances=%o----------', assets_balance);
             let asset_balance = 0;
             for (const j in assets_balance) {
-                if (token_arr[i].asim_assetid == assets_balance[j].asset) {
+                if (token_arr[i].asim_assetid === assets_balance[j].asset) {
                     asset_balance = assets_balance[j].value;
                 }
             }
@@ -300,9 +300,9 @@ export default () => {
             const freeze_result = await client.get_freeze_amount([obj.address, token_arr[i].symbol]);
             if (freeze_result && freeze_result.length > 0) {
                 for (const freeze of freeze_result) {
-                    if (freeze.side == 'buy') {
+                    if (freeze.side === 'buy') {
                         freeze_amount = NP.plus(freeze_amount, freeze.quote_amount);
-                    } else if (freeze.side == 'sell') {
+                    } else if (freeze.side === 'sell') {
                         freeze_amount = NP.plus(freeze_amount, freeze.base_amount);
                     } else {
                         console.error(`${freeze.side} error`);
@@ -401,7 +401,7 @@ export default () => {
             if (err4) console.error(err4);
             let asset_balance = 0;
             for (const j in assets_balance) {
-                if (token_arr[i].asim_assetid == assets_balance[j].asset) {
+                if (token_arr[i].asim_assetid === assets_balance[j].asset) {
                     asset_balance = assets_balance[j].value;
                 }
             }
@@ -507,9 +507,9 @@ export default () => {
             const freeze_result = await client.get_freeze_amount([address, token_arr[i].symbol]);
             if (freeze_result && freeze_result.length > 0) {
                 for (const freeze of freeze_result) {
-                    if (freeze.side == 'buy') {
+                    if (freeze.side === 'buy') {
                         freeze_amount = NP.plus(freeze_amount, freeze.quote_amount);
-                    } else if (freeze.side == 'sell') {
+                    } else if (freeze.side === 'sell') {
                         freeze_amount = NP.plus(freeze_amount, freeze.base_amount);
                     } else {
                         console.error(`${freeze.side} error`);
@@ -556,7 +556,7 @@ export default () => {
             if (err || err3) {
                 console.error(err, err3);
             }
-            if (balance != allowance) {
+            if (balance !== allowance) {
                 await wallet.queryAllBalance();
                 const [err2, txid] = await to(token.approve(mist_config.ex_address, 9999999));
                 if (err2) console.error(err2);
@@ -755,7 +755,7 @@ did对order_id进行签名，获取rsv
         }
 
         const [base_token, quota_token] = market_id.split('-');
-        if (side == 'buy') {
+        if (side === 'buy') {
             const available_quota = await get_available_erc20_amount(trader_address, quota_token);
             const quota_amount = NP.times(+amount, +price);
             if (quota_amount > available_quota) {
@@ -765,7 +765,7 @@ did对order_id进行签名，获取rsv
                 });
             }
 
-        } else if (side == 'sell') {
+        } else if (side === 'sell') {
             const available_base = await get_available_erc20_amount(trader_address, base_token);
             if (amount > available_base) {
                 return res.json({
@@ -802,7 +802,7 @@ did对order_id进行签名，获取rsv
         const [err, result2] = await to(order.build(message));
         console.log(result2, err);
         res.json({
-            success: result == undefined ? false : true,
+            success: result === undefined ? false : true,
             result: result2,
             err,
         });
@@ -861,7 +861,7 @@ did对order_id进行签名，获取rsv
 
         const [err, result] = await to(order.cancle_order(message));
         res.json({
-            success: result == undefined ? false : true,
+            success: result === undefined ? false : true,
             result,
             err,
         });
@@ -940,7 +940,7 @@ did对order_id进行签名，获取rsv
                 continue;
             }
             // 不能取消别人的订单
-            if (order_info[0].trader_address != address) {
+            if (order_info[0].trader_address !== address) {
                 return res.json({
                     success: false,
                     err: 'You can‘t cancel others order',
@@ -961,7 +961,7 @@ did对order_id进行签名，获取rsv
         }
 
         return res.json({
-            success: errs.length == 0 ? true : false,
+            success: errs.length === 0 ? true : false,
             result: results,
             err: errs,
         });
@@ -996,7 +996,7 @@ did对order_id进行签名，获取rsv
         const [err, result] = await to(trades.my_trades_length(address));
 
         res.json({
-            success: result == undefined ? false : true,
+            success: result === undefined ? false : true,
             result,
             err,
         });
@@ -1064,7 +1064,7 @@ did对order_id进行签名，获取rsv
         const [err, result] = await to(order.my_orders2(address, page, perpage, status1, status2));
 
         res.json({
-            success: result == undefined ? false : true,
+            success: result === undefined ? false : true,
             result,
             err,
         });
@@ -1084,7 +1084,7 @@ did对order_id进行签名，获取rsv
         if (err) console.error(err);
 
         // 没数据判定为不存在的交易对，实际上刚部署的时候也没数据
-        if (result.asks.length == 0 && result.asks.length == 0) {
+        if (result.asks.length === 0 && result.asks.length === 0) {
             res.json({
                 success: false,
                 err: 'MarketID not found',
@@ -1107,7 +1107,7 @@ did对order_id进行签名，获取rsv
 
         const [err, result] = await to(market.list_markets());
         res.json({
-            success: result == undefined ? false : true,
+            success: result === undefined ? false : true,
             result,
             err,
         });
@@ -1131,7 +1131,7 @@ did对order_id进行签名，获取rsv
         const { market_id } = req.params;
 
         const [err, result] = await to(market.get_market(market_id));
-        if (err || !result || result.length == 0) {
+        if (err || !result || result.length === 0) {
             res.json({
                 success: false,
                 err: err + ' or have no this market',
@@ -1167,7 +1167,7 @@ did对order_id进行签名，获取rsv
     adex.all('/my_trades2/:address/:page/:per_page', async (req, res) => {
         const [err, result] = await to(trades.my_trades2(req.params.address, req.params.page, req.params.per_page));
         res.json({
-            success: result == undefined ? false : true,
+            success: result === undefined ? false : true,
             result,
             err,
         });
@@ -1211,7 +1211,7 @@ did对order_id进行签名，获取rsv
     adex.all('/my_trades_v2/:address/:page/:per_page', async (req, res) => {
         const [err, result] = await to(trades.my_trades2(req.params.address, req.params.page, req.params.per_page));
         res.json({
-            success: result == undefined ? false : true,
+            success: result === undefined ? false : true,
             result,
             err,
         });
@@ -1238,7 +1238,7 @@ did对order_id进行签名，获取rsv
         const { granularity, number, market_id } = req.params;
 
         const [err, result] = await to(market.get_market(market_id));
-        if (err || !result || result.length == 0) {
+        if (err || !result || result.length === 0) {
             res.json({
                 success: false,
                 err: err + ' or have no this market',
@@ -1272,7 +1272,7 @@ did对order_id进行签名，获取rsv
         const { granularity, number, market_id } = req.params;
 
         const [err, result] = await to(market.get_market(market_id));
-        if (err || !result || result.length == 0) {
+        if (err || !result || result.length === 0) {
             res.json({
                 success: false,
                 err: err + ' or have no this market',

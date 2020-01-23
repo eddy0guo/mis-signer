@@ -64,7 +64,7 @@ export default class trades {
             let high = 0;
             let low = 0;
 
-            if (trades_by_time.length != 0) {
+            if (trades_by_time.length !== 0) {
                 open = trades_by_time[0].price;
                 close = trades_by_time.pop().price;
                 high = trades_by_price[0].price;

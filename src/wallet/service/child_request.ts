@@ -26,16 +26,16 @@ service.interceptors.response.use( response => {
     const data = response.data;
     if (data.error) {
       // console.log('err' + data.error)
-      if (data.error.code == -32000) {
+      if (data.error.code === -32000) {
         return Promise.reject(data.error);
       }
       // console.log(data)
       return Promise.reject(data.error);
     } else {
-      return data.result !== undefined ? data.result : response;
+      return data.result !=== undefined ? data.result : response;
     }
   }, error => {
-    if (error.code == -5) {
+    if (error.code === -5) {
       return Promise.reject(error);
     }
     // console.log(error)

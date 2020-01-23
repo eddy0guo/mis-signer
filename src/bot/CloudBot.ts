@@ -4,8 +4,10 @@ import cfg from '../cfg'
 import consola from 'consola'
 import botConfig from './config'
 
-const localStorage = {}
-axios.headers = 'Access-Control-Allow-Methods:POST, GET, OPTIONS'
+const localStorage = {
+    token:null
+}
+axios.defaults.headers = 'Access-Control-Allow-Methods:POST, GET, OPTIONS'
 axios.defaults.headers.post['Content-Type'] = 'application/json'
 axios.defaults.baseURL = 'http://119.23.181.166:' + cfg.mist_server_port
 
@@ -49,6 +51,17 @@ axios.interceptors.response.use(res => {
 })
 
 export default class CloudBot {
+    private market
+    private priceOracle
+    private timer
+    private amount
+    private maxOrderPrice
+    private loopDepay
+    private accounts
+    private password
+    private addresses
+    private sides
+
     constructor(market, priceOracle, amount) {
         this.market = market
         this.priceOracle = priceOracle
@@ -58,8 +71,6 @@ export default class CloudBot {
         this.maxOrderPrice = 5000
         this.loopDepay = 60 * 1000
 
-        this.$axios = axios
-
         this.accounts = botConfig.accounts
         this.password = botConfig.password
         this.addresses = botConfig.addresses
@@ -68,22 +79,6 @@ export default class CloudBot {
 
     price(){
         return this.priceOracle.getPrice(this.market)
-    }
-
-    static async login(){
-        // 暂时不需要登陆
-        const res = await this.$axios({
-            method: 'post',
-            url: `/did/signin`,
-            header: {
-              'content-type': 'application/x-www-form-urlencoded'
-            },
-            data: {
-              username: 'this.email',
-              password: 'this.password'
-            }
-          })
-        consola.info(res)
     }
 
     start(delay) {
@@ -142,7 +137,7 @@ export default class CloudBot {
 
     async confirmOrder(side,price,amount,address,signature,order_id) {
         // 发送订单
-        const [err,res] = await to(this.$axios({
+        const [err,res] = await to(axios({
             method: 'get',
             url: '/adex/build_order',
             params: {
@@ -164,7 +159,7 @@ export default class CloudBot {
 
     async signOrder(username,order_id) {
         // 签名
-        const [err,res] = await to(this.$axios({
+        const [err,res] = await to(axios({
             method: 'post',
             url: '/did/order_sign',
             data: {
@@ -183,7 +178,7 @@ export default class CloudBot {
 
     async buildOrder(side,price,amount,address) {
         // 第一步获取oeder_id
-        const [err,res] = await to(this.$axios({
+        const [err,res] = await to(axios({
             method: 'get',
             url: '/adex/get_order_id',
             params: {

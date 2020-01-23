@@ -32,7 +32,7 @@ async function removeKeypairAddressToWalletAddr(address) {
     const walletAddrs = allAddrs[walletId] || {};
     const walletPairAddrs = walletAddrs[2] || [];
 
-    walletPairAddrs.splice(walletPairAddrs.findIndex(i => i.address == address), 1);
+    walletPairAddrs.splice(walletPairAddrs.findIndex(i => i.address === address), 1);
     walletAddrs[2] = walletPairAddrs;
 
     await Storage.set('walletAddrs', Object.assign(allAddrs, {
@@ -59,6 +59,8 @@ export default class AddressService {
         const address = new Address(privateKey.publicKey).toString();
         let [keypair, err] = await to(Storage.getKeypair());
         if (err) {
+            console.error(err)
+            err = null;
             return;
         }
         keypair = keypair || {};
@@ -92,13 +94,13 @@ export default class AddressService {
         const wltInst = Wallets.getActiveWallet();
         const { assets, walletId, xpubkeys } = wltInst;
         let types = [changeType];
-        if (num == undefined) {
+        if (num === undefined) {
             num = CONSTANT.CREATEADDRSNUM;
         }
-        if (changeType == undefined) {
+        if (changeType === undefined) {
             types = [0, 1];
         }
-        if (coinType == undefined) {
+        if (coinType === undefined) {
             coinType = assets[0].coinType; // ?? 这里也不确定不同币种是不是一样的coinType
         }
         const addrs = await AddressService.getAddrs(walletId);

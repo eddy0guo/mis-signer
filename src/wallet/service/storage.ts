@@ -24,7 +24,9 @@ export default {
       let data = localStorage.getItem(key);
       try {
         data = JSON.parse(data);
-      } catch (e) {}
+      } catch (e) {
+        console.error(e)
+      }
       resolve(data);
     });
   },

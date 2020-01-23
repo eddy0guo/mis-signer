@@ -71,7 +71,7 @@ function PickUtoxs(total, utxos) {
     return [result, t];
   }
 
-  if (total == 0) {
+  if (total === 0) {
     let min;
     min = utxos[0];
     for (let i = 0; i < utxos.length; i++) {
@@ -222,8 +222,8 @@ export const TranService = {
           }
         }
       } catch (e) {
-        if (tplOffset == offset) {
-          if ((lastErrorIndex == undefined) || (lastErrorIndex + 1 == i)) {
+        if (tplOffset === offset) {
+          if ((lastErrorIndex === undefined) || (lastErrorIndex + 1 === i)) {
             lastErrorIndex = i;
             pureAddrNums++;
           }
@@ -252,7 +252,7 @@ export const TranService = {
     return balance;
   },
   async decodeRawTx(rawTxs) {
-    if (typeof rawTxs == 'string') rawTxs = [rawTxs];
+    if (typeof rawTxs === 'string') rawTxs = [rawTxs];
     const transData = await chain.decoderawtransaction(rawTxs);
     return transData;
   },
@@ -303,7 +303,7 @@ export const TranService = {
         utxos = proxy_utxos;
       }
 
-      if (typeof assetObj.amount == 'string') {
+      if (typeof assetObj.amount === 'string') {
         assetObj.amount = parseFloat(assetObj.amount);
       }
 
@@ -409,7 +409,7 @@ export const TranService = {
         utxos = proxy_utxos;
       }
 
-      if (typeof assetObj.amount == 'string') {
+      if (typeof assetObj.amount === 'string') {
         assetObj.amount = parseFloat(assetObj.amount);
       }
 

@@ -1,12 +1,10 @@
-import http from 'http';
+import * as http from 'http';
 import express from 'express';
 import morgan from 'morgan';
 // start price oracle
 // start bot
 import Price from './Price'
 import CloudBot from './CloudBot'
-
-console.log = ()=>{}
 
 const markets = {
 	'ASIM-CNYC':15,
@@ -42,10 +40,11 @@ const priceOracle = new Price(markets)
 priceOracle.start()
 
 for(const i in markets ){
-	const amount = amounts[i]
-	// console.log(i,markets[i],amount)
-	const bot = new CloudBot(i,priceOracle,amount)
-	bot.start(5+i*1)
+	if( amounts[i] ){
+		const amount = amounts[i]
+		const bot = new CloudBot(i,priceOracle,amount)
+		bot.start(5+Number(i)*1)
+	}
 }
 
 // start cli server
@@ -57,27 +56,17 @@ app.server = http.createServer(app);
 // logger
 app.use(morgan('dev'));
 
-app.all('*',function(req,res,next){
+app.all('*',(req,res,next)=>{
     // 设置允许跨域的域名，*代表允许任意域名跨域
     res.header('Access-Control-Allow-Origin','*');
     // 允许的header类型
     res.header('Access-Control-Allow-Headers','content-type');
     // 跨域允许的请求方式
     res.header('Access-Control-Allow-Methods','DELETE,PUT,POST,GET,OPTIONS');
-    if (req.method.toLowerCase() == 'options')
+    if (req.method.toLowerCase() === 'options')
         res.send(200);  // 让options尝试请求快速结束
     else
         next();
 });
-
-//
-import cli from './cli'
-app.use('/cli',cli())
-
-// not start cli for now
-
-// app.server.listen(8686, () => {
-// 	console.log(`Started on port ${app.server.address().port}`);
-// });
 
 export default app;

@@ -125,7 +125,7 @@ export default class Utils {
         let result = true;
         if (num <= 0) {
             result = false;
-        } else if (NP.times(num, 10000) != Math.floor(NP.times(num, 10000))) {
+        } else if (NP.times(num, 10000) !== Math.floor(NP.times(num, 10000))) {
             console.error('cannt support this decimal', num, NP.times(num, 10000), num * 10000);
             result = false;
         }
@@ -147,17 +147,17 @@ export default class Utils {
         const from = txinfo.vin[0].prevOut.addresses[0];
         let asset_id;
         for (const vin of txinfo.vin) {
-            if (vin.prevOut.addresses[0] != from) {
+            if (vin.prevOut.addresses[0] !== from) {
                 throw new Error('decode failed,inputs contained Multiple addresses');
-            } else if (vin.prevOut.asset == '000000000000000000000000' && asset_set.size > 1) {
+            } else if (vin.prevOut.asset === '000000000000000000000000' && asset_set.size > 1) {
                 console.log('this is a fee utxo');
                 continue;
-            } else if (vin.prevOut.asset != '000000000000000000000000' && asset_set.size > 1 && asset_id != undefined && vin.prevOut.asset != asset_id) {
+            } else if (vin.prevOut.asset !== '000000000000000000000000' && asset_set.size > 1 && asset_id !== undefined && vin.prevOut.asset !== asset_id) {
                 throw new Error('decode failed,inputs contained Multiple asset');
-            } else if (asset_id == undefined) {
+            } else if (asset_id === undefined) {
                 asset_id = vin.prevOut.asset;
                 vin_amount += +vin.prevOut.value;
-            } else if ((asset_id != undefined && vin.prevOut.asset != '000000000000000000000000') || asset_set.size == 1) {
+            } else if ((asset_id !== undefined && vin.prevOut.asset !== '000000000000000000000000') || asset_set.size === 1) {
                 vin_amount += +vin.prevOut.value;
             } else {
                 console.log('unknown case happened');
@@ -170,20 +170,20 @@ export default class Utils {
         let vout_to_amount = 0;
         let to_address;
         for (const out of txinfo.vout) {
-            if (out.asset == '000000000000000000000000' && out.scriptPubKey.addresses[0] == from) {
-                if (asset_set.size == 1) {
+            if (out.asset === '000000000000000000000000' && out.scriptPubKey.addresses[0] === from) {
+                if (asset_set.size === 1) {
                     vout_remain_amount += out.value;
                 } else {
                     console.log('this is a fee out');
                 }
-            } else if (to_address != undefined && to_address != out.scriptPubKey.addresses[0] && from != out.scriptPubKey.addresses[0]) {
+            } else if (to_address !== undefined && to_address !== out.scriptPubKey.addresses[0] && from !== out.scriptPubKey.addresses[0]) {
                 throw new Error('decode failed,outputss contained Multiple addresses');
-            } else if (out.scriptPubKey.addresses[0] == from) {
+            } else if (out.scriptPubKey.addresses[0] === from) {
                 vout_remain_amount += out.value;
-            } else if (to_address == undefined) {
+            } else if (to_address === undefined) {
                 to_address = out.scriptPubKey.addresses[0];
                 vout_to_amount += +out.value;
-            } else if (to_address != undefined && to_address == out.scriptPubKey.addresses[0]) {
+            } else if (to_address !== undefined && to_address === out.scriptPubKey.addresses[0]) {
                 vout_to_amount += +out.value;
             } else {
                 throw new Error('decode failed');
