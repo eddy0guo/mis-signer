@@ -5,7 +5,7 @@ import { AsimovWallet, AsimovConst } from '@fingo/asimov-wallet';
 import * as cryptoSha256 from 'crypto';
 
 import { chain } from './api/chain';
-import walletHelper from './lib/walletHelper';
+
 import fake_token from './contract/AssetToken';
 
 import mist_config from '../cfg';
@@ -41,17 +41,6 @@ const Coin2AssetFee = [
     },
 ];
 
-let walletInst;
-
-async function getTestInst() {
-    walletInst = await walletHelper.testWallet(mist_config.fauct_word, '111111');
-    return walletInst;
-}
-
-// PI,ASIM,BTC.USDT,ETH,MT
-const faucet_amount = [600, 100, 0.1, 1000, 5, 1000];
-const big_faucet_amount = [500000, 1000, 5, 200000, 200000, 200000];
-
 export default () => {
     const wallet = Router();
 
@@ -59,11 +48,7 @@ export default () => {
     const utils = new adex_utils();
     const mist_wallet = new mist_wallet1();
 
-    wallet.all('/', async (req, res) => {
-        walletInst = await getTestInst();
-        const address = await walletInst.getAddress();
-        res.json({ wallet: address });
-    });
+
 
     wallet.all('/get_user_info/:address', async (req, res) => {
         const token_arr = await mist_wallet.list_tokens();
@@ -72,6 +57,7 @@ export default () => {
         if (!mist_user[0]) {
             const infos = [];
             for (const i in token_arr as any[]) {
+                if( !token_arr[i])continue
                 const total_balance = await users_obj.get_total_balance(
                     token_arr[i],
                     req.params.address
@@ -114,13 +100,7 @@ export default () => {
 
     wallet.all('/get_asset_info/:token_name', async (req, res) => {
         const tokens = await psql_db.get_tokens([req.params.token_name]);
-        const assetToken = new fake_token(tokens[0].asim_address);
-        walletInst = await getTestInst();
-        assetToken.unlock(walletInst, '111111');
-        const [err, result] = await to(assetToken.getAssetInfo());
-        console.log(result, err);
-
-        res.json({ result, err });
+        res.json({ result:tokens[0], err:null });
     });
 
 
@@ -270,16 +250,14 @@ export default () => {
 
                     const transfer_tokens = await psql_db.get_tokens([asset_id]);
                     const fee_tokens = await psql_db.get_tokens([fee_asset]);
-                    const wallet = new AsimovWallet({
+                    const awallet = new AsimovWallet({
                         name: 'test',
                         rpc: mist_config.asimov_child_rpc,
                         mnemonic: mist_config.bridge_word,
-                        // storage: 'localforage',
                     });
-                    // let balance = await wallet.account.balance();
 
                     const [child_err, child_txid] = await to(
-                        wallet.contractCall.call(
+                        awallet.contractCall.call(
                             transfer_tokens[0].address,
                             'mint(address,uint256)',
                             [from, NP.times(to_amount, 100000000)],
@@ -431,7 +409,7 @@ export default () => {
           "success": true,
           "id": "eac9fee0a83dd7ebc2ba67012b14175f2fddf3eabbcfe435cb11f105101af46d"
       }
-       * @apiSampleRequest https://poa.mist.exchange/api/wallet/sendrawtransaction/asset2coin_v3/01000000023308230091b01e41177f18620dcb5634a18917f2074c22a38ae35f79dce321f3010000006b483045022100d8efbb3d5cedddd4f79baab71a00050889b39e53c49293344ed3fc22b4b18c5a0220246af4e62d66ed9a0ac1ed8bb6e5dd40d682be988103ce5a0257f725ff81e021012102078e749afa7a3e869f8b2889aedd637adae74134165810f03e72e98a0564c0deffffffffbf51ad22e9132ad71e8df1a9b7740e6616e17f8b5f07c2f5f0d8d45b8d386053020000006b483045022100aa930a8d993b1f0db3c7e323134626ed31e53e697b2ca42f72267a4fc662cf9d02205003aade060e893420edeee4463657ccc12d5285a9bf6e516037e2ae1a5defcf012102078e749afa7a3e869f8b2889aedd637adae74134165810f03e72e98a0564c0deffffffff0300e1f505000000001a76a91566a5e2e1d9243f9dfd1d54b31952d94043a105188fc5ac0c00000000000000030000000300007ef990301200001a76a9156632bd37c1331b34359920f1eaa18a38ba9ff203e9c5ac0c00000000000000030000000300002e6b9c301200001a76a9156632bd37c1331b34359920f1eaa18a38ba9ff203e9c5ac0c000000000000000000000000000852000000000000
+       * @apiSampleRequest https://poa.mist.exchange/api/wallet/sendrawtransaction/asset2coin_v3/
        * @apiVersion 1.0.0
        */
 
@@ -509,11 +487,11 @@ export default () => {
                         id: info.id,
                     };
                     const update_info_arr = utils.arr_values(update_info);
-                    const [err3, result3] = await to(
+                    const [err4, result4] = await to(
                         psql_db.update_asset2coin_decode(update_info_arr)
                     );
-                    if (err3)
-                        console.log('psql_db.update_asset2coin_decode----', err3, result3);
+                    if (err4)
+                        console.log('psql_db.update_asset2coin_decode----', err3, result4);
                 }, 10000);
                 // FIXME:这里又有一个等待10秒的非严谨逻辑处理
 
@@ -630,15 +608,13 @@ export default () => {
             const expire_time = 600;
             const tokens = await psql_db.get_tokens([token_name]);
 
-            const wallet = new AsimovWallet({
+            const awallet = new AsimovWallet({
                 name: address,
                 rpc: mist_config.asimov_child_rpc,
                 address,
             });
 
-            await wallet.account.createAccount();
-
-            const balance = await wallet.contractCall.callReadOnly(
+            const balance = await awallet.contractCall.callReadOnly(
                 tokens[0].address,
                 'balanceOf(address)',
                 [address]
@@ -875,47 +851,6 @@ export default () => {
     wallet.all('/list_cdp_info', async (req, res) => {
         const [err, result] = await to(psql_db.list_cdp());
         res.json({ result, err });
-    });
-
-    wallet.all('/erc20_faucet/:address', async (req, res) => {
-        const token_arr = await mist_wallet.list_tokens();
-        const results = [];
-        for (const i in token_arr as any[]) {
-            setTimeout(async () => {
-                const wallet = new AsimovWallet({
-                    name: 'test',
-                    rpc: mist_config.asimov_child_rpc,
-                    mnemonic: mist_config.bridge_word,
-                });
-                // 为什么要先get balance？
-                // let balance = await wallet.account.balance();
-                const to_amount = 90000000;
-
-                const [child_err, child_txid] = await to(
-                    wallet.contractCall.call(
-                        token_arr[i].address,
-                        'mint(address,uint256)',
-                        [req.params.address, NP.times(to_amount, 100000000)],
-                        AsimovConst.DEFAULT_GAS_LIMIT,
-                        0,
-                        AsimovConst.DEFAULT_ASSET_ID,
-                        AsimovConst.DEFAULT_FEE_AMOUNT,
-                        AsimovConst.DEFAULT_ASSET_ID,
-                        AsimovConst.CONTRACT_TYPE.CALL
-                    )
-                );
-
-                results.push[child_txid];
-                if (child_err)
-                    console.log(
-                        '---------erc20_token_arr--err-result',
-                        child_err,
-                        child_txid,
-                        '\n\n\n\n'
-                    );
-            }, Number(i) * 20000);
-        }
-        res.json({ result: '', err: '' });
     });
 
     wallet.all('/get_blockchain_info', async (req, res) => {

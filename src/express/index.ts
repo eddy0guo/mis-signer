@@ -3,8 +3,6 @@ import NP from 'number-precision'
 import { Router } from 'express'
 
 import { chain } from '../wallet/api/chain'
-import walletHelper from '../wallet/lib/walletHelper'
-import Asset from '../wallet//asset/Asset'
 
 import mist_wallet1 from '../adex/api/mist_wallet'
 import order1 from '../adex/api/order'
@@ -41,9 +39,7 @@ const express_config = [
     }
 ]
 
-async function my_wallet(word) {
-    return await walletHelper.testWallet(word, '111111')
-}
+
 
 async function get_price(base_token_name, quote_token_name, amount, order) {
     let base_value = 0;

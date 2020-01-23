@@ -10,7 +10,7 @@ export default class Market {
 
     constructor() {
         this.db = new client();
-        this.utils = new utils2;
+        this.utils = new utils2();
     }
 
     async list_markets() {
@@ -25,9 +25,10 @@ export default class Market {
     async list_market_quotations() {
 
         const markets = await this.list_markets();
-        const quotation = new mist_wallet;
+        const quotation = new mist_wallet();
         const quotations = [];
         for (const index in markets) {
+            if( !markets[index])continue
             const [err, result] = await to(this.db.get_market_quotations([markets[index].id]));
             if (!err && result && result.length > 0) {
                 const base_token = result[0].market_id.split('-')[0];

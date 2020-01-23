@@ -2,7 +2,7 @@ import client from '../adex/models/db'
 import utils2 from '../adex/api/utils'
 import to from 'await-to-js'
 import mist_config from '../cfg'
-import mist_ex10 from '../wallet/contract/mist_ex10'
+import Exchange from '../wallet/contract/Exchange'
 import NP from 'number-precision'
 import { chain } from '../wallet/api/chain'
 
@@ -87,7 +87,7 @@ class launcher {
             }
 
 
-            const mist = new mist_ex10(mist_config.ex_address);
+            const mist = new Exchange(mist_config.ex_address);
             const [err, txid] = await to(mist.matchorder(trades_hash, mist_config.relayers[index].prikey, mist_config.relayers[index].word));
             //            console.log("formatchorder----tradeshash=%o--relayers=%o--transaction_id=%o--index=%o--", trades_hash,mist_config.relayers[index],trades[0].transaction_id ,index);
 

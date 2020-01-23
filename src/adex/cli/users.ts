@@ -2,7 +2,7 @@ import utils2 from '../api/utils';
 import to from 'await-to-js';
 import mist_wallet1 from '../api/mist_wallet';
 import Token from '../../wallet/contract/Token';
-import Asset from '../../wallet/asset/Asset';
+
 import NP from 'number-precision';
 
 export default class Users {

@@ -1,10 +1,11 @@
-import client from '../models/db';
+import DBClient from '../models/db';
 import NP from 'number-precision';
 
 import engine from './engine';
 import utils2 from './utils';
 
-const Queue = require('bull');
+import * as Queue from 'bull';
+
 const orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE, { redis: { port: process.env.REDIS_PORT, host: process.env.REDIS_URL, password: process.env.REDIS_PWD } });
 
 export default class order {
@@ -13,7 +14,7 @@ export default class order {
     private exchange;
     private utils;
 
-    constructor(client) {
+    constructor(client:DBClient) {
         this.db = client;
         this.exchange = new engine(this.db);
         this.utils = new utils2();
@@ -62,6 +63,7 @@ export default class order {
         const offset = (+page - 1) * perpage;
         const orders = await this.db.my_orders2([address, offset, perpage, status1, status2]);
         for (const order_index in orders) {
+            if( !order[order_index]) continue
             const trades = await this.db.order_trades([orders[order_index].id]);
             if (trades.length === 0) {
                 orders[order_index].average_price = '--';
@@ -71,6 +73,7 @@ export default class order {
             let amount = 0;
             let value = 0;
             for (const trade_index in trades) {
+                if( !trades[trade_index]) continue
                 amount = NP.plus(amount, trades[trade_index].amount);
                 const trade_value = NP.times(trades[trade_index].amount, trades[trade_index].price);
                 value = NP.plus(value, trade_value);
@@ -95,11 +98,12 @@ export default class order {
         const asks_arr = [];
         const bids_arr = [];
         for (const item in asks) {
-
+            if( !asks[item])continue
             asks_arr.push(this.utils.arr_values(asks[item]));
         }
 
         for (const item2 in bids) {
+            if( !bids[item2])continue
             bids_arr.push(this.utils.arr_values(bids[item2]));
         }
 
@@ -118,9 +122,9 @@ export default class order {
 
 // 回滚没有打包成功的交易,不过吃单变成了挂单，等别人吃
 export async function restore_order(order_id, amount) {
-    const utils = new utils2;
+    const utils = new utils2();
     const update_time = utils.get_current_time();
-    const db = new client();
+    const db = new DBClient();
     const current_order = await db.find_order([order_id]);
 
     const status = current_order[0].available_amount + amount < current_order[0].amount ? 'partial_filled' : 'pending';

@@ -35,7 +35,7 @@ service.interceptors.response.use(
       console.error(data);
       return Promise.reject(data.error);
     } else {
-      return data.result !=== undefined ? data.result : response;
+      return data.result !== undefined ? data.result : response;
     }
   },
 

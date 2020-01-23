@@ -32,7 +32,7 @@ service.interceptors.response.use( response => {
       // console.log(data)
       return Promise.reject(data.error);
     } else {
-      return data.result !=== undefined ? data.result : response;
+      return data.result !== undefined ? data.result : response;
     }
   }, error => {
     if (error.code === -5) {

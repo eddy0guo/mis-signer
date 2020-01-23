@@ -14,7 +14,7 @@ export const chain = {
     },
 
     // marshalled:   {"jsonrpc":"1.0","method":"asimov_decodeRawTransaction","params":["123"],"id":1},
-    decoderawtransaction(params, network) {
+    decoderawtransaction(params, network?) {
         return network === 'child_poa' ?  child_rpc('asimov_decodeRawTransaction', params) : rpc('asimov_decodeRawTransaction', params);
     },
 
@@ -297,11 +297,11 @@ export const chain = {
     // marshalled: {"jsonrpc":"1.0","method":"asimov_searchRawTransactions","params":["1Address",0,5,10,1,true],"id":1},
     // marshalled: {"jsonrpc":"1.0","method":"asimov_searchRawTransactions","params":["1Address",0,5,10,1,true,["1Address"]],"id":1},
     // address string, verbose bool, skip int, count int, vinExtra bool, reverse bool, filterAddress []string
-    searchrawtransactions(params, network) {
+    searchrawtransactions(params, network?) {
         return network === 'child_poa' ?  child_rpc('asimov_searchRawTransactions', params) : rpc('asimov_searchRawTransactions', params);
     },
 
-    searchrawtransactionsbyaddrs(addrs, network) {
+    searchrawtransactionsbyaddrs(addrs, network?) {
         return network === 'child_poa' ?  child_rpc('asimov_searchAllRawTransactions', [addrs, true, true, false]) : rpc('asimov_searchAllRawTransactions', [addrs, true, true, false]);
     },
 
@@ -321,11 +321,11 @@ export const chain = {
         return network === 'child_poa' ?  child_rpc('asimov_getContractAddressesByAssets', params) : rpc('asimov_getContractAddressesByAssets', params);
     },
     // callerAddress string, contractAddress string, data string, name string, abi string
-    callreadonlyfunction(params, network) {
+    callreadonlyfunction(params, network?) {
         // console.log("callreadonlyfunction:",params)
         return network === 'child_poa' ?  child_rpc('asimov_callReadOnlyFunction', params) : rpc('asimov_callReadOnlyFunction', params);
     },
-    gettransactionsbyaddresses(params, network) {
+    gettransactionsbyaddresses(params, network?) {
         return network === 'child_poa' ?  child_rpc('asimov_getTransactionsByAddresses', params) : rpc('asimov_getTransactionsByAddresses', params);
     },
 };

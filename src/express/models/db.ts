@@ -1,5 +1,5 @@
 import to from 'await-to-js'
-const { Pool } = require('postgres-pool');
+import { Pool } from 'postgres-pool';
 import mist_config from '../../cfg'
 
 const express_params = 'trade_id,address,base_asset_name,cast(base_amount as float8),cast(price as float8),quote_asset_name,cast(quote_amount as float8),cast(fee_rate as float8),fee_token,cast(fee_amount as float8),base_txid,base_tx_status,quote_txid,quote_tx_status,updated_at,created_at';
@@ -80,7 +80,9 @@ export default class db {
 	}
 
 	async update_base(info) {
-		const [err, result] = await to(this.clientDB.query('UPDATE asim_express_records SET (address,base_asset_name,base_amount,price,quote_amount,fee_amount,base_tx_status,quote_tx_status,updated_at)=($1,$2,$3,$4,$5,$6,$7,$8,$9) WHERE  trade_id=$10', info));
+		const [err, result] = await to(this.clientDB.query('UPDATE asim_express_records SET \
+		(address,base_asset_name,base_amount,price,quote_amount,fee_amount,base_tx_status,quote_tx_status,updated_at)=\
+		($1,$2,$3,$4,$5,$6,$7,$8,$9) WHERE  trade_id=$10', info));
 		if (err) {
 			return console.error('insert_traders_查询失败', err, info);
 		}

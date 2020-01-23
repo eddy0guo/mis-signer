@@ -1,6 +1,7 @@
 export const CONSTANT = {
   VERSION: 'VERSION_NUM:BUILDNR',
-  DEFAULT_PASSWORD: '8R!GHWzj!Z*G89VGW3dm6mgRheVVPM#kuijwML45L70pxXKwYAYB2pmPvWGxTVfN',
+  DEFAULT_PASSWORD:
+    '8R!GHWzj!Z*G89VGW3dm6mgRheVVPM#kuijwML45L70pxXKwYAYB2pmPvWGxTVfN',
   DEFAULT_SALT: '657c59a622030c54c7e3e3b59fb0f97e',
   HTTPTIMEOUT: 30000,
   CREATEADDRSNUM: 20,
@@ -16,7 +17,8 @@ export const CONSTANT = {
     balance: 0,
   },
   DEFAULT_ASSET: '000000000000000000000000',
-  COINS: [{
+  COINS: [
+    {
       name: 'ASCoin',
       coinSlug: 'ASCoin',
       coinName: 'AS',
@@ -38,7 +40,7 @@ export const CONSTANT = {
       unit: 'fee',
       balance: 0,
     },
-	{
+    {
       name: 'fbtc2',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -49,7 +51,7 @@ export const CONSTANT = {
       unit: 'fee',
       balance: 0,
     },
-	{
+    {
       name: 'pai',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -60,7 +62,7 @@ export const CONSTANT = {
       unit: 'fee',
       balance: 0,
     },
-	{
+    {
       name: 'mpai',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -71,7 +73,7 @@ export const CONSTANT = {
       unit: 'fee',
       balance: 0,
     },
-	{
+    {
       name: 'musdt',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -82,7 +84,7 @@ export const CONSTANT = {
       unit: 'fee',
       balance: 0,
     },
-	{
+    {
       name: 'meth',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -93,7 +95,7 @@ export const CONSTANT = {
       unit: 'fee',
       balance: 0,
     },
-	{
+    {
       name: 'mbtc',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -104,7 +106,7 @@ export const CONSTANT = {
       unit: 'fee',
       balance: 0,
     },
-	{
+    {
       name: 'mmt',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -115,7 +117,7 @@ export const CONSTANT = {
       unit: 'fee',
       balance: 0,
     },
-	{
+    {
       name: 'mmt',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -126,7 +128,7 @@ export const CONSTANT = {
       unit: 'fee',
       balance: 0,
     },
-	{
+    {
       name: 'mmt',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -137,7 +139,7 @@ export const CONSTANT = {
       unit: 'fee',
       balance: 0,
     },
-	{
+    {
       name: 'mmt',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -148,7 +150,7 @@ export const CONSTANT = {
       unit: 'fee',
       balance: 0,
     },
-	{
+    {
       name: 'mmt',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -159,7 +161,7 @@ export const CONSTANT = {
       unit: 'fee',
       balance: 0,
     },
-	{
+    {
       name: 'hqbtc',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -170,7 +172,7 @@ export const CONSTANT = {
       unit: 'fee',
       balance: 0,
     },
-	{
+    {
       name: 'hqeth',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -181,7 +183,7 @@ export const CONSTANT = {
       unit: 'fee',
       balance: 0,
     },
-	{
+    {
       name: 'hqmt',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -192,7 +194,7 @@ export const CONSTANT = {
       unit: 'fee',
       balance: 0,
     },
-	{
+    {
       name: 'hqusdt',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -203,7 +205,7 @@ export const CONSTANT = {
       unit: 'fee',
       balance: 0,
     },
-	{
+    {
       name: 'mmt',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -214,7 +216,7 @@ export const CONSTANT = {
       unit: 'fee',
       balance: 0,
     },
-	{
+    {
       name: 'mmt',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -225,7 +227,7 @@ export const CONSTANT = {
       unit: 'fee',
       balance: 0,
     },
-	{
+    {
       name: 'mmt',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -236,7 +238,7 @@ export const CONSTANT = {
       unit: 'fee',
       balance: 0,
     },
-	{
+    {
       name: 'hqbtc',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -247,7 +249,7 @@ export const CONSTANT = {
       unit: 'fee',
       balance: 0,
     },
-	{
+    {
       name: 'hqeth',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -258,7 +260,7 @@ export const CONSTANT = {
       unit: 'fee',
       balance: 0,
     },
-	{
+    {
       name: 'hqmt',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -268,7 +270,8 @@ export const CONSTANT = {
       asset: '000000000000000300000004',
       unit: 'fee',
       balance: 0,
-    }, {
+    },
+    {
       name: 'hqeth',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -279,7 +282,7 @@ export const CONSTANT = {
       unit: 'fee',
       balance: 0,
     },
-	{
+    {
       name: 'hqmt',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -290,7 +293,7 @@ export const CONSTANT = {
       unit: 'fee',
       balance: 0,
     },
-	{
+    {
       name: 'hqmt',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -300,7 +303,8 @@ export const CONSTANT = {
       asset: '000000000000000c00000000',
       unit: 'fee',
       balance: 0,
-    }, {
+    },
+    {
       name: 'hqmt',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -310,7 +314,8 @@ export const CONSTANT = {
       asset: '000000000000000b00000001',
       unit: 'fee',
       balance: 0,
-    }, {
+    },
+    {
       name: 'hqmt',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -320,7 +325,8 @@ export const CONSTANT = {
       asset: '000000000000000b00000002',
       unit: 'fee',
       balance: 0,
-    }, {
+    },
+    {
       name: 'hqmt',
       coinSlug: 'fbtctoken',
       coinName: 'FEE',
@@ -331,7 +337,6 @@ export const CONSTANT = {
       unit: 'fee',
       balance: 0,
     },
-
   ],
 
   DEPLOY_CONTRACT_SENDAMOUNT: 0,
@@ -375,16 +380,36 @@ export const CONSTANT = {
     value: 'devnet',
     name: 'Dev Network',
   },
-  NETWORKS: [{
-    color: '#02BA3D',
-    value: 'devnet',
-    name: 'Dev Network',
-  }, {
-    color: '#FF8200',
-    value: 'testnet',
-    name: 'Test Network',
-  }],
-  ASSETINFO_ABI: [{ constant: true, inputs: [{ name: 'assetIndex', type: 'uint32' }], name: 'getAssetInfo', outputs: [{ name: '', type: 'bool' }, { name: '', type: 'string' }, { name: '', type: 'string' }, { name: '', type: 'string' }, { name: '', type: 'uint32' }, { name: '', type: 'uint256' }], payable: false, stateMutability: 'view', type: 'function' }],
+  NETWORKS: [
+    {
+      color: '#02BA3D',
+      value: 'devnet',
+      name: 'Dev Network',
+    },
+    {
+      color: '#FF8200',
+      value: 'testnet',
+      name: 'Test Network',
+    },
+  ],
+  ASSETINFO_ABI: [
+    {
+      constant: true,
+      inputs: [{ name: 'assetIndex', type: 'uint32' }],
+      name: 'getAssetInfo',
+      outputs: [
+        { name: '', type: 'bool' },
+        { name: '', type: 'string' },
+        { name: '', type: 'string' },
+        { name: '', type: 'string' },
+        { name: '', type: 'uint32' },
+        { name: '', type: 'uint256' },
+      ],
+      payable: false,
+      stateMutability: 'view',
+      type: 'function',
+    },
+  ],
   ASSETINFO_ABI_NAME: 'getAssetInfo',
   CONTRACT_TYPE: {
     NORMAL: '',

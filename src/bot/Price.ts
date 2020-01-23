@@ -5,6 +5,8 @@ import to from 'await-to-js'
 import consola from 'consola'
 
 export default class Price {
+    private prices;
+    private timer;
     constructor(initPrices) {
         this.prices = initPrices
         this.timer = -1
@@ -41,6 +43,7 @@ export default class Price {
             return;
         }
         for( const i in res.data ){
+            if( !res.data[i])continue
             const info = res.data[i]
             this.prices[info.symbol+'-USDT'] = info.price_usd
         }

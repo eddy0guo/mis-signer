@@ -7,23 +7,18 @@ const crypto_sha256 = require('crypto');
 const cache = apicache.middleware;
 
 import Token from '../wallet/contract/Token';
-import walletHelper from '../wallet/lib/walletHelper';
 
 import order1 from './api/order';
 import trades1 from './api/trades';
 import market1 from './api/market';
 import utils1 from './api/utils';
 
-import Asset from '../wallet/asset/Asset';
 
 import client1 from './models/db';
 import mist_wallet1 from './api/mist_wallet';
 
 import mist_config from '../cfg';
 
-async function my_wallet(word) {
-    return await walletHelper.testWallet(word, '111111');
-}
 
 async function get_available_erc20_amount(address, symbol) {
 
