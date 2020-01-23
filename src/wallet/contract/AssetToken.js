@@ -5,11 +5,12 @@ import { CONSTANT } from "../constant";
 import { btc2sts, isArrayType, callParamsConvert } from "../utils";
 
 export default class Token {
-	abiStr='[{"constant":true,"inputs":[],"name":"getTemplateInfo","outputs":[{"name":"","type":"uint16"},{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"index","type":"uint32"}],"name":"getAssetInfo","outputs":[{"name":"","type":"bool"},{"name":"","type":"string"},{"name":"","type":"string"},{"name":"","type":"string"},{"name":"","type":"uint32"},{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"burn","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[],"name":"getAssetType","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"amount","type":"uint256"},{"name":"dest","type":"address"}],"name":"mint","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_category","type":"uint16"},{"name":"_templateName","type":"string"}],"name":"initTemplate","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_name","type":"string"}],"name":"init","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"payable":true,"stateMutability":"payable","type":"fallback"}]';
-    fee = 0.05
-    gasLimit = 10000000
+
 
     constructor(address) {
+        this.abiStr = '[{"constant":true,"inputs":[],"name":"getTemplateInfo","outputs":[{"name":"","type":"uint16"},{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"index","type":"uint32"}],"name":"getAssetInfo","outputs":[{"name":"","type":"bool"},{"name":"","type":"string"},{"name":"","type":"string"},{"name":"","type":"string"},{"name":"","type":"uint32"},{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"burn","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[],"name":"getAssetType","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"amount","type":"uint256"},{"name":"dest","type":"address"}],"name":"mint","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_category","type":"uint16"},{"name":"_templateName","type":"string"}],"name":"initTemplate","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_name","type":"string"}],"name":"init","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"payable":true,"stateMutability":"payable","type":"fallback"}]';
+        this.fee = 0.05
+        this.gasLimit = 10000000
         this.address = address;
     }
 
@@ -30,7 +31,7 @@ export default class Token {
      * @param {*} wallet 
      */
     async callContract(abiInfo) {
-            console.log("callContracti111111:");
+        console.log("callContracti111111:");
         let params = {
             to: this.address,
             amount: 0,
@@ -38,11 +39,11 @@ export default class Token {
             data: this.getHexData(abiInfo)
         };
 
-        console.log("params.data:",params.data)
+        console.log("params.data:", params.data)
 
         if (abiInfo.stateMutability == 'view' || abiInfo.stateMutability == 'pure') {
             console.log("callContractig2222:");
-            return chain.callreadonlyfunction([this.address,this.address, params.data, abiInfo.name, this.abiStr])
+            return chain.callreadonlyfunction([this.address, this.address, params.data, abiInfo.name, this.abiStr])
         } else {
             console.log("callContractigxyyyy:");
             params.from = await this.wallet.getAddress()
@@ -63,25 +64,25 @@ export default class Token {
 
 
 
-		const assetObjArr = [];
+        const assetObjArr = [];
 
         assetObjArr.push({
-        amount: params.amount,
-        asset: params.assetId
-      });
+            amount: params.amount,
+            asset: params.assetId
+        });
 
-      assetObjArr.push({
-        amount: 0.02,
-        asset: '000000000000000000000000'
-      });
+        assetObjArr.push({
+            amount: 0.02,
+            asset: '000000000000000000000000'
+        });
 
-      const { ins, changeOut } = await TranService.chooseUTXO(
-        wallet.walletId,
-        assetObjArr,
-        params.from
-      );
+        const { ins, changeOut } = await TranService.chooseUTXO(
+            wallet.walletId,
+            assetObjArr,
+            params.from
+        );
 
-       
+
 
         let outs = [{
             amount: btc2sts(parseFloat(params.amount)),
@@ -101,11 +102,11 @@ export default class Token {
             password
         );
 
-                console.log("executeContract Raw TX 1111")
+        console.log("executeContract Raw TX 1111")
         try {
             let rawtx = TranService.generateRawTx(ins, outs, keys, this.gasLimit);
 
-            console.log("RAWTX:",rawtx)
+            console.log("RAWTX:", rawtx)
 
             if (!rawtx) {
                 console.log("executeContract Raw TX Error")
@@ -142,16 +143,18 @@ export default class Token {
         };
         return this.callContract(abiInfo);
     }
-//{"constant":true,"inputs":[{"name":"index","type":"uint32"}],"name":"getAssetInfo","outputs":[{"name":"","type":"bool"},{"name":"","type":"string"},{"name":"","type":"string"},{"name":"","type":"string"},{"name":"","type":"uint32"},{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"}
-	async getAssetInfo() {
-        let abiInfo = 
-		 {"constant": true,
-    	"inputs":[{"name":"index","type":"uint32","value":1}],
-    	"name": "getAssetInfo",
-    	"outputs":[{"name":"","type":"bool"},{"name":"","type":"string"},{"name":"","type":"string"},{"name":"","type":"string"},{"name":"","type":"uint32"},{"name":"","type":"uint256"}],
-    	"payable": false,
-    	"stateMutability": "view",
-    	"type": "function" };
+    //{"constant":true,"inputs":[{"name":"index","type":"uint32"}],"name":"getAssetInfo","outputs":[{"name":"","type":"bool"},{"name":"","type":"string"},{"name":"","type":"string"},{"name":"","type":"string"},{"name":"","type":"uint32"},{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"}
+    async getAssetInfo() {
+        let abiInfo =
+        {
+            "constant": true,
+            "inputs": [{ "name": "index", "type": "uint32", "value": 1 }],
+            "name": "getAssetInfo",
+            "outputs": [{ "name": "", "type": "bool" }, { "name": "", "type": "string" }, { "name": "", "type": "string" }, { "name": "", "type": "string" }, { "name": "", "type": "uint32" }, { "name": "", "type": "uint256" }],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        };
         return this.callContract(abiInfo);
     }
 
@@ -200,7 +203,7 @@ export default class Token {
 
         let data = functionHash.replace('0x', '') + paramsHash.replace('0x', '');
 
-        console.log("gxy---gethexdata=",data);
+        console.log("gxy---gethexdata=", data);
         return data;
     }
 
