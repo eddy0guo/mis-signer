@@ -31,32 +31,28 @@ class watcher {
 			}, 500);
 			return
 		}
-		this.block_height = bestblock_result.height;
 
+		this.block_height = bestblock_result.height;
 
 		let transaction = await this.db.get_pending_transactions()
 		//全部都是成功的,就睡眠1s
-		if (transaction.length == 0) {
+		if (!transaction || transaction.length == 0) {
 			console.log("[ADEX WATCHER]:no pending transaction");
 			setTimeout(() => {
 				this.loop.call(this)
 			}, 1000);
-
 			return;
 		}
 		let id = transaction[0].id;
 
-		//				console.log("adex_watche-----transaction[0].transaction_hash=-%o---",transaction[0].transaction_hash);
 		let [err, result] = await to(chain.getrawtransaction([transaction[0].transaction_hash, true, true], 'child_poa'))
-
-		//				console.log("adex_watche-----getraw.err=-%o--result=%o-",err,result);
 
 		let update_time = this.utils.get_current_time();
 		if (!err && result.confirmations >= 1) {
 			let status = 'successful';
 			let [get_receipt_err, contract_status] = await to(this.utils.get_receipt_log(transaction[0].transaction_hash));
 			if (get_receipt_err) {
-				console.log(`get_receipt_err--${get_receipt_err}`);
+				console.error(`get_receipt_err--${get_receipt_err}`);
 				this.loop.call(this)
 				return;
 			}
@@ -78,8 +74,6 @@ class watcher {
 					return elem.info[3] == trades[index].taker_order_id;
 				});
 
-
-
 				let index_maker;
 				var maker_ar = updates.find(function (elem, index_tmp) {
 					index_maker = index_tmp;
@@ -94,7 +88,6 @@ class watcher {
 					updates.push(update_taker);
 				} else {
 
-					//console.log(`--orderid11111index=${index}------index_taker=${index_taker}-----adex-watcher-start111${trades[index].taker_order_id}- updates[index_taker].info[0]----\n---`)
 					updates[index_taker].info[0] = NP.plus(updates[index_taker].info[0], trade_amount);
 					updates[index_taker].info[1] = NP.minus(updates[index_taker].info[1], trade_amount);
 				}
@@ -131,20 +124,12 @@ class watcher {
 			await this.db.update_transactions(["failed", undefined, update_time, id]);
 			//			await this.db.update_trades(["matched", update_time, id]);
 
-			console.log("chain.getrawtransaction--err", err);
+			console.error("Err", err);
 		} else {
-			console.log("have n66666", id);
-			console.log("pending transaction", transaction[0].transaction_hash);
+			console.log("[Watcher Pending]", transaction[0].transaction_hash);
 		}
 
-
-
-		//setTimeout(()=>{
 		this.loop.call(this)
-		//}, 1000);
-
 	}
-
-
 }
 export default new watcher();

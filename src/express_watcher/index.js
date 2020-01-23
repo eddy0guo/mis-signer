@@ -22,9 +22,9 @@ class watcher {
 
         let [err, pending_trade] = await to(this.psql_db.laucher_pending_trade());
         if (err) console.error(err)
-        if (pending_trade.length == 0) {
+        if (!pending_trade || pending_trade.length == 0) {
 
-            console.log("have not pending trade");
+            console.log("[Express Watcher]No pending trade");
             setTimeout(() => {
                 this.loop.call(this)
             }, 2000);

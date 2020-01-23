@@ -7,7 +7,7 @@ import NP from 'number-precision'
 class enginer {
 
     constructor() {
-        this.orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE, process.env.QUEUE_REDIS || 'redis://127.0.0.1:6379');
+        this.orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE, {redis: {port: process.env.REDIS_PORT, host: process.env.REDIS_URL, password: process.env.REDIS_PWD}});
         this.db = new client();
         this.exchange = new engine(this.db);
         this.utils = new utils2();

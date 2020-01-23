@@ -2,7 +2,7 @@ import bip39 from "bip39";
 import { HDPrivateKey, crypto } from "bitcore-lib";
 import EncryptoService from "../service/encrypto";
 import { CONSTANT } from "../constant";
-import Cfg from "../cfg";
+
 import Storage from '../service/storage';
 import Wallets from "../service/wallets";
 import to from 'await-to-js';
@@ -14,25 +14,24 @@ import { TranService } from "../service/transaction";
 const PATH = "m/44'";
 const PATH_FOR_ID = "m/6'/10003'/0'/0/0";
 
-
 export default class Wallet {
   // 钱包数据分四部分：此文件只保存基本 info ; 另外3个为 address , sendTransaction , UTXO
-  walletId;
-  entropy;
-  seed;
-  xpubkeys;
-  name;
-  lang;
-  isTestNet = false;
-  backupFlag = false;
-  isImported = false;
-  assets = CONSTANT.COINS
 
   constructor() {
-    this.isTestNet = (Cfg.env == 0);
-
+    this.isTestNet = false;
+    this.walletId;
+    this.entropy;
+    this.seed;
+    this.xpubkeys;
+    this.name;
+    this.lang;
+    this.isTestNet = false;
+    this.backupFlag = false;
+    this.isImported = false;
+    this.assets = CONSTANT.COINS;
+    this.loadingInstance;
   }
-  loadingInstance;
+  
   async create(config) {
     // this.showLoading();
     return new Promise((resolve, reject) => {

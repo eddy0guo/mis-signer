@@ -8,7 +8,6 @@ const bridge_params = 'id,address,token_name,cast(amount as float8),side,master_
 const express_params = 'trade_id,address,base_asset_name,cast(base_amount as float8),cast(price as float8),quote_asset_name,cast(quote_amount as float8),cast(fee_rate as float8),fee_token,cast(fee_amount as float8),base_txid,base_tx_status,quote_txid,quote_tx_status,updated_at,created_at';
 
 export default class db {
-    clientDB;
 
     constructor() {
         const {Pool} = require('postgres-pool');

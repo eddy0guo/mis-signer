@@ -170,7 +170,7 @@ const CONFIG_K8S = {
     pg_database: process.env.PG_DB,
     pg_user: process.env.PG_USER,
     pg_password: process.env.PG_PASS,
-    pg_port: process.env.PG_PORT||1433,
+    pg_port: process.env.PG_PORT,
 }
 
 var mist_config;

@@ -97,3 +97,12 @@ source mist_test.env
 ### product mode
 
 source mist_product.env
+
+## Test With K8S ENV
+
+```bash
+kubectl port-forward -n fingo svc/mysql 3306:3306
+kubectl port-forward -n fingo svc/postgresql 5432:5432
+kubectl port-forward -n fingo svc/fingo-redis-master 16379:6379
+kubectl port-forward -n fingo svc/mist-mongodb 27017:27017
+```

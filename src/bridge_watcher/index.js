@@ -38,7 +38,7 @@ class watcher {
         console.log("err,pending_trade", err, pending_trade);
         if (pending_trade.length == 0) {
 
-            console.log("have not pending trade");
+            console.log("[BRIDGE WATCHER] No pending trade");
             setTimeout(() => {
                 this.asset2coin_loop.call(this)
             }, 2000);
@@ -82,7 +82,7 @@ class watcher {
     async coin2asset_release_loop() {
 
         let [failed_err, failed_trade] = await to(this.psql_db.filter_bridge(['coin2asset', 'failed', 'successful']));
-        console.log("err,pending_trade", failed_err, failed_trade);
+        if(failed_err)console.error("err,pending_trade", failed_err, failed_trade);
         if (failed_trade.length != 0) {
             let { id, address, amount, token_name } = failed_trade[0];
             let tokens = await this.psql_db.get_tokens([token_name])
@@ -146,7 +146,7 @@ class watcher {
         if (err) console.error(err)
         if (pending_trade.length == 0) {
 
-            console.log("have not pending burn bridge");
+            console.log("[WATCHER] No pending burn bridge");
             setTimeout(() => {
                 this.coin2asset_burn_loop.call(this)
             }, 2000);

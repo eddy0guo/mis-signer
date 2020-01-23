@@ -1,17 +1,15 @@
 import to from 'await-to-js'
-import { chain } from '../wallet/api/chain'
-
-import walletHelper from '../wallet/lib/walletHelper'
+import NP from 'number-precision'
 import { Router } from 'express'
-import Asset from '../wallet//asset/Asset'
 
+import { chain } from '../wallet/api/chain'
+import walletHelper from '../wallet/lib/walletHelper'
+import Asset from '../wallet//asset/Asset'
 
 import mist_wallet1 from '../adex/api/mist_wallet'
 import order1 from '../adex/api/order'
 import utils1 from '../adex/api/utils'
 import psql from './models/db'
-
-import NP from 'number-precision'
 
 import mist_config from '../cfg'
 

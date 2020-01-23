@@ -3,8 +3,9 @@ import NP from 'number-precision'
 
 import engine from './engine'
 import utils2 from './utils'
-var Queue = require('bull');
-var orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE, 'redis://127.0.0.1:6379');
+
+const Queue = require('bull');
+const orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE, {redis: {port: process.env.REDIS_PORT, host: process.env.REDIS_URL, password: process.env.REDIS_PWD}});
 
 export default class order {
 
