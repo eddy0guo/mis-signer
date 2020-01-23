@@ -5,7 +5,7 @@ import { CONSTANT } from "../constant";
 
 import Storage from '../service/storage';
 import Wallets from "../service/wallets";
-import to from 'await-to-js';
+
 import { getWordlistLanguage } from "../utils";
 // import Store from '../store';
 import AddressService from "../service/address";
@@ -31,72 +31,55 @@ export default class Wallet {
     this.assets = CONSTANT.COINS;
     this.loadingInstance;
   }
-  
+
   async create(config) {
-    // this.showLoading();
-    return new Promise((resolve, reject) => {
-      setTimeout(async () => {
-        const {
-          walletName,
-          lang,
-          mnemonicLength = 12,
-          pwd
-        } = config;
-        this.name = walletName;
-        this.lang = CONSTANT.WordListNameDict[lang];
-        let mnemonic = this.generateMnemonic(mnemonicLength, pwd);
-        let seed = this.generateSeedHex(mnemonic);
-        this.setWalletId(seed);
-        this.setEntropy(
-          bip39.mnemonicToEntropy(mnemonic, bip39.wordlists[this.lang]),
-          pwd
-        );
-        this.setSeed(seed, pwd);
-        this.setXpubkey(seed);
-        // await this.storeWltInfo();
-       // await AddressService.generateAddress();
-        // this.closeLoading();
-        resolve();
-      }, 1);
-    })
+    const {
+      walletName,
+      lang,
+      mnemonicLength = 12,
+      pwd
+    } = config;
+    this.name = walletName;
+    this.lang = CONSTANT.WordListNameDict[lang];
+    let mnemonic = this.generateMnemonic(mnemonicLength, pwd);
+    let seed = this.generateSeedHex(mnemonic);
+    this.setWalletId(seed);
+    this.setEntropy(
+      bip39.mnemonicToEntropy(mnemonic, bip39.wordlists[this.lang]),
+      pwd
+    );
+    this.setSeed(seed, pwd);
+    this.setXpubkey(seed);
   }
 
   async import(config) {
-    // this.showLoading();
-    return new Promise((resolve, reject) => {
-      setTimeout(async () => {
-        let { walletName, type, mnemonic, pwd, seed } = config;
-        this.isImported = true;
-        this.backupFlag = true;
-        this.name = walletName;
+    let { walletName, type, mnemonic, pwd, seed } = config;
+    this.isImported = true;
+    this.backupFlag = true;
+    this.name = walletName;
 
-        if (type == 'mnemonic') {
-          this.lang = getWordlistLanguage(mnemonic);
-          seed = this.generateSeedHex(mnemonic);
-          this.setWalletId(seed);
-          this.setEntropy(
-            bip39.mnemonicToEntropy(mnemonic, bip39.wordlists[this.lang]),
-            pwd
-          );
-        } else {
-          this.setWalletId(seed);
-        }
-        this.setSeed(seed, pwd);
-        this.setXpubkey(seed);
-        let allWallet = await Storage.get("walletInfo") || {};
-        if (allWallet[this.walletId]) {
-          delete allWallet[this.walletId];
-        }
-        // await this.storeWltInfo();
-        let allAddrs = await Storage.get('walletAddrs') || {};
-        if (!allAddrs[this.walletId]) {
-          await AddressService.generateAddress();
-        }
-        // Store.dispatch('queryAllBalance');
-        // this.closeLoading();
-        resolve();
-      }, 1)
-    })
+    if (type == 'mnemonic') {
+      this.lang = getWordlistLanguage(mnemonic);
+      seed = this.generateSeedHex(mnemonic);
+      this.setWalletId(seed);
+      this.setEntropy(
+        bip39.mnemonicToEntropy(mnemonic, bip39.wordlists[this.lang]),
+        pwd
+      );
+    } else {
+      this.setWalletId(seed);
+    }
+    this.setSeed(seed, pwd);
+    this.setXpubkey(seed);
+    let allWallet = await Storage.get("walletInfo") || {};
+    if (allWallet[this.walletId]) {
+      delete allWallet[this.walletId];
+    }
+    // await this.storeWltInfo();
+    let allAddrs = await Storage.get('walletAddrs') || {};
+    if (!allAddrs[this.walletId]) {
+      await AddressService.generateAddress();
+    }
   }
 
   async wake(info) {
@@ -173,7 +156,7 @@ export default class Wallet {
     this.walletId = crypto.Hash.sha256ripemd160(prvk.publicKey.toBuffer()).toString("hex");
   }
 
-  async getAddress(){
+  async getAddress() {
     let walletId = this.walletId;
     let addresses = await Storage.get("walletAddrs");
     return addresses[walletId][0][0].address
@@ -289,7 +272,7 @@ export default class Wallet {
     return hdprivateKey
   }
 
-  async queryAllBalance() { 
+  async queryAllBalance() {
     let allAddrs = await Storage.get("walletAddrs");
     let wltInst = Wallets.getActiveWallet();
     let strAddrs = [];
@@ -397,85 +380,22 @@ export default class Wallet {
     let assetsInfo = {};
     //let assetsInfo = Cache.getAssetInfo();
     let newAssets = [];
-  
-  
+
+
     CONSTANT.COINS.forEach(c => {
       if (!assetsInfo[c.asset]) {
         assetsInfo[c.asset] = Object.assign({}, c);
       }
     });
-  
-  
+
+
     //find new asset
     totalAssets.forEach(i => {
       if (!assetsInfo[i]) {
         newAssets.push(i)
       }
     });
-  
-    // 暂时屏蔽新资产检测
-    let checkNewAssets = false
-    if (checkNewAssets && newAssets.length) {
-  
-      let walletAddrs = await Storage.get("walletAddrs");
-      let activeWltId = await Storage.get("activeWltId");
-      let addrs = walletAddrs[activeWltId];
-      let caller = addrs[0][0].address;
-      let contract = new Contract({ abi: CONSTANT.ASSETINFO_ABI })
-      let contractAddrs = await chain.getcontractaddressesbyassets([
-        newAssets
-      ])
-  
-      for (let i = 0, len = newAssets.length; i < len; i++) {
-  
-        let asset = newAssets[i];
-        let assetIndex = parseInt(asset.slice(16))
-        let abiStr = JSON.stringify(CONSTANT.ASSETINFO_ABI);
-        let data = contract.encodeCallData(CONSTANT.ASSETINFO_ABI[0], [assetIndex]);
-  
-        let [res, err] = await to(chain.callreadonlyfunction([caller, contractAddrs[i], data, CONSTANT.ASSETINFO_ABI_NAME, abiStr]));
-  
-        if (err) {
-          assetsInfo[asset] = {
-            name: 'UNKNOWN',
-            coinSlug: 'UNKNOWN',
-            coinName: 'UNKNOWN',
-            coinType: 0,
-            icon: 'default',
-            addressPrefix: '',
-            asset: asset,
-            unit: 'UNKNOWN',
-            balance: 0,
-            totalAmount: ''
-          }
-          console.log('asset ' + asset + ' has no detail info')
-        } else {
-  
-          if (res[0]) {
-            assetsInfo[asset] = {
-              name: res[3],
-              coinSlug: res[3],
-              coinName: res[1],
-              coinType: 0,
-              icon: res[2],
-              addressPrefix: res[3] || res[3].toLowerCase(),
-              asset: asset,
-              unit: res[2],
-              balance: 0,
-              totalAmount: sts2btc(res[4])
-            }
-          } else {
-            console.log('asset ' + asset + ' has no detail info')
-          }
-        }
-      }
-      for (var a in assetsInfo) {
-        if (a !== CONSTANT.DEFAULT_ASSET) {
-          assetsInfo[a].icon = 'default';
-        }
-      }
-  
-    }
+
     return assetsInfo
   }
 }
