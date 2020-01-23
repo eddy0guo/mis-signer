@@ -55,9 +55,20 @@ source k8s.env
 
 yarn babel-node src
 yarn babel-node src/adex_engine
-yarn babel-node src/adex_luancher
+yarn babel-node src/adex_launcher
 yarn babel-node src/adex_watcher
 yarn babel-node src/bridge_watcher
 yarn babel-node src/express
 yarn babel-node src/express_watcher
+
+# build
+yarn build
+
+node dist
+node dist/adex_engine
+node dist/adex_launcher
+node dist/adex_watcher
+node dist/bridge_watcher
+node dist/express
+node dist/express_watcher
 ```
