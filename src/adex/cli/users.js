@@ -6,17 +6,13 @@ import Asset from '../../wallet/asset/Asset'
 import NP from 'number-precision'
 
 export default class users {
-    db;
-    exchange;
-    root_hash;
-    mist_wallet;
-    logger;
 
     constructor(client, logger) {
         this.db = client;
         this.utils = new utils2;
         this.mist_wallet = new mist_wallet1();
         this.logger = logger
+        this.exchange
     }
 
     async start() {
@@ -29,9 +25,11 @@ export default class users {
 
         let token = new Token(token_info.address);
         let [err, balance] = await to(token.balanceOf(user_address));
+        if(err)console.error(err)
 
         let asset = new Asset(token_info.asim_assetid)
         let [err4, assets_balance] = await to(asset.balanceOf(user_address))
+        if(err4)console.error(err4)
         let asset_balance = 0;
         for (let j in assets_balance) {
             if (token_info.asim_assetid == assets_balance[j].asset) {

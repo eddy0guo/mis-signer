@@ -4,9 +4,7 @@ var date = require("silly-datetime");
 import {restore_order} from './order'
 
 export default class trades {
-    db;
-    exchange;
-    root_hash;
+
 
     constructor(client) {
         this.db = client;

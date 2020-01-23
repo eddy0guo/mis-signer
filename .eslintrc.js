@@ -1,5 +1,7 @@
 module.exports = {
     "env": {
+        "node": true,
+        "commonjs": true,
         "browser": false,
         "es6": true,
         "jest/globals": true
@@ -25,5 +27,6 @@ module.exports = {
         "jest/prefer-to-have-length": "warn",
         "jest/valid-expect": "error"
     },
+    "ignorePatterns": ["dist/"],
     "plugins": ["jest"]
 };

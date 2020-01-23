@@ -5,9 +5,6 @@ import to from 'await-to-js';
 import mist_wallet from './mist_wallet'
 
 export default class makets {
-    db;
-    exchange;
-    root_hash;
 
     constructor() {
         this.db = new client();
@@ -31,7 +28,7 @@ export default class makets {
         let quotations = [];
         for (var index in markets) {
             let [err, result] = await to(this.db.get_market_quotations([markets[index].id]));
-            if (!err) {
+            if (!err && result && result.length>0) {
                 let base_token = result[0].market_id.split('-')[0];
                 result[0].CNYC_price = await quotation.get_token_price2pi(base_token);
                 quotations.push(result[0]);

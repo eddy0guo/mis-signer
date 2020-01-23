@@ -14,7 +14,7 @@ export const chain = {
     },
 
     //marshalled:   {"jsonrpc":"1.0","method":"asimov_decodeRawTransaction","params":["123"],"id":1},
-    decoderawtransaction: function(paramis,network) {
+    decoderawtransaction: function(params,network) {
         return network == 'child_poa' ?  child_rpc('asimov_decodeRawTransaction', params) : rpc('asimov_decodeRawTransaction', params);
     },
 

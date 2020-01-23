@@ -4,7 +4,7 @@ import NP from 'number-precision'
 import mist_config from '../../cfg';
 
 export default class engine {
-    db;
+
     constructor(client) {
         this.db = client;
         this.utils = new utils2;

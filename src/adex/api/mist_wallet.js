@@ -2,9 +2,7 @@ import client from '../models/db'
 import utils2 from './utils'
 
 export default class mist_wallet {
-    db;
-    exchange;
-    root_hash;
+
 
     constructor() {
         this.db = new client();
@@ -29,6 +27,7 @@ export default class mist_wallet {
         }
         let marketID = symbol + "-CNYC";
         let [result, err] = await this.db.get_market_current_price([marketID]);
+        if(err)console.error(err)
         //如果24小时没有成交的交易对，对应的价格为0,如果交易对不存在也是这样判断,fixme
         if (result.length == 0) {
             marketID = symbol + "-USDT";

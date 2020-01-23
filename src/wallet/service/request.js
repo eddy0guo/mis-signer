@@ -1,16 +1,9 @@
 import axios from 'axios'
-import Cfg from '../cfg'
-import Cache from './cache'
-// console.log(Cfg)
-const networkCache = Cache.getNetwork();
-const network = Cfg[networkCache.value]||networkCache.value;
-
-const RPC_ADDR = network.rpc||network;
-const CHAIN_RPC_ADDR = RPC_ADDR;
+import Cfg from '../../cfg'
 
 // create an axios instance
 const service = axios.create({
-  baseURL: RPC_ADDR, // process.env.BASE_API, // api的base_url
+  baseURL: Cfg.asimov_chain_rpc, // process.env.BASE_API, // api的base_url
   timeout: 30000 // request timeout
 })
 
@@ -19,35 +12,27 @@ service.interceptors.request.use(config => {
   config.params = Object.assign({
     m: config && config.data && config.data.method
   }, config.params)
-  if (config.host == 'chain') {
-    config.baseURL = CHAIN_RPC_ADDR
-  } else {
-    config.baseURL = RPC_ADDR
-  }
+  config.baseURL = Cfg.asimov_chain_rpc
   config.headers['Content-Type'] = 'application/json'
   return config
 }, error => {
   // Do something with request error
-  console.log(error) // for debug
+  console.error(error) // for debug
   Promise.reject(error)
 })
 
 // respone interceptor
 service.interceptors.response.use(
   response => {
-    // console.log("--------service.interceptors.response-------------\n",response.data)
-    // console.log("--------service.interceptors.response-------------\n")
+
     let data = response.data
-    // if (!data){
-    //   console.log("--------service.interceptors.response-------------\n",response)
-    //   console.log("--------service.interceptors.response-------------\n")
-    // }
+
     if (data.error) {
-      console.log('err' + data.error)
+      console.error('err' + data.error)
       if (data.error.code == -32000) {
         return Promise.reject(data.error)
       }
-      console.log(data)
+      console.error(data)
       return Promise.reject(data.error)
     } else {
       return data.result !== undefined ? data.result : response
@@ -59,12 +44,11 @@ service.interceptors.response.use(
     if (error.code == -5) {
       return Promise.reject(error)
     }
-    console.log(error)
+    console.error(error)
     return Promise.reject(error)
   })
 
 export function rpc(url, params, host) {
-  // console.log("--------rpc-------------\n",url,params,host,"\n--------rpc-------------\n")
   return service.request({
     url: '/',
     host: host,

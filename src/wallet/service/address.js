@@ -1,5 +1,6 @@
 import { HDPublicKey, PrivateKey } from "bitcore-lib";
-import { Address, Network } from "@asimovdev/asimovjs";
+import { Address } from "@asimovdev/asimovjs";
+import to from "await-to-js"
 
 import Wallets from "./wallets";
 import { CONSTANT } from '../constant'
@@ -89,7 +90,7 @@ export default class AddressService {
     }
     static async generateAddress(num, changeType, coinType) {
         let wltInst = Wallets.getActiveWallet();
-        const { assets, walletId, isTestNet, xpubkeys } = wltInst;
+        const { assets, walletId, xpubkeys } = wltInst;
         let types = [changeType];
         if (num == undefined) {
             num = CONSTANT.CREATEADDRSNUM;
