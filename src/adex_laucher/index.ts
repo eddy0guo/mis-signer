@@ -13,8 +13,8 @@ class launcher {
     private tmp_transaction_id;
 
     constructor() {
-        this.db = new client;
-        this.utils = new utils2;
+        this.db = new client();
+        this.utils = new utils2();
         this.start();
         this.block_height = 0;
     }
@@ -57,6 +57,7 @@ class launcher {
             const trades_hash = [];
             const markets = await this.db.list_markets();
             for (const i in trades) {
+                if( !trades[i])continue
                 let token_address;
                 for (const j in markets) {
                     if (trades[i].market_id === markets[j].id) {
@@ -86,34 +87,21 @@ class launcher {
                 trades_hash.push(trade_info);
             }
 
-
             const mist = new Exchange(mist_config.ex_address);
             const [err, txid] = await to(mist.matchorder(trades_hash, mist_config.relayers[index].prikey, mist_config.relayers[index].word));
-            //            console.log("formatchorder----tradeshash=%o--relayers=%o--transaction_id=%o--index=%o--", trades_hash,mist_config.relayers[index],trades[0].transaction_id ,index);
-
 
             if (!err) {
-                const update_trade_info = ['pending', txid, current_time, trades[0].transaction_id];
-                await this.db.launch_update_trades(update_trade_info);
+                const updatedInfo = ['pending', txid, current_time, trades[0].transaction_id];
+                await this.db.launch_update_trades(updatedInfo);
 
                 const TXinfo = [trades[0].transaction_id, txid, trades[0].market_id, 'pending', 'pending', current_time, current_time];
                 this.db.insert_transactions(TXinfo);
             } else {
-
-                const update_trade_info = ['matched', null , current_time, trades[0].transaction_id];
-                await this.db.launch_update_trades(update_trade_info);
+                const errInfo = ['matched', null , current_time, trades[0].transaction_id];
+                await this.db.launch_update_trades(errInfo);
                 if(err)console.log('---call dex matchorder--err=%o-transaction_id=%o--relayers=%o\n', err, trades[0].transaction_id, mist_config.relayers[index].address)
             }
-			/*
-            setTimeout(() => {
-                this.loop.call(this)
-            }, 10000);
-			*/
-
-            // console.log("after3--matchorder----", this.utils.get_current_time());
             this.loop.call(this)
-
-
         }, 2000);
 
     }

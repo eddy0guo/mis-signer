@@ -14,7 +14,7 @@ export default class order {
     private exchange;
     private utils;
 
-    constructor(client:DBClient) {
+    constructor(client) {
         this.db = client;
         this.exchange = new engine(this.db);
         this.utils = new utils2();
