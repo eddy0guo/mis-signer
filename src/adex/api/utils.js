@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 const crypto = require('crypto');
 var date = require("silly-datetime");
 const bitcore_lib_1 = require("bitcore-lib");
@@ -117,6 +118,8 @@ export default class utils {
                 let endencode = '0x' + buf.toString('hex') + encode.toString('hex')
                 let endhash = '0x' + ethutil.keccak256(endencode).toString('hex');
                 resolve(endhash)
+            }).catch(e=>{
+                rejects(e)
             })
         })
     }
@@ -128,7 +131,6 @@ export default class utils {
         } else if (NP.times(num, 10000) != Math.floor(NP.times(num, 10000))) {
             console.error("cannt support this decimal", num, NP.times(num, 10000), num * 10000);
             result = false;
-        } else {
         }
         return result;
     }

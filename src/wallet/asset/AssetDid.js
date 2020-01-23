@@ -1,4 +1,3 @@
-import { chain } from '../api/chain'
 import { TranService } from "../service/transaction";
 import { CONSTANT } from "../constant";
 import { btc2sts } from "../utils";
@@ -8,9 +7,9 @@ import { walletRPC } from '../api/wallet';
  * 处理链原生资产的转移等基础操作
  */
 export default class Asset {
-    fee = 0.05
 
     constructor(assetId) {
+        this.fee = 0.05
         this.assetId = assetId;
     }
 
