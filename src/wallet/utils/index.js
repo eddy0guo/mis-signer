@@ -31,11 +31,6 @@ export const getWordlistLanguage = function (text) {
 export const getTimeInSection = function (timestamp) {
   timestamp *= 1000; // 转化毫秒
   let now = new Date()
-  let now_timestamp = now.getTime()
-  let today = moment()
-    .startOf('day')
-    .toDate()
-    .getTime()
   let time = moment(timestamp)
   let dist = now.getTime() - timestamp
   let result = ''
@@ -53,7 +48,7 @@ export const getTimeInSection = function (timestamp) {
   return result
 }
 
-export const checkContractAddress = function (addr, isTestnet = true) {
+export const checkContractAddress = function (addr) {
   return Address.IsPayToContractHash(addr)
 }
 
@@ -69,10 +64,6 @@ export const validateMnemonic = function (mnemonic) {
   }
   return valid;
 };
-
-export const md5 = function (str) {
-
-}
 
 
 export function signature(pk, message) {

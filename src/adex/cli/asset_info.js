@@ -3,20 +3,19 @@ import utils2 from '../api/utils'
 import mist_wallet1 from '../api/mist_wallet'
 import mist_config from '../../cfg'
 import NP from 'number-precision'
-import {AsimovWallet, Transaction, AsimovConst} from '@fingo/asimov-wallet';
+import {AsimovWallet } from '@fingo/asimov-wallet';
 
 export default class assets {
-    db;
-    exchange;
-    root_hash;
-    mist_wallet;
-    times;
+
 
     constructor() {
         this.db = new client();
         this.utils = new utils2;
         this.mist_wallet = new mist_wallet1();
         this.times = 0;
+
+        this.exchange;
+        this.root_hash;
     }
 
     async status_flushing() {

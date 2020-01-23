@@ -2,15 +2,15 @@ import to from 'await-to-js'
 import utils2 from '../api/utils'
 import mist_config from '../../cfg'
 
-const order_params = 'id,trader_address,market_id,side,cast(price as float8),cast(amount as float8),status,type,cast(available_amount as float8),cast(confirmed_amount as float8),cast(canceled_amount as float8),cast(pending_amount as float8),updated_at,created_at'
-const trade_params = 'id,trade_hash,transaction_id,transaction_hash,status,market_id,maker,taker,cast(price as float8),cast(amount as float8),taker_side,maker_order_id,taker_order_id,updated_at,created_at';
+// const order_params = 'id,trader_address,market_id,side,cast(price as float8),cast(amount as float8),status,type,cast(available_amount as float8),cast(confirmed_amount as float8),cast(canceled_amount as float8),cast(pending_amount as float8),updated_at,created_at'
+// const trade_params = 'id,trade_hash,transaction_id,transaction_hash,status,market_id,maker,taker,cast(price as float8),cast(amount as float8),taker_side,maker_order_id,taker_order_id,updated_at,created_at';
 const bridge_params = 'id,address,token_name,cast(amount as float8),side,master_txid,master_txid_status,child_txid,child_txid_status,fee_asset,fee_amount,updated_at,created_at';
-const express_params = 'trade_id,address,base_asset_name,cast(base_amount as float8),cast(price as float8),quote_asset_name,cast(quote_amount as float8),cast(fee_rate as float8),fee_token,cast(fee_amount as float8),base_txid,base_tx_status,quote_txid,quote_tx_status,updated_at,created_at';
+// const express_params = 'trade_id,address,base_asset_name,cast(base_amount as float8),cast(price as float8),quote_asset_name,cast(quote_amount as float8),cast(fee_rate as float8),fee_token,cast(fee_amount as float8),base_txid,base_tx_status,quote_txid,quote_tx_status,updated_at,created_at';
 
 export default class db {
 
     constructor() {
-        const {Pool} = require('postgres-pool');
+        const { Pool } = require('postgres-pool');
         const client = new Pool({
             host: mist_config.pg_host,
             database: mist_config.pg_database,
@@ -38,7 +38,7 @@ export default class db {
 
         let [err_tmp, result_tmp] = await to(this.clientDB.query('insert into mist_orders_tmp values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)', ordermessage));
         if (err_tmp) {
-            return console.error(`insert_order_tmp_faied ${err_tmp},insert data= ${ordermessage}`);
+            return console.error(`insert_order_tmp_faied ${err_tmp},insert data= ${ordermessage}`, result_tmp);
         }
 
         return JSON.stringify(result.rows);
@@ -65,7 +65,7 @@ export default class db {
     async my_orders_length(info) {
         let [err, result] = await to(this.clientDB.query('SELECT count(1) FROM mist_orders where trader_address=$1 and status in ($2,$3)', info));
         if (err) {
-            return console.error('my_order_length failed', err, address);
+            return console.error('my_order_length failed', err);
         }
 
         return result.rows[0].count;
@@ -140,12 +140,12 @@ export default class db {
         }
 
 
-	    let [err_tmp, result_tmp] = await to(this.clientDB
+        let [err_tmp, result_tmp] = await to(this.clientDB
             .query('UPDATE mist_orders_tmp SET (available_amount,confirmed_amount,canceled_amount,\
 				pending_amount,status,updated_at)=(available_amount+$1,confirmed_amount+$2,canceled_amount+$3,pending_amount+$4,$5,$6) WHERE id=$7', update_info));
 
         if (err_tmp) {
-            return console.error('update_orders failed', err_tmp, update_info);
+            return console.error('update_orders failed', err_tmp, result_tmp);
         }
 
 
@@ -154,6 +154,7 @@ export default class db {
     }
 
 
+    // FIXME : 不要拼接SQL
     async update_order_confirm(updates_info) {
         let query = 'set (confirmed_amount,pending_amount,updated_at)=(mist_orders.confirmed_amount+tmp.confirmed_amount,mist_orders.pending_amount+tmp.pending_amount,tmp.updated_at) from (values (';
         for (var index in updates_info) {
@@ -173,11 +174,11 @@ export default class db {
         }
 
 
-	    let [err_tmp,result_tmp] = await to(this.clientDB.query('update mist_orders_tmp as mist_orders ' + query));
+        let [err_tmp, result_tmp] = await to(this.clientDB.query('update mist_orders_tmp as mist_orders ' + query));
 
         if (err_tmp) {
-            return console.error('update_order_confirm failed ', err_tmp, updates_info);
-       } 
+            return console.error('update_order_confirm failed ', err_tmp, result_tmp);
+        }
         return result.rows;
 
     }
@@ -253,7 +254,7 @@ export default class db {
             return console.error('get_market_current_price_ failed', err, marketID);
         }
         if (result.rows.length == 0) {
-            return [{price: 0}];
+            return [{ price: 0 }];
         }
         return result.rows;
 
@@ -307,9 +308,9 @@ export default class db {
             return console.error('insert_traders_ failed', err, trades_info);
         }
 
-		let [err_tmp, result_tmp] = await to(this.clientDB.query('insert into mist_trades_tmp ' + query, trades_arr));
+        let [err_tmp, result_tmp] = await to(this.clientDB.query('insert into mist_trades_tmp ' + query, trades_arr));
         if (err_tmp) {
-            return console.error('insert_traders_tmp failed', err_tmp, trades_info);
+            return console.error('insert_traders_tmp failed', err_tmp, result_tmp);
         }
 
         return JSON.stringify(result.rows);
@@ -336,10 +337,10 @@ export default class db {
     }
 
 
-	async order_trades(order_id) {
+    async order_trades(order_id) {
         let [err, result] = await to(this.clientDB.query('SELECT price,amount FROM mist_trades where taker_order_id=$1 or maker_order_id=$1', order_id));
         if (err) {
-            return console.error('my_trades_ failed', err, address);
+            return console.error('my_trades_ failed', err);
         }
         return result.rows;
 
@@ -388,7 +389,7 @@ export default class db {
 
 
     async sort_trades(message, sort_by) {
-		//最近一天的k线从这里拿，在远的之前应该已经缓存了？
+        //最近一天的k线从这里拿，在远的之前应该已经缓存了？
         let sql = 'SELECT * FROM mist_trades_tmp where market_id=$1  and created_at>=$2 and  created_at<=$3 order by ' + sort_by + ' desc limit 30';
         let [err, result] = await to(this.clientDB.query(sql, message));
         if (err) {
@@ -398,7 +399,7 @@ export default class db {
 
     }
 
-	//todo:所有两表同时更新的操作应该保证原子性，现在先不管
+    //todo:所有两表同时更新的操作应该保证原子性，现在先不管
     async update_trades(update_info) {
         let [err, result] = await to(this.clientDB
             .query('UPDATE mist_trades SET (status,updated_at)=($1,$2) WHERE  transaction_id=$3', update_info));
@@ -409,11 +410,11 @@ export default class db {
 
 
 
-	    let [err_tmp, result_tmp] = await to(this.clientDB
+        let [err_tmp, result_tmp] = await to(this.clientDB
             .query('UPDATE mist_trades_tmp SET (status,updated_at)=($1,$2) WHERE  transaction_id=$3', update_info));
 
         if (err_tmp) {
-            return console.error('update_trades_ failed', err_tmp, update_info);
+            return console.error('update_trades_ failed', err_tmp, result_tmp);
         }
 
         //console.log('update_trades_成功',JSON.stringify(result),"info",update_info);
@@ -431,11 +432,11 @@ export default class db {
         }
 
 
-		let [err_tmp, result_tmp] = await to(this.clientDB
+        let [err_tmp, result_tmp] = await to(this.clientDB
             .query('UPDATE mist_trades_tmp SET (status,transaction_hash,updated_at)=($1,$2,$3) WHERE  transaction_id=$4', update_info));
 
         if (err_tmp) {
-            return console.error('launch_update_trades_ failed', err_tmp, update_info);
+            return console.error('launch_update_trades_ failed', err_tmp, result_tmp);
         }
 
         //console.log('launch_update_trades_成功',JSON.stringify(result),"info",update_info);
@@ -486,7 +487,7 @@ export default class db {
         if (err) {
             return console.error('insert_transactions_ failed', err, TXinfo);
         }
-//			console.log('insert_transactions_成功',JSON.stringify(result),"info",TXinfo); 
+        //			console.log('insert_transactions_成功',JSON.stringify(result),"info",TXinfo); 
         return JSON.stringify(result.rows);
     }
 

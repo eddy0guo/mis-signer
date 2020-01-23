@@ -5,7 +5,7 @@ import engine from './engine'
 import utils2 from './utils'
 
 const Queue = require('bull');
-const orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE, {redis: {port: process.env.REDIS_PORT, host: process.env.REDIS_URL, password: process.env.REDIS_PWD}});
+const orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE, { redis: { port: process.env.REDIS_PORT, host: process.env.REDIS_URL, password: process.env.REDIS_PWD } });
 
 export default class order {
 
@@ -41,7 +41,7 @@ export default class order {
         return result;
     }
 
-    async list_orders(message) {
+    async list_orders() {
 
         let result = await this.db.list_orders();
 
@@ -59,29 +59,29 @@ export default class order {
     async my_orders2(address, page, perpage, status1, status2) {
         let offset = (+page - 1) * perpage;
         let orders = await this.db.my_orders2([address, offset, perpage, status1, status2]);
-		for(let order_index in orders){
-        	let trades = await this.db.order_trades([orders[order_index].id]);
-			if(trades.length == 0){
-				 orders[order_index].average_price = "--";	
-				 orders[order_index].confirm_value = "--";	
-				 continue;
-			}
-			let amount = 0;
-			let value = 0;
-			for(let trade_index in trades){
-				amount = NP.plus(amount,trades[trade_index].amount)
-				let trade_value = NP.times(trades[trade_index].amount,trades[trade_index].price)
-				value = NP.plus(value,trade_value)
-			}
-			orders[order_index].average_price = NP.divide(value,amount).toFixed(8); 
-			orders[order_index].confirm_value = value.toFixed(8); 
-		}
+        for (let order_index in orders) {
+            let trades = await this.db.order_trades([orders[order_index].id]);
+            if (trades.length == 0) {
+                orders[order_index].average_price = "--";
+                orders[order_index].confirm_value = "--";
+                continue;
+            }
+            let amount = 0;
+            let value = 0;
+            for (let trade_index in trades) {
+                amount = NP.plus(amount, trades[trade_index].amount)
+                let trade_value = NP.times(trades[trade_index].amount, trades[trade_index].price)
+                value = NP.plus(value, trade_value)
+            }
+            orders[order_index].average_price = NP.divide(value, amount).toFixed(8);
+            orders[order_index].confirm_value = value.toFixed(8);
+        }
 
         return orders;
     }
 
-    async my_orders_length(address,status1,status2) {
-        let result = await this.db.my_orders_length([address,status1,status2]);
+    async my_orders_length(address, status1, status2) {
+        let result = await this.db.my_orders_length([address, status1, status2]);
         return result;
     }
 
@@ -98,8 +98,8 @@ export default class order {
             asks_arr.push(this.utils.arr_values(asks[item]));
         }
 
-        for (var item in bids) {
-            bids_arr.push(this.utils.arr_values(bids[item]));
+        for (var item2 in bids) {
+            bids_arr.push(this.utils.arr_values(bids[item2]));
         }
 
         let order_book = {

@@ -57,7 +57,7 @@ export default class Wallet {
        // await AddressService.generateAddress();
         // this.closeLoading();
         resolve();
-      }, 200);
+      }, 1);
     })
   }
 
@@ -95,7 +95,7 @@ export default class Wallet {
         // Store.dispatch('queryAllBalance');
         // this.closeLoading();
         resolve();
-      }, 100)
+      }, 1)
     })
   }
 
@@ -109,7 +109,6 @@ export default class Wallet {
       isTestNet = false,
       backupFlag = false,
       isImported = false,
-      assets = [],
       xpubkeys
     } = info;
     this.walletId = walletId;
@@ -124,34 +123,7 @@ export default class Wallet {
 
     this.xpubkeys = xpubkeys;
     Wallets.addWallet(this, true);
-    this.initRedux();
-    // Store.dispatch('queryAllBalance');
-  }
 
-  // async storeWltInfo() {
-  //   // 分为三类 storage、redux 、instance
-  //   let walletData = this.getInfo();
-  //   await Storage.set('walletInfo', {
-  //     [this.walletId]: walletData
-  //   });
-  //   Wallets.addWallet(this, true);
-  //   this.initRedux();
-  // }
-
-  initRedux() {
-    const { walletId, name, lang, isTestNet, backupFlag, isImported } = this;
-
-    Store.dispatch('initWltState', {
-      info: {
-        walletId,
-        name,
-        lang,
-        isTestNet,
-        backupFlag,
-        isImported
-      },
-      assets: this.assets
-    })
   }
 
   generateMnemonic(length) {
@@ -168,9 +140,6 @@ export default class Wallet {
   }
 
   async setXpubkey(seed) {
-    let defaultAsset = CONSTANT.DEFAULT_COIN;
-    // let xpubkeys = HDPrivateKey.fromSeed(seed).derive(
-    //     `${PATH}/${defaultAsset.coinType}'/0'`).xpubkey;
     const hdPrivateKey = HDPrivateKey.fromSeed(seed).derive(
       `${PATH}/10003'/0'`);
     let xpubkeys = hdPrivateKey.xpubkey;
@@ -261,15 +230,12 @@ export default class Wallet {
 
   // for login
   validatePayPassword(payPassword) {
-    let defaultAsset = CONSTANT.DEFAULT_COIN;
-    // let xpub = HDPrivateKey.fromSeed(this.getPristineSeed(payPassword)).derive(
-    //   `${PATH}/${defaultAsset.coinType}'/0'`).xpubkey;
     let xpub = HDPrivateKey.fromSeed(this.getPristineSeed(payPassword)).derive(
       `${PATH}/10003'/0'`).xpubkey;
     return xpub == this.xpubkeys;
   }
   //TODO  password validate
-  async getNoneBIP44PrivateKey(address, pwd) {
+  async getNoneBIP44PrivateKey(address) {
     let keypairs = await Storage.getKeypair();
 
     return keypairs[address] || '';
@@ -326,9 +292,7 @@ export default class Wallet {
   async queryAllBalance() { 
     let allAddrs = await Storage.get("walletAddrs");
     let wltInst = Wallets.getActiveWallet();
-    let sendTrans = [],
-      usedAddrs = [],
-      strAddrs = [];
+    let strAddrs = [];
     for (let changeType in allAddrs[wltInst.walletId]) {
       let exstAddrs = allAddrs[wltInst.walletId][changeType];
 
@@ -337,10 +301,6 @@ export default class Wallet {
       }
     }
 
-    // console.log(allAddrs)
-
-
-    let pureAddrNums = 0;
     let trans = {}
     try {
       trans = await TranService.queryTransactionsByAddresses(strAddrs, 0, 20) // ??  这里需要递归查询数量

@@ -8,6 +8,8 @@ const ethabi = require('ethereumjs-abi')
 import NP from 'number-precision'
 import mist_config from '../../cfg';
 
+// FIXME: change CUrl to axios
+
 export default class utils {
 
     constructor() {
