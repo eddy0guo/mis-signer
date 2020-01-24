@@ -48,7 +48,7 @@ service.interceptors.response.use(
     return Promise.reject(error);
   });
 
-export function rpc(url, params) {
+export function rpc(url, params) :Promise<any>{
   return service.request({
     url: '/',
     method: 'post',

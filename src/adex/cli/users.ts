@@ -1,8 +1,8 @@
 import utils2 from '../api/utils';
 import to from 'await-to-js';
 import mist_wallet1 from '../api/mist_wallet';
-import Token from 'src/wallet/contract/Token';
-import Asset from 'src/wallet/contract/Asset';
+import Token from '../../wallet/contract/Token';
+import Asset from '../../wallet/contract/Asset';
 
 import NP from 'number-precision';
 

@@ -42,7 +42,7 @@ service.interceptors.response.use( response => {
     return Promise.reject(error);
   });
 
-export function child_rpc(url, params) {
+export function child_rpc(url, params):Promise<any> {
   return service.request({
     url: '/',
     method: 'post',

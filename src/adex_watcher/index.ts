@@ -28,8 +28,9 @@ class Watcher {
 	async loop() {
 
 		const [bestblock_err, bestblock_result] = await to(chain.getbestblock());
+		const {height} = bestblock_result;
 
-		if (bestblock_err || bestblock_result.height === this.blockHeight) {
+		if (bestblock_err || height === this.blockHeight) {
 			// console.log(`--------current height is ${bestblock_result.height} and last is ${this.blockHeight}----------`);
 			setTimeout(() => {
 				this.loop.call(this)
@@ -37,7 +38,7 @@ class Watcher {
 			return
 		}
 
-		this.blockHeight = bestblock_result.height;
+		this.blockHeight = height;
 
 		const transaction = await this.db.get_pending_transactions()
 		// 全部都是成功的,就睡眠1s
@@ -69,18 +70,18 @@ class Watcher {
 			const trades = await this.db.transactions_trades([id]);
 			const updates = [];
 			for (const index in trades) {
-
+				if( !trades[index]) continue
 				const trade_amount = +trades[index].amount;
 
 				let index_taker;
-				const taker_ar = updates.find(function (elem, index_tmp) {
+				const taker_ar = updates.find( (elem, index_tmp)=> {
 					index_taker = index_tmp;
 
 					return elem.info[3] === trades[index].taker_order_id;
 				});
 
 				let index_maker;
-				const maker_ar = updates.find(function (elem, index_tmp) {
+				const maker_ar = updates.find( (elem, index_tmp)=> {
 					index_maker = index_tmp;
 					return elem.info[3] === trades[index].maker_order_id;
 				});

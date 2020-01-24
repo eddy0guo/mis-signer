@@ -18,7 +18,7 @@ import client1 from './models/db';
 import mist_wallet1 from './api/mist_wallet';
 
 import mist_config from '../cfg';
-import Asset from 'src/wallet/contract/Asset';
+import Asset from '../wallet/contract/Asset';
 
 async function get_available_erc20_amount(address, symbol) {
   const mist_wallet = new mist_wallet1();

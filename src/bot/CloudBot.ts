@@ -1,7 +1,6 @@
 import axios from 'axios'
 import to from 'await-to-js'
 import cfg from '../cfg'
-import consola from 'consola'
 import botConfig from './config'
 
 const localStorage = {
@@ -26,17 +25,17 @@ axios.interceptors.request.use(config => {
 // 返回状态判断(添加响应拦截器)
 axios.interceptors.response.use(res => {
     // 可以对响应数据做些事
-    // consola.info(res)
+    // console.log(res)
     // save jwt,虽然没必要每次数据都检查，但是统一在这里处理逻辑更简洁点
     if (res.data && res.data.token) {
         // 储存 token
         localStorage.token = res.data.token
-        consola.info('Save JWT:', localStorage.token)
+        console.log('Save JWT:', localStorage.token)
     }
 
     return res
 }, error => {
-    consola.info(error)
+    console.log(error)
     if (error.response.status === 401) {
         // 401 说明 token 验证失败
         // 可以直接跳转到登录页面，重新登录获取 token
@@ -128,7 +127,7 @@ export default class CloudBot {
         const signature = await this.signOrder(account,order_id)
         const res = await this.confirmOrder(side,price,amount,address,signature,order_id)
 
-        consola.info(
+        console.log(
             'BOT:', this.market, this.price(),
             side, price.toFixed(2), amount.toFixed(4),
             res?'success':'failed')
@@ -151,7 +150,7 @@ export default class CloudBot {
             }
         }))
         if( err ){
-            consola.info('confirmOrder err')
+            console.log('confirmOrder err')
             return
         }
         return res
@@ -168,7 +167,7 @@ export default class CloudBot {
             }
         }))
         if( err ){
-            consola.info('signOrder err')
+            console.log('signOrder err')
             return
         }
 
@@ -190,7 +189,7 @@ export default class CloudBot {
             }
         }))
         if( err ){
-            consola.info('buildOrder err')
+            console.log('buildOrder err')
             return
         }
 

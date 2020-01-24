@@ -2,7 +2,6 @@
 
 import axios from 'axios'
 import to from 'await-to-js'
-import consola from 'consola'
 
 export default class Price {
     private prices;
@@ -36,10 +35,10 @@ export default class Price {
     }
 
     async updatePrice() {
-        consola.info('--- update price ---')
+        console.log('--- update price ---')
         const [err,res] = await to(axios.get('https://fxhapi.feixiaohao.com/public/v1/ticker?limit=2'))
         if( err ){
-            consola.info('update price err')
+            console.log('update price err')
             return;
         }
         for( const i in res.data ){
@@ -76,8 +75,8 @@ export default class Price {
 
         this.prices = markets;
 
-        consola.info(markets)
+        console.log(markets)
 
-        consola.info('--- price updated  ---')
+        console.log('--- price updated  ---')
     }
 }

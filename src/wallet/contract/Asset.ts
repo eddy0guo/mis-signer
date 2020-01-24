@@ -11,4 +11,10 @@ export default class Asset {
     console.error('TBD');
     return wallet.balance()
   }
+
+  public async transfer(address,amount): Promise<any> {
+    const wallet = new AsimovWallet({ address });
+    console.error('TBD');
+    return wallet.balance()
+  }
 }
