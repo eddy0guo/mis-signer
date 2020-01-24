@@ -1,7 +1,8 @@
 import utils2 from '../api/utils';
 import to from 'await-to-js';
 import mist_wallet1 from '../api/mist_wallet';
-import Token from '../../wallet/contract/Token';
+import Token from 'src/wallet/contract/Token';
+import Asset from 'src/wallet/contract/Asset';
 
 import NP from 'number-precision';
 
@@ -48,10 +49,12 @@ export default class Users {
         const token_arr = await this.mist_wallet.list_tokens();
 
         for (const i in users) {
+            if( !users[i])continue
             const address = users[i].address;
             const balances = [];
             const valuations = [];
             for (const j in token_arr) {
+                if( !token_arr[j])continue
                 const total_balance = await this.get_total_balance(token_arr[j], address);
                 balances.push(total_balance);
                 const price = await this.mist_wallet.get_token_price2pi(token_arr[j].symbol);
@@ -62,7 +65,6 @@ export default class Users {
             const update_info = balances.concat(valuations);
             update_info.push(create_time);
             update_info.push(address);
-            console.log('obj123=', update_info);
             await this.db.update_user_token(update_info);
         }
         setTimeout(() => {
@@ -78,11 +80,12 @@ export default class Users {
         const token_arr = await this.mist_wallet.list_tokens();
 
         for (const i in users) {
+            if( !users[i])continue
             const address = users[i].address;
             let totals = 0;
             for (const j in token_arr) {
+                if( !token_arr[j])continue
                 const token_symbol = token_arr[j].symbol;
-
                 const price = await this.mist_wallet.get_token_price2pi(token_symbol);
                 const total_balance = await this.get_total_balance(token_arr[j], address);
                 totals = NP.plus(totals, NP.times(price, total_balance));
