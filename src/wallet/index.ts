@@ -848,12 +848,7 @@ export default () => {
         res.json({ result, err });
     });
 
-    wallet.all('/list_cdp_info', async (req, res) => {
-        const [err, result] = await to(psql_db.list_cdp());
-        res.json({ result, err });
-    });
-
-    wallet.all('/get_blockchain_info', async (req, res) => {
+     wallet.all('/get_blockchain_info', async (req, res) => {
         const [err, result] = await to(chain.getblockchaininfo());
         const [err2, result2] = await to(
             chain.getblockchaininfo(undefined, 'child_poa')

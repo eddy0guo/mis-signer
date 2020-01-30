@@ -36,7 +36,7 @@ class watcher {
 
     async asset2coin_loop() {
 
-        const [err, pending_trade] = await to(this.psql_db.filter_bridge(['asset2coin', 'successful', 'pending']));
+        const [err, pending_trade]: [any,any] = await to(this.psql_db.filter_bridge(['asset2coin', 'successful', 'pending']));
         console.log('err,pending_trade', err, pending_trade);
         if (pending_trade.length === 0) {
 
@@ -83,7 +83,7 @@ class watcher {
 
     async coin2asset_release_loop() {
 
-        const [failed_err, failed_trade] = await to(this.psql_db.filter_bridge(['coin2asset', 'failed', 'successful']));
+        const [failed_err, failed_trade]: [any,any] = await to(this.psql_db.filter_bridge(['coin2asset', 'failed', 'successful']));
         if(failed_err)console.error('err,pending_trade', failed_err, failed_trade);
         if (failed_trade.length !== 0) {
             const { id, address, amount, token_name } = failed_trade[0];
@@ -104,7 +104,7 @@ class watcher {
         }
 
 
-        const [err, pending_trade] = await to(this.psql_db.filter_bridge(['coin2asset', 'pending', 'successful']));
+        const [err, pending_trade]: [any,any] = await to(this.psql_db.filter_bridge(['coin2asset', 'pending', 'successful']));
         if (err) {
             console.error(`release bridge happened error ${err}`);
         }
@@ -145,7 +145,7 @@ class watcher {
     async coin2asset_burn_loop() {
 
 
-        const [err, pending_trade] = await to(this.psql_db.filter_bridge(['coin2asset', 'pending', 'pending']));
+        const [err, pending_trade]: [any,any] = await to(this.psql_db.filter_bridge(['coin2asset', 'pending', 'pending']));
         if (err) console.error(err)
         if (pending_trade.length === 0) {
 

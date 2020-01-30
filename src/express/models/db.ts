@@ -21,8 +21,8 @@ export default class db {
 
 	}
 
-	async my_express(filter_info) {
-		const [err, result] = await to(this.clientDB.query(`SELECT ${express_params} FROM asim_express_records  where address=$1 order by created_at desc limit $3 offset $2`, filter_info));
+	async my_express(filter_info) : Promise<any> {
+		const [err, result]: [any,any] = await to(this.clientDB.query(`SELECT ${express_params} FROM asim_express_records  where address=$1 order by created_at desc limit $3 offset $2`, filter_info));
 		if (err) {
 			return console.error('list_borrows_查询失败', err);
 		}
@@ -31,8 +31,8 @@ export default class db {
 
 	}
 
-	async find_express(trade_id) {
-		const [err, result] = await to(this.clientDB.query(`SELECT ${express_params} FROM asim_express_records  where trade_id=$1`, trade_id));
+	async find_express(trade_id) : Promise<any> {
+		const [err, result]: [any,any] = await to(this.clientDB.query(`SELECT ${express_params} FROM asim_express_records  where trade_id=$1`, trade_id));
 		if (err) {
 			return console.error('list_borrows_查询失败', err);
 		}
@@ -41,8 +41,8 @@ export default class db {
 
 	}
 
-	async my_express_length(address) {
-		const [err, result] = await to(this.clientDB.query(`SELECT count(1) FROM asim_express_records  where address=$1`, address));
+	async my_express_length(address) : Promise<any> {
+		const [err, result]: [any,any] = await to(this.clientDB.query(`SELECT count(1) FROM asim_express_records  where address=$1`, address));
 		if (err) {
 			return console.error('list_borrows_查询失败', err);
 		}
@@ -51,8 +51,8 @@ export default class db {
 
 	}
 
-	async laucher_pending_trade() {
-		const [err, result] = await to(this.clientDB.query('SELECT * FROM asim_express_records  where base_tx_status=\'successful\' and quote_tx_status in (\'pending\',\'failed\') order by created_at limit 1'));
+	async laucher_pending_trade() : Promise<any> {
+		const [err, result]: [any,any] = await to(this.clientDB.query('SELECT * FROM asim_express_records  where base_tx_status=\'successful\' and quote_tx_status in (\'pending\',\'failed\') order by created_at limit 1'));
 		if (err) {
 			return console.error('list_borrows_查询失败', err);
 		}
@@ -62,8 +62,8 @@ export default class db {
 	}
 
 
-	async insert_express(info) {
-		const [err, result] = await to(this.clientDB.query('insert into asim_express_records values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)', info));
+	async insert_express(info) : Promise<any>  {
+		const [err, result]: [any,any] = await to(this.clientDB.query('insert into asim_express_records values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)', info));
 		if (err) {
 			return console.error('insert_traders_查询失败', err, info);
 		}
@@ -71,16 +71,16 @@ export default class db {
 	}
 
 
-	async update_quote(info) {
-		const [err, result] = await to(this.clientDB.query('UPDATE asim_express_records SET (quote_txid,quote_tx_status,updated_at)=($1,$2,$3) WHERE  trade_id=$4', info));
+	async update_quote(info) : Promise<any> {
+		const [err, result]: [any,any] = await to(this.clientDB.query('UPDATE asim_express_records SET (quote_txid,quote_tx_status,updated_at)=($1,$2,$3) WHERE  trade_id=$4', info));
 		if (err) {
 			return console.error('insert_traders_查询失败', err, info);
 		}
 		return JSON.stringify(result.rows);
 	}
 
-	async update_base(info) {
-		const [err, result] = await to(this.clientDB.query('UPDATE asim_express_records SET \
+	async update_base(info) : Promise<any> {
+		const [err, result]: [any,any] = await to(this.clientDB.query('UPDATE asim_express_records SET \
 		(address,base_asset_name,base_amount,price,quote_amount,fee_amount,base_tx_status,quote_tx_status,updated_at)=\
 		($1,$2,$3,$4,$5,$6,$7,$8,$9) WHERE  trade_id=$10', info));
 		if (err) {
@@ -90,8 +90,8 @@ export default class db {
 	}
 
 
-	async get_tokens(filter) {
-		const [err, result] = await to(this.clientDB.query('select * from mist_tokens where symbol=$1 or asim_assetid=$1 or address=$1', filter));
+	async get_tokens(filter) : Promise<any> {
+		const [err, result]: [any,any] = await to(this.clientDB.query('select * from mist_tokens where symbol=$1 or asim_assetid=$1 or address=$1', filter));
 		if (err) {
 			return console.error('get_tokens_查询失败', err, filter);
 		}
@@ -99,9 +99,9 @@ export default class db {
 
 	}
 
-	async order_book(filter) {
-		let err;
-		let result;
+	async order_book(filter) : Promise<any> {
+		let err: any;
+		let result: any;
 		if (filter[0] === 'sell') {
 			[err, result] = await to(this.clientDB.query('SELECT price,sum(available_amount) as amount FROM mist_orders_tmp\
             where market_id=$2 and available_amount>0  and side=$1 group by price  order by price asc limit 100', filter));

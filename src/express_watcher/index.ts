@@ -23,7 +23,7 @@ class Watcher {
 
     async loop() {
 
-        const [err, pendingTrade] = await to(this.db.laucher_pending_trade());
+        const [err, pendingTrade]: [any,any] = await to(this.db.laucher_pending_trade());
         if (err) console.error(err)
         if (!pendingTrade || pendingTrade.length <= 0) {
 

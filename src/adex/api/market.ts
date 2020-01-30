@@ -29,7 +29,7 @@ export default class Market {
         const quotations = [];
         for (const index in markets) {
             if( !markets[index])continue
-            const [err, result] = await to(this.db.get_market_quotations([markets[index].id]));
+            const [err, result]: [any,any] = await to(this.db.get_market_quotations([markets[index].id]));
             if (!err && result && result.length > 0) {
                 const base_token = result[0].market_id.split('-')[0];
                 result[0].CNYC_price = await quotation.get_token_price2pi(base_token);

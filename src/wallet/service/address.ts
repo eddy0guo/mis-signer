@@ -63,7 +63,8 @@ export default class AddressService {
             err = null;
             return;
         }
-        keypair = keypair || {};
+		//unuseful code ?
+        //keypair = keypair || {};
 
         keypair[address] = pk;
 
