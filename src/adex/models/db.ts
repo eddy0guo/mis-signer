@@ -482,9 +482,9 @@ export default class db {
     }
 
     async get_pending_transactions() : Promise<any> {
-        const [err, result]: [any,any] = await to(this.clientDB.query('SELECT * FROM mist_transactions where (current_timestamp - created_at) < \'24 hours\'  and status!==\'successful\' and transaction_hash is not null order by id  limit 1'));
+        const [err, result]: [any,any] = await to(this.clientDB.query('SELECT * FROM mist_transactions where (current_timestamp - created_at) < \'24 hours\'  and status!=\'successful\' and transaction_hash is not null order by id  limit 1'));
         if (err) {
-            return console.error('list_successful_transactions_ failed', err);
+            return console.error('list_successful_transactions_ failed', err,);
         }
         return result.rows;
 

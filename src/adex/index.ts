@@ -524,7 +524,7 @@ export default () => {
     const balances = [];
 
     for (const i in token_arr as any[]) {
-      if (token_arr[i]) continue;
+      if (!token_arr[i]) continue;
       const token = new Token(token_arr[i].address);
       const [err, result] = await to(token.balanceOf(address, 'child_poa'));
       if (err) console.error(err);
