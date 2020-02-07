@@ -17,7 +17,7 @@ export default class db {
             user: mist_config.pg_user,
             password: mist_config.pg_password,
             port: mist_config.pg_port,
-		    idleTimeoutMillis: 3000,
+		    idleTimeoutMillis: 25000,
         });
         this.clientDB = client;
         this.utils = new utils2;
