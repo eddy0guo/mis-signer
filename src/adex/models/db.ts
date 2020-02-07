@@ -358,7 +358,7 @@ export default class db {
     }
 
     async list_all_trades() : Promise<any> {
-        const [err, result]: [any,any]  = await to(this.clientDB.query('SELECT * FROM mist_trades_tmp where status!==\'matched\' and (current_timestamp - created_at) < \'100 hours\' order by transaction_id desc limit 1'));
+        const [err, result]: [any,any]  = await to(this.clientDB.query('SELECT * FROM mist_trades_tmp where status!=\'matched\' and (current_timestamp - created_at) < \'100 hours\' order by transaction_id desc limit 1'));
         if (err) {
             return console.error('list_all_trades_ failed', err);
         }
@@ -429,7 +429,7 @@ export default class db {
 
     async get_laucher_trades() : Promise<any> {
         // 容错laucher过程中进程重启的情况
-        // let [err,result]: [any,any] = await to(this.clientDB.query('select t.*,s.right_id from (select * from mist_trades where status!==\'successful\' and transaction_hash is null)t left join (SELECT transaction_id as right_id  FROM mist_trades where status!==\'successful\'  and transaction_hash is null order by transaction_id  limit 1)s on t.transaction_id=s.right_id where s.right_id is not null'));
+        // let [err,result]: [any,any] = await to(this.clientDB.query('select t.*,s.right_id from (select * from mist_trades where status!=\'successful\' and transaction_hash is null)t left join (SELECT transaction_id as right_id  FROM mist_trades where status!=\'successful\'  and transaction_hash is null order by transaction_id  limit 1)s on t.transaction_id=s.right_id where s.right_id is not null'));
         const [err, result]: [any,any] = await to(this.clientDB.query(' SELECT distinct(transaction_id)  FROM mist_trades_tmp where status in (\'pending\',\'matched\') and transaction_hash is null order by transaction_id  limit 1'));
         if (err) {
             return console.error('get_laucher_trades_ failed', err);

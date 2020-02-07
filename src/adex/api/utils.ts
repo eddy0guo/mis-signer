@@ -33,7 +33,8 @@ export default class Utils {
         arr.push(createTime);
         const str = arr.join('');
 
-        const hash = this.rootHash.update(str, 'utf8').digest('hex');
+        let rootHash = crypto.createHmac('sha256', '123');
+        const hash = rootHash.update(str, 'utf8').digest('hex');
         return hash;
 
     }
