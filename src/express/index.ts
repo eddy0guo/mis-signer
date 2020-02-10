@@ -147,11 +147,11 @@ export default () => {
 
     for (const record of records as any[]) {
       record.base_token_icon =
-        'http://fingo-cdn.asimov.work/res/icons/' +
+        mist_config.icon_url +
         record.base_asset_name +
         'a.png';
       record.quote_token_icon =
-        'http://fingo-cdn.asimov.work/res/icons/' +
+        mist_config.icon_url +
         record.quote_asset_name +
         'a.png';
     }
@@ -219,11 +219,11 @@ export default () => {
 
     if (record[0].base_asset_name && record[0].quote_asset_name) {
       record[0].base_token_icon =
-        'http://fingo-cdn.asimov.work/res/icons/' +
+        mist_config.icon_url +
         record[0].base_asset_name +
         'a.png';
       record[0].quote_token_icon =
-        'http://fingo-cdn.asimov.work/res/icons/' +
+        mist_config.icon_url +
         record[0].quote_asset_name +
         'a.png';
     } else {
@@ -397,7 +397,7 @@ export default () => {
         }
       }
       const icon =
-        'http://fingo-cdn.asimov.work/res/icons/' +
+        mist_config.icon_url +
         token_arr[i].symbol +
         'a.png';
       const balance_info = {
@@ -614,10 +614,9 @@ export default () => {
           trade_id,
         };
         const info_arr = utils.arr_values(info);
-        //  todo:deal error
         const [err4, result4] = await to(psql_db.update_base(info_arr));
-
         if (err4) console.error(err4, result4);
+
       }, 10000);
     }
   );

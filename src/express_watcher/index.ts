@@ -44,7 +44,6 @@ class Watcher {
             rpc: mist_config.asimov_master_rpc,
             mnemonic: mist_config.fauct_word,
         });
-        // todo:deal with erro
         const [quote_err, quote_txid] = await to(wallet.commonTX.transfer(address, quote_amount, tokens[0].asim_assetid));
         if (quote_err) console.error(quote_err)
 

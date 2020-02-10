@@ -54,6 +54,7 @@ const local = {
   pg_user: 'product',
   pg_password: 'myHzSesQc7TXSS5HOXZDsgq7SNUHY2',
   pg_port: 1433,
+  icon_url: 'http://fingo-cdn.asimov.work/res/icons/',
 };
 
 const dev = {
@@ -110,6 +111,7 @@ const dev = {
   pg_user: 'product',
   pg_password: 'myHzSesQc7TXSS5HOXZDsgq7SNUHY2',
   pg_port: 1433,
+  icon_url: 'http://fingo-cdn.asimov.work/res/icons/',
 };
 
 const product = {
@@ -156,6 +158,7 @@ const product = {
   pg_user: 'product',
   pg_password: 'myHzSesQc7TXSS5HOXZDsgq7SNUHY2',
   pg_port: 1433,
+  icon_url: 'http://fingo-cdn.asimov.work/res/icons/',
 };
 
 const CONFIG_K8S = {
@@ -201,6 +204,7 @@ const CONFIG_K8S = {
   pg_user: process.env.PG_USER,
   pg_password: process.env.PG_PASS,
   pg_port: process.env.PG_PORT,
+  icon_url: 'http://fingo-cdn.asimov.work/res/icons/',
 };
 
 let mistConfig;
@@ -218,7 +222,7 @@ switch (process.env.MIST_MODE) {
     mistConfig = CONFIG_K8S;
     break;
   default:
-    mistConfig = local;
+    mistConfig = dev;
 }
 // var mistConfig = mistConfig_test;
 export default mistConfig;

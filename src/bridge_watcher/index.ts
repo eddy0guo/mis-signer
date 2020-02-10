@@ -56,7 +56,7 @@ class watcher {
             rpc: mist_config.asimov_child_rpc,
             mnemonic: mist_config.bridge_word,
         });
-        // TODO:deal error
+
         const [child_err, child_txid] = await to(wallet.contractCall.call(
             transfer_tokens[0].address,
             'mint(address,uint256)',
@@ -179,7 +179,6 @@ class watcher {
             AsimovConst.CONTRACT_TYPE.CALL))
 
         if (child_err) {
-            // todo:
             console.error(`error happend where burn ${address}'s erc20`);
             setTimeout(() => {
                 this.coin2asset_burn_loop.call(this)

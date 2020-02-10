@@ -21,6 +21,7 @@ export default class mist_wallet {
     }
 
     // 寻找交易对的优先级依次为，PI,USDT,MT
+	// 价格为0有两种可能的原因，如果24小时没有成交的交易，交易对不存在
     async get_token_price2pi(symbol) {
         if (symbol === 'CNYC') {
             return 1;
@@ -29,7 +30,6 @@ export default class mist_wallet {
         let [result, err] = await this.db.get_market_current_price([marketID]);
         if (err)console.error(err);
         err = null;
-        // 如果24小时没有成交的交易对，对应的价格为0,如果交易对不存在也是这样判断,fixme
         if (result.length === 0) {
             marketID = symbol + '-USDT';
             const price2usdt = await this.db.get_market_current_price([marketID]);

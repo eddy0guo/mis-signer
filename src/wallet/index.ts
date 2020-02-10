@@ -414,7 +414,8 @@ export default () => {
        */
 
     // 划转操作？
-    // 只有广播失败和解析失败的的不存表，其他会存
+	// 是的，asset转erc20
+    // 只有广播失败的不会存表，其他会存
     wallet.all(
         '/sendrawtransaction/asset2coin_v3/:sign_data',
         async (req, res) => {
@@ -424,7 +425,6 @@ export default () => {
             );
 
             if (master_err === undefined) {
-                // 临时代码，这个临时代码具体需要改动什么？
                 const info = {
                     id: null,
                     address: null,
@@ -468,7 +468,8 @@ export default () => {
                     if (decode_info.to !== mist_config.bridge_address) {
                         master_txid_status = 'illegaled';
                         console.error(`reciver ${decode_info.to}  is not official address`);
-                        return; // 应该要return吧这里
+                        // return; // 应该要return吧这里
+						//这里解析失败的非法划转也要存表，不return
                     }
 
                     const transfer_tokens = await psql_db.get_tokens([asset_id]);

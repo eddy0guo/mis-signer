@@ -45,7 +45,7 @@ export default class Engine {
     let amount = 0;
     for (let item = 0; item < find_orders.length; item++) {
       let maker_status = 'full_filled';
-      // 最低价格的一单最后成交，成交数量按照吃单剩下的额度成交,并且更新最后一个order的可用余额fixme__gxy
+      // 最低价格的一单最后成交，成交数量按照吃单剩下的额度成交,并且更新最后一个order的可用余额
       amount = NP.plus(amount, find_orders[item].available_amount);
 
       // 吃单全部成交,挂单有剩余的场景,

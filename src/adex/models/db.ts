@@ -245,8 +245,6 @@ export default class db {
     }
 
     async get_market_current_price(marketID) : Promise<any> {
-        // 数据后期数据上来了，sql会卡，fixme
-
         const [err, result]: [any,any]  = await to(this.clientDB.query('select cast(price as float8) from mist_trades_tmp where (current_timestamp - created_at) < \'24 hours\' and market_id=$1 order by created_at desc limit 1', marketID));
         if (err) {
             return console.error('get_market_current_price_ failed', err, marketID);

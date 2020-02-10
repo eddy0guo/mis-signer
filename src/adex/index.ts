@@ -325,7 +325,6 @@ export default () => {
         }
       }
 
-      // FIXME: 硬编码URL
       const balance_info = {
         token_symbol: token_arr[i].symbol,
         erc20_address: token_arr[i].address,
@@ -334,11 +333,11 @@ export default () => {
         asim_assetid: token_arr[i].asim_assetid,
         asim_asset_balance: asset_balance / (1 * 10 ** 8),
         asset_icon:
-          'http://fingo-cdn.asimov.work/res/icons/' +
+          mist_config.icon_url +
           token_arr[i].symbol +
           'a.png',
         coin_icon:
-          'http://fingo-cdn.asimov.work/res/icons/' +
+          mist_config.icon_url +
           token_arr[i].symbol +
           'm.png',
       };
@@ -435,7 +434,7 @@ export default () => {
         asim_asset_balance: asset_balance,
         value: NP.times(asset_balance, price),
         token_icon:
-          'http://fingo-cdn.asimov.work/res/icons/' +
+          mist_config.icon_url +
           token_arr[i].symbol +
           'a.png',
       };
@@ -556,7 +555,7 @@ export default () => {
         asim_assetid: token_arr[i].asim_assetid,
         value: NP.times(erc20_balance, price),
         token_icon:
-          'http://fingo-cdn.asimov.work/res/icons/' +
+          mist_config.icon_url +
           token_arr[i].symbol +
           'm.png',
       };
@@ -570,41 +569,6 @@ export default () => {
     });
   });
 
-  // FIXME : Not Finished
-  // 所有token合约赋予所有地址权限
-  adex.all('/approves', async (req, res) => {
-    const obj = urllib.parse(req.url, true).query;
-    const token_arr = await mist_wallet.list_tokens();
-    const txids = [];
-    for (const i in token_arr as any[]) {
-      if (token_arr[i]) continue;
-      const token = new Token(token_arr[i].address);
-
-      // FIXME : Not Finished
-      const wallet = new AsimovWallet({
-        name: 'tmp_wallet',
-        mnemonic: obj.word,
-      });
-      const address = wallet.address;
-
-      const [err, balance] = await to(token.balanceOf(address));
-      const [err3, allowance] = await to(
-        token.allowance(address, mist_config.ex_address)
-      );
-      if (err || err3) {
-        console.error(err, err3);
-      }
-      if (balance !== allowance) {
-        await wallet.balance();
-        const [err2, txid] = await to(
-          token.approve(mist_config.ex_address, 9999999)
-        );
-        if (err2) console.error(err2);
-        txids.push(txid);
-      }
-    }
-    res.json(txids);
-  });
   /****
 
 get_order_id，获取order_id,
