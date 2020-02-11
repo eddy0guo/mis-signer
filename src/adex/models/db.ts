@@ -158,7 +158,7 @@ export default class db {
         for (const index in updatesInfo as any[]) {
             if (updatesInfo[index]) {
                 const tempValue = updatesInfo[index].info[0] + ','
-                    + updatesInfo[index].info[1] + ',now()' + ',\'' + updatesInfo[index].info[3] + '\'; '
+                    + updatesInfo[index].info[1] + ',now()' + ',\'' + updatesInfo[index].info[3] + '\'';
                 if (Number(index) < updatesInfo.length - 1) {
                     query = query + tempValue + '),(';
                 } else {
