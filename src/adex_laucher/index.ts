@@ -65,7 +65,7 @@ class launcher {
                     }
                 }
 
-                if (token_address === undefined) {
+                if (!token_address) {
                     console.error('not support market id');
                     continue;
                 }

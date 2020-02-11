@@ -92,12 +92,12 @@ const dev = {
   ],
   // 0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c
   bridge_word:
-    'sound mandate urban welcome grass gospel gather shoulder hunt catch host second',
-  bridge_address: '0x66a5e2e1d9243f9dfd1d54b31952d94043a105188f',
+    'crouch spring portion wide mention deposit water renew lake switch amount danger',
+  bridge_address: '0x663eba898c351ca8b5ff8de3f3c380de88ee8061f7',
 
   express_word:
-    'wing safe foster choose wisdom myth quality own gallery logic imitate pink',
-  express_address: '0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c',
+    'solve page fuel once ghost team move trophy flag coil suffer fan',
+  express_address: '0x66d0594c76342ec891017d0639792ffc7872b4df81',
 
   wallet_default_passwd: '111111',
   did_seed_word:

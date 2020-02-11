@@ -830,7 +830,7 @@ did对order_id进行签名，获取rsv
     const [err, result2] = await to(order.build(message));
     console.log(result2, err);
     res.json({
-      success: result === undefined ? false : true,
+      success: true,
       result: result2,
       err,
     });
@@ -889,7 +889,7 @@ did对order_id进行签名，获取rsv
 
     const [err, result] = await to(order.cancle_order(message));
     res.json({
-      success: result === undefined ? false : true,
+      success: !result ? false : true,
       result,
       err,
     });
@@ -1031,7 +1031,7 @@ did对order_id进行签名，获取rsv
     const [err, result] = await to(trades.my_trades_length(address));
 
     res.json({
-      success: result === undefined ? false : true,
+      success: !result ? false : true,
       result,
       err,
     });
@@ -1106,7 +1106,7 @@ did对order_id进行签名，获取rsv
       );
 
       res.json({
-        success: result === undefined ? false : true,
+        success: !result  ? false : true,
         result,
         err,
       });
@@ -1147,7 +1147,7 @@ did对order_id进行签名，获取rsv
   adex.all('/list_markets_v2', async (req, res) => {
     const [err, result] = await to(market.list_markets());
     res.json({
-      success: result === undefined ? false : true,
+      success: !result ? false : true,
       result,
       err,
     });
@@ -1211,7 +1211,7 @@ did对order_id进行签名，获取rsv
       )
     );
     res.json({
-      success: result === undefined ? false : true,
+      success: !result ? false : true,
       result,
       err,
     });
@@ -1261,7 +1261,7 @@ did对order_id进行签名，获取rsv
       )
     );
     res.json({
-      success: result === undefined ? false : true,
+      success: !result ? false : true,
       result,
       err,
     });

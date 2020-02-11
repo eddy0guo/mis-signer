@@ -156,7 +156,7 @@ export default () => {
         'a.png';
     }
     res.json({
-      success: records === undefined ? false : true,
+      success: !records  ? false : true,
       result: records,
       err,
     });
@@ -318,7 +318,7 @@ export default () => {
         get_price(base_token_name, quote_token_name, base_amount, order)
       );
       res.json({
-        success: price === undefined ? false : true,
+        success: !price ? false : true,
         result: price,
         err,
       });
@@ -351,7 +351,7 @@ export default () => {
     const { address } = req.params;
     const [err, result] = await to(psql_db.my_express_length([address]));
     res.json({
-      success: result === undefined ? false : true,
+      success: !result ? false : true,
       result,
       err,
     });
@@ -429,7 +429,7 @@ export default () => {
       const [base_err, base_txid] = await to(
         chain.sendrawtransaction([sign_data])
       );
-      const base_tx_status = base_txid === undefined ? 'failed' : 'successful';
+      const base_tx_status = !base_txid ? 'failed' : 'successful';
 
       // 失败的记录也入表
 
@@ -453,7 +453,7 @@ export default () => {
         [quote_err, quote_txid] = await to(
           asset.transfer(address, quote_amount)
         );
-        quote_tx_status = quote_txid === undefined ? 'failed' : 'successful';
+        quote_tx_status = !quote_txid ? 'failed' : 'successful';
       }
 
       const info = {

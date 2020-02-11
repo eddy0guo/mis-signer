@@ -203,7 +203,7 @@ export default () => {
                 chain.sendrawtransaction(sign_data)
             );
 
-            if (master_err === undefined) {
+            if (!master_err) {
                 // 临时代码
                 const current_time = utils.get_current_time();
                 const tmp_info = {
@@ -282,7 +282,7 @@ export default () => {
                         master_txid_status: 'successful',
                         child_txid,
                         child_txid_status:
-                            child_txid === undefined ? 'failed' : 'successful',
+                            !child_txid  ? 'failed' : 'successful',
                         fee_asset: fee_tokens[0].symbol,
                         fee_amount,
                     };
@@ -291,7 +291,7 @@ export default () => {
                     const [err3, result3] = await to(psql_db.insert_bridge(info_arr));
                     if (err3) console.log(err3, result3);
                     return res.json({
-                        success: err3 === undefined ? true : false,
+                        success: !err3  ? true : false,
                         err: err3,
                     });
                 }, 10000);
@@ -382,7 +382,7 @@ export default () => {
             master_txid,
             master_txid_status: 'successful',
             child_txid,
-            child_txid_status: child_txid === undefined ? 'failed' : 'successful',
+            child_txid_status: !child_txid ? 'failed' : 'successful',
             fee_asset: 'ASIM',
             fee_amount: 0.02,
         };
@@ -393,7 +393,7 @@ export default () => {
         if (err3) console.log(err3, result3);
 
         return res.json({
-            success: result3 === undefined ? false : true,
+            success: !result3 ? false : true,
             id: insert_info.id,
         });
     });
@@ -423,8 +423,9 @@ export default () => {
             const [master_err, master_txid] = await to(
                 chain.sendrawtransaction(sign_data)
             );
+			console.log('asset2coin_v3-22----',master_err,master_txid);
 
-            if (master_err === undefined) {
+            if (!master_err) {
                 const info = {
                     id: null,
                     address: null,
@@ -597,8 +598,8 @@ export default () => {
         if (err3) console.log(err3);
 
         return res.json({
-            success: result3 === undefined ? false : true,
-            id: result3 === undefined ? '' : insert_info.id,
+            success: !result3 ? false : true,
+            id: !result3 ? '' : insert_info.id,
         });
     });
 
@@ -747,7 +748,7 @@ export default () => {
         const [err, result] = await to(
             psql_db.my_bridge([address, offset, perpage])
         );
-        const success = result === undefined ? false : true;
+        const success = !result ? false : true;
         res.json({ success, result, err });
     });
 
@@ -791,7 +792,7 @@ export default () => {
             const [err, result] = await to(
                 psql_db.my_bridge_v3([address, token_name, offset, perpage])
             );
-            const success = result === undefined ? false : true;
+            const success = !result ? false : true;
             res.json({ success, result, err });
         }
     );
@@ -881,7 +882,7 @@ export default () => {
         const [err, result] = await to(psql_db.my_bridge_length([address]));
 
         return res.json({
-            success: result === undefined ? false : true,
+            success: !result ? false : true,
             result,
             err,
         });
