@@ -292,7 +292,7 @@ export default () => {
     const balances = [];
 
     for (const i in token_arr as any[]) {
-      if (token_arr[i]) continue;
+      if (!token_arr[i]) continue;
       const token = new Token(token_arr[i].address);
       const [err, result] = await to(token.balanceOf(obj.address, 'child_poa'));
       if (err) console.error(err);
@@ -302,7 +302,7 @@ export default () => {
 
       let asset_balance = 0;
       for (const j in assets_balance) {
-        if (assets_balance[j]) continue;
+        if (!assets_balance[j]) continue;
         if (token_arr[i].asim_assetid === assets_balance[j].asset) {
           asset_balance = assets_balance[j].value;
         }
@@ -416,7 +416,7 @@ export default () => {
     const balances = [];
 
     for (const i in token_arr as any[]) {
-      if (token_arr[i]) continue;
+      if (!token_arr[i]) continue;
       const asset = new Asset(token_arr[i].asim_assetid);
       const [err4, assets_balance] = await to(asset.balanceOf(address));
       if (err4) console.error(err4);
