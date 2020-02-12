@@ -837,7 +837,7 @@ export default () => {
        * @apiVersion 1.0.0
        */
 
-    wallet.all('/Coin2AssetFee_config', async (req, res) => {
+    wallet.all('/coin2asset_fee_config', async (req, res) => {
         res.json({
             success: true,
             result: Coin2AssetFee,
