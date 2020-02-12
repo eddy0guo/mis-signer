@@ -297,9 +297,9 @@ export default () => {
       const [err, result] = await to(token.balanceOf(obj.address, 'child_poa'));
       if (err) console.error(err);
       const asset = new Asset(token_arr[i].asim_assetid);
-      const [err4, assets_balance] = await to(asset.balanceOf(obj.address));
+      const [err4, result4] = await to(asset.balanceOf(obj.address));
+	  const assets_balance = result4[0].assets;
       if (err4) console.error(err4);
-
       let asset_balance = 0;
       for (const j in assets_balance) {
         if (!assets_balance[j]) continue;
@@ -418,7 +418,8 @@ export default () => {
     for (const i in token_arr as any[]) {
       if (!token_arr[i]) continue;
       const asset = new Asset(token_arr[i].asim_assetid);
-      const [err4, assets_balance] = await to(asset.balanceOf(address));
+      const [err4, result4] = await to(asset.balanceOf(address));
+	  const assets_balance = result4[0].assets;
       if (err4) console.error(err4);
       let asset_balance = 0;
       for (const j in assets_balance) {
@@ -431,8 +432,8 @@ export default () => {
       const balance_info = {
         token_symbol: token_arr[i].symbol,
         asim_assetid: token_arr[i].asim_assetid,
-        asim_asset_balance: asset_balance,
-        value: NP.times(asset_balance, price),
+        asim_asset_balance: asset_balance / (1 * 10 ** 8),
+        value: NP.times(asset_balance / (1 * 10 ** 8), price),
         token_icon:
           mist_config.icon_url +
           token_arr[i].symbol +
