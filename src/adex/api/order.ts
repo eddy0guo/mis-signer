@@ -63,7 +63,7 @@ export default class order {
         const offset = (+page - 1) * perpage;
         const orders = await this.db.my_orders2([address, offset, perpage, status1, status2]);
         for (const order_index in orders) {
-            if( !order[order_index]) continue
+            if( !orders[order_index]) continue
             const trades = await this.db.order_trades([orders[order_index].id]);
             if (trades.length === 0) {
                 orders[order_index].average_price = '--';
