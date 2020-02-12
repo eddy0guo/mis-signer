@@ -234,8 +234,6 @@ export default class Exchange {
       type: 'function',
     };
 
-    console.log('matchorder----%o\n', trades_arr);
-
     const child_wallet = new AsimovWallet({
       name: prikey,
       rpc: mist_config.asimov_child_rpc,

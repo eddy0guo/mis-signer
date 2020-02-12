@@ -26,14 +26,12 @@ class launcher {
     async loop() {
         const [bestblock_err, bestblock_result] = await to(chain.getbestblock());
         if (bestblock_err || bestblock_result.height === this.block_height) {
-            // console.log(`--------current height is ${bestblock_result.height} and last is ${this.block_height}----------`);
+            console.log(`[ADEX LAUNCHER] current height is ${bestblock_result.height} and last is ${this.block_height}`);
             setTimeout(() => {
                 this.loop.call(this)
             }, 500);
             return
         }
-        this.block_height = bestblock_result.height;
-
 
         const trades = await this.db.get_laucher_trades();
         const current_time = this.utils.get_current_time();
@@ -90,6 +88,10 @@ class launcher {
             const mist = new Exchange(mist_config.ex_address);
             const [err, txid] = await to(mist.matchorder(trades_hash, mist_config.relayers[index].prikey, mist_config.relayers[index].word));
 
+			const [bestblock_err2, bestblock_result2] = await to(chain.getbestblock());
+			if (bestblock_err2) console.error(bestblock_err2)
+			this.block_height = bestblock_result2.height;
+
             if (!err) {
                 const updatedInfo = ['pending', txid, current_time, trades[0].transaction_id];
                 await this.db.launch_update_trades(updatedInfo);
@@ -99,9 +101,11 @@ class launcher {
             } else {
                 const errInfo = ['matched', null , current_time, trades[0].transaction_id];
                 await this.db.launch_update_trades(errInfo);
-                if(err)console.log('---call dex matchorder--err=%o-transaction_id=%o--relayers=%o\n', err, trades[0].transaction_id, mist_config.relayers[index].address)
+                if(err)console.log('[ADEX LAUNCHER] call dex matchorder err=%o transaction_id=%o relayers=%o\n', err, trades[0].transaction_id, mist_config.relayers[index].address)
             }
+
             this.loop.call(this)
+
         }, 2000);
 
     }

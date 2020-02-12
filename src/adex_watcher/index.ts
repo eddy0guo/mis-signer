@@ -10,13 +10,11 @@ class Watcher {
 
 	private db;
 	private utils;
-	private blockHeight;
 
 	constructor() {
 
 		this.db = new client();
 		this.utils = new utils2();
-		this.blockHeight = 0;
 		this.start();
 	}
 
@@ -26,19 +24,6 @@ class Watcher {
 
 
 	async loop() {
-
-		const [bestblock_err, bestblock_result] = await to(chain.getbestblock());
-		const {height} = bestblock_result;
-
-		if (bestblock_err || height === this.blockHeight) {
-			// console.log(`--------current height is ${bestblock_result.height} and last is ${this.blockHeight}----------`);
-			setTimeout(() => {
-				this.loop.call(this)
-			}, 500);
-			return
-		}
-
-		this.blockHeight = height;
 
 		const transaction = await this.db.get_pending_transactions()
 		// 全部都是成功的,就睡眠1s
@@ -52,13 +37,12 @@ class Watcher {
 		const id = transaction[0].id;
 
 		const [err, result] = await to(chain.getrawtransaction([transaction[0].transaction_hash, true, true], 'child_poa'))
-
 		const update_time = this.utils.get_current_time();
 		if (!err && result.confirmations >= 1) {
 			const status = 'successful';
 			const [get_receipt_err, contract_status] = await to(this.utils.get_receipt_log(transaction[0].transaction_hash));
 			if (get_receipt_err) {
-				console.error(`get_receipt_err--${get_receipt_err}`);
+				console.error(`get_receipt_err ${get_receipt_err}`);
 				this.loop.call(this)
 				return;
 			}
@@ -113,26 +97,16 @@ class Watcher {
 			await this.db.update_order_confirm(updates);
 
 		} else if (err) {
-			/**
-			let status = 'failed';
-			let info = [status, update_time, id]
-			await this.db.update_transactions(info);
-			await this.db.update_trades(info);
-
-			let trades = await this.db.transactions_trades([id]);
-			//失败的交易更改可用数量和状态后重新放入交易池中
-			for(var index in trades){
-				restore_order(trades[index].taker_order_id,trades[index].amount);
-				restore_order(trades[index].maker_order_id,trades[index].amount);
-			console.log("chain.getrawtransaction-------restore_order--err",trades[index]);
-			}**/
-			// 失败了订单状态重新改为matched，等待下次打包,此failed为中间状态
 			await this.db.update_transactions(['failed', undefined, update_time, id]);
-			// 			await this.db.update_trades(["matched", update_time, id]);
-
 			console.error('Err', err);
+
 		} else {
-			console.log('[Watcher Pending]', transaction[0].transaction_hash);
+			console.log('[Watcher Pending] %s hasn\'t been confirmed yet',transaction[0].transaction_hash);
+			//找不到txid，可能是链底层问题比如双花的块删掉了，也可能是tx刚入块还没确认
+			setTimeout(() => {
+                this.loop.call(this)
+            }, 500);
+            return;
 		}
 
 		this.loop.call(this)
