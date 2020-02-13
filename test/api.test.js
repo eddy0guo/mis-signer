@@ -38,7 +38,7 @@ describe('API', function() {
 		
 	});
 
-	it('list_market_quotations_v2', async() =>{
+	it('list_market_quotations', async() =>{
 		const start = new Date().getTime()
 		let result = await rp("http://127.0.0.1:21000/adex/list_market_quotations_v2")
 		const end = new Date().getTime()
@@ -48,7 +48,7 @@ describe('API', function() {
 		
 	});
 
-	it('get_token_price_v2', async() =>{
+	it('get_token_price', async() =>{
 		const start = new Date().getTime()
 		let result = await rp("http://127.0.0.1:21000/adex/get_token_price_v2/BTC")
 		const end = new Date().getTime()
@@ -58,7 +58,7 @@ describe('API', function() {
 		
 	});
 
-	it('balances_v2', async() =>{
+	it('balances', async() =>{
 		const start = new Date().getTime()
 		let result = await rp("http://127.0.0.1:21000/adex/balances_v2?address=0x66ea4b7f7ad33b0cc7ef94bef71bc302789b815c46")
 		const end = new Date().getTime()
@@ -87,7 +87,7 @@ describe('API', function() {
 		
 	});
 
-	it('get_order_id_v2', async() =>{
+	it('get_order_id', async() =>{
 		const start = new Date().getTime()
 		let result = await rp("http://127.0.0.1:21000/adex/get_order_id_v2/0x66a9ae316e1914dc8d835d5cd2ed57ab24b52a02c7/ASIM-CNYC/sell/100/6000")
 		const end = new Date().getTime()
@@ -136,7 +136,7 @@ describe('API', function() {
 		
 	});
 */
-	it('my_orders_v2', async() =>{
+	it('my_orders', async() =>{
 		const start = new Date().getTime()
 		let result = await rp("http://127.0.0.1:21000/adex/my_orders_v2/0x6622bd37c1331b34359920f1eaa18a38ba9ff203e9/1/1/pending/fullfuilled")
 		const end = new Date().getTime()
@@ -146,7 +146,7 @@ describe('API', function() {
 		
 	});
 
-	it('my_trades_v2', async() =>{
+	it('my_trades', async() =>{
 		const start = new Date().getTime()
 		let result = await rp("http://127.0.0.1:21000/adex/my_trades_v2/0x6622bd37c1331b34359920f1eaa18a38ba9ff203e9/1/1")
 		const end = new Date().getTime()
@@ -196,7 +196,7 @@ describe('API', function() {
 		
 	});
 
-	it('my_converts_v3', async() =>{
+	it('my_converts', async() =>{
 		const start = new Date().getTime()
 		let result = await rp("http://127.0.0.1:21000/wallet/my_converts_v3/0x6602ca6e2820ec98cc68909fdd9f87c7bd23b62000/ASIM/1/10")
 		const end = new Date().getTime()
@@ -226,24 +226,66 @@ describe('API', function() {
 		
 	});
 
+	it('my_express_records', async() =>{
+		const start = new Date().getTime()
+		let result = await rp("http://127.0.0.1:21000/express/my_records/0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9/1/3")
+		const end = new Date().getTime()
+		result = JSON.parse(result);
+		expect(result.success).to.be.equal(true);
+		expect(end-start).to.be.lessThan(300)
+		
+	});
+
+	it('get_express_trade', async() =>{
+		const start = new Date().getTime()
+		let result = await rp("http://127.0.0.1:21000/express/get_express_trade/4e6b881de2eb3b9e8bdb4baefac9d5182c54eb274c821ca43e04301c9a7e2497")
+		const end = new Date().getTime()
+		result = JSON.parse(result);
+		expect(result.success).to.be.equal(true);
+		expect(end-start).to.be.lessThan(300)
+		
+	});
 
 
+	it('express_config', async() =>{
+		const start = new Date().getTime()
+		let result = await rp("http://127.0.0.1:21000/express/config")
+		const end = new Date().getTime()
+		result = JSON.parse(result);
+		expect(result.success).to.be.equal(true);
+		expect(end-start).to.be.lessThan(300)
+		
+	});
 
 
+	it('get_express_price', async() =>{
+		const start = new Date().getTime()
+		let result = await rp("http://127.0.0.1:21000/express/get_price/ASIM/CNYC/1")
+		const end = new Date().getTime()
+		result = JSON.parse(result);
+		expect(result.success).to.be.equal(true);
+		expect(end-start).to.be.lessThan(300)
+		
+	});
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	it('get_pool_info', async() =>{
+		const start = new Date().getTime()
+		let result = await rp("http://127.0.0.1:21000/express/get_pool_info")
+		const end = new Date().getTime()
+		result = JSON.parse(result);
+		expect(result.success).to.be.equal(true);
+		expect(end-start).to.be.lessThan(10000)
+		
+	});
+/*
+	it('build_express', async() =>{
+		const start = new Date().getTime()
+		let result = await rp("http://127.0.0.1:21000/express/")
+		const end = new Date().getTime()
+		result = JSON.parse(result);
+		expect(result.success).to.be.equal(true);
+		expect(end-start).to.be.lessThan(300)
+		
+	});
+*/
 })
