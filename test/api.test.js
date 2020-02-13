@@ -43,6 +43,7 @@ describe('API', function() {
 		let result = await rp("http://127.0.0.1:21000/adex/list_market_quotations_v2")
 		const end = new Date().getTime()
 		result = JSON.parse(result);
+		expect(result.result.length).to.not.equal(0)
 		expect(result.success).to.be.equal(true);
 		expect(end-start).to.be.lessThan(900)
 		
@@ -182,7 +183,7 @@ describe('API', function() {
 		const end = new Date().getTime()
 		result = JSON.parse(result);
 		expect(result.success).to.be.equal(true);
-		expect(end-start).to.be.lessThan(300)
+		expect(end-start).to.be.lessThan(2000)
 		
 	});
 

@@ -28,6 +28,7 @@ PORT=8080 npm start
 ## Init
 
 source product.env
+# MIST_MODE must be product or dev
 cd  src/adex/models/ && make seed
 cd -
 cd  src/express/models/ && make seed
