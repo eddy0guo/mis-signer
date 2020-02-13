@@ -38,6 +38,10 @@ cd  src/express/models/ && make seed
 0 * * * *  psql "host=pgm-wz9m1yb4h5g4sl7x127770.pg.rds.aliyuncs.com port=1433 dbname=product user=product password=myHzSesQc7TXSS5HOXZDsgq7SNUHY2" < /opt/mist-signer_fingo_dev2/src/adex/models/mist_tmp_clean.sql
 ```
 
+##TEST
+
+cd test && mocha --timeout 10000 api.test.js
+
 ## Deploy
 
 ```bash
