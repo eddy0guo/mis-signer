@@ -26,7 +26,7 @@ class launcher {
     async loop() {
         const [bestblock_err, bestblock_result] = await to(chain.getbestblock());
         if (bestblock_err || bestblock_result?.height === this.block_height) {
-            console.log(`[ADEX LAUNCHER] current height is ${bestblock_result.height} and last is ${this.block_height}`);
+            console.log(`[ADEX LAUNCHER] current height is ${bestblock_result?.height} and last is ${this.block_height}`);
             setTimeout(() => {
                 this.loop.call(this)
             }, 500);
@@ -35,7 +35,7 @@ class launcher {
 
         const trades = await this.db.get_laucher_trades();
         const current_time = this.utils.get_current_time();
-        if (trades.length === 0) {
+        if (trades.length === 0 || trades === null || trades === undefined ) {
             console.log('[Launcher] No matched trades')
             setTimeout(() => {
                 this.loop.call(this)
