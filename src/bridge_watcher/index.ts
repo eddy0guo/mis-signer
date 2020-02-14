@@ -38,7 +38,7 @@ class watcher {
 
         const [err, pending_trade]: [any,any] = await to(this.psql_db.filter_bridge(['asset2coin', 'successful', 'pending']));
         console.log('err,pending_trade', err, pending_trade);
-        if (pending_trade.length === 0) {
+        if (pending_trade?.length === 0 || pending_trade === null || pending_trade === undefined ) {
 
             console.log('[BRIDGE WATCHER] No pending trade');
             setTimeout(() => {
@@ -85,7 +85,7 @@ class watcher {
 
         const [failed_err, failed_trade]: [any,any] = await to(this.psql_db.filter_bridge(['coin2asset', 'failed', 'successful']));
         if(failed_err)console.error('err,pending_trade', failed_err, failed_trade);
-        if (failed_trade.length !== 0) {
+        if (failed_trade?.length !== 0) {
             const { id, address, amount, token_name } = failed_trade[0];
             const tokens = await this.psql_db.get_tokens([token_name])
             const current_time = this.utils.get_current_time();
@@ -108,7 +108,7 @@ class watcher {
         if (err) {
             console.error(`release bridge happened error ${err}`);
         }
-        if (pending_trade.length === 0) {
+        if (pending_trade?.length === 0 || pending_trade === null || pending_trade === undefined ) {
 
             console.log('have not need release bridge');
             setTimeout(() => {
