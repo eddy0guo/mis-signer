@@ -96,7 +96,6 @@ export default class Utils {
     }
 
     async orderTobytes(order) {
-		console.log(order);
         order.taker = order.taker.substr(0, 2) + order.taker.substr(4, 44);
         order.maker = order.maker.substr(0, 2) + order.maker.substr(4, 44);
         order.baseToken = order.baseToken.substr(0, 2) + order.baseToken.substr(4, 44);
