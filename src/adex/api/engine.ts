@@ -1,6 +1,8 @@
 import utils2 from './utils';
 import NP from 'number-precision';
 import mist_config from '../../cfg';
+import to from 'await-to-js'
+
 
 export default class Engine {
   private db;
@@ -19,7 +21,11 @@ export default class Engine {
 
     const filter = [message.price, side, message.market_id];
 
-    const result = await this.db.filter_orders(filter);
+    const [err,result] = await to(this.db.filter_orders(filter));
+	if(err){
+		console.log(err);
+		return [];
+	}
 
     const match_orders = [];
     let amount = 0;
@@ -96,10 +102,19 @@ export default class Engine {
   }
 
   async call_asimov(trades) {
-    const token_address = await this.db.get_market([trades[0].market_id]);
+    const [token_address_err,token_address] = await to(this.db.get_market([trades[0].market_id]));
+	if(token_address_err){
+		console.log(token_address_err);
+		return;
+	}
 
-    const transactions = await this.db.list_all_trades();
-    const matched_trades = await this.db.list_matched_trades();
+    const [transactions_err,transactions] = await to(this.db.list_all_trades());
+    const [matched_trades_err,matched_trades] = await to(this.db.list_matched_trades());
+	if(transactions_err || matched_trades_err){
+		console.log(transactions_err);	
+		console.log(matched_trades_err);
+		return;
+	}
     const add_queue_num = Math.floor(matched_trades[0].count / 300) + 1;
 
     const transaction_id =
@@ -138,7 +153,7 @@ export default class Engine {
       trades_arr.push(this.utils.arr_values(trades[i]));
     }
 
-    // 		console.log("-formatchorder-trades_arr=%o----relayers=%o-transaction_id=%o--index=%o--",trades_arr,mist_config.relayers[index],transaction_id,index)
+    // 		console.log("formatch order trades_arr=%o relayers=%o transaction_id=%o index=%o",trades_arr,mist_config.relayers[index],transaction_id,index)
 
     await this.db.insert_trades(trades_arr);
   }

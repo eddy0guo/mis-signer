@@ -25,9 +25,17 @@ class Watcher {
 
 	async loop() {
 
-		const transaction = await this.db.get_pending_transactions()
+		const [transaction_err,transaction] = await to(this.db.get_pending_transactions())
+		if(transaction_err){
+			console.error(transaction_err);
+			setTimeout(() => {
+                this.loop.call(this)
+            }, 1000);
+            return;
+		}
+
 		// 全部都是成功的,就睡眠1s
-		if (!transaction || transaction.length === 0) {
+		if (transaction.length === 0) {
 			console.log('[ADEX WATCHER]:no pending transaction');
 			setTimeout(() => {
 				this.loop.call(this)
