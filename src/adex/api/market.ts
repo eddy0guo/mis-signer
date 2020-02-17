@@ -23,14 +23,20 @@ export default class Market {
 
 	async market_up(id) {
 		const update_at = this.utils.get_current_time();
-        const result = await this.db.update_market([true,id,update_at]);
+        const [err,result] = await to(this.db.update_market([true,id,update_at]));
+		if(!result){
+			console.error(err,result);
+		}
         return result;
     }
 
 	async market_add(info) {
 		const current_time = this.utils.get_current_time();
 		info = info.concat([false,current_time,current_time]);
-        const result = await this.db.market_add(info);
+        const [err,result] = await to(this.db.market_add(info));
+		if(!result){
+            console.error(err,result);
+        }
         return result;
     }
 
@@ -41,7 +47,10 @@ export default class Market {
     }
 
 	async list_online_markets() {
-        const result = await this.db.list_online_markets();
+        const [err,result] = await to(this.db.list_online_markets());
+		if(!result){
+            console.error(err,result);
+        }
         return result;
     }
 
@@ -52,7 +61,11 @@ export default class Market {
 
     async list_market_quotations() {
 
-        const markets = await this.list_online_markets();
+        const [markets_err,markets] = await to(this.list_online_markets());
+		if(!markets){
+			console.error(markets_err,markets);	
+			return [];
+		}
         const quotation = new mist_wallet();
         const quotations = [];
         for (const index in markets) {

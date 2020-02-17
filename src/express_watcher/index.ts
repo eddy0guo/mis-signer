@@ -24,15 +24,17 @@ class Watcher {
     async loop() {
 
         const [err, pendingTrade]: [any,any] = await to(this.db.laucher_pending_trade());
-        if (err){
-			console.error(err)
+        if (!pendingTrade) {
+
+            console.log(`[Express Watcher]pendingTrade=${pendingTrade},error=${err}`);
 			setTimeout(() => {
                 this.loop.call(this)
             }, 2000);
+
             return;
 		}
 
-        if (!pendingTrade || pendingTrade.length <= 0) {
+        if (pendingTrade.length <= 0) {
 
             console.log('[Express Watcher]No pending trade');
             setTimeout(() => {
@@ -45,8 +47,8 @@ class Watcher {
         const current_time = this.utils.get_current_time();
 
         const [tokens_err,tokens] = await to(this.db.get_tokens([quote_asset_name]));
-		if(tokens_err){
-			console.error(tokens_err);	
+		if(!tokens){
+			console.error(tokens_err,tokens);	
 			setTimeout(() => {
                 this.loop.call(this)
             }, 2000);
@@ -60,8 +62,8 @@ class Watcher {
             mnemonic: mist_config.fauct_word,
         });
         const [quote_err, quote_txid] = await to(wallet.commonTX.transfer(address, quote_amount, tokens[0].asim_assetid));
-        if (quote_err) {
-			console.error(quote_err)
+        if (!quote_txid) {
+			console.error(quote_err,quote_txid)
 			setTimeout(() => {
                 this.loop.call(this)
             }, 2000);
@@ -73,7 +75,7 @@ class Watcher {
         const info = [quote_txid, quote_tx_status, current_time, trade_id];
 
         const [err3, result3] = await to(this.db.update_quote(info));
-        if (err3) console.error(err3, result3)
+        if (!result3) console.error(err3, result3)
         setTimeout(() => {
             this.loop.call(this)
             // 间隔时间随着用户量的增长而降低

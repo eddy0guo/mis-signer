@@ -1,4 +1,6 @@
 import utils2 from './utils';
+import to from 'await-to-js';
+
 
 const date = require('silly-datetime');
 import {restore_order} from './order';
@@ -40,7 +42,8 @@ export default class trades {
 
     async my_trades2(address, page, perpage) {
         const offset = (+page - 1) * perpage;
-        const result = await this.db.my_trades2([address, offset, perpage]);
+        const [err,result] = await to(this.db.my_trades2([address, offset, perpage]));
+		if(!result) console.error(err,result);
         return result;
     }
 
