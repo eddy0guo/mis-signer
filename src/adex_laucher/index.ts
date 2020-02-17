@@ -53,7 +53,7 @@ class launcher {
             const trades = await this.db.transactions_trades([this.tmp_transaction_id]);
             const index = trades[0].transaction_id % 3;
             const trades_hash = [];
-            const markets = await this.db.list_markets();
+            const markets = await this.db.list_online_markets();
             for (const i in trades) {
                 if( !trades[i])continue
                 let token_address;
