@@ -9,6 +9,8 @@ const ethabi = require('ethereumjs-abi');
 import NP from 'number-precision';
 import mist_config from '../../cfg';
 var rp = require('request-promise');
+import to from 'await-to-js'
+
 
 // FIXME: change CUrl to axios
 
@@ -67,9 +69,9 @@ export default class Utils {
             body: {jsonrpc: '2.0', method: 'asimov_getTransactionReceipt',id: 123,params: [txid]},
             json: true // Automatically stringifies the body to JSON
         };
-		let result = await rp(options)
-		if (!result.result.logs) {
-            console.error(`get ${txid} receipt  result  have no logs`);
+		let [err,result] = await to(rp(options));
+		if (err || !result.result.logs) {
+            console.error(`err ${err} occurred or get ${txid} receipt  result  have no logs`);
         }
 
         const datas = [];
@@ -86,9 +88,9 @@ export default class Utils {
             body: {jsonrpc: '2.0', method: 'asimov_getTransactionReceipt',id: 123,params: [txid]},
             json: true // Automatically stringifies the body to JSON
         };
-		let result = await rp(options)
-		if (!result.result.logs) {
-            console.error(`get ${txid} receipt   have no logs`);
+		let [err,result] = await to(rp(options));
+		if (err || !result.result.logs) {
+            console.error(`err ${err} occurred or get ${txid} receipt   have no logs`);
         }
         return result.result.logs.length > 0 ? 'successful' : 'failed';
     }
@@ -149,8 +151,11 @@ export default class Utils {
             json: true // Automatically stringifies the body to JSON
         };
 
-		let txinfo = await rp(options)
-
+		let [err,txinfo] = await to(rp(options));
+		if(err){
+	         console.log('asimov_getRawTransaction failed');
+             throw new Error('asimov_getRawTransaction failed');
+		}
 
         const asset_set = new Set();
         for (const vin of txinfo.vin) {
@@ -226,9 +231,9 @@ export default class Utils {
             body: {jsonrpc: '2.0', method: 'asimov_getTransactionReceipt',id: 123,params: [txid]},
             json: true // Automatically stringifies the body to JSON
         };
-		let result = await rp(options)
-        if (!result.logs) {
-            console.error(`get ${txid} receipt  have no logs`);
+		let [err,result] = await to(rp(options));
+        if (err || !result.logs) {
+            console.error(`err ${err} occurred or get ${txid} receipt  have no logs`);
         }
         const amount = parseInt(result.logs[0].data, 16);
         const info = {

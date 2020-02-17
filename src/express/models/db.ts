@@ -16,7 +16,9 @@ export default class db {
 			password: mist_config.pg_password,
 			port: mist_config.pg_port,
 		});
-
+		client.on('error', (err: any) => {
+            console.error('An idle client has experienced an error', err.stack)
+        })
 		this.clientDB = client;
 
 	}

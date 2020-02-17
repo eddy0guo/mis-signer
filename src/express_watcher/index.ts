@@ -24,7 +24,14 @@ class Watcher {
     async loop() {
 
         const [err, pendingTrade]: [any,any] = await to(this.db.laucher_pending_trade());
-        if (err) console.error(err)
+        if (err){
+			console.error(err)
+			setTimeout(() => {
+                this.loop.call(this)
+            }, 2000);
+            return;
+		}
+
         if (!pendingTrade || pendingTrade.length <= 0) {
 
             console.log('[Express Watcher]No pending trade');
@@ -37,7 +44,15 @@ class Watcher {
         const { trade_id, address, quote_amount, quote_asset_name } = pendingTrade[0];
         const current_time = this.utils.get_current_time();
 
-        const tokens = await this.db.get_tokens([quote_asset_name]);
+        const [tokens_err,tokens] = await to(this.db.get_tokens([quote_asset_name]));
+		if(tokens_err){
+			console.error(tokens_err);	
+			setTimeout(() => {
+                this.loop.call(this)
+            }, 2000);
+            return;
+		}
+
 
         const wallet = new AsimovWallet({
             name: mist_config.fauct_address,
@@ -45,7 +60,13 @@ class Watcher {
             mnemonic: mist_config.fauct_word,
         });
         const [quote_err, quote_txid] = await to(wallet.commonTX.transfer(address, quote_amount, tokens[0].asim_assetid));
-        if (quote_err) console.error(quote_err)
+        if (quote_err) {
+			console.error(quote_err)
+			setTimeout(() => {
+                this.loop.call(this)
+            }, 2000);
+            return;
+		}
 
         const quote_tx_status = !quote_txid ? 'failed' : 'successful';
 
