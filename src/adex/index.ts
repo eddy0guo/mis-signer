@@ -1168,7 +1168,7 @@ did对order_id进行签名，获取rsv
 		});
 	  });
 
-	adex.all('/market_down/market_id', async (req, res) => {
+	adex.all('/market_down/:market_id', async (req, res) => {
 		const {market_id} = req.params;
 		const [err, result] = await to(market.market_down(market_id));
 		res.json({

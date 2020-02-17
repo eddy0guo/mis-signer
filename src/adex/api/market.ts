@@ -29,7 +29,7 @@ export default class Market {
 
 	async market_add(info) {
 		const current_time = this.utils.get_current_time();
-		info = info.concat([true,current_time,current_time]);
+		info = info.concat([false,current_time,current_time]);
         const result = await this.db.market_add(info);
         return result;
     }

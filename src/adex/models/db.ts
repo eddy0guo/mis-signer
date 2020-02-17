@@ -245,10 +245,9 @@ export default class db {
     }
 
 	async update_market(info) : Promise<any> {
-		//update mist_markets set (online,updated_at)=(false,'2020-02-17 11:32:00.305423') where id='BTC-CNYC';
-        const [err, result]: [any,any]  = await to(this.clientDB.query('update mist_markets set (online,updated_at)=($1,$2) where id=$3',info));
+        const [err, result]: [any,any]  = await to(this.clientDB.query('update mist_markets set (online,updated_at)=($1,$3) where id=$2',info));
         if (err) {
-            return console.error('update market failed', err);
+            return console.error('update market failed', err,info);
         }
         return result.rows;
 
@@ -256,7 +255,6 @@ export default class db {
 
 
 	async market_add(info) : Promise<any> {
-		//insert into mist_markets values('MOL-TTT','0x63086a61a5d0269cb1d6c22a9fc829585fb21fdaa9-base','MOL','0x63fc1a4989e656387e351610ccc916dde39a2cfa7e-quote','TTT',false,'2020-02-17 11:32:00.305423','2020-02-17 11:32:00.305423');
         const [err, result]: [any,any]  = await to(this.clientDB.query('insert into mist_markets values($1,$2,$3,$4,$5,$6,$7,$8)',info));
         if (err) {
             return console.error('list markets failed', err,info);
