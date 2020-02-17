@@ -26,7 +26,7 @@ class Watcher {
 	async loop() {
 
 		const [transaction_err,transaction] = await to(this.db.get_pending_transactions())
-		if(transaction_err){
+		if(!transaction){
 			console.error(transaction_err);
 			setTimeout(() => {
                 this.loop.call(this)
@@ -45,6 +45,12 @@ class Watcher {
 		const id = transaction[0].id;
 
 		const [err, result] = await to(chain.getrawtransaction([transaction[0].transaction_hash, true, true], 'child_poa'))
+		if(!result || !result.confirmations){
+			 console.error(`getrawtransaction error ${err}`);
+             this.loop.call(this)
+             return;	
+		}
+
 		const update_time = this.utils.get_current_time();
 		if (!err && result.confirmations >= 1) {
 			const status = 'successful';

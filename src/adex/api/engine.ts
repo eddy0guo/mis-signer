@@ -22,7 +22,7 @@ export default class Engine {
     const filter = [message.price, side, message.market_id];
 
     const [err,result] = await to(this.db.filter_orders(filter));
-	if(err){
+	if(!result){
 		console.log(err);
 		return [];
 	}
@@ -103,19 +103,19 @@ export default class Engine {
 
   async call_asimov(trades) {
     const [token_address_err,token_address] = await to(this.db.get_market([trades[0].market_id]));
-	if(token_address_err){
-		console.log(token_address_err);
+	if(!token_address){
+		console.log(token_address_err,token_address);
 		return;
 	}
 
     const [transactions_err,transactions] = await to(this.db.list_all_trades());
     const [matched_trades_err,matched_trades] = await to(this.db.list_matched_trades());
-	if(transactions_err || matched_trades_err){
-		console.log(transactions_err);	
-		console.log(matched_trades_err);
+	if(!transactions || !matched_trades){
+		console.log(transactions_err,transactions);	
+		console.log(matched_trades_err,matched_trades);
 		return;
 	}
-    const add_queue_num = Math.floor(matched_trades[0].count / 300) + 1;
+    const add_queue_num = Math.floor(matched_trades[0].count / 200) + 1;
 
     const transaction_id =
       transactions.length === 0
