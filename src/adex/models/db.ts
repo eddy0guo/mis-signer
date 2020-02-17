@@ -20,9 +20,8 @@ export default class db {
         });
         client.on('error', (err: any) => {
             console.error('An idle client has experienced an error', err.stack)
-          })
+        })
         this.clientDB = client;
-        this.utils = new utils2;
     }
 
     /**
@@ -229,17 +228,45 @@ export default class db {
     *makkets
     *
     * */
-    async list_markets() : Promise<any> {
+    async list_online_markets() : Promise<any> {
+        const [err, result]: [any,any]  = await to(this.clientDB.query('select * from mist_markets where online=true'));
+        if (err) {
+            return console.error('list online markets failed', err);
+        }
+        return result.rows;
+
+    }
+
+	async list_markets() : Promise<any> {
         const [err, result]: [any,any]  = await to(this.clientDB.query('select * from mist_markets'));
         if (err) {
-            return console.error('list_markets_failed', err);
+            return console.error('list markets failed', err);
+        }
+        return result.rows;
+
+    }
+
+	async update_market(info) : Promise<any> {
+        const [err, result]: [any,any]  = await to(this.clientDB.query('update mist_markets set (online,updated_at)=($1,$3) where id=$2',info));
+        if (err) {
+            return console.error('update market failed', err,info);
+        }
+        return result.rows;
+
+    }
+
+
+	async market_add(info) : Promise<any> {
+        const [err, result]: [any,any]  = await to(this.clientDB.query('insert into mist_markets values($1,$2,$3,$4,$5,$6,$7,$8)',info));
+        if (err) {
+            return console.error('list markets failed', err,info);
         }
         return result.rows;
 
     }
 
     async get_market(marketID) : Promise<any> {
-        const [err, result]: [any,any]  = await to(this.clientDB.query('select * from mist_markets where id=$1', marketID));
+        const [err, result]: [any,any]  = await to(this.clientDB.query('select * from mist_markets where id=$1 and online=true', marketID));
         if (err) {
             return console.error('get_market_faied', err, marketID);
         }

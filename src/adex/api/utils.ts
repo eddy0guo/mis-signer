@@ -8,6 +8,9 @@ const ethutil = require('ethereumjs-util');
 const ethabi = require('ethereumjs-abi');
 import NP from 'number-precision';
 import mist_config from '../../cfg';
+var rp = require('request-promise');
+import to from 'await-to-js'
+
 
 // FIXME: change CUrl to axios
 
@@ -60,33 +63,39 @@ export default class Utils {
     }
 
     async get_receipt(txid) {
-        const cmd = 'curl -X POST --data \'\{\"id\":1, \"jsonrpc\":\"2.0\",\"method\":\"asimov_getTransactionReceipt\",\"params\":\[\"' + txid + '\"\]\}\}\' -H \"Content-type: application\/json\" ' + mist_config.asimov_child_rpc;
-
-        const sto = child.execSync(cmd);
-        const logs = JSON.parse(sto).result.logs;
-        if (logs) {
-            console.error(`${cmd} result  have no logs`);
+		var options = {
+            method: 'POST',
+            uri: mist_config.asimov_child_rpc,
+            body: {jsonrpc: '2.0', method: 'asimov_getTransactionReceipt',id: 123,params: [txid]},
+            json: true // Automatically stringifies the body to JSON
+        };
+		let [err,result] = await to(rp(options));
+		if (err || !result.result.logs) {
+            console.error(`err ${err} occurred or get ${txid} receipt  result  have no logs`);
         }
+
         const datas = [];
-        for (const index in logs) {
-            datas.push(logs[index].data);
+        for (const index in result.result.logs) {
+            datas.push(result.result.logs[index].data);
         }
         return datas;
     }
 
     async get_receipt_log(txid) {
-        const cmd = 'curl -X POST --data \'\{\"id\":1, \"jsonrpc\":\"2.0\",\"method\":\"asimov_getTransactionReceipt\",\"params\":\[\"' + txid + '\"\]\}\}\' -H \"Content-type: application\/json\" ' + mist_config.asimov_child_rpc;
-
-        const sto = child.execSync(cmd);
-        const logs = JSON.parse(sto).result.logs;
-        if (!logs) {
-            console.error(`${cmd} result  have no logs`);
+		var options = {
+            method: 'POST',
+            uri: mist_config.asimov_child_rpc,
+            body: {jsonrpc: '2.0', method: 'asimov_getTransactionReceipt',id: 123,params: [txid]},
+            json: true // Automatically stringifies the body to JSON
+        };
+		let [err,result] = await to(rp(options));
+		if (err || !result.result.logs) {
+            console.error(`err ${err} occurred or get ${txid} receipt   have no logs`);
         }
-        return logs.length > 0 ? 'successful' : 'failed';
+        return result.result.logs.length > 0 ? 'successful' : 'failed';
     }
 
     async orderTobytes(order) {
-
         order.taker = order.taker.substr(0, 2) + order.taker.substr(4, 44);
         order.maker = order.maker.substr(0, 2) + order.maker.substr(4, 44);
         order.baseToken = order.baseToken.substr(0, 2) + order.baseToken.substr(4, 44);
@@ -134,10 +143,19 @@ export default class Utils {
     }
 
     async decode_transfer_info(txid) {
-        const cmd = 'curl -X POST --data \'\{\"id\":1, \"jsonrpc\":\"2.0\",\"method\":\"asimov_getRawTransaction\",\"params\":\[\"' + txid + '\",true,true\]\}\}\' -H \"Content-type: application\/json\" ' + mist_config.asimov_chain_rpc;
+		var options = {
+            method: 'POST',
+            uri: mist_config.asimov_chain_rpc,
+            body: {jsonrpc: '2.0', method: 'asimov_getRawTransaction',id: 123, params: [txid,true,true]},
+            json: true // Automatically stringifies the body to JSON
+        };
 
-        const sto = child.execSync(cmd);
-        const txinfo = JSON.parse(sto).result;
+		let [err,txinfo] = await to(rp(options));
+		if(err){
+	         console.log('asimov_getRawTransaction failed');
+             throw new Error('asimov_getRawTransaction failed');
+		}
+
         const asset_set = new Set();
         for (const vin of txinfo.vin) {
             asset_set.add(vin.prevOut.asset);
@@ -206,17 +224,21 @@ export default class Utils {
     }
 
     async decode_erc20_transfer(txid) {
-        const cmd = 'curl -X POST --data \'\{\"id\":1, \"jsonrpc\":\"2.0\",\"method\":\"asimov_getTransactionReceipt\",\"params\":\[\"' + txid + '\"\]\}\}\' -H \"Content-type: application\/json\" ' + mist_config.asimov_child_rpc;
-        const sto = child.execSync(cmd);
-        const logs = JSON.parse(sto).result.logs;
-        if (logs) {
-            console.error(`${cmd} result  have no logs`);
+		var options = {
+            method: 'POST',
+            uri: mist_config.asimov_child_rpc,
+            body: {jsonrpc: '2.0', method: 'asimov_getTransactionReceipt',id: 123,params: [txid]},
+            json: true // Automatically stringifies the body to JSON
+        };
+		let [err,result] = await to(rp(options));
+        if (err || !result.logs) {
+            console.error(`err ${err} occurred or get ${txid} receipt  have no logs`);
         }
-        const amount = parseInt(logs[0].data, 16);
+        const amount = parseInt(result.logs[0].data, 16);
         const info = {
-            contract_address: logs[0].address,
-            from: '0x' + logs[0].topics[1].substring(24),
-            to: '0x' + logs[0].topics[2].substring(24),
+            contract_address: result.logs[0].address,
+            from: '0x' + result.logs[0].topics[1].substring(24),
+            to: '0x' + result.logs[0].topics[2].substring(24),
             amount: NP.divide(amount, 100000000),
         };
 

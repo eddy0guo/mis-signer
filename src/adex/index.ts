@@ -1140,11 +1140,6 @@ did对order_id进行签名，获取rsv
     }
   });
 
-  adex.all('/list_markets', async (req, res) => {
-    const [err, result] = await to(market.list_markets());
-    res.json({ result, err });
-  });
-
   adex.all('/list_markets_v2', async (req, res) => {
     const [err, result] = await to(market.list_markets());
     res.json({
@@ -1153,6 +1148,46 @@ did对order_id进行签名，获取rsv
       err,
     });
   });
+
+  adex.all('/list_online_markets', async (req, res) => {
+    const [err, result] = await to(market.list_online_markets());
+    res.json({
+      success: !result ? false : true,
+      result,
+      err,
+    });
+  });
+
+	adex.all('/market_up/:market_id', async (req, res) => {
+		const {market_id} = req.params;
+		const [err, result] = await to(market.market_up(market_id));
+		res.json({
+		  success: !result ? false : true,
+		  result,
+		  err,
+		});
+	  });
+
+	adex.all('/market_down/:market_id', async (req, res) => {
+		const {market_id} = req.params;
+		const [err, result] = await to(market.market_down(market_id));
+		res.json({
+		  success: !result ? false : true,
+		  result,
+		  err,
+		});
+	  });
+
+
+	adex.all('/market_add/:market_id/:base_token_address/:base_token_symbol/:quote_token_address/:quote_token_symbol', async (req, res) => {
+		let info = utils.arr_values(req.params);
+		const [err, result] = await to(market.market_add(info));
+		res.json({
+		  success: !result ? false : true,
+		  result,
+		  err,
+		});
+	  });
 
   adex.all('/rollback_trades', async (req, res) => {
     const [err, result] = await to(trades.rollback_trades());

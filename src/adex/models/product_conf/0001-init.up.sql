@@ -15,10 +15,10 @@ create table mist_markets(
  id text primary key,
  base_token_address text ,
  base_token_symbol text ,
-
  quote_token_address text ,
  quote_token_symbol text ,
-
+ online  boolean ,
+ updated_at timestamp ,
  created_at timestamp
 );
 

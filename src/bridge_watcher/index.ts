@@ -37,9 +37,15 @@ class watcher {
     async asset2coin_loop() {
 
         const [err, pending_trade]: [any,any] = await to(this.psql_db.filter_bridge(['asset2coin', 'successful', 'pending']));
-        console.log('err,pending_trade', err, pending_trade);
-        if (pending_trade?.length === 0 || pending_trade === null || pending_trade === undefined ) {
+		if(err){
+			console.log(err);	
+			  setTimeout(() => {
+                this.asset2coin_loop.call(this)
+            }, 2000);
+            return;
+		}
 
+        if (pending_trade.length === 0) {
             console.log('[BRIDGE WATCHER] No pending trade');
             setTimeout(() => {
                 this.asset2coin_loop.call(this)
@@ -49,7 +55,14 @@ class watcher {
         }
         const { id, address, amount, token_name } = pending_trade[0];
         const current_time = this.utils.get_current_time();
-        const transfer_tokens = await this.psql_db.get_tokens([token_name])
+        const [transfer_tokens_err,transfer_tokens] = await to(this.psql_db.get_tokens([token_name]));
+		if(transfer_tokens_err){
+			console.error(transfer_tokens_err);
+			setTimeout(() => {
+                this.asset2coin_loop.call(this)
+            }, 2000);
+            return;
+		}
 
         const wallet = new AsimovWallet({
             name: mist_config.bridge_address,
@@ -84,10 +97,24 @@ class watcher {
     async coin2asset_release_loop() {
 
         const [failed_err, failed_trade]: [any,any] = await to(this.psql_db.filter_bridge(['coin2asset', 'failed', 'successful']));
-        if(failed_err)console.error('err,pending_trade', failed_err, failed_trade);
-        if (failed_trade?.length !== 0) {
+        if(failed_err){
+			console.error('err,pending_trade', failed_err, failed_trade);
+			setTimeout(() => {
+                this.coin2asset_release_loop.call(this)
+            }, 2000);
+            return;
+		}
+        if (failed_trade.length !== 0) {
             const { id, address, amount, token_name } = failed_trade[0];
-            const tokens = await this.psql_db.get_tokens([token_name])
+            const [tokens_err,tokens] = await to(this.psql_db.get_tokens([token_name]));
+			if(tokens_err){
+				console.log(tokens_err);
+				setTimeout(() => {
+					this.coin2asset_release_loop.call(this)
+				}, 2000);
+				return;
+
+			}
             const current_time = this.utils.get_current_time();
 
             const [master_err, master_txid] = await send_asset(address, tokens[0].asim_assetid, amount);
@@ -97,8 +124,7 @@ class watcher {
                 if (err3) console.error(err3, result3)
             } else {
                 console.error(`the trade ${id} failed again`, master_err)
-
-            }
+			}
 
 
         }
@@ -107,6 +133,11 @@ class watcher {
         const [err, pending_trade]: [any,any] = await to(this.psql_db.filter_bridge(['coin2asset', 'pending', 'successful']));
         if (err) {
             console.error(`release bridge happened error ${err}`);
+            setTimeout(() => {
+                this.coin2asset_release_loop.call(this)
+            }, 2000);
+
+            return;
         }
         if (pending_trade?.length === 0 || pending_trade === null || pending_trade === undefined ) {
 
@@ -146,7 +177,14 @@ class watcher {
 
 
         const [err, pending_trade]: [any,any] = await to(this.psql_db.filter_bridge(['coin2asset', 'pending', 'pending']));
-        if (err) console.error(err)
+        if (err) {
+			console.error(err)
+			setTimeout(() => {
+                this.coin2asset_burn_loop.call(this)
+            }, 2000);
+            return;
+		}
+
         if (pending_trade.length === 0) {
 
             console.log('[WATCHER] No pending burn bridge');
@@ -158,7 +196,15 @@ class watcher {
         }
 
         const { id, address, fee_amount, amount, token_name } = pending_trade[0];
-        const tokens = await this.psql_db.get_tokens([token_name])
+        const [tokens_err,tokens] = await to(this.psql_db.get_tokens([token_name]));
+		if(tokens_err){
+			console.log(tokens_err);
+            setTimeout(() => {
+                this.coin2asset_burn_loop.call(this)
+            }, 2000);
+
+			return;
+		}
         const burn_amount = NP.plus(fee_amount, amount);
 
 

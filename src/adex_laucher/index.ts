@@ -26,14 +26,19 @@ class launcher {
     async loop() {
         const [bestblock_err, bestblock_result] = await to(chain.getbestblock());
         if (bestblock_err || bestblock_result?.height === this.block_height) {
-            console.log(`[ADEX LAUNCHER] current height is ${bestblock_result?.height} and last is ${this.block_height}`);
+            console.log(`[ADEX LAUNCHER] current height is ${bestblock_result.height} and last is ${this.block_height}`);
             setTimeout(() => {
                 this.loop.call(this)
             }, 500);
             return
         }
 
-        const trades = await this.db.get_laucher_trades();
+        const [trades_err,trades] = await to(this.db.get_laucher_trades());
+		if(trades_err){
+			console.error(trades_err);
+			return;
+		}
+
         const current_time = this.utils.get_current_time();
         if (trades.length === 0 || trades === null || trades === undefined ) {
             console.log('[Launcher] No matched trades')
@@ -50,10 +55,20 @@ class launcher {
         await this.db.launch_update_trades(update_trade_info);
         // 准备laucher之前先延时2秒
         setTimeout(async () => {
-            const trades = await this.db.transactions_trades([this.tmp_transaction_id]);
+            const [trades_err,trades] = await to(this.db.transactions_trades([this.tmp_transaction_id]));
+			if(trades_err){
+				console.error(trades_err);	
+				this.loop.call(this);
+				return;
+			}
             const index = trades[0].transaction_id % 3;
             const trades_hash = [];
-            const markets = await this.db.list_markets();
+            const [markets_err,markets] = await to(this.db.list_online_markets());
+			if(markets_err){
+				console.error(markets_err);
+				this.loop.call(this);
+				return;
+			}
             for (const i in trades) {
                 if( !trades[i])continue
                 let token_address;
@@ -87,9 +102,18 @@ class launcher {
 
             const mist = new Exchange(mist_config.ex_address);
             const [err, txid] = await to(mist.matchorder(trades_hash, mist_config.relayers[index].prikey, mist_config.relayers[index].word));
-
 			const [bestblock_err2, bestblock_result2] = await to(chain.getbestblock());
-			if (bestblock_err2) console.error(bestblock_err2)
+			if (err || bestblock_err2) {
+				console.error(err);
+				console.error(bestblock_err2);
+				this.loop.call(this);
+				return;
+			}
+
+			if(!bestblock_result2.height){
+				console.error('bestblock height is null');	
+				return;
+			}
 			this.block_height = bestblock_result2.height;
 
             if (!err) {
