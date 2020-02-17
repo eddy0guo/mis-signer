@@ -18,15 +18,10 @@ export default class db {
             password: mist_config.pg_password,
             port: mist_config.pg_port,
         });
-<<<<<<< HEAD
-        this.clientDB = client;
-        this.utils = new utils2;
-=======
         client.on('error', (err: any) => {
             console.error('An idle client has experienced an error', err.stack)
         })
         this.clientDB = client;
->>>>>>> ts-fingo
     }
 
     /**
