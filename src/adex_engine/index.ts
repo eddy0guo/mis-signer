@@ -44,14 +44,14 @@ class enginer {
                     break;
                 }
 
-                const [trades_err,trades] = await this.exchange.make_trades(find_orders, message);
+                const [trades_err,trades] = await to(this.exchange.make_trades(find_orders, message));
 				if(trades_err){
 					console.error(trades_err);	
 					done();
 					return;
 				}
 
-                const [call_asimov_err,call_asimov_result] = await this.exchange.call_asimov(trades);
+                const [call_asimov_err,call_asimov_result] = await to(this.exchange.call_asimov(trades));
 				if(call_asimov_err){
 					console.error(call_asimov_err);	
 					done();
