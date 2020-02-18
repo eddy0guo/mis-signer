@@ -224,6 +224,18 @@ export default class db {
 
     }
 
+	/**	
+	async insert_tokens(info) : Promise<any> {
+		//insert into mist_markets values($1,$2,$3,$4,$5,$6,$7,$8)
+        const [err, result]: [any,any]  = await to(this.clientDB.query('insert into mist_tokens values($1,$2,$3,$4,$5,$6,$7,$8)', info));
+        if (err) {
+            return console.error('insert tokens failed', err, filter);
+        }
+        return result.rows;
+
+    }
+	**/
+
     /*
     *makkets
     *
@@ -273,6 +285,16 @@ export default class db {
         return result.rows;
 
     }
+
+	async get_existed_market(marketID) : Promise<any> {
+        const [err, result]: [any,any]  = await to(this.clientDB.query('select * from mist_markets where id=$1', marketID));
+        if (err) {
+            return console.error('get existed market faied', err, marketID);
+        }
+        return result.rows;
+
+    }
+
 
     async get_market_current_price(marketID) : Promise<any> {
         const [err, result]: [any,any]  = await to(this.clientDB.query('select cast(price as float8) from mist_trades_tmp where (current_timestamp - created_at) < \'24 hours\' and market_id=$1 order by created_at desc limit 1', marketID));
@@ -343,7 +365,7 @@ export default class db {
     async list_trades(marketID) : Promise<any> {
         const [err, result]: [any,any]  = await to(this.clientDB.query('SELECT * FROM mist_trades_tmp where market_id=$1 order by created_at desc limit 30', marketID));
         if (err) {
-            return console.error('list_trades_ failed', err, marketID);
+            return console.error('list trades failed', err, marketID);
         }
         return result.rows;
 
@@ -352,7 +374,7 @@ export default class db {
     async my_trades(address) : Promise<any> {
         const [err, result]: [any,any]  = await to(this.clientDB.query('SELECT * FROM mist_trades where taker=$1 or maker=$1 order by created_at desc limit 30', address));
         if (err) {
-            return console.error('my_trades_ failed', err, address);
+            return console.error('my trades failed', err, address);
         }
         return result.rows;
 
@@ -361,7 +383,7 @@ export default class db {
     async order_trades(order_id) : Promise<any> {
         const [err, result]: [any,any]  = await to(this.clientDB.query('SELECT price,amount FROM mist_trades where taker_order_id=$1 or maker_order_id=$1', order_id));
         if (err) {
-            return console.error('my_trades_ failed', err);
+            return console.error('my trades failed', err);
         }
         return result.rows;
 
@@ -370,7 +392,7 @@ export default class db {
     async my_trades2(filter_info) : Promise<any> {
         const [err, result]: [any,any]  = await to(this.clientDB.query('SELECT * FROM mist_trades where taker=$1 or maker=$1 order by created_at desc limit $3 offset $2', filter_info));
         if (err) {
-            return console.error('my_trades_ failed', err, filter_info);
+            return console.error('my trades2 failed', err, filter_info);
         }
         return result.rows;
 
@@ -379,7 +401,7 @@ export default class db {
     async transactions_trades(id) : Promise<any> {
         const [err, result]: [any,any]  = await to(this.clientDB.query('SELECT * FROM mist_trades_tmp where transaction_id=$1', id));
         if (err) {
-            return console.error('transactions_trades_ failed', err, id);
+            return console.error('transactions trades failed', err, id);
         }
         return result.rows;
 
@@ -388,7 +410,7 @@ export default class db {
     async list_all_trades() : Promise<any> {
         const [err, result]: [any,any]  = await to(this.clientDB.query('SELECT * FROM mist_trades_tmp where status!=\'matched\' and (current_timestamp - created_at) < \'100 hours\' order by transaction_id desc limit 1'));
         if (err) {
-            return console.error('list_all_trades_ failed', err);
+            return console.error('list all trades failed', err);
         }
         return result.rows;
 
@@ -397,7 +419,7 @@ export default class db {
     async list_matched_trades() : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('SELECT count(1) FROM mist_trades_tmp where status=\'matched\''));
         if (err) {
-            return console.error('list_all_trades_ failed', err);
+            return console.error('list matched trades failed', err);
         }
         return result.rows;
 
@@ -408,7 +430,7 @@ export default class db {
         const sql = 'SELECT * FROM mist_trades_tmp where market_id=$1  and created_at>=$2 and  created_at<=$3 order by ' + sort_by + ' desc limit 30';
         const [err, result]: [any,any] = await to(this.clientDB.query(sql, message));
         if (err) {
-            return console.error('sort_trades_ failed', err, message, sort_by);
+            return console.error('sort trades failed', err, message, sort_by);
         }
         return result.rows;
 
@@ -420,14 +442,14 @@ export default class db {
             .query('UPDATE mist_trades SET (status,updated_at)=($1,$2) WHERE  transaction_id=$3', update_info));
 
         if (err) {
-            return console.error('update_trades_ failed', err, update_info);
+            return console.error('update trades failed', err, update_info);
         }
 
         const [err_tmp, result_tmp]: [any,any] = await to(this.clientDB
             .query('UPDATE mist_trades_tmp SET (status,updated_at)=($1,$2) WHERE  transaction_id=$3', update_info));
 
         if (err_tmp) {
-            return console.error('update_trades_ failed', err_tmp, result_tmp);
+            return console.error('update trades failed', err_tmp, result_tmp);
         }
 
         // console.log('update_trades_成功',JSON.stringify(result),"info",update_info);
@@ -440,14 +462,14 @@ export default class db {
             .query('UPDATE mist_trades SET (status,transaction_hash,updated_at)=($1,$2,$3) WHERE  transaction_id=$4', update_info));
 
         if (err) {
-            return console.error('launch_update_trades_ failed', err, update_info);
+            return console.error('launch update trades failed', err, update_info);
         }
 
         const [err_tmp, result_tmp]: [any,any] = await to(this.clientDB
             .query('UPDATE mist_trades_tmp SET (status,transaction_hash,updated_at)=($1,$2,$3) WHERE  transaction_id=$4', update_info));
 
         if (err_tmp) {
-            return console.error('launch_update_trades_ failed', err_tmp, result_tmp);
+            return console.error('launch update trades failed', err_tmp, result_tmp);
         }
 
         // console.log('launch_update_trades_成功',JSON.stringify(result),"info",update_info);
@@ -460,7 +482,7 @@ export default class db {
         // let [err,result]: [any,any] = await to(this.clientDB.query('select t.*,s.right_id from (select * from mist_trades where status!=\'successful\' and transaction_hash is null)t left join (SELECT transaction_id as right_id  FROM mist_trades where status!=\'successful\'  and transaction_hash is null order by transaction_id  limit 1)s on t.transaction_id=s.right_id where s.right_id is not null'));
         const [err, result]: [any,any] = await to(this.clientDB.query(' SELECT distinct(transaction_id)  FROM mist_trades_tmp where status in (\'pending\',\'matched\') and transaction_hash is null order by transaction_id  limit 1'));
         if (err) {
-            return console.error('get_laucher_trades_ failed', err);
+            return console.error('get laucher trades failed', err);
         }
 
         return result.rows;
@@ -470,7 +492,7 @@ export default class db {
     async get_matched_trades() : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('SELECT *  FROM mist_trades_tmp where status=\'matched\''));
         if (err) {
-            return console.error('get_laucher_trades_ failed', err);
+            return console.error('get matched trades failed', err);
         }
         return result.rows;
 
@@ -480,7 +502,7 @@ export default class db {
     async delete_matched_trades() : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('delete FROM mist_trades where status=\'matched\''));
         if (err) {
-            return console.error('get_laucher_trades_ failed', err);
+            return console.error('delete matched trade failed', err);
         }
         return result.rows;
 
@@ -494,16 +516,15 @@ export default class db {
     async insert_transactions(TXinfo) : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('insert into mist_transactions values($1,$2,$3,$4,$5,$6,$7)', TXinfo));
         if (err) {
-            return console.error('insert_transactions_ failed', err, TXinfo);
+            return console.error('insert transactions failed', err, TXinfo);
         }
-        // 			console.log('insert_transactions_成功',JSON.stringify(result),"info",TXinfo);
         return JSON.stringify(result.rows);
     }
 
     async list_transactions() : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('SELECT * FROM mist_transactions  order by id desc limit 30'));
         if (err) {
-            return console.error('list_transactions_ failed', err);
+            return console.error('list transactions failed', err);
         }
         return result.rows;
 
@@ -512,7 +533,7 @@ export default class db {
     async get_pending_transactions() : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('SELECT * FROM mist_transactions where (current_timestamp - created_at) < \'24 hours\'  and status!=\'successful\' and transaction_hash is not null order by id  limit 1'));
         if (err) {
-            return console.error('list_successful_transactions_ failed', err,);
+            return console.error('get pending transactions failed', err,);
         }
         return result.rows;
 
@@ -521,7 +542,7 @@ export default class db {
     async get_transaction(id)  : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('SELECT * FROM mist_transactions where id=$1', id));
         if (err) {
-            return console.error('get_transaction_ failed', err, id);
+            return console.error('get transaction failed', err, id);
         }
         return result.rows;
 
@@ -532,9 +553,8 @@ export default class db {
             .query('UPDATE mist_transactions SET (status,contract_status,updated_at)=($1,$2,$3) WHERE  id=$4', update_info));
 
         if (err) {
-            return console.error('update_transactions_ failed', err, update_info);
+            return console.error('update transactions failed', err, update_info);
         }
-        // console.log('update_transactions_成功',JSON.stringify(result),update_info);
         return result.rows;
 
     }
@@ -549,9 +569,8 @@ export default class db {
         const [err, result]: [any,any] = await to(this.clientDB
             .query('UPDATE mist_users SET (pi,asim,btc,usdt,eth,mt,pi_valuation,asim_valuation,btc_valuation,usdt_valuation,eth_valuation,mt_valuation,updated_at)=($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) WHERE  address=$14', update_info));
         if (err) {
-            return console.error('update_user_token_ failed', err.update_info);
+            return console.error('update user token failed', err.update_info);
         }
-        // 	console.log('update_update_user_token_成功',JSON.stringify(result),"info",update_info);
         return result.rows;
 
     }
@@ -561,7 +580,7 @@ export default class db {
             .query('UPDATE mist_users SET (total_value_1day,total_value_2day,total_value_3day,total_value_4day,total_value_5day,total_value_6day,\
 				total_value_7day,updated_at)=($1,total_value_1day,total_value_2day,total_value_3day,total_value_4day,total_value_5day,total_value_6day,$2) WHERE  address=$3', update_info));
         if (err) {
-            return console.error('update_user_total_ failed', err, update_info);
+            return console.error('update user total failed', err, update_info);
         }
         return result.rows;
 
@@ -570,7 +589,7 @@ export default class db {
     async insert_users(address_info) : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('insert into mist_users values($1)', address_info));
         if (err) {
-            return console.error('insert_users_ failed', err, address_info);
+            return console.error('insert users failed', err, address_info);
         }
         return JSON.stringify(result.rows);
     }
@@ -578,7 +597,7 @@ export default class db {
     async find_user(address) : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('SELECT * FROM mist_users  where address=$1', address));
         if (err) {
-            return console.error('find_user_ failed', err, address);
+            return console.error('find user failed', err, address);
         }
         return result.rows;
     }
@@ -586,7 +605,7 @@ export default class db {
     async list_users() : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('SELECT * FROM mist_users'));
         if (err) {
-            return console.error('list_users_ failed', err);
+            return console.error('list users failed', err);
         }
         return result.rows;
     }
@@ -598,7 +617,7 @@ export default class db {
     async my_converts(address) : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('SELECT * FROM mist_token_convert  where address=$1 order by created_at desc limit 30', address));
         if (err) {
-            return console.error('list_borrows_ failed', err, address);
+            return console.error('my converts  failed', err, address);
         }
         return result.rows;
 
@@ -607,7 +626,7 @@ export default class db {
     async my_converts2(filter_info) : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('SELECT * FROM mist_token_convert  where address=$1 order by created_at desc limit $3 offset $2', filter_info));
         if (err) {
-            return console.error('list_borrows_ failed', err, filter_info);
+            return console.error('my converts2 failed', err, filter_info);
         }
 
         return result.rows;
@@ -617,7 +636,7 @@ export default class db {
     async find_bridge(filter_info) : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query(`SELECT ${BRIDGE_SQL} FROM mist_bridge  where id=$1`, filter_info));
         if (err) {
-            return console.error('find_bridge_ failed', err, filter_info);
+            return console.error('find bridge failed', err, filter_info);
         }
 
         return result.rows;
@@ -627,7 +646,7 @@ export default class db {
     async my_bridge(filter_info) : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query(`SELECT ${BRIDGE_SQL} FROM mist_bridge  where address=$1 order by created_at desc limit $3 offset $2`, filter_info));
         if (err) {
-            return console.error('list_borrows_ failed', err, filter_info);
+            return console.error('my bridge failed', err, filter_info);
         }
 
         return result.rows;
@@ -637,7 +656,7 @@ export default class db {
     async filter_bridge(filter_info) : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('SELECT * FROM mist_bridge  where side=$1 and master_txid_status=$2 and child_txid_status=$3 order by created_at desc limit 1', filter_info));
         if (err) {
-            return console.error('list_borrows_ failed', err, filter_info);
+            return console.error('filter bridge failed', err, filter_info);
         }
 
         return result.rows;
@@ -647,7 +666,7 @@ export default class db {
     async update_asset2coin_bridge(info) : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('UPDATE mist_bridge SET (child_txid,child_txid_status,updated_at)=($1,$2,$3) WHERE id=$4', info));
         if (err) {
-            return console.error('list_borrows_ failed', err, info);
+            return console.error('update asset2coin bridge failed', err, info);
         }
 
         return result.rows;
@@ -657,7 +676,7 @@ export default class db {
     async update_asset2coin_decode(info) : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('UPDATE mist_bridge SET (address,token_name,amount,master_txid_status,child_txid_status,fee_asset,fee_amount,updated_at)=($1,$2,$3,$4,$5,$6,$7,$8) WHERE id=$9', info));
         if (err) {
-            return console.error('update_asset2coin_decode失败', err, info);
+            return console.error('update asset2coin decode failed', err, info);
         }
 
         return result.rows;
@@ -667,7 +686,7 @@ export default class db {
     async update_coin2asset_bridge(info) : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('UPDATE mist_bridge SET (master_txid,master_txid_status,child_txid,child_txid_status,updated_at)=($1,$2,$3,$4,$5) WHERE id=$6', info));
         if (err) {
-            return console.error('update_coin2asset_bridge', err, info);
+            return console.error('update coin2asset bridge', err, info);
         }
 
         return result.rows;
@@ -677,7 +696,7 @@ export default class db {
     async update_coin2asset_failed(info) : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('UPDATE mist_bridge SET (master_txid,master_txid_status,updated_at)=($1,$2,$3) WHERE id=$4', info));
         if (err) {
-            return console.error('update_coin2asset_bridge', err, info);
+            return console.error('update coin2asset failed', err, info);
         }
 
         return result.rows;
@@ -687,7 +706,7 @@ export default class db {
     async my_bridge_v3(filter_info) : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query(`SELECT ${BRIDGE_SQL} FROM mist_bridge  where address=$1 and token_name=$2 order by created_at desc limit $4 offset $3`, filter_info));
         if (err) {
-            return console.error('list_borrows_ failed', err, filter_info);
+            return console.error('my bridge_v3 failed', err, filter_info);
         }
 
         return result.rows;
@@ -697,25 +716,23 @@ export default class db {
     async insert_converts(info) : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('insert into mist_token_convert values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)', info));
         if (err) {
-            return console.error('insert_traders_ failed', err);
+            return console.error('insert converts failed', err);
         }
-        // console.log('insert_borrows_成功',JSON.stringify(result),"info",borrow_info);
         return JSON.stringify(result.rows);
     }
 
     async insert_bridge(info) : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('insert into mist_bridge values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)', info));
         if (err) {
-            return console.error('insert_mist_bridge_ failed', err);
+            return console.error('insert bridge failed', err);
         }
-        // console.log('insert_borrows_成功',JSON.stringify(result),"info",borrow_info);
         return JSON.stringify(result.rows);
     }
 
     async get_engine_info() : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('select status,count(1) from mist_trades_tmp group by status'));
         if (err) {
-            return console.error('insert_traders_ failed', err);
+            return console.error('get engine info failed', err);
         }
         return JSON.stringify(result.rows);
     }
@@ -723,7 +740,7 @@ export default class db {
     async get_freeze_amount(filter_info) : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('select market_id,side,sum(pending_amount+available_amount) as base_amount,sum((pending_amount+available_amount) * price) as quote_amount from mist_orders_tmp where trader_address=$1 group by market_id,side having (position($2 in market_id)=1 and side=\'sell\') or (position($2 in market_id)>1 and side=\'buy\')', filter_info));
         if (err) {
-            return console.error('get_freeze_amount failed', err, filter_info);
+            return console.error('get freeze amount failed', err, filter_info);
         }
         return result.rows;
     }
@@ -734,7 +751,7 @@ export default class db {
     async list_assets_info() : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('select s.*,m.circulation_amount as old_circulation_amount   from (select * from asim_assets_info order by created_at desc limit 5)s left join (select * from asim_assets_info where created_at - current_timestamp < \'24 minutes\' order by created_at limit 5)m on s.asset_id=m.asset_id'));
         if (err) {
-            return console.error('errlist_assets_info_ failed', err);
+            return console.error('list assets info failed', err);
         }
         return JSON.stringify(result.rows);
 
@@ -743,7 +760,7 @@ export default class db {
     async insert_assets_info(info) : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('insert into asim_assets_info  values($1,$2,$3,$4,$5,$6,$7,$8)', info));
         if (err) {
-            return console.error('insert__assets_info_ failed', err, info);
+            return console.error('insert assets info failed', err, info);
         }
         return JSON.stringify(result.rows);
     }
@@ -751,7 +768,7 @@ export default class db {
     async update_assets_total(info) : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('UPDATE asim_assets_info SET (total,updated_at)=($1,$2) WHERE asset_name=$3', info));
         if (err) {
-            return console.error('update_asset_info', err, info);
+            return console.error('update assets total failed', err, info);
         }
 
         return result.rows;
@@ -761,7 +778,7 @@ export default class db {
     async update_assets_yesterday_total(info) : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('UPDATE asim_assets_info SET (yesterday_total,updated_at)=($1,$2) WHERE asset_name=$3', info));
         if (err) {
-            return console.error('update_asset_info', err, info);
+            return console.error('update assets yesterday total failed', err, info);
         }
 
         return result.rows;

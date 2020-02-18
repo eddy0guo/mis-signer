@@ -1180,10 +1180,20 @@ did对order_id进行签名，获取rsv
 
 
 	adex.all('/market_add/:market_id/:base_token_address/:base_token_symbol/:quote_token_address/:quote_token_symbol', async (req, res) => {
+		let {market_id,base_token_address,base_token_symbol,quote_token_address,quote_token_symbol} = req.params;
+		const [err,result] =  await to(client.get_existed_market([market_id]));
+		if(!result || result.length !== 0){
+			console.error("this markets id have been exsited",err);	
+			return res.json({
+			  success: false,
+			  err: err ? err:'this markets id have been exsited',
+			});
+		}
+
 		let info = utils.arr_values(req.params);
-		const [err, result] = await to(market.market_add(info));
+		const [add_err, add_result] = await to(market.market_add(info));
 		res.json({
-		  success: !result ? false : true,
+		  success: !add_result ? false : true,
 		  result,
 		  err,
 		});

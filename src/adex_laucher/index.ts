@@ -25,8 +25,12 @@ class launcher {
 
     async loop() {
         const [bestblock_err, bestblock_result] = await to(chain.getbestblock());
-        if (bestblock_err || bestblock_result?.height === this.block_height) {
-            console.log(`[ADEX LAUNCHER] current height is ${bestblock_result.height} and last is ${this.block_height}`);
+        if (bestblock_err || !bestblock_result || !bestblock_result.height || bestblock_result.height === this.block_height) {
+			if(bestblock_result && bestblock_result.height){
+           		 console.log(`[ADEX LAUNCHER] current height is ${bestblock_result.height} and last is ${this.block_height}`);
+			}else{
+           		 console.log(`[ADEX LAUNCHER] ${bestblock_err}`);
+			}
             setTimeout(() => {
                 this.loop.call(this)
             }, 500);
@@ -34,8 +38,8 @@ class launcher {
         }
 
         const [trades_err,trades] = await to(this.db.get_laucher_trades());
-		if(trades_err){
-			console.error(trades_err);
+		if(!trades){
+			console.error(trades_err,trades);
 			return;
 		}
 
@@ -56,7 +60,7 @@ class launcher {
         // 准备laucher之前先延时2秒
         setTimeout(async () => {
             const [trades_err,trades] = await to(this.db.transactions_trades([this.tmp_transaction_id]));
-			if(trades_err){
+			if(!trades){
 				console.error(trades_err);	
 				this.loop.call(this);
 				return;
@@ -64,7 +68,7 @@ class launcher {
             const index = trades[0].transaction_id % 3;
             const trades_hash = [];
             const [markets_err,markets] = await to(this.db.list_online_markets());
-			if(markets_err){
+			if(!markets){
 				console.error(markets_err);
 				this.loop.call(this);
 				return;
@@ -103,9 +107,9 @@ class launcher {
             const mist = new Exchange(mist_config.ex_address);
             const [err, txid] = await to(mist.matchorder(trades_hash, mist_config.relayers[index].prikey, mist_config.relayers[index].word));
 			const [bestblock_err2, bestblock_result2] = await to(chain.getbestblock());
-			if (err || bestblock_err2) {
-				console.error(err);
-				console.error(bestblock_err2);
+			if (!txid || !bestblock_result2) {
+				console.error(err,txid);
+				console.error(bestblock_err2,bestblock_result2);
 				this.loop.call(this);
 				return;
 			}
@@ -125,7 +129,7 @@ class launcher {
             } else {
                 const errInfo = ['matched', null , current_time, trades[0].transaction_id];
                 await this.db.launch_update_trades(errInfo);
-                if(err)console.log('[ADEX LAUNCHER] call dex matchorder err=%o transaction_id=%o relayers=%o\n', err, trades[0].transaction_id, mist_config.relayers[index].address)
+                console.log('[ADEX LAUNCHER] call dex matchorder err=%o transaction_id=%o relayers=%o\n', err, trades[0].transaction_id, mist_config.relayers[index].address)
             }
 
             this.loop.call(this)

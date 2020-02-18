@@ -3,6 +3,8 @@ import NP from 'number-precision';
 
 import engine from './engine';
 import utils2 from './utils';
+import to from 'await-to-js';
+
 
 import * as Queue from 'bull';
 
@@ -39,7 +41,8 @@ export default class order {
 
         const create_time = this.utils.get_current_time();
         const cancle_info = [-message.amount, 0, message.amount, 0, 'cancled', create_time, message.id];
-        const result = await this.db.update_orders(cancle_info);
+        const [err,result] = await to(this.db.update_orders(cancle_info));
+		if(!result) console.error(err,result);
 
         return result;
     }
@@ -61,7 +64,12 @@ export default class order {
 
     async my_orders2(address, page, perpage, status1, status2) {
         const offset = (+page - 1) * perpage;
-        const orders = await this.db.my_orders2([address, offset, perpage, status1, status2]);
+        const [err,orders] = await to(this.db.my_orders2([address, offset, perpage, status1, status2]));
+		if(!orders){
+            console.error(err,orders);
+			return orders;
+        }
+
         for (const order_index in orders) {
             if( !orders[order_index]) continue
             const trades = await this.db.order_trades([orders[order_index].id]);
