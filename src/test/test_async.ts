@@ -2,7 +2,8 @@
 class TestAsync{
     private item:string = 'TestAsyncItem';
     constructor(){
-        this.start()
+        // this.start()
+        this.loop()
     }
 
     start(ms:number=100){
@@ -12,8 +13,12 @@ class TestAsync{
     }
 
     async loop():Promise<void>{
-        const date = await this.getDate();
-        console.log(date,this.item);
+        let date = await this.getDate();
+        console.log('1',date,this.item);
+        date = await this.getDate();
+        console.log('2',date,this.item);
+        date = await this.getDate();
+        console.log('3',date,this.item);
         this.start();
     }
 
@@ -21,10 +26,9 @@ class TestAsync{
         return new Promise((resolve, rejects) => {
             setTimeout( () => {
                 resolve(new Date());
-            })
+            },500)
         });
     }
 }
 
 const testAsync = new TestAsync();
-testAsync.start();
