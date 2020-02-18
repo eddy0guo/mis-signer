@@ -46,7 +46,7 @@ class Watcher {
 
 		const [err, result] = await to(chain.getrawtransaction([transaction[0].transaction_hash, true, true], 'child_poa'))
 		if(!result || !result.confirmations){
-			 console.error(`getrawtransaction error ${err}`);
+			 console.error(`getrawtransaction error=${err},result=${result}`);
              this.loop.call(this)
              return;	
 		}

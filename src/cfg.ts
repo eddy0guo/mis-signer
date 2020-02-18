@@ -152,7 +152,7 @@ var product = {
     pg_user: 'product',
     pg_password: 'myHzSesQc7TXSS5HOXZDsgq7SNUHY2',
     pg_port: 1433,
-	icon_url: 'https://fingo-cdn.asimov.work/res/icons/',
+	icon_url: 'http://fingo-cdn.asimov.work/res/icons/',
 }
 
 const CONFIG_K8S = {
