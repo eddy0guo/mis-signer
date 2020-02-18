@@ -148,11 +148,12 @@ export default class Utils {
             json: true // Automatically stringifies the body to JSON
         };
 
-        const [err, txinfo] = await to(rp(options));
-        if (err) {
-            console.log('asimov_getRawTransaction failed');
-            throw new Error('asimov_getRawTransaction failed');
-        }
+		const [err,res] = await to(rp(options));
+		const txinfo = res.result;
+		if(err){
+	         console.log('asimov_getRawTransaction failed');
+             throw new Error('asimov_getRawTransaction failed');
+		}
 
         const asset_set = new Set();
         for (const vin of txinfo.vin) {
@@ -228,13 +229,13 @@ export default class Utils {
             body: { jsonrpc: '2.0', method: 'asimov_getTransactionReceipt', id: 123, params: [txid] },
             json: true // Automatically stringifies the body to JSON
         };
-        const [err, result] = await to(rp(options));
-        if (err || !result.logs) {
+		const [err,result] = await to(rp(options));
+        if (err || !result.result || !result.result.logs) {
             console.error(`err ${err} occurred or get ${txid} receipt  have no logs`);
         }
-        const amount = parseInt(result.logs[0].data, 16);
+        const amount = parseInt(result.result.logs[0].data, 16);
         const info = {
-            contract_address: result.logs[0].address,
+            contract_address: result.result.logs[0].address,
             from: '0x' + result.logs[0].topics[1].substring(24),
             to: '0x' + result.logs[0].topics[2].substring(24),
             amount: NP.divide(amount, 100000000),
