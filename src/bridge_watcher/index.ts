@@ -14,8 +14,6 @@ async function send_asset(address, asset, amount) {
         mnemonic: mist_config.bridge_word
     });
 
-
-    await master_wallet.account.createAccount()
     return await to(master_wallet.commonTX.transfer(address, amount, asset))
 }
 
@@ -38,7 +36,7 @@ class watcher {
 
         const [err, pending_trade]: [any,any] = await to(this.psql_db.filter_bridge(['asset2coin', 'successful', 'pending']));
 		if(err){
-			console.log(err);	
+			console.log(err);
 			  setTimeout(() => {
                 this.asset2coin_loop.call(this)
             }, 2000);
@@ -104,9 +102,10 @@ class watcher {
             }, 2000);
             return;
 		}
-        if (failed_trade.length !== 0) {
+        if (failed_trade.length > 0) {
+            // tslint:disable-next-line: no-shadowed-variable
             const { id, address, amount, token_name } = failed_trade[0];
-            const [tokens_err,tokens] = await to(this.psql_db.get_tokens([token_name]));
+            const [ tokens_err, tokenAry ] = await to(this.psql_db.get_tokens([token_name]));
 			if(tokens_err){
 				console.log(tokens_err);
 				setTimeout(() => {
@@ -115,20 +114,16 @@ class watcher {
 				return;
 
 			}
-            const current_time = this.utils.get_current_time();
-
-            const [master_err, master_txid] = await send_asset(address, tokens[0].asim_assetid, amount);
-            if (master_txid) {
-                const info = [master_txid, 'successful', current_time, id];
-                const [err3, result3] = await to(this.psql_db.update_coin2asset_failed(info));
-                if (err3) console.error(err3, result3)
+            const currentTime = this.utils.get_current_time();
+            const [masterErr, masterTxid] = await send_asset(address, tokenAry[0].asim_assetid, amount);
+            if (masterTxid) {
+                const update_info = [masterTxid, 'successful', currentTime, id];
+                const [err4, result4] = await to(this.psql_db.update_coin2asset_failed(update_info));
+                if (err4) console.error(err4, result4)
             } else {
-                console.error(`the trade ${id} failed again`, master_err)
+                console.error(`the trade ${id} failed again`, masterErr)
 			}
-
-
         }
-
 
         const [err, pending_trade]: [any,any] = await to(this.psql_db.filter_bridge(['coin2asset', 'pending', 'successful']));
         if (err) {
@@ -157,6 +152,7 @@ class watcher {
         const master_txid_status = master_txid === null ? 'failed' : 'successful';
 
         if (master_err) {
+            master_err = null;
             master_txid = null;
         }
 

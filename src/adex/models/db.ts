@@ -31,12 +31,12 @@ export default class db {
      *
      */
     async insert_order(ordermessage) {
-        let [err, result]:[any,any] = await to(this.clientDB.query('insert into mist_orders values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)', ordermessage));
+        const [err, result]:[any,any] = await to(this.clientDB.query('insert into mist_orders values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)', ordermessage));
         if (err) {
             return console.error(`insert_order_faied ${err},insert data= ${ordermessage}`);
         }
 
-        let [err_tmp, result_tmp]:[any,any] = await to(this.clientDB.query('insert into mist_orders_tmp values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)', ordermessage));
+        const [err_tmp, result_tmp]:[any,any] = await to(this.clientDB.query('insert into mist_orders_tmp values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)', ordermessage));
         if (err_tmp) {
             return console.error(`insert_order_tmp_faied ${err_tmp},insert data= ${ordermessage}`, result_tmp);
         }
@@ -58,10 +58,10 @@ export default class db {
         if (err) {
             return console.error('my_order_failed', err, address);
         }
-		if(result['rows']){
-        return result['rows'];
+		if(result.rows){
+        return result.rows;
 		}else{
-			return  result;	
+			return  result;
 		}
 
     }
@@ -224,7 +224,7 @@ export default class db {
 
     }
 
-	/**	
+	/**
 	async insert_tokens(info) : Promise<any> {
 		//insert into mist_markets values($1,$2,$3,$4,$5,$6,$7,$8)
         const [err, result]: [any,any]  = await to(this.clientDB.query('insert into mist_tokens values($1,$2,$3,$4,$5,$6,$7,$8)', info));
@@ -325,7 +325,7 @@ export default class db {
      *
      *trades
      */
-	 //FIXME:批量插入和查询暂时用原生sql
+	 // FIXME:批量插入和查询暂时用原生sql
     async insert_trades(tradesInfo) : Promise<any> {
         let query = 'values(';
         let tradesArr: any[] = [];
@@ -479,7 +479,9 @@ export default class db {
 
     async get_laucher_trades() : Promise<any> {
         // 容错laucher过程中进程重启的情况
-        // let [err,result]: [any,any] = await to(this.clientDB.query('select t.*,s.right_id from (select * from mist_trades where status!=\'successful\' and transaction_hash is null)t left join (SELECT transaction_id as right_id  FROM mist_trades where status!=\'successful\'  and transaction_hash is null order by transaction_id  limit 1)s on t.transaction_id=s.right_id where s.right_id is not null'));
+        // let [err,result]: [any,any] = await to(this.clientDB.query('select t.*,s.right_id from (select * from mist_trades where status!=\'successful\'
+        // and transaction_hash is null)t left join (SELECT transaction_id as right_id  FROM mist_trades where status!=\'successful\'
+        // and transaction_hash is null order by transaction_id  limit 1)s on t.transaction_id=s.right_id where s.right_id is not null'));
         const [err, result]: [any,any] = await to(this.clientDB.query(' SELECT distinct(transaction_id)  FROM mist_trades_tmp where status in (\'pending\',\'matched\') and transaction_hash is null order by transaction_id  limit 1'));
         if (err) {
             return console.error('get laucher trades failed', err);

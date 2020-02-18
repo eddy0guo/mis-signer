@@ -1,30 +1,27 @@
 /* eslint-disable no-useless-escape */
-const crypto = require('crypto');
-const date = require('silly-datetime');
-const bitcore_lib_1 = require('bitcore-lib');
-const ECDSA = bitcore_lib_1.crypto.ECDSA;
-const child = require('child_process');
-const ethutil = require('ethereumjs-util');
-const ethabi = require('ethereumjs-abi');
+import crypto = require('crypto');
+import date = require('silly-datetime');
+import ethutil = require('ethereumjs-util');
+import ethabi = require('ethereumjs-abi');
 import NP from 'number-precision';
 import mist_config from '../../cfg';
-var rp = require('request-promise');
+import rp = require('request-promise');
 import to from 'await-to-js'
 
 
 // FIXME: change CUrl to axios
 
 export default class Utils {
+    private bitcore;
 
-    private rootHash;
     constructor() {
-        this.rootHash = crypto.createHmac('sha256', '123');
+        this.bitcore = require('bitcore-lib');
     }
 
     arr_values(message) {
         const arr_message = [];
-        for (const item in message) {
-            arr_message.push(message[item]);
+        for (const item of message) {
+            arr_message.push(item);
         }
 
         return arr_message;
@@ -36,7 +33,7 @@ export default class Utils {
         arr.push(createTime);
         const str = arr.join('');
 
-        let rootHash = crypto.createHmac('sha256', '123');
+        const rootHash = crypto.createHmac('sha256', '123');
         const hash = rootHash.update(str, 'utf8').digest('hex');
         return hash;
 
@@ -49,47 +46,48 @@ export default class Utils {
     }
 
     verify(id, sign) {
+        const Bitcore = this.bitcore;
         const hashbuf = Buffer.alloc(32, id, 'hex');
-        const publick = new bitcore_lib_1.PublicKey(sign.pubkey);
-        const sig = new bitcore_lib_1.crypto.Signature();
-        const r = new bitcore_lib_1.crypto.BN(sign.r, 'hex');
-        const s = new bitcore_lib_1.crypto.BN(sign.s, 'hex');
+        const publick = new Bitcore.PublicKey(sign.pubkey);
+        const sig = new Bitcore.crypto.Signature();
+        const r = new Bitcore.crypto.BN(sign.r, 'hex');
+        const s = new Bitcore.crypto.BN(sign.s, 'hex');
         sig.set({
             r,
             s,
         });
-        const result = ECDSA.verify(hashbuf, sig, publick);
+        const result = Bitcore.crypto.ECDSA.verify(hashbuf, sig, publick);
         return result;
     }
 
     async get_receipt(txid) {
-		var options = {
+        const options = {
             method: 'POST',
             uri: mist_config.asimov_child_rpc,
-            body: {jsonrpc: '2.0', method: 'asimov_getTransactionReceipt',id: 123,params: [txid]},
+            body: { jsonrpc: '2.0', method: 'asimov_getTransactionReceipt', id: 123, params: [txid] },
             json: true // Automatically stringifies the body to JSON
         };
-		let [err,result] = await to(rp(options));
-		if (err || !result.result.logs) {
+        const [err, result] = await to(rp(options));
+        if (err || !result.result.logs) {
             console.error(`err ${err} occurred or get ${txid} receipt  result  have no logs`);
         }
 
         const datas = [];
-        for (const index in result.result.logs) {
-            datas.push(result.result.logs[index].data);
+        for (const item of result.result.logs) {
+            datas.push(item.data);
         }
         return datas;
     }
 
     async get_receipt_log(txid) {
-		var options = {
+        const options = {
             method: 'POST',
             uri: mist_config.asimov_child_rpc,
-            body: {jsonrpc: '2.0', method: 'asimov_getTransactionReceipt',id: 123,params: [txid]},
+            body: { jsonrpc: '2.0', method: 'asimov_getTransactionReceipt', id: 123, params: [txid] },
             json: true // Automatically stringifies the body to JSON
         };
-		let [err,result] = await to(rp(options));
-		if (err || !result.result.logs) {
+        const [err, result] = await to(rp(options));
+        if (err || !result.result.logs) {
             console.error(`err ${err} occurred or get ${txid} receipt   have no logs`);
         }
         return result.result.logs.length > 0 ? 'successful' : 'failed';
@@ -107,11 +105,11 @@ export default class Utils {
             ['0x45eab75b1706cbb42c832fc66a1bcdaafebcdaea71ed2f08efbf3057c588fcb6',
                 order.taker, order.maker, order.baseToken, order.quoteToken, order.relayer, order.baseTokenAmount, order.quoteTokenAmount, order.takerSide]);
 
-        encode = encode.toString('hex').replace(eval(`/00${order.taker.substr(2, 44)}/g`), `66${order.taker.substr(2, 44)}`);
-        encode = encode.replace(eval(`/00${order.maker.substr(2, 44)}/g`), `66${order.maker.substr(2, 44)}`);
-        encode = encode.replace(eval(`/00${order.baseToken.substr(2, 44)}/g`), `63${order.baseToken.substr(2, 44)}`);
-        encode = encode.replace(eval(`/00${order.quoteToken.substr(2, 44)}/g`), `63${order.quoteToken.substr(2, 44)}`);
-        encode = '0x' + encode.replace(eval(`/00${order.relayer.substr(2, 44)}/g`), `66${order.relayer.substr(2, 44)}`);
+        encode = encode.toString('hex').replace(new RegExp(`/00${order.taker.substr(2, 44)}/g`), `66${order.taker.substr(2, 44)}`);
+        encode = encode.replace(new RegExp(`/00${order.maker.substr(2, 44)}/g`), `66${order.maker.substr(2, 44)}`);
+        encode = encode.replace(new RegExp(`/00${order.baseToken.substr(2, 44)}/g`), `63${order.baseToken.substr(2, 44)}`);
+        encode = encode.replace(new RegExp(`/00${order.quoteToken.substr(2, 44)}/g`), `63${order.quoteToken.substr(2, 44)}`);
+        encode = '0x' + encode.replace(new RegExp(`/00${order.relayer.substr(2, 44)}/g`), `66${order.relayer.substr(2, 44)}`);
 
         return encode;
     }
@@ -143,18 +141,18 @@ export default class Utils {
     }
 
     async decode_transfer_info(txid) {
-		var options = {
+        const options = {
             method: 'POST',
             uri: mist_config.asimov_chain_rpc,
-            body: {jsonrpc: '2.0', method: 'asimov_getRawTransaction',id: 123, params: [txid,true,true]},
+            body: { jsonrpc: '2.0', method: 'asimov_getRawTransaction', id: 123, params: [txid, true, true] },
             json: true // Automatically stringifies the body to JSON
         };
 
-		let [err,txinfo] = await to(rp(options));
-		if(err){
-	         console.log('asimov_getRawTransaction failed');
-             throw new Error('asimov_getRawTransaction failed');
-		}
+        const [err, txinfo] = await to(rp(options));
+        if (err) {
+            console.log('asimov_getRawTransaction failed');
+            throw new Error('asimov_getRawTransaction failed');
+        }
 
         const asset_set = new Set();
         for (const vin of txinfo.vin) {
@@ -171,12 +169,12 @@ export default class Utils {
             } else if (vin.prevOut.asset === '000000000000000000000000' && asset_set.size > 1) {
                 console.log('this is a fee utxo');
                 continue;
-            } else if (vin.prevOut.asset !== '000000000000000000000000' && asset_set.size > 1 && asset_id  && vin.prevOut.asset !== asset_id) {
+            } else if (vin.prevOut.asset !== '000000000000000000000000' && asset_set.size > 1 && asset_id && vin.prevOut.asset !== asset_id) {
                 throw new Error('decode failed,inputs contained Multiple asset');
             } else if (!asset_id) {
                 asset_id = vin.prevOut.asset;
                 vin_amount += +vin.prevOut.value;
-            } else if ((asset_id  && vin.prevOut.asset !== '000000000000000000000000') || asset_set.size === 1) {
+            } else if ((asset_id && vin.prevOut.asset !== '000000000000000000000000') || asset_set.size === 1) {
                 vin_amount += +vin.prevOut.value;
             } else {
                 console.log('unknown case happened');
@@ -202,7 +200,7 @@ export default class Utils {
             } else if (!to_address) {
                 to_address = out.scriptPubKey.addresses[0];
                 vout_to_amount += +out.value;
-            } else if (to_address  && to_address === out.scriptPubKey.addresses[0]) {
+            } else if (to_address && to_address === out.scriptPubKey.addresses[0]) {
                 vout_to_amount += +out.value;
             } else {
                 throw new Error('decode failed');
@@ -224,13 +222,13 @@ export default class Utils {
     }
 
     async decode_erc20_transfer(txid) {
-		var options = {
+        const options = {
             method: 'POST',
             uri: mist_config.asimov_child_rpc,
-            body: {jsonrpc: '2.0', method: 'asimov_getTransactionReceipt',id: 123,params: [txid]},
+            body: { jsonrpc: '2.0', method: 'asimov_getTransactionReceipt', id: 123, params: [txid] },
             json: true // Automatically stringifies the body to JSON
         };
-		let [err,result] = await to(rp(options));
+        const [err, result] = await to(rp(options));
         if (err || !result.logs) {
             console.error(`err ${err} occurred or get ${txid} receipt  have no logs`);
         }

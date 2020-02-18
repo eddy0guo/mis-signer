@@ -35,7 +35,7 @@ class enginer {
                 const [find_orders_err,find_orders] = await to(this.exchange.match(message));
 
 				if(!find_orders){
-					console.error(find_orders_err,find_orders);	
+					console.error(find_orders_err,find_orders);
 					done();
 					return;
 				}
@@ -46,21 +46,21 @@ class enginer {
 
                 const [trades_err,trades] = await to(this.exchange.make_trades(find_orders, message));
 				if(!trades){
-					console.error(trades_err,trades);	
+					console.error(trades_err,trades);
 					done();
 					return;
 				}
 
                 const [call_asimov_err,call_asimov_result] = await to(this.exchange.call_asimov(trades));
 				if(!call_asimov_result){
-					console.error(call_asimov_err,call_asimov_result);	
+					console.error(call_asimov_err,call_asimov_result);
 					done();
 					return;
 				}
 
                 let amount = 0;
-                for (const i in trades) {
-                    amount = NP.plus(amount, trades[i].amount);
+                for (const item of trades) {
+                    amount = NP.plus(amount, item.amount);
                 }
 
                 message.available_amount = NP.minus(message.available_amount, amount);
@@ -78,7 +78,7 @@ class enginer {
             const arr_message = this.utils.arr_values(message);
             const [insert_order_err,insert_order_result] = await to(this.db.insert_order(arr_message));
 			if(!insert_order_result){
-				console.error(insert_order_err,insert_order_result);	
+				console.error(insert_order_err,insert_order_result);
 			}
 
             done()

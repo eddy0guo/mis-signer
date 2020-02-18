@@ -48,7 +48,7 @@ class Watcher {
 		if(!result || !result.confirmations){
 			 console.error(`getrawtransaction error=${err},result=${result}`);
              this.loop.call(this)
-             return;	
+             return;
 		}
 
 		const update_time = this.utils.get_current_time();
@@ -116,7 +116,7 @@ class Watcher {
 
 		} else {
 			console.log('[Watcher Pending] %s hasn\'t been confirmed yet',transaction[0].transaction_hash);
-			//找不到txid，可能是链底层问题比如双花的块删掉了，也可能是tx刚入块还没确认
+			// 找不到txid，可能是链底层问题比如双花的块删掉了，也可能是tx刚入块还没确认
 			setTimeout(() => {
                 this.loop.call(this)
             }, 500);

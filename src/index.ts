@@ -6,13 +6,13 @@ import * as bodyParser from 'body-parser';
 
 import wallet from './wallet';
 import adex from './adex';
-//import * as config from './config.json';
+// import * as config from './config.json';
 import express_exchange from './express';
 import mist_config from './cfg';
 
 const config = {
-	"bodyLimit": "100kb",
-	"corsHeaders": ["Link"]
+	'bodyLimit': '100kb',
+	'corsHeaders': ['Link']
 };
 
 const responseTime = () => {

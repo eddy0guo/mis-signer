@@ -470,7 +470,7 @@ export default () => {
                         master_txid_status = 'illegaled';
                         console.error(`reciver ${decode_info.to}  is not official address`);
                         // return; // 应该要return吧这里
-						//这里解析失败的非法划转也要存表，不return
+						// 这里解析失败的非法划转也要存表，不return
                     }
 
                     const transfer_tokens = await psql_db.get_tokens([asset_id]);
