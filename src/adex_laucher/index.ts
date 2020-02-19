@@ -63,7 +63,7 @@ class launcher {
         setTimeout(async () => {
             const [tx_trades_err,tx_trades] = await to(this.db.transactions_trades([this.tmp_transaction_id]));
 			if(!tx_trades || tx_trades_err){
-				console.error(tx_trades_err);
+				console.error('[ADEX LAUNCHER]::(transactions_trades):',tx_trades_err,tx_trades);
 				this.loop.call(this);
 				return;
 			}
@@ -71,7 +71,7 @@ class launcher {
             const trades_hash = [];
             const [markets_err,markets] = await to(this.db.list_online_markets());
 			if(!markets){
-				console.error(markets_err);
+				console.error('[ADEX LAUNCHER]::(list_online_markets):',markets_err,markets);
 				this.loop.call(this);
 				return;
 			}
@@ -89,6 +89,9 @@ class launcher {
                     continue;
                 }
 
+				const base_amount = Math.round(NP.times(+tx_trades[i].amount, 100000000));
+				const quote_amount = Math.round(NP.times(+tx_trades[i].amount, +tx_trades[i].price, 100000000));
+
                 const trade_info = {
                     trade_hash: tx_trades[i].trade_hash,
                     taker: tx_trades[i].taker,
@@ -96,8 +99,8 @@ class launcher {
                     base_token_address: token_address.base_token_address,
                     quote_token_address: token_address.quote_token_address,
                     relayer: mist_config.relayers[index].address,
-                    base_token_amount: NP.times(+tx_trades[i].amount, 100000000), //    uint256 baseTokenAmount;
-                    quote_token_amount: NP.times(+tx_trades[i].amount, +tx_trades[i].price, 100000000), // quoteTokenAmount;
+                    base_token_amount: base_amount,
+                    quote_token_amount: quote_amount,
                     r: null,
                     s: null,
                     side: tx_trades[i].taker_side,
@@ -110,8 +113,9 @@ class launcher {
             const [err, txid] = await to(mist.matchorder(trades_hash, mist_config.relayers[index].prikey, mist_config.relayers[index].word));
 			const [bestblock_err2, bestblock_result2] = await to(chain.getbestblock());
 			if (!txid || !bestblock_result2) {
-				console.error(err,txid);
-				console.error(bestblock_err2,bestblock_result2);
+				// console.log(trades_hash);
+				console.error('[ADEX LAUNCHER]::(matchorder):',err,txid);
+				console.error('[ADEX LAUNCHER]::(getbestblock)',bestblock_err2,bestblock_result2);
 				this.loop.call(this);
 				return;
 			}

@@ -35,7 +35,7 @@ class watcher {
     async asset2coin_loop() {
 
         const [err, pending_trade]: [any,any] = await to(this.psql_db.filter_bridge(['asset2coin', 'successful', 'pending']));
-		if(err){
+		if(!pending_trade){
 			console.log(err);
 			  setTimeout(() => {
                 this.asset2coin_loop.call(this)
@@ -54,7 +54,7 @@ class watcher {
         const { id, address, amount, token_name } = pending_trade[0];
         const current_time = this.utils.get_current_time();
         const [transfer_tokens_err,transfer_tokens] = await to(this.psql_db.get_tokens([token_name]));
-		if(transfer_tokens_err){
+		if(!transfer_tokens){
 			console.error(transfer_tokens_err);
 			setTimeout(() => {
                 this.asset2coin_loop.call(this)
@@ -71,7 +71,7 @@ class watcher {
         const [child_err, child_txid] = await to(wallet.contractCall.call(
             transfer_tokens[0].address,
             'mint(address,uint256)',
-            [address, NP.times(amount, 100000000)],
+            [address, Math.round((NP.times(amount, 100000000)))],
             AsimovConst.DEFAULT_GAS_LIMIT, 0,
             AsimovConst.DEFAULT_ASSET_ID,
             AsimovConst.DEFAULT_FEE_AMOUNT,
@@ -213,7 +213,7 @@ class watcher {
         const [child_err, child_txid] = await to(child_wallet.contractCall.call(
             tokens[0].address,
             'burn(address,uint256)',
-            [address, NP.times(burn_amount, 100000000)],
+            [address, Math.round(NP.times(burn_amount, 100000000))],
             AsimovConst.DEFAULT_GAS_LIMIT, 0,
             AsimovConst.DEFAULT_ASSET_ID,
             AsimovConst.DEFAULT_FEE_AMOUNT,
