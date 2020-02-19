@@ -14,8 +14,6 @@ async function send_asset(address, asset, amount) {
         mnemonic: mist_config.bridge_word
     });
 
-
-    await master_wallet.account.createAccount()
     return await to(master_wallet.commonTX.transfer(address, amount, asset))
 }
 
@@ -37,8 +35,8 @@ class watcher {
     async asset2coin_loop() {
 
         const [err, pending_trade]: [any,any] = await to(this.psql_db.filter_bridge(['asset2coin', 'successful', 'pending']));
-		if(err){
-			console.log(err);	
+		if(!pending_trade){
+			console.log(err);
 			  setTimeout(() => {
                 this.asset2coin_loop.call(this)
             }, 2000);
@@ -56,7 +54,7 @@ class watcher {
         const { id, address, amount, token_name } = pending_trade[0];
         const current_time = this.utils.get_current_time();
         const [transfer_tokens_err,transfer_tokens] = await to(this.psql_db.get_tokens([token_name]));
-		if(transfer_tokens_err){
+		if(!transfer_tokens){
 			console.error(transfer_tokens_err);
 			setTimeout(() => {
                 this.asset2coin_loop.call(this)
@@ -73,7 +71,7 @@ class watcher {
         const [child_err, child_txid] = await to(wallet.contractCall.call(
             transfer_tokens[0].address,
             'mint(address,uint256)',
-            [address, NP.times(amount, 100000000)],
+            [address, Math.round((NP.times(amount, 100000000)))],
             AsimovConst.DEFAULT_GAS_LIMIT, 0,
             AsimovConst.DEFAULT_ASSET_ID,
             AsimovConst.DEFAULT_FEE_AMOUNT,
@@ -104,9 +102,10 @@ class watcher {
             }, 2000);
             return;
 		}
-        if (failed_trade.length !== 0) {
+        if (failed_trade.length > 0) {
+            // tslint:disable-next-line: no-shadowed-variable
             const { id, address, amount, token_name } = failed_trade[0];
-            const [tokens_err,tokens] = await to(this.psql_db.get_tokens([token_name]));
+            const [ tokens_err, tokenAry ] = await to(this.psql_db.get_tokens([token_name]));
 			if(tokens_err){
 				console.log(tokens_err);
 				setTimeout(() => {
@@ -115,20 +114,16 @@ class watcher {
 				return;
 
 			}
-            const current_time = this.utils.get_current_time();
-
-            const [master_err, master_txid] = await send_asset(address, tokens[0].asim_assetid, amount);
-            if (master_txid) {
-                const info = [master_txid, 'successful', current_time, id];
-                const [err3, result3] = await to(this.psql_db.update_coin2asset_failed(info));
-                if (err3) console.error(err3, result3)
+            const currentTime = this.utils.get_current_time();
+            const [masterErr, masterTxid] = await send_asset(address, tokenAry[0].asim_assetid, amount);
+            if (masterTxid) {
+                const update_info = [masterTxid, 'successful', currentTime, id];
+                const [err4, result4] = await to(this.psql_db.update_coin2asset_failed(update_info));
+                if (err4) console.error(err4, result4)
             } else {
-                console.error(`the trade ${id} failed again`, master_err)
+                console.error(`the trade ${id} failed again`, masterErr)
 			}
-
-
         }
-
 
         const [err, pending_trade]: [any,any] = await to(this.psql_db.filter_bridge(['coin2asset', 'pending', 'successful']));
         if (err) {
@@ -157,6 +152,7 @@ class watcher {
         const master_txid_status = master_txid === null ? 'failed' : 'successful';
 
         if (master_err) {
+            master_err = null;
             master_txid = null;
         }
 
@@ -217,7 +213,7 @@ class watcher {
         const [child_err, child_txid] = await to(child_wallet.contractCall.call(
             tokens[0].address,
             'burn(address,uint256)',
-            [address, NP.times(burn_amount, 100000000)],
+            [address, Math.round(NP.times(burn_amount, 100000000))],
             AsimovConst.DEFAULT_GAS_LIMIT, 0,
             AsimovConst.DEFAULT_ASSET_ID,
             AsimovConst.DEFAULT_FEE_AMOUNT,

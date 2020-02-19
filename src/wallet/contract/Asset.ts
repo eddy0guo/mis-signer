@@ -9,16 +9,16 @@ export default class Asset {
 
   public async balanceOf(address): Promise<any> {
     const wallet = new AsimovWallet({ rpc: mist_config.asimov_master_rpc,
-	address 
+	address
 	});
     console.error('TBD');
     return wallet.balance()
   }
 
   public async transfer(address,amount): Promise<any> {
-    const wallet = new AsimovWallet({ 
+    const wallet = new AsimovWallet({
 		rpc: mist_config.asimov_master_rpc,
-		address 
+		address
 		});
     console.error('TBD');
     return wallet.balance()

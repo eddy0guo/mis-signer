@@ -57,14 +57,13 @@ export default class AddressService {
         const pk = pkStr.replace('0x', '').trim();
         const privateKey = new PrivateKey(pk);
         const address = new Address(privateKey.publicKey).toString();
-        let [keypair, err] = await to(Storage.getKeypair());
+        const [keypair, err] = await to(Storage.getKeypair());
         if (err) {
             console.error(err)
-            err = null;
             return;
         }
-		//unuseful code ?
-        //keypair = keypair || {};
+		// unuseful code ?
+        // keypair = keypair || {};
 
         keypair[address] = pk;
 

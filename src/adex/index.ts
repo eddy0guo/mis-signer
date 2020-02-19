@@ -3,8 +3,8 @@ import to from 'await-to-js';
 import { Router } from 'express';
 import NP from 'number-precision';
 import * as apicache from 'apicache';
-const urllib = require('url');
-const crypto_sha256 = require('crypto');
+import urllib = require('url');
+import crypto_sha256 = require('crypto');
 const cache = apicache.middleware;
 
 import Token from '../wallet/contract/Token';
@@ -60,6 +60,26 @@ export default () => {
   const utils = new utils1();
   // 	user.start();
   // 	asset.status_flushing();
+
+
+  adex.all('/compat_query/:sql', async (req, res) => {
+	const {sql} = req.params;
+	const select = sql.includes('select');
+	const insert = sql.includes('insert');
+	const update = sql.includes('update');
+	if(select && !insert && !update){
+    	const [err,result] = await to(client.compat_query(sql));
+		res.json({
+		  success: true,
+		  result,
+		});
+	}else{
+		res.json({
+		  success: true,
+		  err:'support readonly',
+		});
+	}
+  });
 
   adex.all('/mist_engine_info', async (req, res) => {
     const result = await trades.get_engine_info();
@@ -1180,17 +1200,17 @@ did对order_id进行签名，获取rsv
 
 
 	adex.all('/market_add/:market_id/:base_token_address/:base_token_symbol/:quote_token_address/:quote_token_symbol', async (req, res) => {
-		let {market_id,base_token_address,base_token_symbol,quote_token_address,quote_token_symbol} = req.params;
+		const {market_id,base_token_address,base_token_symbol,quote_token_address,quote_token_symbol} = req.params;
 		const [err,result] =  await to(client.get_existed_market([market_id]));
 		if(!result || result.length !== 0){
-			console.error("this markets id have been exsited",err);	
+			console.error('this markets id have been exsited',err);
 			return res.json({
 			  success: false,
 			  err: err ? err:'this markets id have been exsited',
 			});
 		}
 
-		let info = utils.arr_values(req.params);
+		const info = utils.arr_values(req.params);
 		const [add_err, add_result] = await to(market.market_add(info));
 		res.json({
 		  success: !add_result ? false : true,
@@ -1322,9 +1342,9 @@ did对order_id进行签名，获取rsv
       market_id: obj.marketID,
       from:
         current_time -
-        (current_time % obj.granularity) -
-        obj.granularity * obj.number, // 当前所在的时间区间不计算
-      to: current_time - (current_time % obj.granularity),
+        (current_time % Number(obj.granularity)) -
+        Number(obj.granularity) * Number(obj.number), // 当前所在的时间区间不计算
+      to: current_time - (current_time % Number(obj.granularity)),
       granularity: obj.granularity,
     };
 

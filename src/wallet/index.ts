@@ -260,7 +260,7 @@ export default () => {
                         awallet.contractCall.call(
                             transfer_tokens[0].address,
                             'mint(address,uint256)',
-                            [from, NP.times(to_amount, 100000000)],
+                            [from, Math.round(NP.times(to_amount, 100000000))],
                             AsimovConst.DEFAULT_GAS_LIMIT,
                             0,
                             AsimovConst.DEFAULT_ASSET_ID,
@@ -341,7 +341,7 @@ export default () => {
             child_wallet.contractCall.call(
                 tokens[0].address,
                 'burn(address,uint256)',
-                [address, NP.times(amount, 100000000)],
+                [address, Math.round(NP.times(amount, 100000000))],
                 AsimovConst.DEFAULT_GAS_LIMIT,
                 0,
                 AsimovConst.DEFAULT_ASSET_ID,
@@ -423,7 +423,6 @@ export default () => {
             const [master_err, master_txid] = await to(
                 chain.sendrawtransaction(sign_data)
             );
-			console.log('asset2coin_v3-22----',master_err,master_txid);
 
             if (!master_err) {
                 const info = {
@@ -448,6 +447,10 @@ export default () => {
                     const [decode_err, decode_info] = await to(
                         utils.decode_transfer_info(master_txid)
                     );
+                    if (!decode_info) {
+						console.error('[asset2coin_v3]',decode_err,decode_info)
+						return;
+					};
                     const {
                         from,
                         asset_id,
@@ -457,7 +460,6 @@ export default () => {
                         fee_amount,
                         fee_asset,
                     } = decode_info;
-                    if (decode_err) console.log(decode_err, vin_amount, remain_amount);
 
                     let master_txid_status;
                     if (!decode_err) {
@@ -470,7 +472,7 @@ export default () => {
                         master_txid_status = 'illegaled';
                         console.error(`reciver ${decode_info.to}  is not official address`);
                         // return; // 应该要return吧这里
-						//这里解析失败的非法划转也要存表，不return
+						// 这里解析失败的非法划转也要存表，不return
                     }
 
                     const transfer_tokens = await psql_db.get_tokens([asset_id]);
@@ -493,7 +495,7 @@ export default () => {
                         psql_db.update_asset2coin_decode(update_info_arr)
                     );
                     if (err4)
-                        console.log('psql_db.update_asset2coin_decode----', err3, result4);
+                        console.log('psql_db.update_asset2coin_decode', err3, result4);
                 }, 10000);
                 // FIXME:这里又有一个等待10秒的非严谨逻辑处理
 

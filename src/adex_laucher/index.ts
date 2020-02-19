@@ -15,15 +15,17 @@ class launcher {
     constructor() {
         this.db = new client();
         this.utils = new utils2();
-        this.start();
         this.block_height = 0;
+        this.start();
     }
 
-    async start() {
-        this.loop()
-    }
+	start(ms: number = 100):void {
+		setTimeout(async () => {
+			await this.loop();
+		}, ms);
+	}
 
-    async loop() {
+    async loop():Promise<void> {
         const [bestblock_err, bestblock_result] = await to(chain.getbestblock());
         if (bestblock_err || !bestblock_result || !bestblock_result.height || bestblock_result.height === this.block_height) {
 			if(bestblock_result && bestblock_result.height){
@@ -59,25 +61,25 @@ class launcher {
         await this.db.launch_update_trades(update_trade_info);
         // 准备laucher之前先延时2秒
         setTimeout(async () => {
-            const [trades_err,trades] = await to(this.db.transactions_trades([this.tmp_transaction_id]));
-			if(!trades){
-				console.error(trades_err);	
+            const [tx_trades_err,tx_trades] = await to(this.db.transactions_trades([this.tmp_transaction_id]));
+			if(!tx_trades || tx_trades_err){
+				console.error('[ADEX LAUNCHER]::(transactions_trades):',tx_trades_err,tx_trades);
 				this.loop.call(this);
 				return;
 			}
-            const index = trades[0].transaction_id % 3;
+            const index = tx_trades[0].transaction_id % 3;
             const trades_hash = [];
             const [markets_err,markets] = await to(this.db.list_online_markets());
 			if(!markets){
-				console.error(markets_err);
+				console.error('[ADEX LAUNCHER]::(list_online_markets):',markets_err,markets);
 				this.loop.call(this);
 				return;
 			}
-            for (const i in trades) {
-                if( !trades[i])continue
+            for (const i in tx_trades) {
+                if( !tx_trades[i])continue
                 let token_address;
                 for (const j in markets) {
-                    if (trades[i].market_id === markets[j].id) {
+                    if (tx_trades[i].market_id === markets[j].id) {
                         token_address = markets[j];
                     }
                 }
@@ -87,18 +89,21 @@ class launcher {
                     continue;
                 }
 
+				const base_amount = Math.round(NP.times(+tx_trades[i].amount, 100000000));
+				const quote_amount = Math.round(NP.times(+tx_trades[i].amount, +tx_trades[i].price, 100000000));
+
                 const trade_info = {
-                    trade_hash: trades[i].trade_hash,
-                    taker: trades[i].taker,
-                    maker: trades[i].maker,
+                    trade_hash: tx_trades[i].trade_hash,
+                    taker: tx_trades[i].taker,
+                    maker: tx_trades[i].maker,
                     base_token_address: token_address.base_token_address,
                     quote_token_address: token_address.quote_token_address,
                     relayer: mist_config.relayers[index].address,
-                    base_token_amount: NP.times(+trades[i].amount, 100000000), //    uint256 baseTokenAmount;
-                    quote_token_amount: NP.times(+trades[i].amount, +trades[i].price, 100000000), // quoteTokenAmount;
+                    base_token_amount: base_amount,
+                    quote_token_amount: quote_amount,
                     r: null,
                     s: null,
-                    side: trades[i].taker_side,
+                    side: tx_trades[i].taker_side,
                     v: null
                 };
                 trades_hash.push(trade_info);
@@ -108,14 +113,15 @@ class launcher {
             const [err, txid] = await to(mist.matchorder(trades_hash, mist_config.relayers[index].prikey, mist_config.relayers[index].word));
 			const [bestblock_err2, bestblock_result2] = await to(chain.getbestblock());
 			if (!txid || !bestblock_result2) {
-				console.error(err,txid);
-				console.error(bestblock_err2,bestblock_result2);
+				// console.log(trades_hash);
+				console.error('[ADEX LAUNCHER]::(matchorder):',err,txid);
+				console.error('[ADEX LAUNCHER]::(getbestblock)',bestblock_err2,bestblock_result2);
 				this.loop.call(this);
 				return;
 			}
 
 			if(!bestblock_result2.height){
-				console.error('bestblock height is null');	
+				console.error('bestblock height is null');
 				return;
 			}
 			this.block_height = bestblock_result2.height;
