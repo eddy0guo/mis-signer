@@ -441,63 +441,10 @@ export default () => {
                 info.id = utils.get_hash(info);
                 const info_arr = utils.arr_values(info);
                 const [err3, result3] = await to(psql_db.insert_bridge(info_arr));
-                if (err3) console.log(err3, result3);
-
-                setTimeout(async () => {
-                    const [decode_err, decode_info] = await to(
-                        utils.decode_transfer_info(master_txid)
-                    );
-                    if (!decode_info) {
-						console.error('[asset2coin_v3]',decode_err,decode_info)
-						return;
-					};
-                    const {
-                        from,
-                        asset_id,
-                        vin_amount,
-                        to_amount,
-                        remain_amount,
-                        fee_amount,
-                        fee_asset,
-                    } = decode_info;
-
-                    let master_txid_status;
-                    if (!decode_err) {
-                        master_txid_status = 'successful';
-                    } else {
-                        master_txid_status = 'illegaled';
-                    }
-
-                    if (decode_info.to !== mist_config.bridge_address) {
-                        master_txid_status = 'illegaled';
-                        console.error(`reciver ${decode_info.to}  is not official address`);
-                        // return; // 应该要return吧这里
-						// 这里解析失败的非法划转也要存表，不return
-                    }
-
-                    const transfer_tokens = await psql_db.get_tokens([asset_id]);
-                    const fee_tokens = await psql_db.get_tokens([fee_asset]);
-
-                    const current_time = utils.get_current_time();
-                    const update_info = {
-                        address: from,
-                        token_name: transfer_tokens[0].symbol,
-                        amount: to_amount,
-                        master_txid_status,
-                        child_txid_status: 'pending',
-                        fee_asset: fee_tokens[0].symbol,
-                        fee_amount,
-                        updated_at: current_time,
-                        id: info.id,
-                    };
-                    const update_info_arr = utils.arr_values(update_info);
-                    const [err4, result4] = await to(
-                        psql_db.update_asset2coin_decode(update_info_arr)
-                    );
-                    if (err4)
-                        console.log('psql_db.update_asset2coin_decode', err3, result4);
-                }, 10000);
-                // FIXME:这里又有一个等待10秒的非严谨逻辑处理
+                if (err3 || !result3){
+					console.log('[MIST SIGNER]::(psql_db.insert_bridge):',err3, result3);
+					res.json({ success: false, err: err3 });
+				}
 
                 return res.json({ success: true, id: info.id });
             }

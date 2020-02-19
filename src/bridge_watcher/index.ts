@@ -28,9 +28,76 @@ class watcher {
 
     async start() {
         this.asset2coin_loop();
+        this.asset2coin_decode_loop();
         this.coin2asset_release_loop();
         this.coin2asset_burn_loop();
     }
+
+	async asset2coin_decode_loop(){
+		const [pending_decode_err,pending_decode] = await to(this.psql_db.get_pending_decode_bridge());
+		if(pending_decode_err || !pending_decode || pending_decode.length === 0){
+			console.error('[ADEX BRIDGER]::(get_pending_decode_bridge):have no trades need to be decoded');
+			setTimeout(() => {
+				this.asset2coin_decode_loop.call(this)
+			}, 1000 * 2);
+			return;
+		}
+
+		let master_txid_status = 'successful';
+		const current_time = this.utils.get_current_time();
+
+		const [decode_err, decode_info] = await to(this.utils.decode_transfer_info(pending_decode.master_txid));
+		if (decode_err || !decode_info) {
+			console.error('[BDIGER WATCHER]:(decode_transfer_info):',decode_err,decode_info)
+			// FIXME:根据error内容判断是外部服务rpc问题还是交易本身的问题
+			if(!decode_err.message.includes('asimov_getRawTransaction failed')){
+				const updated = [null,null,null,'illegaled','pending',null,null,current_time,pending_decode.id];
+				this.psql_db.update_asset2coin_decode(updated);
+			}
+
+			setTimeout(() => {
+				this.asset2coin_decode_loop.call(this)
+			}, 1000 * 2);
+			return;
+
+		};
+		const {
+			from,
+			asset_id,
+			vin_amount,
+			to_amount,
+			remain_amount,
+			fee_amount,
+			fee_asset,
+		} = decode_info;
+
+
+		if (decode_info.to !== mist_config.bridge_address) {
+			master_txid_status = 'illegaled';
+			console.error(`reciver ${decode_info.to}  is not official address`);
+		}
+
+		const transfer_tokens = await this.psql_db.get_tokens([asset_id]);
+		const fee_tokens = await this.psql_db.get_tokens([fee_asset]);
+
+		const update_info = {
+			address: from,
+			token_name: transfer_tokens[0].symbol,
+			amount: to_amount,
+			master_txid_status,
+			child_txid_status: 'pending',
+			fee_asset: fee_tokens[0].symbol,
+			fee_amount,
+			updated_at: current_time,
+			id: pending_decode.id,
+		};
+		const update_info_arr = this.utils.arr_values(update_info);
+		const [err4, result4] = await to(
+			this.psql_db.update_asset2coin_decode(update_info_arr)
+		);
+		if (err4) console.log('psql_db.update_asset2coin_decode', err4, result4);
+        this.asset2coin_decode_loop.call(this)
+	}
 
     async asset2coin_loop() {
 

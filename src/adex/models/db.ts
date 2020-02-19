@@ -716,6 +716,18 @@ export default class db {
 
     }
 
+	async get_pending_decode_bridge() : Promise<any> {
+        const [err, result]: [any,any] = await to(this.clientDB.query(`SELECT * from  mist_bridge  where address is null  and master_txid_status=\'pending\' and (current_timestamp - created_at) > \'10 seconds\' order by created_at desc limit 1`));
+        if (err) {
+          	 console.error('get pending decode bridge failed', err);
+			 throw new Error(err);
+        }
+
+        return result.rows;
+
+    }
+
+
     async filter_bridge(filter_info) : Promise<any> {
         const [err, result]: [any,any] = await to(this.clientDB.query('SELECT * FROM mist_bridge  where side=$1 and master_txid_status=$2 and child_txid_status=$3 order by created_at desc limit 1', filter_info));
         if (err) {

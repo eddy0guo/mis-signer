@@ -778,9 +778,21 @@ did对order_id进行签名，获取rsv
     }
 
     // 参考binance下单价格限制在盘口的上下五倍
-    const last_trade = await trades.list_trades(market_id);
-    const max_limit = NP.times(last_trade[0].price, 5);
-    const min_limit = NP.divide(last_trade[0].price, 5);
+    const [last_trade_err,last_trade] = await to(trades.list_trades(market_id));
+	if(last_trade_err || !last_trade ){
+	  console.error('[MIST SIGNER]:(trades.list_trades):',last_trade_err,last_trade);
+	  return res.json({
+        success: false,
+        err: 'amount or price is cannt support',
+      });
+	}
+	// init limit 0 ～ 100000
+	let min_limit = 0;
+	let max_limit = 100000;
+	if(last_trade.length !== 0){
+    	max_limit = NP.times(last_trade[0].price, 5);
+    	min_limit = NP.divide(last_trade[0].price, 5);
+	}
 
     if (price < min_limit || price > max_limit) {
       return res.json({
