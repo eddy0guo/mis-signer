@@ -390,20 +390,24 @@ export default () => {
   express.all('/get_pool_info', async (req, res) => {
     const token_arr = await mist_wallet.list_tokens();
 
-    const balances = [];
-    for (const i in token_arr as any[]) {
-      if (!token_arr[i]) continue;
-      const asset = new Asset(token_arr[i].asim_assetid);
-      const [assets_balance_err, assets_balance] = await to(
+   	  const balances = [];
+	  const asset = new Asset();
+      const [assets_balance_err, assets_balance_result] = await to(
         asset.balanceOf(mist_config.express_address)
       );
-      if (assets_balance_err || !assets_balance) {
-		  console.error('[ADEX EXPRESS]::(balanceOf):',assets_balance_err,assets_balance);
+
+      if (assets_balance_err || !assets_balance_result) {
+		  console.error('[ADEX EXPRESS]::(balanceOf):',assets_balance_err,assets_balance_result);
 		  return  res.json({
 				  success: false,
 				  err:assets_balance_err,
 				});
 	  }
+	  const assets_balance = assets_balance_result[0].assets;
+
+    for (const i in token_arr as any[]) {
+      if (!token_arr[i]) continue;
+
       let asset_balance = 0;
       for (const j in assets_balance) {
         if (token_arr[i].asim_assetid === assets_balance[j].asset) {
@@ -417,7 +421,7 @@ export default () => {
       const balance_info = {
         token_symbol: token_arr[i].symbol,
         asim_asset_id: token_arr[i].asim_assetid,
-        asim_asset_balance: asset_balance,
+        asim_asset_balance: asset_balance / (1 * 10 ** 8),
         icon,
       };
 

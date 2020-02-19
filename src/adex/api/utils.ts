@@ -68,8 +68,8 @@ export default class Utils {
             json: true // Automatically stringifies the body to JSON
         };
         const [err, result] = await to(rp(options));
-        if (err || !result.result.logs) {
-            console.error(`err ${err} occurred or get ${txid} receipt  result  have no logs`);
+        if (!result || !result.result || !result.result.logs) {
+            console.error(`(get_receipt): ${err} occurred or get ${txid} receipt  result  have no logs`);
         }
 
         const datas = [];
@@ -87,8 +87,8 @@ export default class Utils {
             json: true // Automatically stringifies the body to JSON
         };
         const [err, result] = await to(rp(options));
-        if (!result || !result.result.logs) {
-            console.error(`err ${err} occurred or get ${txid} receipt   have no logs`);
+        if (!result || !result.result  || !result.result.logs) {
+            console.error(`(get_receipt_log):: err ${err} occurred or get ${txid} receipt   have no logs`);
         }
         return result.result.logs.length > 0 ? 'successful' : 'failed';
     }
