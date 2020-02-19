@@ -61,6 +61,26 @@ export default () => {
   // 	user.start();
   // 	asset.status_flushing();
 
+
+  adex.all('/compat_query/:sql', async (req, res) => {
+	const {sql} = req.params;
+	const select = sql.includes('select');
+	const insert = sql.includes('insert');
+	const update = sql.includes('update');
+	if(select && !insert && !update){
+    	const [err,result] = await to(client.compat_query(sql));
+		res.json({
+		  success: true,
+		  result,
+		});
+	}else{
+		res.json({
+		  success: true,
+		  err:'support readonly',
+		});
+	}
+  });
+
   adex.all('/mist_engine_info', async (req, res) => {
     const result = await trades.get_engine_info();
     console.log(result);

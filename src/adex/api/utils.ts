@@ -20,8 +20,8 @@ export default class Utils {
 
     arr_values(message) {
         const arr_message = [];
-        for (const item of message) {
-            arr_message.push(item);
+		for (const item of Object.keys(message)) {
+            arr_message.push(message[item]);
         }
 
         return arr_message;
@@ -87,7 +87,7 @@ export default class Utils {
             json: true // Automatically stringifies the body to JSON
         };
         const [err, result] = await to(rp(options));
-        if (err || !result.result.logs) {
+        if (!result || !result.result.logs) {
             console.error(`err ${err} occurred or get ${txid} receipt   have no logs`);
         }
         return result.result.logs.length > 0 ? 'successful' : 'failed';
@@ -105,11 +105,18 @@ export default class Utils {
             ['0x45eab75b1706cbb42c832fc66a1bcdaafebcdaea71ed2f08efbf3057c588fcb6',
                 order.taker, order.maker, order.baseToken, order.quoteToken, order.relayer, order.baseTokenAmount, order.quoteTokenAmount, order.takerSide]);
 
-        encode = encode.toString('hex').replace(new RegExp(`/00${order.taker.substr(2, 44)}/g`), `66${order.taker.substr(2, 44)}`);
-        encode = encode.replace(new RegExp(`/00${order.maker.substr(2, 44)}/g`), `66${order.maker.substr(2, 44)}`);
-        encode = encode.replace(new RegExp(`/00${order.baseToken.substr(2, 44)}/g`), `63${order.baseToken.substr(2, 44)}`);
-        encode = encode.replace(new RegExp(`/00${order.quoteToken.substr(2, 44)}/g`), `63${order.quoteToken.substr(2, 44)}`);
-        encode = '0x' + encode.replace(new RegExp(`/00${order.relayer.substr(2, 44)}/g`), `66${order.relayer.substr(2, 44)}`);
+        encode = encode.toString('hex').replace(new RegExp(`00${order.taker.substr(2, 44)}`,'g'), `66${order.taker.substr(2, 44)}`);
+        encode = encode.replace(new RegExp(`00${order.maker.substr(2, 44)}`,'g'), `66${order.maker.substr(2, 44)}`);
+        encode = encode.replace(new RegExp(`00${order.baseToken.substr(2, 44)}`,'g'), `63${order.baseToken.substr(2, 44)}`);
+        encode = encode.replace(new RegExp(`00${order.quoteToken.substr(2, 44)}`,'g'), `63${order.quoteToken.substr(2, 44)}`);
+        encode = '0x' + encode.replace(new RegExp(`00${order.relayer.substr(2, 44)}`,'g'), `66${order.relayer.substr(2, 44)}`);
+		/*
+		encode = encode.toString('hex').replace(eval(`/00${order.taker.substr(2, 44)}/g`), `66${order.taker.substr(2, 44)}`);
+        encode = encode.replace(eval(`/00${order.maker.substr(2, 44)}/g`), `66${order.maker.substr(2, 44)}`);
+        encode = encode.replace(eval(`/00${order.baseToken.substr(2, 44)}/g`), `63${order.baseToken.substr(2, 44)}`);
+        encode = encode.replace(eval(`/00${order.quoteToken.substr(2, 44)}/g`), `63${order.quoteToken.substr(2, 44)}`);
+        encode = '0x' + encode.replace(eval(`/00${order.relayer.substr(2, 44)}/g`), `66${order.relayer.substr(2, 44)}`);
+		*/
 
         return encode;
     }
@@ -150,8 +157,8 @@ export default class Utils {
 
 		const [err,res] = await to(rp(options));
 		const txinfo = res.result;
-		if(err){
-	         console.log('asimov_getRawTransaction failed');
+		if(err || !txinfo){
+	         console.log('asimov_getRawTransaction failed',err,txinfo);
              throw new Error('asimov_getRawTransaction failed');
 		}
 
