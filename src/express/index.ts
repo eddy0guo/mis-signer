@@ -49,7 +49,11 @@ async function get_price(base_token_name, quote_token_name, amount, order) {
   let base_value = 0;
   let base_amount = 0;
   if (base_token_name !== 'CNYC') {
-    const base_book = await order.order_book(base_token_name + '-CNYC');
+    const [base_book_err,base_book] = await to(order.order_book(base_token_name + '-CNYC'));
+	if( base_book_err || !base_book || !base_book.bids){
+		console.error('[ADEX EXPRESS]::(base_book):',base_book_err,base_book);
+		throw new Error(base_book_err);
+	}
     const base_bids = base_book.bids;
     // 模拟先卖掉所有base，再全部买quote
     for (const index in base_bids) {
@@ -60,7 +64,6 @@ async function get_price(base_token_name, quote_token_name, amount, order) {
         base_value += NP.times(amount - tmp_amount, base_bids[index][0]);
         break;
       } else {
-        // amount * price
         base_value += NP.times(base_bids[index][1], base_bids[index][0]);
       }
     }
@@ -71,7 +74,11 @@ async function get_price(base_token_name, quote_token_name, amount, order) {
   let quote_value = 0;
   let quote_amount = 0;
   if (quote_token_name !== 'CNYC') {
-    const quote_book = await order.order_book(quote_token_name + '-CNYC');
+    const [quote_book_err,quote_book] = await to(order.order_book(quote_token_name + '-CNYC'));
+	if( quote_book_err || !quote_book || !quote_book.asks){
+        console.error('[ADEX EXPRESS]::(quote_book):',quote_book_err,quote_book);
+        throw new Error(quote_book_err);
+    }
     const quote_asks = quote_book.asks.reverse();
 
     for (const index in quote_asks) {
@@ -144,17 +151,18 @@ export default () => {
     const [err, records] = await to(
       psql_db.my_express([address, offset, perpage])
     );
-
-    for (const record of records as any[]) {
-      record.base_token_icon =
-        mist_config.icon_url +
-        record.base_asset_name +
-        'a.png';
-      record.quote_token_icon =
-        mist_config.icon_url +
-        record.quote_asset_name +
-        'a.png';
-    }
+	if(records){
+		for (const record of records as any[]) {
+		  record.base_token_icon =
+			mist_config.icon_url +
+			record.base_asset_name +
+			'a.png';
+		  record.quote_token_icon =
+			mist_config.icon_url +
+			record.quote_asset_name +
+			'a.png';
+		}
+	}
     res.json({
       success: !records  ? false : true,
       result: records,
@@ -203,7 +211,7 @@ export default () => {
   express.all('/get_express_trade/:trade_id', async (req, res) => {
     const { trade_id } = req.params;
     const [err, record] = await to(psql_db.find_express([trade_id]));
-    if (err) {
+    if (err || !record) {
       return res.json({
         success: false,
         err,
@@ -386,10 +394,16 @@ export default () => {
     for (const i in token_arr as any[]) {
       if (!token_arr[i]) continue;
       const asset = new Asset(token_arr[i].asim_assetid);
-      const [err4, assets_balance] = await to(
+      const [assets_balance_err, assets_balance] = await to(
         asset.balanceOf(mist_config.express_address)
       );
-      if (err4) console.error(err4);
+      if (assets_balance_err || !assets_balance) {
+		  console.error('[ADEX EXPRESS]::(balanceOf):',assets_balance_err,assets_balance);
+		  return  res.json({
+				  success: false,
+				  err:assets_balance_err,
+				});
+	  }
       let asset_balance = 0;
       for (const j in assets_balance) {
         if (token_arr[i].asim_assetid === assets_balance[j].asset) {
@@ -415,88 +429,6 @@ export default () => {
       result: balances,
     });
   });
-
-  express.all(
-    '/sendrawtransaction/build_express/:base_token_name/:quote_token_name/:amount/:address/:sign_data',
-    async (req, res) => {
-      const {
-        base_token_name,
-        quote_token_name,
-        amount,
-        address,
-        sign_data,
-      } = req.params;
-      const [base_err, base_txid] = await to(
-        chain.sendrawtransaction([sign_data])
-      );
-      const base_tx_status = !base_txid ? 'failed' : 'successful';
-
-      // 失败的记录也入表
-
-      // let base_token_price = await mist_wallet.get_token_price2pi(base_token_name);
-      // let quote_token_price = await mist_wallet.get_token_price2pi(quote_token_name);
-
-      // 根据深度取价格
-      const [err, price] = await to(
-        get_price(base_token_name, quote_token_name, amount, order)
-      );
-      if (err) console.error(err);
-
-      const quote_amount = NP.times(amount, Number(price), 0.995);
-      const fee_amount = NP.times(amount, Number(price), 0.005);
-
-      let quote_tx_status;
-      let quote_err;
-      let quote_txid;
-      if (!base_err) {
-        const tokens = await psql_db.get_tokens([quote_token_name]);
-        const asset = new Asset(tokens[0].asim_assetid);
-
-        [quote_err, quote_txid] = await to(
-          asset.transfer(address, quote_amount)
-        );
-        quote_tx_status = !quote_txid ? 'failed' : 'successful';
-      }
-
-      const info = {
-        trade_id: null,
-        address,
-        base_asset_name: base_token_name,
-        base_amount: amount,
-        price,
-        quote_asset_name: quote_token_name,
-        quote_amount,
-        fee_rate: 0.005,
-        fee_token: quote_token_name,
-        fee_amount,
-        base_txid,
-        base_tx_status,
-        quote_txid,
-        quote_tx_status,
-      };
-      info.trade_id = utils.get_hash(info);
-      const info_arr = utils.arr_values(info);
-
-      const [err3, result3] = await to(psql_db.insert_express(info_arr));
-      if (err3) console.error(err3, result3);
-      let success;
-      if (
-        base_tx_status === 'successful' &&
-        quote_tx_status === 'successful' &&
-        !err3
-      ) {
-        success = true;
-      } else {
-        success = false;
-      }
-      res.json({
-        success,
-        trade_id: info.trade_id,
-        base_err,
-        quote_err,
-      });
-    }
-  );
 
   /**
      * @api {post} /express/sendrawtransaction/build_express_v2/:quote_token_name/:sign_data 广播闪兑交易
@@ -544,7 +476,7 @@ export default () => {
         const info_arr = utils.arr_values(info);
 
         const [err3, result3] = await to(psql_db.insert_express(info_arr));
-        if (err3) console.error(err3, result3);
+        if (err3 || !result3) console.error('[ADEX EXPRESS]::(insert_express):',err3, result3);
         res.json({
           success: true,
           trade_id: info.trade_id,
@@ -560,7 +492,15 @@ export default () => {
         const [decode_err, decode_info] = await to(
           utils.decode_transfer_info(base_txid)
         );
-        const {
+        let base_tx_status;
+        if (decode_info) {
+          base_tx_status = 'successful';
+        } else {
+          console.error('[ADEX EXPRESS]::(decode_transfer_info):',decode_err,decode_info);
+		  return;
+        }
+
+		const {
           from,
           asset_id,
           vin_amount,
@@ -568,36 +508,22 @@ export default () => {
           remain_amount,
         } = decode_info;
 
-        let base_tx_status;
-        if (!decode_err) {
-          base_tx_status = 'successful';
-        } else {
-          console.error(
-            decode_err,
-            from,
-            asset_id,
-            vin_amount,
-            to_amount,
-            remain_amount
-          );
-          base_tx_status = 'illegaled';
-        }
 
         if (decode_info.to !== mist_config.express_address) {
           base_tx_status = 'illegaled';
           console.error(`reciver ${decode_info.to}  is not official address`);
         }
 
-        const [err3, base_token] = await to(psql_db.get_tokens([asset_id]));
-        if (err3 || !base_token || base_token.length === 0) {
+        const [base_token_err, base_token] = await to(psql_db.get_tokens([asset_id]));
+        if (base_token_err || !base_token || base_token.length === 0) {
           base_tx_status = 'illegaled';
-          console.error(`asset ${asset_id}  is not support`);
+          console.error(`[ADEX EXPRESS]::(get_tokens):asset ${asset_id}  is not support`);
         }
 
         const [err, price] = await to(
           get_price(base_token[0].symbol, quote_token_name, to_amount, order)
         );
-        if (err) console.error(err);
+        if (!price) console.error('[ADEX EXPRESS]::(get_price):',err);
         const current_time = utils.get_current_time();
 
         const quote_amount = NP.times(to_amount, Number(price), 0.995);
