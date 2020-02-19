@@ -191,44 +191,6 @@ export default () => {
     res.json({ result });
   });
 
-  adex.all('/balances', async (req, res) => {
-    const obj = urllib.parse(req.url, true).query;
-    const token_arr = await mist_wallet.list_tokens();
-    const balances = [];
-    for (const i in token_arr as any[]) {
-      if (!token_arr[i]) continue;
-      const token = new Token(token_arr[i].address);
-      const [err, result] = await to(token.balanceOf(obj.address));
-      if (err) console.error(err);
-      const [err3, allowance] = await to(
-        token.allowance(obj.address, mist_config.ex_address)
-      );
-      if (err3) console.error(err3);
-      const asset = new Asset(token_arr[i].asim_assetid);
-      const [err4, assets_balance] = await to(asset.balanceOf(obj.address));
-      if (err4) console.error(err4);
-      let asset_balance = 0;
-      for (const j in assets_balance) {
-        if (token_arr[i].asim_assetid === assets_balance[j].asset) {
-          asset_balance = assets_balance[j].value;
-        }
-      }
-
-      const balance_info = {
-        token_symbol: token_arr[i].symbol,
-        token_name: token_arr[i].name,
-        balance: Number(result) / (1 * 10 ** 8),
-        allowance_ex: Number(allowance) / (1 * 10 ** 8),
-        asim_assetid: token_arr[i].asim_assetid,
-        asim_asset_balance: asset_balance,
-      };
-
-      balances.push(balance_info);
-      console.log(balance_info);
-    }
-
-    res.json(balances);
-  });
   /**
      * @api {post} /adex/balances_v2 全资产余额详情
      * @apiDescription 返回托管资产，币币资产，币币冻结资产的详情(建议用asset_balances或者erc20_balances替换)
@@ -311,15 +273,29 @@ export default () => {
     const token_arr = await mist_wallet.list_tokens();
     const balances = [];
 
+
+    const asset = new Asset();
+    const [err4, result4] = await to(asset.balanceOf(obj.address));
+    if (err4 || !result4 || !result4[0].assets) {
+		console.error('[MIST SIGNER]::(asset.balanceOf):',err4,result4);
+		return  res.json({
+				  success: false,
+				  err: err4,
+				});
+	}
+	const assets_balance = result4[0].assets;
+
     for (const i in token_arr as any[]) {
       if (!token_arr[i]) continue;
       const token = new Token(token_arr[i].address);
       const [err, result] = await to(token.balanceOf(obj.address, 'child_poa'));
-      if (err) console.error(err);
-      const asset = new Asset(token_arr[i].asim_assetid);
-      const [err4, result4] = await to(asset.balanceOf(obj.address));
-	  const assets_balance = result4[0].assets;
-      if (err4) console.error(err4);
+      if (err) {
+		  console.error('[MIST SIGNER]::(2222token.balanceOf):',err,result);
+		   return  res.json({
+                  success: false,
+                  err,
+                });
+	   }
       let asset_balance = 0;
       for (const j in assets_balance) {
         if (!assets_balance[j]) continue;
@@ -435,12 +411,19 @@ export default () => {
     const token_arr = await mist_wallet.list_tokens();
     const balances = [];
 
+    const asset = new Asset();
+    const [err4, result4] = await to(asset.balanceOf(address));
+    if (err4 || !result4 || !result4[0].assets) {
+		console.error(err4,result4);
+		return  res.json({
+                  success: false,
+                  err: err4,
+                });
+	}
+	const assets_balance = result4[0].assets;
+
     for (const i in token_arr as any[]) {
       if (!token_arr[i]) continue;
-      const asset = new Asset(token_arr[i].asim_assetid);
-      const [err4, result4] = await to(asset.balanceOf(address));
-	  const assets_balance = result4[0].assets;
-      if (err4) console.error(err4);
       let asset_balance = 0;
       for (const j in assets_balance) {
         if (token_arr[i].asim_assetid === assets_balance[j].asset) {
@@ -547,7 +530,13 @@ export default () => {
       if (!token_arr[i]) continue;
       const token = new Token(token_arr[i].address);
       const [err, result] = await to(token.balanceOf(address, 'child_poa'));
-      if (err) console.error(err);
+      if (err || !result) {
+		  console.error(err);
+		  return res.json({
+				  success: false,
+				  err,
+				});
+	  }
 
       let freeze_amount = 0;
       const freeze_result = await client.get_freeze_amount([

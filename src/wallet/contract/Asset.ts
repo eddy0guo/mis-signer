@@ -3,13 +3,14 @@ import mist_config from '../../cfg';
 
 // 直接用AsimovWallet获得余额也可以
 export default class Asset {
-  constructor(assetId) {
-    console.error('TBD', assetId);
+  constructor() {
+    console.error('TBD');
   }
 
   public async balanceOf(address): Promise<any> {
-    const wallet = new AsimovWallet({ rpc: mist_config.asimov_master_rpc,
-	address
+    const wallet = new AsimovWallet({
+		rpc: mist_config.asimov_master_rpc,
+		address
 	});
     console.error('TBD');
     return wallet.balance()

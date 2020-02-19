@@ -29,7 +29,7 @@ export default class Users {
         const [err, balance] = await to(token.balanceOf(user_address));
         if (err)console.error(err);
 
-        const asset = new Asset(token_info.asim_assetid);
+        const asset = new Asset();
         const [err4, assets_balance] = await to(asset.balanceOf(user_address));
         if (err4)console.error(err4);
         let asset_balance = 0;
