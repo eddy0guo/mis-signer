@@ -48,7 +48,7 @@ class Watcher {
 
         const [tokens_err,tokens] = await to(this.db.get_tokens([quote_asset_name]));
 		if(!tokens){
-			console.error(tokens_err,tokens);	
+			console.error(tokens_err,tokens);
 			setTimeout(() => {
                 this.loop.call(this)
             }, 2000);

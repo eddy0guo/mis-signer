@@ -23,7 +23,7 @@ export default class Engine {
 
     const [err,result] = await to(this.db.filter_orders(filter));
 	if(!result){
-		console.log(err);
+		console.log('[ADEX ENGINE]::{filter_orders}',err,result);
 		return [];
 	}
 
@@ -104,15 +104,15 @@ export default class Engine {
   async call_asimov(trades) {
     const [token_address_err,token_address] = await to(this.db.get_market([trades[0].market_id]));
 	if(!token_address){
-		console.log(token_address_err,token_address);
+		console.log('[ADEX ENGINE]::(get_market):',token_address_err,token_address);
 		return;
 	}
 
     const [transactions_err,transactions] = await to(this.db.list_all_trades());
     const [matched_trades_err,matched_trades] = await to(this.db.list_matched_trades());
 	if(!transactions || !matched_trades){
-		console.log(transactions_err,transactions);	
-		console.log(matched_trades_err,matched_trades);
+		console.log('[ADEX ENGINE]::(list_all_trades):',transactions_err,transactions);
+		console.log('[ADEX ENGINE]::(list_matched_trades):',matched_trades_err,matched_trades);
 		return;
 	}
     const add_queue_num = Math.floor(matched_trades[0].count / 300) + 1;
@@ -138,12 +138,12 @@ export default class Engine {
         baseToken: order_address_set[0],
         quoteToken: order_address_set[1],
         relayer: order_address_set[2],
-        baseTokenAmount: NP.times(trades[i].amount, 100000000), //    uint256 baseTokenAmount;
-        quoteTokenAmount: NP.times(
+        baseTokenAmount: Math.round(NP.times(trades[i].amount, 100000000)), //    uint256 baseTokenAmount;
+        quoteTokenAmount: Math.round(NP.times(
           trades[i].amount,
           trades[i].price,
           100000000
-        ), // quoteTokenAmount;
+        )), // quoteTokenAmount;
         takerSide: trades[i].taker_side,
       };
 

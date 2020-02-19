@@ -1,17 +1,14 @@
-import utils2 from './utils';
 import to from 'await-to-js';
+import date = require('silly-datetime');
 
-
-const date = require('silly-datetime');
-import {restore_order} from './order';
+import { restore_order } from './order';
 
 export default class trades {
     private db;
-    private utils;
+
 
     constructor(client) {
         this.db = client;
-        this.utils = new utils2();
     }
 
     async get_engine_info() {
@@ -42,8 +39,8 @@ export default class trades {
 
     async my_trades2(address, page, perpage) {
         const offset = (+page - 1) * perpage;
-        const [err,result] = await to(this.db.my_trades2([address, offset, perpage]));
-		if(!result) console.error(err,result);
+        const [err, result] = await to(this.db.my_trades2([address, offset, perpage]));
+        if (!result) console.error(err, result);
         return result;
     }
 
@@ -52,14 +49,14 @@ export default class trades {
         const bars = [];
         for (let i = 0; i < bar_length; i++) {
             const from = date.format(new Date((message.from + message.granularity * i) * 1000), 'YYYY-MM-DD HH:mm:ss');
-            const to = date.format(new Date((message.from + message.granularity * (i + 1)) * 1000), 'YYYY-MM-DD HH:mm:ss');
-            const filter_info = [message.market_id, from, to];
+            const to_time = date.format(new Date((message.from + message.granularity * (i + 1)) * 1000), 'YYYY-MM-DD HH:mm:ss');
+            const filter_info = [message.market_id, from, to_time];
             const trades_by_time = await this.db.sort_trades(filter_info, 'created_at');
             const trades_by_price = await this.db.sort_trades(filter_info, 'price');
 
             let volume = 0;
-            for (const index in trades_by_price) {
-                volume += +trades_by_price[index].amount;
+            for (const item of trades_by_price) {
+                volume += +item.amount;
             }
 
             let open = 0;
@@ -89,10 +86,10 @@ export default class trades {
 
     // 应该先停laucher的线程，再回滚，否则可能出现已经launched的也回滚了
     async rollback_trades() {
-        const trades = await this.db.get_matched_trades();
-        for (const index in trades) {
-            restore_order(trades[index].taker_order_id, trades[index].amount);
-            restore_order(trades[index].maker_order_id, trades[index].amount);
+        const matched_trades = await this.db.get_matched_trades();
+        for (const item of matched_trades) {
+            restore_order(item.taker_order_id, item.amount);
+            restore_order(item.maker_order_id, item.amount);
         }
 
         await this.db.delete_matched_trades();

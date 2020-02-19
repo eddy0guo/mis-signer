@@ -445,7 +445,9 @@ export default () => {
       const quote_amount = NP.times(amount, Number(price), 0.995);
       const fee_amount = NP.times(amount, Number(price), 0.005);
 
-      let quote_tx_status, quote_err, quote_txid;
+      let quote_tx_status;
+      let quote_err;
+      let quote_txid;
       if (!base_err) {
         const tokens = await psql_db.get_tokens([quote_token_name]);
         const asset = new Asset(tokens[0].asim_assetid);

@@ -5,6 +5,7 @@
   "main": "dist",
   "scripts": {
     "dev": "ts-node src",
+    "prebuild": "npm run lint --fix",
     "build": "tsc --project tsconfig.json",
     "start": "node dist",
     "prestart": "npm run -s build",
@@ -21,7 +22,7 @@
     "doc": "npx compodoc -p tsconfig.json"
   },
   "repository": "mistdex/mist-signer",
-  "author": "Ryan",
+  "author": "Mist",
   "license": "MIT",
   "husky": {
     "hooks": {

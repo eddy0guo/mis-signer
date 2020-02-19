@@ -63,7 +63,7 @@ export default class Market {
 
         const [markets_err,markets] = await to(this.list_online_markets());
 		if(!markets){
-			console.error(markets_err,markets);	
+			console.error(markets_err,markets);
 			return [];
 		}
         const quotation = new mist_wallet();
@@ -72,7 +72,7 @@ export default class Market {
             if( !markets[index])continue
             const [err, result]: [any,any] = await to(this.db.get_market_quotations([markets[index].id]));
 			if (!err && result && result.length > 0) {
-                let base_token = result[0].market_id.split('-')[0];
+                const base_token = result[0].market_id.split('-')[0];
                 result[0].CNYC_price = await quotation.get_token_price2pi(base_token);
 
             }else if(!err && result && result.length === 0){
@@ -84,7 +84,7 @@ export default class Market {
                     CNYC_price: 0
                 }
             }else{
-				console.error(err);	
+				console.error(err);
 			}
             quotations.push(result[0]);
         }
