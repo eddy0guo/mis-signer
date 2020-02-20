@@ -1,25 +1,39 @@
 import DBClient from '../models/db';
 import NP from 'number-precision';
 
-import engine from './engine';
-import utils2 from './utils';
+import Utils from './utils';
 import to from 'await-to-js';
 
-
 import * as Queue from 'bull';
-
-const orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE, { redis: { port: process.env.REDIS_PORT, host: process.env.REDIS_URL, password: process.env.REDIS_PWD } });
 
 export default class order {
 
     private db;
-    private exchange;
+    private orderQueue;
     private utils;
 
     constructor(client) {
         this.db = client;
-        this.exchange = new engine(this.db);
-        this.utils = new utils2();
+        this.utils = new Utils();
+        this.createQueue();
+    }
+
+    createQueue() {
+        this.orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE,
+            {
+                redis: {
+                    port: Number(process.env.REDIS_PORT),
+                    host: process.env.REDIS_URL,
+                    password: process.env.REDIS_PWD
+                }
+            });
+        return this.orderQueue;
+    }
+
+    async checkQueueStatus() {
+        const job = await this.orderQueue.add(null, { removeOnComplete: true, delay: 9999 });
+        await job.remove();
+        return true;
     }
 
     async build(message) {
@@ -30,19 +44,27 @@ export default class order {
                 address: message.trader_address,
             }
             let result = await this.db.insert_users(this.utils.arr_values(address_info));
-
         }
-		*/
-        orderQueue.add(message);
-        return;
+        */
+        const [statusErr, res] = await to(this.checkQueueStatus());
+        if (statusErr || !res) {
+            console.log('[ADEX API] Queue Status Error:', statusErr);
+            this.createQueue();
+        }
+
+        const [err, job] = await to(this.orderQueue.add(message));
+        if (err) {
+            console.log('[ADEX API] Queue Error:', err);
+        }
+        return job;
     }
 
     async cancle_order(message) {
 
         const create_time = this.utils.get_current_time();
         const cancle_info = [-message.amount, 0, message.amount, 0, 'cancled', create_time, message.id];
-        const [err,result] = await to(this.db.update_orders(cancle_info));
-		if(!result) console.error(err,result);
+        const [err, result] = await to(this.db.update_orders(cancle_info));
+        if (!result) console.error(err, result);
 
         return result;
     }
@@ -64,14 +86,14 @@ export default class order {
 
     async my_orders2(address, page, perpage, status1, status2) {
         const offset = (+page - 1) * perpage;
-        const [err,orders] = await to(this.db.my_orders2([address, offset, perpage, status1, status2]));
-		if(!orders){
-            console.error(err,orders);
-			return orders;
+        const [err, orders] = await to(this.db.my_orders2([address, offset, perpage, status1, status2]));
+        if (!orders) {
+            console.error(err, orders);
+            return orders;
         }
 
         for (const order_index in orders) {
-            if( !orders[order_index]) continue
+            if (!orders[order_index]) continue
             const trades = await this.db.order_trades([orders[order_index].id]);
             if (trades.length === 0) {
                 orders[order_index].average_price = '--';
@@ -81,7 +103,7 @@ export default class order {
             let amount = 0;
             let value = 0;
             for (const trade_index in trades) {
-                if( !trades[trade_index]) continue
+                if (!trades[trade_index]) continue
                 amount = NP.plus(amount, trades[trade_index].amount);
                 const trade_value = NP.times(trades[trade_index].amount, trades[trade_index].price);
                 value = NP.plus(value, trade_value);
@@ -106,12 +128,12 @@ export default class order {
         const asks_arr = [];
         const bids_arr = [];
         for (const item in asks) {
-            if( !asks[item])continue
+            if (!asks[item]) continue
             asks_arr.push(this.utils.arr_values(asks[item]));
         }
 
         for (const item2 in bids) {
-            if( !bids[item2])continue
+            if (!bids[item2]) continue
             bids_arr.push(this.utils.arr_values(bids[item2]));
         }
 
@@ -130,7 +152,7 @@ export default class order {
 
 // 回滚没有打包成功的交易,不过吃单变成了挂单，等别人吃
 export async function restore_order(order_id, amount) {
-    const utils = new utils2();
+    const utils = new Utils();
     const update_time = utils.get_current_time();
     const db = new DBClient();
     const current_order = await db.find_order([order_id]);

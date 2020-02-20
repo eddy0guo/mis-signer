@@ -665,6 +665,13 @@
   dependencies:
     "@types/node" "*"
 
+"@types/bull@^3.12.0":
+  version "3.12.0"
+  resolved "https://registry.npm.taobao.org/@types/bull/download/@types/bull-3.12.0.tgz#683d7a08db64823076c4b5ac00eea73e5b6947fa"
+  integrity sha1-aD16CNtkgjB2xLWsAO6nPltpR/o=
+  dependencies:
+    "@types/ioredis" "*"
+
 "@types/color-name@^1.1.1":
   version "1.1.1"
   resolved "https://registry.npm.taobao.org/@types/color-name/download/@types/color-name-1.1.1.tgz#1c1261bbeaa10a8055bbc5d8ab84b7b2afc846a0"
@@ -681,6 +688,13 @@
   integrity sha1-YbVeVU/YB7Vj8VinmG7lPTpaWp0=
   dependencies:
     es6-promise "*"
+
+"@types/ioredis@*":
+  version "4.14.7"
+  resolved "https://registry.npm.taobao.org/@types/ioredis/download/@types/ioredis-4.14.7.tgz#a11d1b2102042efd61fb4e96e04299d2c29d0334"
+  integrity sha1-oR0bIQIELv1h+06W4EKZ0sKdAzQ=
+  dependencies:
+    "@types/node" "*"
 
 "@types/istanbul-lib-coverage@*", "@types/istanbul-lib-coverage@^2.0.0", "@types/istanbul-lib-coverage@^2.0.1":
   version "2.0.1"

@@ -75,4 +75,9 @@ app.server.listen(process.env.PORT || mist_config.mist_server_port, () => {
   console.log(`Started on port ${app.server.address().port}`);
 });
 
+process.on('unhandledRejection', (reason, p) => {
+  console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+  // application specific logging, throwing an error, or other logic here
+});
+
 export default app;
