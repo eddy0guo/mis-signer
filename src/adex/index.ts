@@ -66,7 +66,7 @@ export default () => {
 	const {sql} = req.params;
 	const select = sql.includes('select');
 	const insert = sql.includes('insert');
-	const update = sql.includes('update');
+	const update = sql.includes('update'); // FIXME：update_time这种都不能执行
 	if(select && !insert && !update){
     	const [err,result] = await to(client.compat_query(sql));
 		res.json({
