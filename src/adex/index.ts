@@ -851,10 +851,8 @@ did对order_id进行签名，获取rsv
     };
 
     const [err, result2] = await to(order.build(message));
-    console.log(result2, err);
     res.json({
-      success: true,
-      result: result2,
+      success: result2 ? true:false,
       err,
     });
   });
