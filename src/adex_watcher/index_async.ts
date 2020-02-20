@@ -6,8 +6,8 @@ import Utils from '../adex/api/utils';
 import { chain } from '../wallet/api/chain';
 
 class Watcher {
-	private db;
-	private utils;
+	private db:DBClient;
+	private utils:Utils;
 
 	constructor() {
 		this.db = new DBClient();
@@ -22,11 +22,11 @@ class Watcher {
 	}
 
 	async loop():Promise<void> {
-		const [transaction_err, transactions] = await to(
+		const [transactionErr, transactions] = await to(
 			this.db.get_pending_transactions()
 		);
-		if (!transactions || transaction_err) {
-			console.error(transaction_err);
+		if (!transactions || transactionErr) {
+			console.error(transactionErr);
 			this.start(1000);
 			return;
 		}
@@ -51,11 +51,11 @@ class Watcher {
 			return;
 		}
 
-		const update_time = this.utils.get_current_time();
+		const updateTime = this.utils.get_current_time();
 		if (!err && result.confirmations > 0) {
-			await this.updateState(tx, update_time);
+			await this.updateState(tx, updateTime);
 		} else if (err) {
-			await this.db.update_transactions(['failed', undefined, update_time, tx.id]);
+			await this.db.update_transactions(['failed', undefined, updateTime, tx.id]);
 			console.error('Err', err);
 		} else {
 			console.log(
@@ -70,7 +70,7 @@ class Watcher {
 		this.start();
 	}
 
-	async updateState(transaction, update_time):Promise<boolean> {
+	async updateState(transaction, updateTime):Promise<boolean> {
 		const [get_receipt_err, contract_status] = await to(
 			this.utils.get_receipt_log(transaction.transaction_hash)
 		);
@@ -80,8 +80,8 @@ class Watcher {
 		}
 		const id = transaction.id;
 		const status = 'successful';
-		const info = [status, update_time, id];
-		const transaction_info = [status, contract_status, update_time, id];
+		const info = [status, updateTime, id];
+		const transaction_info = [status, contract_status, updateTime, id];
 		await this.db.update_transactions(transaction_info);
 		await this.db.update_trades(info);
 
@@ -89,45 +89,51 @@ class Watcher {
 		const updates = [];
 
 		for (const trade of trades) {
-			this.updateElement(updates, trade, update_time,'taker_order_id');
-			this.updateElement(updates, trade, update_time,'maker_order_id');
+			this.updateElement(updates, trade, updateTime,'taker_order_id');
+			this.updateElement(updates, trade, updateTime,'maker_order_id');
 		}
 
 		await this.db.update_order_confirm(updates);
 		return true;
 	}
 
-	updateElement(updates, trade, update_time, key_order_id):void {
-		const trade_amount: number = +trade.amount;
+	updateElement(updates, trade, updateTime, orderIdKey):void {
+		const tradeAmount: number = +trade.amount;
 
-		let item_index;
-		const result_array = updates.find((element, temp_index) => {
-			item_index = temp_index;
-			return element.info[3] === trade[key_order_id];
+		let itemIndex;
+		const resultArray = updates.find((element, temp_index) => {
+			itemIndex = temp_index;
+			return element.info[3] === trade[orderIdKey];
 		});
 
-		if (!result_array) {
-			const update_element = {
+		if (!resultArray) {
+			const updateElement = {
 				info: [
-					+trade_amount,
-					-trade_amount,
-					update_time,
-					trade[key_order_id],
+					+tradeAmount,
+					-tradeAmount,
+					updateTime,
+					trade[orderIdKey],
 				],
 			};
-			updates.push(update_element);
+			updates.push(updateElement);
 		} else {
-			const update_element = updates[item_index];
-			update_element.info[0] = NP.plus(
-				update_element.info[0],
-				trade_amount
+			const updateElement = updates[itemIndex];
+			updateElement.info[0] = NP.plus(
+				updateElement.info[0],
+				tradeAmount
 			);
-			update_element.info[1] = NP.minus(
-				update_element.info[1],
-				trade_amount
+			updateElement.info[1] = NP.minus(
+				updateElement.info[1],
+				tradeAmount
 			);
 		}
 
 	}
 }
+
+process.on('unhandledRejection', (reason, p) => {
+    console.log('[ADEX WATCHER] Unhandled Rejection at: Promise', p, 'reason:', reason);
+    // application specific logging, throwing an error, or other logic here
+});
+
 export default new Watcher();

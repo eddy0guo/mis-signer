@@ -4,7 +4,7 @@ import Config from '../../cfg'
 export default class Token {
   private address: string;
   private master: AsimovWallet;
-  private clild: AsimovWallet;
+  private child: AsimovWallet;
 
   constructor(address) {
     this.address = address;
@@ -15,7 +15,7 @@ export default class Token {
       rpc: Config.asimov_master_rpc,
     });
 
-    this.clild = new AsimovWallet({
+    this.child = new AsimovWallet({
       name: Config.bridge_address,
       address: Config.bridge_address,
       rpc: Config.asimov_child_rpc,
@@ -27,7 +27,7 @@ export default class Token {
    * @param {*} address
    */
   async balanceOf(address:string, network_flag:string = 'master_poa') {
-      const wallet: AsimovWallet = (network_flag === 'master_poa') ? this.master : this.clild;
+      const wallet: AsimovWallet = (network_flag === 'master_poa') ? this.master : this.child;
       return wallet.contractCall.callReadOnly(
         this.address,
         'balanceOf(address)',
