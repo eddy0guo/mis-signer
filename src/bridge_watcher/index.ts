@@ -54,7 +54,8 @@ class watcher {
 			// FIXME:根据error内容判断是外部服务rpc问题还是交易本身的问题
 			if(!decode_err.message.includes('asimov_getRawTransaction failed')){
 				const updated = [null,null,null,'illegaled','pending',null,null,current_time,pendingDecodeItem.id];
-				this.dbClient.update_asset2coin_decode(updated);
+				const [update_err,update_result] = await to(this.dbClient.update_asset2coin_decode(updated));
+				if(update_err) console.error('[ADEX BRIDGER]::(update_asset2coin_decode):',update_err);
 			}
 
 			setTimeout(() => {
