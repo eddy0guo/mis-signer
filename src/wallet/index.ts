@@ -6,8 +6,6 @@ import * as cryptoSha256 from 'crypto';
 
 import { chain } from './api/chain';
 
-import fake_token from './contract/AssetToken';
-
 import mist_config from '../cfg';
 import adex_utils from '../adex/api/utils';
 import psql from '../adex/models/db';
