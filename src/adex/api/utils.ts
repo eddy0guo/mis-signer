@@ -78,12 +78,12 @@ export default class Utils {
 
     async get_receipt(txid) {
         const [err, result] = await to(this.child.rpc.request('asimov_getTransactionReceipt', [txid]));
-        if (!result || !result.result || !result.result.logs) {
+        if (!result || !result || !result.logs) {
             console.error(`(get_receipt): ${err} occurred or get ${txid} receipt  result  have no logs`);
         }
 
         const datas = [];
-        for (const item of result.result.logs) {
+        for (const item of result.logs) {
             datas.push(item.data);
         }
         return datas;
@@ -91,10 +91,10 @@ export default class Utils {
 
     async get_receipt_log(txid) {
         const [err, result] = await to(this.child.rpc.request('asimov_getTransactionReceipt', [txid]));
-        if (!result || !result.result || !result.result.logs) {
+        if (!result || !result || !result.logs) {
             console.error(`(get_receipt_log):: err ${err} occurred or get ${txid} receipt   have no logs`);
         }
-        return result.result.logs.length > 0 ? 'successful' : 'failed';
+        return result.logs.length > 0 ? 'successful' : 'failed';
     }
 
     async orderTobytes(order) {
@@ -156,10 +156,10 @@ export default class Utils {
      * @param txid:string
      */
     async decode_transfer_info(txid:string):Promise<any> {
-        const [err, res] = await to(this.master.commonTX.detail(txid));
-        const txinfo = res.result;
+        const [err, txinfo] = await to(this.master.commonTX.detail(txid));
         if (err || !txinfo) {
-            console.log('asimov_getRawTransaction failed', err, txinfo);
+            console.log('[UTILS] asimov_getRawTransaction failed', err);
+            console.log('[UTILS] TXID:',txid);
             throw new Error('asimov_getRawTransaction failed');
         }
 
@@ -232,12 +232,12 @@ export default class Utils {
 
     async decode_erc20_transfer(txid) {
         const [err, result] = await to(this.child.rpc.request('asimov_getTransactionReceipt', [txid]));
-        if (err || !result.result || !result.result.logs) {
+        if (err || !result || !result.logs) {
             console.error(`err ${err} occurred or get ${txid} receipt  have no logs`);
         }
-        const amount = parseInt(result.result.logs[0].data, 16);
+        const amount = parseInt(result.logs[0].data, 16);
         const info = {
-            contract_address: result.result.logs[0].address,
+            contract_address: result.logs[0].address,
             from: '0x' + result.logs[0].topics[1].substring(24),
             to: '0x' + result.logs[0].topics[2].substring(24),
             amount: NP.divide(amount, 100000000),
