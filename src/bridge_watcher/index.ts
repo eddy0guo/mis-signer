@@ -34,8 +34,8 @@ class watcher {
     }
 
 	async asset2coin_decode_loop(){
-		const [pending_decode_err,pending_decode] = await to(this.dbClient.get_pending_decode_bridge());
-		if(pending_decode_err || !pending_decode || pending_decode.length === 0){
+		const [pending_decode_err,pendingDecodeArray] = await to(this.dbClient.get_pending_decode_bridge());
+		if(pending_decode_err || !pendingDecodeArray || pendingDecodeArray.length <= 0){
 			console.error('[ADEX BRIDGER]::(get_pending_decode_bridge):have no trades need to be decoded');
 			setTimeout(() => {
 				this.asset2coin_decode_loop.call(this)
@@ -44,15 +44,18 @@ class watcher {
 		}
 
 		let master_txid_status = 'successful';
-		const current_time = this.utils.get_current_time();
+        const current_time = this.utils.get_current_time();
+        const pendingDecodeItem = pendingDecodeArray[0];
 
-		const [decode_err, decode_info] = await to(this.utils.decode_transfer_info(pending_decode.master_txid));
+		const [decode_err, decode_info]:[Error,any] = await to(this.utils.decode_transfer_info(pendingDecodeItem.master_txid));
 		if (decode_err || !decode_info) {
-			console.error('[BDIGER WATCHER]:(decode_transfer_info):',decode_err)
+            console.error('[BDIGER WATCHER]:(decode_transfer_info):',decode_err)
+            console.log('[BDIGER WATCHER]: pendingDecodeArray = ',pendingDecodeArray)
 			// FIXME:根据error内容判断是外部服务rpc问题还是交易本身的问题
 			if(!decode_err.message.includes('asimov_getRawTransaction failed')){
-				const updated = [null,null,null,'illegaled','pending',null,null,current_time,pending_decode.id];
-				this.dbClient.update_asset2coin_decode(updated);
+				const updated = [null,null,null,'illegaled','pending',null,null,current_time,pendingDecodeItem.id];
+				const [update_err,update_result] = await to(this.dbClient.update_asset2coin_decode(updated));
+				if(update_err) console.error('[ADEX BRIDGER]::(update_asset2coin_decode):',update_err);
 			}
 
 			setTimeout(() => {
@@ -89,7 +92,7 @@ class watcher {
 			fee_asset: fee_tokens[0].symbol,
 			fee_amount,
 			updated_at: current_time,
-			id: pending_decode.id,
+			id: pendingDecodeItem.id,
 		};
 		const update_info_arr = this.utils.arr_values(update_info);
 		const [err4, result4] = await to(
