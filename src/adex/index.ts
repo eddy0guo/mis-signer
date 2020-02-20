@@ -277,7 +277,7 @@ export default () => {
 
     const asset = new Asset();
     const [err4, result4] = await to(asset.balanceOf(address));
-    if (err4 || !result4 || !result4[0].assets) {
+    if (err4 || !result4 || result4[0].assets === undefined) {
 		console.error('[MIST SIGNER]::(asset.balanceOf):',err4,result4);
 		return  res.json({
 				  success: false,
@@ -290,7 +290,7 @@ export default () => {
       if (!token_arr[i]) continue;
       const token = new Token(token_arr[i].address);
       const [err, result] = await to(token.balanceOf(address, 'child_poa'));
-      if (err) {
+      if (err || result === undefined) {
 		  console.error('[MIST SIGNER]::(2222token.balanceOf):',err,result);
 		   return  res.json({
                   success: false,
@@ -414,7 +414,7 @@ export default () => {
 
     const asset = new Asset();
     const [err4, result4] = await to(asset.balanceOf(address));
-    if (err4 || !result4 || !result4[0].assets) {
+    if (err4 || !result4 || result4[0].assets === undefined) {
 		console.error(err4,result4);
 		return  res.json({
                   success: false,
@@ -531,7 +531,7 @@ export default () => {
       if (!token_arr[i]) continue;
       const token = new Token(token_arr[i].address);
       const [err, result] = await to(token.balanceOf(address, 'child_poa'));
-      if (err || !result) {
+      if (err || result === undefined) {
 		  console.error(err);
 		  return res.json({
 				  success: false,
