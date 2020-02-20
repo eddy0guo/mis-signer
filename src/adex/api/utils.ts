@@ -1,26 +1,42 @@
-/* eslint-disable no-useless-escape */
+import { AsimovWallet } from '@fingo/asimov-wallet';
 import crypto = require('crypto');
 import date = require('silly-datetime');
 import ethutil = require('ethereumjs-util');
 import ethabi = require('ethereumjs-abi');
 import NP from 'number-precision';
-import mist_config from '../../cfg';
-import rp = require('request-promise');
+
+// import rp = require('request-promise');
 import to from 'await-to-js'
+
+import Config from '../../cfg';
 
 
 // FIXME: change CUrl to axios
 
 export default class Utils {
     private bitcore;
+    private master: AsimovWallet;
+    private child: AsimovWallet;
 
     constructor() {
         this.bitcore = require('bitcore-lib');
+
+        this.master = new AsimovWallet({
+            name: Config.bridge_address,
+            address: Config.bridge_address,
+            rpc: Config.asimov_master_rpc,
+        });
+
+        this.child = new AsimovWallet({
+            name: Config.bridge_address,
+            address: Config.bridge_address,
+            rpc: Config.asimov_child_rpc,
+        });
     }
 
     arr_values(message) {
         const arr_message = [];
-		for (const item of Object.keys(message)) {
+        for (const item of Object.keys(message)) {
             arr_message.push(message[item]);
         }
 
@@ -61,13 +77,7 @@ export default class Utils {
     }
 
     async get_receipt(txid) {
-        const options = {
-            method: 'POST',
-            uri: mist_config.asimov_child_rpc,
-            body: { jsonrpc: '2.0', method: 'asimov_getTransactionReceipt', id: 123, params: [txid] },
-            json: true // Automatically stringifies the body to JSON
-        };
-        const [err, result] = await to(rp(options));
+        const [err, result] = await to(this.child.rpc.request('asimov_getTransactionReceipt', [txid]));
         if (!result || !result.result || !result.result.logs) {
             console.error(`(get_receipt): ${err} occurred or get ${txid} receipt  result  have no logs`);
         }
@@ -80,14 +90,8 @@ export default class Utils {
     }
 
     async get_receipt_log(txid) {
-        const options = {
-            method: 'POST',
-            uri: mist_config.asimov_child_rpc,
-            body: { jsonrpc: '2.0', method: 'asimov_getTransactionReceipt', id: 123, params: [txid] },
-            json: true // Automatically stringifies the body to JSON
-        };
-        const [err, result] = await to(rp(options));
-        if (!result || !result.result  || !result.result.logs) {
+        const [err, result] = await to(this.child.rpc.request('asimov_getTransactionReceipt', [txid]));
+        if (!result || !result.result || !result.result.logs) {
             console.error(`(get_receipt_log):: err ${err} occurred or get ${txid} receipt   have no logs`);
         }
         return result.result.logs.length > 0 ? 'successful' : 'failed';
@@ -105,11 +109,11 @@ export default class Utils {
             ['0x45eab75b1706cbb42c832fc66a1bcdaafebcdaea71ed2f08efbf3057c588fcb6',
                 order.taker, order.maker, order.baseToken, order.quoteToken, order.relayer, order.baseTokenAmount, order.quoteTokenAmount, order.takerSide]);
 
-        encode = encode.toString('hex').replace(new RegExp(`00${order.taker.substr(2, 44)}`,'g'), `66${order.taker.substr(2, 44)}`);
-        encode = encode.replace(new RegExp(`00${order.maker.substr(2, 44)}`,'g'), `66${order.maker.substr(2, 44)}`);
-        encode = encode.replace(new RegExp(`00${order.baseToken.substr(2, 44)}`,'g'), `63${order.baseToken.substr(2, 44)}`);
-        encode = encode.replace(new RegExp(`00${order.quoteToken.substr(2, 44)}`,'g'), `63${order.quoteToken.substr(2, 44)}`);
-        encode = '0x' + encode.replace(new RegExp(`00${order.relayer.substr(2, 44)}`,'g'), `66${order.relayer.substr(2, 44)}`);
+        encode = encode.toString('hex').replace(new RegExp(`00${order.taker.substr(2, 44)}`, 'g'), `66${order.taker.substr(2, 44)}`);
+        encode = encode.replace(new RegExp(`00${order.maker.substr(2, 44)}`, 'g'), `66${order.maker.substr(2, 44)}`);
+        encode = encode.replace(new RegExp(`00${order.baseToken.substr(2, 44)}`, 'g'), `63${order.baseToken.substr(2, 44)}`);
+        encode = encode.replace(new RegExp(`00${order.quoteToken.substr(2, 44)}`, 'g'), `63${order.quoteToken.substr(2, 44)}`);
+        encode = '0x' + encode.replace(new RegExp(`00${order.relayer.substr(2, 44)}`, 'g'), `66${order.relayer.substr(2, 44)}`);
 		/*
 		encode = encode.toString('hex').replace(eval(`/00${order.taker.substr(2, 44)}/g`), `66${order.taker.substr(2, 44)}`);
         encode = encode.replace(eval(`/00${order.maker.substr(2, 44)}/g`), `66${order.maker.substr(2, 44)}`);
@@ -147,20 +151,17 @@ export default class Utils {
         return result;
     }
 
-    async decode_transfer_info(txid) {
-        const options = {
-            method: 'POST',
-            uri: mist_config.asimov_chain_rpc,
-            body: { jsonrpc: '2.0', method: 'asimov_getRawTransaction', id: 123, params: [txid, true, true] },
-            json: true // Automatically stringifies the body to JSON
-        };
-
-		const [err,res] = await to(rp(options));
-		const txinfo = res.result;
-		if(err || !txinfo){
-	         console.log('asimov_getRawTransaction failed',err,txinfo);
-             throw new Error('asimov_getRawTransaction failed');
-		}
+    /**
+     * Decode TX @ Master Chain
+     * @param txid:string
+     */
+    async decode_transfer_info(txid:string):Promise<any> {
+        const [err, res] = await to(this.master.commonTX.detail(txid));
+        const txinfo = res.result;
+        if (err || !txinfo) {
+            console.log('asimov_getRawTransaction failed', err, txinfo);
+            throw new Error('asimov_getRawTransaction failed');
+        }
 
         const asset_set = new Set();
         for (const vin of txinfo.vin) {
@@ -230,13 +231,7 @@ export default class Utils {
     }
 
     async decode_erc20_transfer(txid) {
-        const options = {
-            method: 'POST',
-            uri: mist_config.asimov_child_rpc,
-            body: { jsonrpc: '2.0', method: 'asimov_getTransactionReceipt', id: 123, params: [txid] },
-            json: true // Automatically stringifies the body to JSON
-        };
-		const [err,result] = await to(rp(options));
+        const [err, result] = await to(this.child.rpc.request('asimov_getTransactionReceipt', [txid]));
         if (err || !result.result || !result.result.logs) {
             console.error(`err ${err} occurred or get ${txid} receipt  have no logs`);
         }
