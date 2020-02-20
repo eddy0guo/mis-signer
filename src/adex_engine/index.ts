@@ -1,16 +1,17 @@
-import client from '../adex/models/db'
-import engine from '../adex/api/engine'
-import utils2 from '../adex/api/utils'
 import * as Queue from 'bull'
 import NP from 'number-precision'
 import to from 'await-to-js'
 
-class enginer {
+import DBClient from '../adex/models/db'
+import Engine from '../adex/api/engine'
+import Utils from '../adex/api/utils'
 
-    private orderQueue;
-    private db;
-    private exchange;
-    private utils;
+class AdexEngine {
+
+    private orderQueue: Queue.Queue;
+    private db:DBClient;
+    private exchange:Engine;
+    private utils:Utils;
 
     constructor() {
         this.orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE,
@@ -21,13 +22,16 @@ class enginer {
                     password: process.env.REDIS_PWD
                 }
             });
-        this.db = new client();
-        this.exchange = new engine(this.db);
-        this.utils = new utils2();
+        this.orderQueue.on('error',async e => {
+            console.log('[ADEX ENGINE] Queue on Error', e)
+        })
+        this.db = new DBClient();
+        this.exchange = new Engine(this.db);
+        this.utils = new Utils();
         this.start();
     }
 
-    async start() {
+    async start():Promise<void> {
         this.orderQueue.process(async (job, done) => {
             console.log(`[ADEX ENGINE]receive a message %o from OrderQueue${process.env.MIST_MODE} \n`, job.data);
             const message = job.data;
@@ -90,15 +94,16 @@ class enginer {
 
             done()
         });
+        const queueReady = await this.orderQueue.isReady();
 
+        console.log(`[ADEX ENGINE] started,order queue ready:`, queueReady);
     }
-
 
 }
 
 process.on('unhandledRejection', (reason, p) => {
-    console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+    console.log('[ADEX ENGINE] Unhandled Rejection at: Promise', p, 'reason:', reason);
     // application specific logging, throwing an error, or other logic here
 });
 
-export default new enginer();
+export default new AdexEngine();
