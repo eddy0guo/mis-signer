@@ -273,9 +273,10 @@ export default () => {
     const token_arr = await mist_wallet.list_tokens();
     const balances = [];
 
+    const address:string = obj.address as string;
 
     const asset = new Asset();
-    const [err4, result4] = await to(asset.balanceOf(obj.address));
+    const [err4, result4] = await to(asset.balanceOf(address));
     if (err4 || !result4 || !result4[0].assets) {
 		console.error('[MIST SIGNER]::(asset.balanceOf):',err4,result4);
 		return  res.json({
@@ -288,7 +289,7 @@ export default () => {
     for (const i in token_arr as any[]) {
       if (!token_arr[i]) continue;
       const token = new Token(token_arr[i].address);
-      const [err, result] = await to(token.balanceOf(obj.address, 'child_poa'));
+      const [err, result] = await to(token.balanceOf(address, 'child_poa'));
       if (err) {
 		  console.error('[MIST SIGNER]::(2222token.balanceOf):',err,result);
 		   return  res.json({
@@ -850,10 +851,8 @@ did对order_id进行签名，获取rsv
     };
 
     const [err, result2] = await to(order.build(message));
-    console.log(result2, err);
     res.json({
-      success: true,
-      result: result2,
+      success: result2 ? true:false,
       err,
     });
   });
