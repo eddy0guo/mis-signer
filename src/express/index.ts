@@ -396,7 +396,7 @@ export default () => {
         asset.balanceOf(mist_config.express_address)
       );
 
-      if (assets_balance_err || !assets_balance_result) {
+      if (assets_balance_err || !assets_balance_result || assets_balance_result[0].assets === undefined) {
 		  console.error('[ADEX EXPRESS]::(balanceOf):',assets_balance_err,assets_balance_result);
 		  return  res.json({
 				  success: false,
