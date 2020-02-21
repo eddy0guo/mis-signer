@@ -1,6 +1,7 @@
 import to from 'await-to-js'
 import { Pool } from 'postgres-pool';
 import mist_config from '../../cfg'
+import {Trade,Token} from '../interface'
 
 const express_params = 'trade_id,address,base_asset_name,cast(base_amount as float8),cast(price as float8),quote_asset_name,cast(quote_amount as float8),cast(fee_rate as float8),fee_token,cast(fee_amount as float8),base_txid,base_tx_status,quote_txid,quote_tx_status,updated_at,created_at';
 
@@ -23,7 +24,7 @@ export default class db {
 
 	}
 
-	async my_express(filter_info) : Promise<any> {
+	async my_express(filter_info) : Promise<Trade[]> {
 		const [err, result]: [any,any] = await to(this.clientDB.query(`SELECT ${express_params} FROM asim_express_records  where address=$1 order by created_at desc limit $3 offset $2`, filter_info));
 		if (err) {
 			console.error('my express failed', err,result);
@@ -34,7 +35,7 @@ export default class db {
 
 	}
 
-	async find_express(trade_id) : Promise<any> {
+	async find_express(trade_id) : Promise<Trade[]> {
 		const [err, result]: [any,any] = await to(this.clientDB.query(`SELECT ${express_params} FROM asim_express_records  where trade_id=$1`, trade_id));
 		if (err) {
 			console.error('find express failed', err,result);
@@ -45,7 +46,7 @@ export default class db {
 
 	}
 
-	async my_express_length(address) : Promise<any> {
+	async my_express_length(address) : Promise<number> {
 		const [err, result]: [any,any] = await to(this.clientDB.query(`SELECT count(1) FROM asim_express_records  where address=$1`, address));
 		if (err) {
 			console.error('my express length', err,result);
@@ -56,7 +57,7 @@ export default class db {
 
 	}
 
-	async laucher_pending_trade() : Promise<any> {
+	async laucher_pending_trade() : Promise<Trade[]> {
 		const [err, result]: [any,any] = await to(this.clientDB.query('SELECT * FROM asim_express_records  where base_tx_status=\'successful\' and quote_tx_status in (\'pending\',\'failed\') order by created_at limit 1'));
 		if (err) {
 			console.error('laucher pending trade failed',err,result);
@@ -68,7 +69,7 @@ export default class db {
 	}
 
 
-	async insert_express(info) : Promise<any>  {
+	async insert_express(info) : Promise<string>  {
 		const [err, result]: [any,any] = await to(this.clientDB.query('insert into asim_express_records values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)', info));
 		if (err) {
 			console.error('insert express failed', err, info);
@@ -78,7 +79,7 @@ export default class db {
 	}
 
 
-	async update_quote(info) : Promise<any> {
+	async update_quote(info) : Promise<string> {
 		const [err, result]: [any,any] = await to(this.clientDB.query('UPDATE asim_express_records SET (quote_txid,quote_tx_status,updated_at)=($1,$2,$3) WHERE  trade_id=$4', info));
 		if (err) {
 			console.error('update quote failed', err, info);
@@ -87,7 +88,7 @@ export default class db {
 		return JSON.stringify(result.rows);
 	}
 
-	async update_base(info) : Promise<any> {
+	async update_base(info) : Promise<string> {
 		const [err, result]: [any,any] = await to(this.clientDB.query('UPDATE asim_express_records SET \
 		(address,base_asset_name,base_amount,price,quote_amount,fee_amount,base_tx_status,quote_tx_status,updated_at)=\
 		($1,$2,$3,$4,$5,$6,$7,$8,$9) WHERE  trade_id=$10', info));
@@ -99,7 +100,7 @@ export default class db {
 	}
 
 
-	async get_tokens(filter) : Promise<any> {
+	async get_tokens(filter) : Promise<Token[]> {
 		const [err, result]: [any,any] = await to(this.clientDB.query('select * from mist_tokens where symbol=$1 or asim_assetid=$1 or address=$1', filter));
 		if (err) {
 			console.error('get tokens failed', err, filter);
@@ -109,7 +110,7 @@ export default class db {
 
 	}
 
-	async order_book(filter) : Promise<any> {
+	async order_book(filter) : Promise<object[]> {
 		let err: any;
 		let result: any;
 		if (filter[0] === 'sell') {

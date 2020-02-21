@@ -153,11 +153,11 @@ export default () => {
     );
 	if(records){
 		for (const record of records as any[]) {
-		  record.base_token_icon =
+		  record.prototype.base_token_icon =
 			mist_config.icon_url +
 			record.base_asset_name +
 			'a.png';
-		  record.quote_token_icon =
+		  record.prototype.quote_token_icon =
 			mist_config.icon_url +
 			record.quote_asset_name +
 			'a.png';
