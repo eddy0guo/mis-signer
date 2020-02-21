@@ -189,6 +189,24 @@ export default class db {
 
     }
 
+    async order_book(filter) : Promise<any> {
+        let err: any;
+        let result: any;
+        if (filter[0] === 'sell') {
+            [err, result] = await to(this.clientDB.query('SELECT trunc(price,$3) as price,sum(available_amount) as amount FROM mist_orders_tmp\
+            where market_id=$2 and available_amount>0  and side=$1 group by trunc(price,$3) order by price asc limit 100', filter));
+        } else {
+
+            [err, result] = await to(this.clientDB.query('SELECT trunc(price,$3) as price,sum(available_amount) as amount FROM mist_orders_tmp\
+            where market_id=$2 and available_amount>0  and side=$1 group by trunc(price,$3) order by price desc limit 100', filter));
+        }
+        if (err) {
+            console.error('order_book failed', err, filter);
+            throw new Error(err);
+        }
+        return result.rows;
+    }
+
     /*
      *tokens
      *
@@ -365,7 +383,7 @@ export default class db {
     }
 
     async list_trades(marketID): Promise<Trade[]> {
-        const [err, result]: [any, any] = await to(this.clientDB.query('SELECT * FROM mist_trades_tmp where market_id=$1 order by created_at desc limit 30', marketID));
+        const [err, result]: [any, any] = await to(this.clientDB.query('SELECT * FROM mist_trades where market_id=$1 order by created_at desc limit 30', marketID));
         if (err) {
             console.error('list trades failed', err, marketID);
             throw new Error(err);

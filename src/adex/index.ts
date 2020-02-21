@@ -974,23 +974,18 @@ export default () => {
     );
 
 
-    adex.all('/order_book_v2/:market_id', async (req, res) => {
-        const [err, result] = await to(order.order_book(req.params.market_id));
+    adex.all('/order_book_v2/:market_id/:precision', async (req, res) => {
+        const {market_id, precision} = req.params
+        const [err, result] = await to(order.order_book(market_id, precision));
 
         if (err) console.error(err);
 
-        // 没数据判定为不存在的交易对，实际上刚部署的时候也没数据
-        if (result.asks.length === 0 && result.asks.length === 0) {
-            res.json({
-                success: false,
-                err: 'MarketID not found',
-            });
-        } else {
-            res.json({
-                success: true,
-                result,
-            });
-        }
+        res.json({
+            success: result ? true : false,
+            result,
+            err,
+        });
+
     });
 
     adex.all('/list_markets_v2', async (req, res) => {
@@ -1063,10 +1058,10 @@ export default () => {
         const {market_id} = req.params;
 
         const [err, result] = await to(market.get_market(market_id));
-        if (err || !result || result.length === 0) {
+        if (err || !result) {
             res.json({
                 success: false,
-                err: err + ' or have no this market',
+                err,
             });
         }
 

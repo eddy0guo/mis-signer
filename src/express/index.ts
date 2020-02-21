@@ -49,7 +49,7 @@ async function get_price(base_token_name, quote_token_name, amount, order) {
   let base_value = 0;
   let base_amount = 0;
   if (base_token_name !== 'CNYC') {
-    const [base_book_err,base_book] = await to(order.order_book(base_token_name + '-CNYC'));
+    const [base_book_err,base_book] = await to(order.order_book(base_token_name + '-CNYC',2));
 	if( base_book_err || !base_book || !base_book.bids){
 		console.error('[ADEX EXPRESS]::(base_book):',base_book_err,base_book);
 		throw new Error(base_book_err);
@@ -74,7 +74,7 @@ async function get_price(base_token_name, quote_token_name, amount, order) {
   let quote_value = 0;
   let quote_amount = 0;
   if (quote_token_name !== 'CNYC') {
-    const [quote_book_err,quote_book] = await to(order.order_book(quote_token_name + '-CNYC'));
+    const [quote_book_err,quote_book] = await to(order.order_book(quote_token_name + '-CNYC',2));
 	if( quote_book_err || !quote_book || !quote_book.asks){
         console.error('[ADEX EXPRESS]::(quote_book):',quote_book_err,quote_book);
         throw new Error(quote_book_err);

@@ -31,13 +31,13 @@ export default class order {
     }
 
     async checkQueueStatus() {
-        const job = await this.orderQueue.add(null, { removeOnComplete: true, delay: 9999 });
+        const job = await this.orderQueue.add(null, {removeOnComplete: true, delay: 9999});
         await job.remove();
         return true;
     }
 
-    async build(message):Promise<any> {
-		/*暂时这块业务没做先去掉此逻辑
+    async build(message): Promise<any> {
+        /*暂时这块业务没做先去掉此逻辑
         let mist_user = await this.db.find_user([message.trader_address]);
         if (!mist_user[0]) {
             let address_info = {
@@ -120,10 +120,10 @@ export default class order {
         return result;
     }
 
-    async order_book(marketID) {
+    async order_book(marketID, precision) {
 
-        const asks = await this.db.order_book(['sell', marketID]);
-        const bids = await this.db.order_book(['buy', marketID]);
+        const asks = await this.db.order_book(['sell', marketID, precision]);
+        const bids = await this.db.order_book(['buy', marketID, precision]);
 
         const asks_arr = [];
         const bids_arr = [];
