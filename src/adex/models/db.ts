@@ -189,7 +189,7 @@ export default class db {
 
     }
 
-    async order_book(filter) : Promise<any> {
+    async order_book(filter:[string,string,string]) : Promise<any> {
         let err: any;
         let result: any;
         if (filter[0] === 'sell') {
