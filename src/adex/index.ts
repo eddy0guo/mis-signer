@@ -22,7 +22,8 @@ import { Order as IOrder } from './interface';
 async function get_available_erc20_amount(address, symbol) {
     const mist_wallet = new MistWallet();
 
-    const client = new DBClient();
+    // FIXME：这个函数每次都new一个新的DB Pool，改成公用一个连接池，否则会报错 Error: error: sorry, too many clients already
+    const client:DBClient = new DBClient();
     const token_info = await mist_wallet.get_token(symbol);
 
     const token = new Token(token_info[0].address);
@@ -802,7 +803,7 @@ export default () => {
         if( !order_info || order_info.length <= 0 ){
             return res.json({
                 success: false,
-                err: 'Get Order Failed',
+                err: 'Order ID Not Found.',
             });
         }
         const message = {
