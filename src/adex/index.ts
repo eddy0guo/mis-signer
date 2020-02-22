@@ -1,30 +1,28 @@
-import {AsimovWallet} from '@fingo/asimov-wallet';
 import to from 'await-to-js';
 import {Router} from 'express';
 import NP from 'number-precision';
-import * as apicache from 'apicache';
+
 import urllib = require('url');
 import crypto_sha256 = require('crypto');
 
-const cache = apicache.middleware;
+import OrderAPI from './api/order';
+import TradesAPI from './api/trades';
+import MarketAPI from './api/market';
+import Utils from './api/utils';
 
+import DBClient from './models/db';
+import MistWallet from './api/mist_wallet';
+
+import MistConfig from '../cfg';
 import Token from '../wallet/contract/Token';
-
-import order1 from './api/order';
-import trades1 from './api/trades';
-import market1 from './api/market';
-import utils1 from './api/utils';
-
-import client1 from './models/db';
-import mist_wallet1 from './api/mist_wallet';
-
-import mist_config from '../cfg';
 import Asset from '../wallet/contract/Asset';
 
-async function get_available_erc20_amount(address, symbol) {
-    const mist_wallet = new mist_wallet1();
+import { Order as IOrder } from './interface';
 
-    const client = new client1();
+async function get_available_erc20_amount(address, symbol) {
+    const mist_wallet = new MistWallet();
+
+    const client = new DBClient();
     const token_info = await mist_wallet.get_token(symbol);
 
     const token = new Token(token_info[0].address);
@@ -50,15 +48,15 @@ async function get_available_erc20_amount(address, symbol) {
 }
 
 export default () => {
-    const adex = Router();
-    const client = new client1();
-    const order = new order1(client);
-    const trades = new trades1(client);
-    const market = new market1();
+    const adex:Router = Router();
+    const client:DBClient = new DBClient();
+    const order:OrderAPI = new OrderAPI(client);
+    const trades:TradesAPI = new TradesAPI(client);
+    const market:MarketAPI = new MarketAPI();
 
-    const mist_wallet = new mist_wallet1();
+    const mist_wallet:MistWallet = new MistWallet();
 
-    const utils = new utils1();
+    const utils = new Utils();
     // 	user.start();
     // 	asset.status_flushing();
 
@@ -321,11 +319,11 @@ export default () => {
                 asim_assetid: token_arr[i].asim_assetid,
                 asim_asset_balance: asset_balance / (1 * 10 ** 8),
                 asset_icon:
-                    mist_config.icon_url +
+                    MistConfig.icon_url +
                     token_arr[i].symbol +
                     'a.png',
                 coin_icon:
-                    mist_config.icon_url +
+                    MistConfig.icon_url +
                     token_arr[i].symbol +
                     'm.png',
             };
@@ -430,7 +428,7 @@ export default () => {
                 asim_asset_balance: asset_balance / (1 * 10 ** 8),
                 value: NP.times(asset_balance / (1 * 10 ** 8), price),
                 token_icon:
-                    mist_config.icon_url +
+                    MistConfig.icon_url +
                     token_arr[i].symbol +
                     'a.png',
             };
@@ -557,7 +555,7 @@ export default () => {
                 asim_assetid: token_arr[i].asim_assetid,
                 value: NP.times(erc20_balance, price),
                 token_icon:
-                    mist_config.icon_url +
+                    MistConfig.icon_url +
                     token_arr[i].symbol +
                     'm.png',
             };
@@ -586,9 +584,7 @@ export default () => {
      * @apiVersion 1.0.0
      */
 
-    adex.all(
-        '/get_order_id_v2/:trader_address/:marketID/:side/:price/:amount',
-        async (req, res) => {
+    adex.all('/get_order_id_v2/:trader_address/:marketID/:side/:price/:amount', async (req, res) => {
             const {trader_address, marketID, side, price, amount} = req.params;
             const message = {
                 id: null,
@@ -792,6 +788,7 @@ export default () => {
      */
 
     adex.all('/cancle_order_v2', async (req, res) => {
+        // FIXME : cancel spell error
         const {order_id, signature} = req.body;
         const success = utils.verify(order_id, signature);
         if (!success) {
@@ -801,7 +798,7 @@ export default () => {
             });
         }
 
-        const order_info = await order.get_order(order_id);
+        const order_info:IOrder[] = await order.get_order(order_id);
         if( !order_info || order_info.length <= 0 ){
             return res.json({
                 success: false,

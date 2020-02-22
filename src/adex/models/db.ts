@@ -2,6 +2,7 @@ import to from 'await-to-js';
 import mist_config from '../../cfg';
 import order from '../api/order';
 import market from '../api/market';
+import {Pool} from 'postgres-pool';
 import {
     Order, Trade, Token, Market, Transaction,
     Bridge, Price, MarketQuotation, FreezeToken
@@ -11,11 +12,11 @@ const BRIDGE_SQL = 'id,address,token_name,cast(amount as float8),side,master_txi
 
 export default class db {
 
-    private clientDB;
+    private clientDB:Pool;
 
     constructor() {
-        const {Pool} = require('postgres-pool');
-        const client = new Pool({
+        // const {Pool} = require('postgres-pool');
+        const client:Pool = new Pool({
             host: mist_config.pg_host,
             database: mist_config.pg_database,
             user: mist_config.pg_user,
@@ -103,12 +104,13 @@ export default class db {
 
     }
 
-    async find_order(order_id): Promise<Order[]> {
+    async find_order(order_id:string[]): Promise<Order[]> {
         const [err, result]: [any, any] = await to(this.clientDB.query('SELECT * FROM mist_orders where id=$1', order_id));
         if (err) {
             console.error('find_order_failed', err, order_id);
             throw new Error(err);
         }
+        // 返回结果可能是空数组[]，使用时注意判断长度
         return result.rows;
 
     }

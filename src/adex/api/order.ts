@@ -143,7 +143,7 @@ export default class order {
         return order_book;
     }
 
-    async get_order(order_id) {
+    async get_order(order_id:string) {
         return await this.db.find_order([order_id]);
     }
 
