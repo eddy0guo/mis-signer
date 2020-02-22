@@ -2,6 +2,7 @@ import to from 'await-to-js'
 import { Pool } from 'postgres-pool';
 import mist_config from '../../cfg'
 import {Trade,Token} from '../interface'
+import { Price } from 'src/adex/interface';
 
 const express_params = 'trade_id,address,base_asset_name,cast(base_amount as float8),cast(price as float8),quote_asset_name,cast(quote_amount as float8),cast(fee_rate as float8),fee_token,cast(fee_amount as float8),base_txid,base_tx_status,quote_txid,quote_tx_status,updated_at,created_at';
 
@@ -110,22 +111,22 @@ export default class db {
 
 	}
 
-	async order_book(filter) : Promise<object[]> {
-		let err: any;
-		let result: any;
-		if (filter[0] === 'sell') {
-			[err, result] = await to(this.clientDB.query('SELECT price,sum(available_amount) as amount FROM mist_orders_tmp\
-            where market_id=$2 and available_amount>0  and side=$1 group by price  order by price asc limit 100', filter));
-		} else {
+    async order_book(filter:[string,string,string]) : Promise<any> {
+        let err: any;
+        let result: any;
+        if (filter[0] === 'sell') {
+            [err, result] = await to(this.clientDB.query('SELECT trunc(price,$3) as price,sum(available_amount) as amount FROM mist_orders_tmp\
+            where market_id=$2 and available_amount>0  and side=$1 group by trunc(price,$3) order by price asc limit 100', filter));
+        } else {
 
-			[err, result] = await to(this.clientDB.query('SELECT price,sum(available_amount) as amount FROM mist_orders_tmp\
-            where market_id=$2 and available_amount>0  and side=$1  group by price order by price desc limit 100', filter));
-		}
-		if (err) {
-			console.error('filter orders failed', err, filter);
-			throw new Error(err);
-		}
-		return result.rows;
-	}
+            [err, result] = await to(this.clientDB.query('SELECT trunc(price,$3) as price,sum(available_amount) as amount FROM mist_orders_tmp\
+            where market_id=$2 and available_amount>0  and side=$1 group by trunc(price,$3) order by price desc limit 100', filter));
+        }
+        if (err) {
+            console.error('order_book failed', err, filter);
+            throw new Error(err);
+        }
+        return result.rows;
+    }
 
 }
