@@ -204,7 +204,7 @@ class watcher {
 
             return;
         }
-        if (pending_trade.length === 0) {
+        if (pending_trade?.length === 0 || pending_trade === null || pending_trade === undefined ) {
 
             console.log('have not need release bridge');
             setTimeout(() => {

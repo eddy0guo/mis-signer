@@ -48,7 +48,7 @@ class launcher {
 		}
 
         const current_time = this.utils.get_current_time();
-        if (trades.length === 0) {
+        if (trades.length === 0 || trades === null || trades === undefined ) {
             console.log('[Launcher] No matched trades')
             setTimeout(() => {
                 this.loop.call(this)
