@@ -11,8 +11,6 @@
     "prestart": "npm run -s build",
     "lint": "tslint -c tslint.json --project tsconfig.json",
     "test": "jest",
-    "bot": "ts-node src/bot",
-    "bot:prod": "node dist/bot",
     "engine": "ts-node src/adex_engine",
     "engine:prod": "node dist/adex_engine",
     "watcher": "ts-node src/adex_watcher",
