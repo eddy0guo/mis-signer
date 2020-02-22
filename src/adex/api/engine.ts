@@ -115,7 +115,7 @@ export default class Engine {
 		console.log('[ADEX ENGINE]::(list_matched_trades):',matched_trades_err,matched_trades);
 		return;
 	}
-    const add_queue_num = Math.floor(matched_trades[0].count / 300) + 1;
+    const add_queue_num = Math.floor(matched_trades / 300) + 1;
 
     const transaction_id =
       transactions.length === 0
