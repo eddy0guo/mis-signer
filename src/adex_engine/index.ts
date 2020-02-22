@@ -108,7 +108,9 @@ class AdexEngine {
         });
         const queueReady = await this.orderQueue.isReady();
 
-        console.log(`[ADEX ENGINE] started,order queue ready:`, queueReady);
+        if( queueReady ){
+            console.log(`[ADEX ENGINE] started,order queue ready:`);
+        }
     }
 
 }
