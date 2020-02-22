@@ -201,7 +201,51 @@ const CONFIG_K8S = {
   icon_url: 'https://fingo-huadong.oss-cn-shanghai.aliyuncs.com/res/icons/',
 };
 
-let mistConfig;
+let mistConfig:{
+  // TEST ONLY
+  order_hash_word: string,
+  fauct_address: string,
+  fauct_word: string,
+  fauct_prikey: string,
+
+  ex_address: string,
+  relayers: [
+    {
+      prikey: string,
+      word: string,
+      address: string,
+    },
+    {
+      prikey: string,
+      word: string,
+      address: string,
+    },
+    {
+      prikey: string,
+      word: string,
+      address: string,
+    },
+  ],
+
+  bridge_word: string,
+  bridge_address: string,
+
+  express_word: string,
+  express_address: string,
+
+  wallet_default_passwd: string,
+  asimov_chain_rpc: string,
+  asimov_master_rpc: string,
+  asimov_child_rpc: string,
+  mist_server_port: string,
+
+  pg_host: string,
+  pg_database: string,
+  pg_user: string,
+  pg_password: string,
+  pg_port: string,
+  icon_url: string,
+};
 switch (process.env.MIST_MODE) {
   case 'local':
     mistConfig = local;
