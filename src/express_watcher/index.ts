@@ -48,22 +48,21 @@ class Watcher {
 
         const [tokens_err,tokens] = await to(this.db.get_tokens([quote_asset_name]));
 		if(!tokens){
-			console.error(tokens_err,tokens);
+			console.error('[Express Watcher] Token Err:',tokens_err,tokens);
 			setTimeout(() => {
                 this.loop.call(this)
             }, 2000);
             return;
 		}
 
-
         const wallet = new AsimovWallet({
-            name: mist_config.fauct_address,
+            name: mist_config.express_address,
             rpc: mist_config.asimov_master_rpc,
-            mnemonic: mist_config.fauct_word,
+            mnemonic: mist_config.express_word,
         });
         const [quote_err, quote_txid] = await to(wallet.commonTX.transfer(address, quote_amount, tokens[0].asim_assetid));
         if (!quote_txid) {
-			console.error(quote_err,quote_txid)
+			console.error('[Express Watcher] quote_err:',quote_err,quote_txid)
 			setTimeout(() => {
                 this.loop.call(this)
             }, 2000);
@@ -75,7 +74,7 @@ class Watcher {
         const info = [quote_txid, quote_tx_status, current_time, trade_id];
 
         const [err3, result3] = await to(this.db.update_quote(info));
-        if (!result3) console.error(err3, result3)
+        if (!result3) console.error('[Express Watcher] update_quote Error:',err3, result3)
         setTimeout(() => {
             this.loop.call(this)
             // 间隔时间随着用户量的增长而降低
