@@ -8,9 +8,9 @@ import * as Queue from 'bull';
 
 export default class order {
 
-    private db;
-    private orderQueue;
-    private utils;
+    private db:DBClient;
+    private orderQueue:Queue.Queue;
+    private utils:Utils;
 
     constructor(client) {
         this.db = client;
@@ -69,12 +69,12 @@ export default class order {
         return result;
     }
 
-    async list_orders() {
+    // async list_orders() {
 
-        const result = await this.db.list_orders();
+    //     const result = await this.db.list_orders();
 
-        return result;
-    }
+    //     return result;
+    // }
 
     async my_orders(message) {
 
@@ -92,24 +92,23 @@ export default class order {
             return orders;
         }
 
-        for (const order_index in orders) {
-            if (!orders[order_index]) continue
-            const trades = await this.db.order_trades([orders[order_index].id]);
+        for (const oneOrder of orders) {
+
+            const trades:any[] = await this.db.order_trades([oneOrder.id]);
             if (trades.length === 0) {
-                orders[order_index].average_price = '--';
-                orders[order_index].confirm_value = '--';
+                oneOrder.average_price = '--';
+                oneOrder.confirm_value = '--';
                 continue;
             }
             let amount = 0;
             let value = 0;
-            for (const trade_index in trades) {
-                if (!trades[trade_index]) continue
-                amount = NP.plus(amount, trades[trade_index].amount);
-                const trade_value = NP.times(trades[trade_index].amount, trades[trade_index].price);
+            for (const trade of trades) {
+                amount = NP.plus(amount, trade.amount);
+                const trade_value = NP.times(trade.amount, trade.price);
                 value = NP.plus(value, trade_value);
             }
-            orders[order_index].average_price = NP.divide(value, amount).toFixed(8);
-            orders[order_index].confirm_value = value.toFixed(8);
+            oneOrder.average_price = NP.divide(value, amount).toFixed(8);
+            oneOrder.confirm_value = value.toFixed(8);
         }
 
         return orders;

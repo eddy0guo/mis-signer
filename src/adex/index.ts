@@ -797,11 +797,17 @@ export default () => {
         if (!success) {
             return res.json({
                 success: false,
-                err: 'verify failed',
+                err: 'Verify failed',
             });
         }
 
         const order_info = await order.get_order(order_id);
+        if( !order_info || order_info.length <= 0 ){
+            return res.json({
+                success: false,
+                err: 'Get Order Failed',
+            });
+        }
         const message = {
             amount: order_info[0].available_amount,
             id: order_id,

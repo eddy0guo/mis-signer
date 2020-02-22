@@ -1,3 +1,4 @@
+// FIXME： Interface 命名务必加IClassName : IOrder .etc
 interface Order {
     id: string;
     trader_address: string;
@@ -13,6 +14,9 @@ interface Order {
     pending_amount: number;
     updated_at: string;
     created_at: string;
+    // ？非数据库的后加字段？
+    average_price: string;
+    confirm_value: string;
 }
 
 interface Trade {
