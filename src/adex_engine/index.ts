@@ -14,6 +14,18 @@ class AdexEngine {
     private utils:Utils;
 
     constructor() {
+        this.db = new DBClient();
+        this.exchange = new Engine(this.db);
+        this.utils = new Utils();
+
+        this.initQueue();
+    }
+
+    async initQueue():Promise<void>{
+        if( this.orderQueue ){
+            await this.orderQueue.close();
+        }
+
         this.orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE,
             {
                 redis: {
@@ -23,11 +35,11 @@ class AdexEngine {
                 }
             });
         this.orderQueue.on('error',async e => {
-            console.log('[ADEX ENGINE] Queue on Error', e)
+            console.log('[ADEX ENGINE] Queue on Error', e);
+            console.log('[ADEX ENGINE] Trying initQueue...')
+            await this.initQueue();
         })
-        this.db = new DBClient();
-        this.exchange = new Engine(this.db);
-        this.utils = new Utils();
+
         this.start();
     }
 
