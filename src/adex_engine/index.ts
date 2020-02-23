@@ -35,7 +35,7 @@ class AdexEngine {
                 }
             });
         this.orderQueue.on('error',async e => {
-            console.log('[ADEX ENGINE] Queue on Error', e);
+            console.log('[ADEX ENGINE] Queue on Error:', e.message);
             console.log('[ADEX ENGINE] Trying initQueue...')
             await this.initQueue();
         })
@@ -116,7 +116,7 @@ class AdexEngine {
 }
 
 process.on('unhandledRejection', (reason, p) => {
-    console.log('[ADEX ENGINE] Unhandled Rejection at: Promise', p, 'reason:', reason);
+    console.log('[ADEX ENGINE] Unhandled Rejection at: Promise, reason:', reason);
     // application specific logging, throwing an error, or other logic here
 });
 
