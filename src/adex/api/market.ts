@@ -1,4 +1,3 @@
-import client from '../models/db';
 import utils2 from './utils';
 
 import to from 'await-to-js';
@@ -7,10 +6,13 @@ import mist_wallet from './mist_wallet';
 export default class Market {
     private db;
     private utils;
+    private quotation;
 
-    constructor() {
-        this.db = new client();
+    constructor(client) {
+        this.db = client;
         this.utils = new utils2();
+        this.quotation = new mist_wallet(client);
+
     }
 
 
@@ -66,14 +68,13 @@ export default class Market {
 			console.error(markets_err,markets);
 			return [];
 		}
-        const quotation = new mist_wallet();
         const quotations = [];
         for (const index in markets) {
             if( !markets[index])continue
             const [err, result]: [any,any] = await to(this.db.get_market_quotations([markets[index].id]));
 			if (!err && result && result.length > 0) {
                 const base_token = result[0].market_id.split('-')[0];
-                result[0].CNYC_price = await quotation.get_token_price2pi(base_token);
+                result[0].CNYC_price = await this.quotation.get_token_price2pi(base_token);
 
             }else if(!err && result && result.length === 0){
                 result[0] = {

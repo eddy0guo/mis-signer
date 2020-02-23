@@ -103,8 +103,8 @@ async function get_price(base_token_name, quote_token_name, amount, order) {
 
 export default () => {
   const express = Router();
-  const mist_wallet = new mist_wallet1();
   const psql_db = new psql();
+  const mist_wallet = new mist_wallet1(psql_db);
   const utils = new utils1();
   const order = new order1(psql_db);
 
@@ -388,7 +388,7 @@ export default () => {
      * @apiVersion 1.0.0
      */
   express.all('/get_pool_info', async (req, res) => {
-    const token_arr = await mist_wallet.list_tokens();
+    const token_arr = await mist_wallet.list_mist_tokens();
 
    	  const balances = [];
 	  const asset = new Asset();

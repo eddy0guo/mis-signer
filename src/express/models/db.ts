@@ -129,4 +129,14 @@ export default class db {
         return result.rows;
     }
 
+	async list_tokens() : Promise<Token[]> {
+		const [err, result]: [any,any]  = await to(this.clientDB.query('select * from mist_tokens'));
+		if (err) {
+			console.error('list_tokens_failed', err, );
+			throw new Error(err);
+		}
+		return result.rows;
+
+	}
+
 }

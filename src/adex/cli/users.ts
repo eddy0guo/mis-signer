@@ -14,7 +14,7 @@ export default class Users {
     constructor(client?) {
         this.db = client;
         this.utils = new utils2();
-        this.mist_wallet = new mist_wallet1();
+        this.mist_wallet = new mist_wallet1(client);
     }
 
     async start() {

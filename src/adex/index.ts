@@ -17,13 +17,11 @@ import MistConfig from '../cfg';
 import Token from '../wallet/contract/Token';
 import Asset from '../wallet/contract/Asset';
 
-import { Order as IOrder } from './interface';
+import {Order as IOrder} from './interface';
 
-async function get_available_erc20_amount(address, symbol) {
-    const mist_wallet = new MistWallet();
+async function get_available_erc20_amount(address, symbol,client,mist_wallet) {
 
     // FIXME：这个函数每次都new一个新的DB Pool，改成公用一个连接池，否则会报错 Error: error: sorry, too many clients already
-    const client:DBClient = new DBClient();
     const token_info = await mist_wallet.get_token(symbol);
 
     const token = new Token(token_info[0].address);
@@ -49,13 +47,13 @@ async function get_available_erc20_amount(address, symbol) {
 }
 
 export default () => {
-    const adex:Router = Router();
-    const client:DBClient = new DBClient();
-    const order:OrderAPI = new OrderAPI(client);
-    const trades:TradesAPI = new TradesAPI(client);
-    const market:MarketAPI = new MarketAPI();
+    const adex: Router = Router();
+    const client: DBClient = new DBClient();
+    const order: OrderAPI = new OrderAPI(client);
+    const trades: TradesAPI = new TradesAPI(client);
+    const market: MarketAPI = new MarketAPI(client);
 
-    const mist_wallet:MistWallet = new MistWallet();
+    const mist_wallet: MistWallet = new MistWallet(client);
 
     const utils = new Utils();
     // 	user.start();
@@ -134,7 +132,7 @@ export default () => {
 
 
     adex.all('/list_tokens_v2', async (req, res) => {
-        const result = await mist_wallet.list_tokens();
+        const result = await mist_wallet.list_mist_tokens();
         res.json({
             success: true,
             result,
@@ -260,7 +258,7 @@ export default () => {
      */
     adex.all('/balances_v2', async (req, res) => {
         const obj = urllib.parse(req.url, true).query;
-        const token_arr = await mist_wallet.list_tokens();
+        const token_arr = await mist_wallet.list_mist_tokens();
         const balances = [];
 
         const address: string = obj.address as string;
@@ -399,7 +397,7 @@ export default () => {
 
     adex.all('/asset_balances/:address', async (req, res) => {
         const {address} = req.params;
-        const token_arr = await mist_wallet.list_tokens();
+        const token_arr = await mist_wallet.list_mist_tokens();
         const balances = [];
 
         const asset = new Asset();
@@ -514,7 +512,7 @@ export default () => {
      */
     adex.all('/erc20_balances/:address', async (req, res) => {
         const {address} = req.params;
-        const token_arr = await mist_wallet.list_tokens();
+        const token_arr = await mist_wallet.list_mist_tokens();
         const balances = [];
 
         for (const i in token_arr as any[]) {
@@ -718,7 +716,9 @@ export default () => {
         if (side === 'buy') {
             const available_quota = await get_available_erc20_amount(
                 trader_address,
-                quota_token
+                quota_token,
+                client,
+                mist_wallet
             );
             const quota_amount = NP.times(+amount, +price);
             if (quota_amount > available_quota) {
@@ -730,7 +730,9 @@ export default () => {
         } else if (side === 'sell') {
             const available_base = await get_available_erc20_amount(
                 trader_address,
-                base_token
+                base_token,
+                client,
+                mist_wallet
             );
             if (amount > available_base) {
                 return res.json({
@@ -799,8 +801,8 @@ export default () => {
             });
         }
 
-        const order_info:IOrder[] = await order.get_order(order_id);
-        if( !order_info || order_info.length <= 0 ){
+        const order_info: IOrder[] = await order.get_order(order_id);
+        if (!order_info || order_info.length <= 0) {
             return res.json({
                 success: false,
                 err: 'Order ID Not Found.',

@@ -214,10 +214,10 @@ export default class db {
      *
      * */
 
-    async list_tokens(tradeid) : Promise<Token[]> {
+    async list_tokens() : Promise<Token[]> {
         const [err, result]: [any,any]  = await to(this.clientDB.query('select * from mist_tokens'));
         if (err) {
-            console.error('list_tokens_failed', err, tradeid);
+            console.error('list_tokens_failed', err, );
             throw new Error(err);
         }
         return result.rows;
