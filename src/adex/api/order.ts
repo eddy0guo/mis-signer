@@ -10,6 +10,7 @@ export default class order {
 
     private db:DBClient;
     private orderQueue:Queue.Queue;
+    private orderBookUpdateQueue:Queue.Queue;
     private utils:Utils;
 
     constructor(client) {
@@ -27,6 +28,25 @@ export default class order {
                     password: process.env.REDIS_PWD
                 }
             });
+
+        this.orderBookUpdateQueue = new Queue('OrderBookUpdate' + process.env.MIST_MODE,
+            {
+                redis: {
+                    port: Number(process.env.REDIS_PORT),
+                    host: process.env.REDIS_URL,
+                    password: process.env.REDIS_PWD
+                }
+            });
+
+        this.orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE,
+            {
+                redis: {
+                    port: Number(process.env.REDIS_PORT),
+                    host: process.env.REDIS_URL,
+                    password: process.env.REDIS_PWD
+                }
+            });
+
         return this.orderQueue;
     }
 
@@ -64,7 +84,29 @@ export default class order {
         const create_time = this.utils.get_current_time();
         const cancle_info = [-message.amount, 0, message.amount, 0, 'cancled', create_time, message.id];
         const [err, result] = await to(this.db.update_orders(cancle_info));
-        if (!result) console.error(err, result);
+        if (err) {
+            console.error(err, result);
+        }
+        let book;
+        if(message.side === 'buy'){
+            book = {
+                asks:[],
+                bids:[message.price,-message.amount]
+            }
+        }else{
+            book = {
+                asks:[message.price,-message.amount],
+                bids:[]
+            }
+        }
+
+        const marketUpdateBook = {
+            data: book,
+            id:message.market_id,
+        }
+        const [orderBookUpdateQueueErr, orderBookUpdateQueueResult] = await to(this.orderBookUpdateQueue.add(marketUpdateBook));
+        if (orderBookUpdateQueueErr) console.error('[ADEX ENGINE]:orderBookUpdateQueue failed %o\n', orderBookUpdateQueueErr);
+
 
         return result;
     }

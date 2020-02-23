@@ -77,6 +77,7 @@
     "qs": "^6.6.0",
     "scryptsy": "^2.0.0",
     "silly-datetime": "^0.1.2",
+    "socket.io": "^2.3.0",
     "uuid": "^3.3.2",
     "web3": "^0.20.7",
     "websocket": "^1.0.30"

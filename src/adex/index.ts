@@ -807,6 +807,9 @@ export default () => {
         }
         const message = {
             amount: order_info[0].available_amount,
+            side:order_info[0].side,
+            price: order_info[0].price,
+            market_id: order_info[0].market_id,
             id: order_id,
         };
 
@@ -879,6 +882,9 @@ export default () => {
 
             const message = {
                 amount: order_info[0].available_amount,
+                price:order_info[0].price,
+                side:order_info[0].side,
+                market_id: order_info[0].market_id,
                 id: order_info[0].id,
             };
 

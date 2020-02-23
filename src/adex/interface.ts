@@ -105,7 +105,21 @@ interface FreezeToken{
 }
 
 
-export {Order, Trade, Token, Market, Transaction, Bridge, Price, MarketQuotation,FreezeToken}
+interface OrderBook{
+    asks:number[][];
+    bids:number[][];
+}
+
+interface LastTrade{
+    price: number;
+    amount: number;
+    taker_side: string;
+    updated_at: string;
+}
+
+
+
+export {Order, Trade, Token, Market, Transaction, Bridge, Price, MarketQuotation,FreezeToken,OrderBook,LastTrade}
 /*
 create table asim_assets_info(
     asset_name text PRIMARY KEY,
