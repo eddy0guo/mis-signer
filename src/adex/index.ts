@@ -19,11 +19,11 @@ import Asset from '../wallet/contract/Asset';
 
 import { Order as IOrder } from './interface';
 
-async function get_available_erc20_amount(address, symbol) {
+async function get_available_erc20_amount(client:DBClient,address:string, symbol:string) {
     const mist_wallet = new MistWallet();
 
     // FIXME：这个函数每次都new一个新的DB Pool，改成公用一个连接池，否则会报错 Error: error: sorry, too many clients already
-    const client:DBClient = new DBClient();
+    // const client:DBClient = new DBClient();
     const token_info = await mist_wallet.get_token(symbol);
 
     const token = new Token(token_info[0].address);
@@ -717,6 +717,7 @@ export default () => {
         const [base_token, quota_token] = market_id.split('-');
         if (side === 'buy') {
             const available_quota = await get_available_erc20_amount(
+                client,
                 trader_address,
                 quota_token
             );
@@ -729,6 +730,7 @@ export default () => {
             }
         } else if (side === 'sell') {
             const available_base = await get_available_erc20_amount(
+                client,
                 trader_address,
                 base_token
             );
