@@ -20,10 +20,7 @@ import Asset from '../wallet/contract/Asset';
 import {Order as IOrder} from './interface';
 
 async function get_available_erc20_amount(address, symbol,client,mist_wallet) {
-
-    // FIXME：这个函数每次都new一个新的DB Pool，改成公用一个连接池，否则会报错 Error: error: sorry, too many clients already
     const token_info = await mist_wallet.get_token(symbol);
-
     const token = new Token(token_info[0].address);
     const [err, res] = await to(token.balanceOf(address, 'child_poa'));
     if (err) console.error(err);
