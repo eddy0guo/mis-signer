@@ -1,6 +1,6 @@
 import to from 'await-to-js'
-import utils1 from '../adex/api/utils'
-import psql from '../adex/models/db'
+import Utils from '../adex/api/utils'
+import DBClient from '../adex/models/db'
 
 import NP from 'number-precision'
 
@@ -18,12 +18,12 @@ async function send_asset(address, asset, amount) {
 }
 
 class watcher {
-    private psql_db;
-    private utils;
+    private dbClient:DBClient;
+    private utils:Utils;
     constructor() {
-        this.psql_db = new psql();
-        this.utils = new utils1();
-        this.start()
+        this.dbClient = new DBClient();
+        this.utils = new Utils();
+        this.start();
     }
 
     async start() {
@@ -34,8 +34,8 @@ class watcher {
     }
 
 	async asset2coin_decode_loop(){
-		const [pending_decode_err,pending_decode] = await to(this.psql_db.get_pending_decode_bridge());
-		if(pending_decode_err || !pending_decode || pending_decode.length === 0){
+		const [pending_decode_err,pendingDecodeArray] = await to(this.dbClient.get_pending_decode_bridge());
+		if(pending_decode_err || !pendingDecodeArray || pendingDecodeArray.length <= 0){
 			console.error('[ADEX BRIDGER]::(get_pending_decode_bridge):have no trades need to be decoded');
 			setTimeout(() => {
 				this.asset2coin_decode_loop.call(this)
@@ -44,15 +44,18 @@ class watcher {
 		}
 
 		let master_txid_status = 'successful';
-		const current_time = this.utils.get_current_time();
+        const current_time = this.utils.get_current_time();
+        const pendingDecodeItem = pendingDecodeArray[0];
 
-		const [decode_err, decode_info] = await to(this.utils.decode_transfer_info(pending_decode.master_txid));
+		const [decode_err, decode_info]:[Error,any] = await to(this.utils.decode_transfer_info(pendingDecodeItem.master_txid));
 		if (decode_err || !decode_info) {
-			console.error('[BDIGER WATCHER]:(decode_transfer_info):',decode_err,decode_info)
+            console.error('[BDIGER WATCHER]:(decode_transfer_info):',decode_err)
+            console.log('[BDIGER WATCHER]: pendingDecodeArray = ',pendingDecodeArray)
 			// FIXME:根据error内容判断是外部服务rpc问题还是交易本身的问题
 			if(!decode_err.message.includes('asimov_getRawTransaction failed')){
-				const updated = [null,null,null,'illegaled','pending',null,null,current_time,pending_decode.id];
-				this.psql_db.update_asset2coin_decode(updated);
+				const updated = [null,null,null,'illegaled','pending',null,null,current_time,pendingDecodeItem.id];
+				const [update_err,update_result] = await to(this.dbClient.update_asset2coin_decode(updated));
+				if(update_err) console.error('[ADEX BRIDGER]::(update_asset2coin_decode):',update_err);
 			}
 
 			setTimeout(() => {
@@ -77,8 +80,8 @@ class watcher {
 			console.error(`reciver ${decode_info.to}  is not official address`);
 		}
 
-		const transfer_tokens = await this.psql_db.get_tokens([asset_id]);
-		const fee_tokens = await this.psql_db.get_tokens([fee_asset]);
+		const transfer_tokens = await this.dbClient.get_tokens([asset_id]);
+		const fee_tokens = await this.dbClient.get_tokens([fee_asset]);
 
 		const update_info = {
 			address: from,
@@ -89,19 +92,19 @@ class watcher {
 			fee_asset: fee_tokens[0].symbol,
 			fee_amount,
 			updated_at: current_time,
-			id: pending_decode.id,
+			id: pendingDecodeItem.id,
 		};
 		const update_info_arr = this.utils.arr_values(update_info);
 		const [err4, result4] = await to(
-			this.psql_db.update_asset2coin_decode(update_info_arr)
+			this.dbClient.update_asset2coin_decode(update_info_arr)
 		);
-		if (err4) console.log('psql_db.update_asset2coin_decode', err4, result4);
+		if (err4) console.log('dbClient.update_asset2coin_decode', err4, result4);
         this.asset2coin_decode_loop.call(this)
 	}
 
     async asset2coin_loop() {
 
-        const [err, pending_trade]: [any,any] = await to(this.psql_db.filter_bridge(['asset2coin', 'successful', 'pending']));
+        const [err, pending_trade]: [any,any] = await to(this.dbClient.filter_bridge(['asset2coin', 'successful', 'pending']));
 		if(!pending_trade){
 			console.log(err);
 			  setTimeout(() => {
@@ -120,7 +123,7 @@ class watcher {
         }
         const { id, address, amount, token_name } = pending_trade[0];
         const current_time = this.utils.get_current_time();
-        const [transfer_tokens_err,transfer_tokens] = await to(this.psql_db.get_tokens([token_name]));
+        const [transfer_tokens_err,transfer_tokens] = await to(this.dbClient.get_tokens([token_name]));
 		if(!transfer_tokens){
 			console.error(transfer_tokens_err);
 			setTimeout(() => {
@@ -146,7 +149,7 @@ class watcher {
             AsimovConst.CONTRACT_TYPE.CALL))
         if (child_txid) {
             const info = [child_txid, 'successful', current_time, id];
-            const [err3, result3] = await to(this.psql_db.update_asset2coin_bridge(info));
+            const [err3, result3] = await to(this.dbClient.update_asset2coin_bridge(info));
             if (err3) console.error(err3, result3)
         } else {
             console.error(`error happend in send coin`, child_err)
@@ -161,7 +164,7 @@ class watcher {
 
     async coin2asset_release_loop() {
 
-        const [failed_err, failed_trade]: [any,any] = await to(this.psql_db.filter_bridge(['coin2asset', 'failed', 'successful']));
+        const [failed_err, failed_trade]: [any,any] = await to(this.dbClient.filter_bridge(['coin2asset', 'failed', 'successful']));
         if(failed_err){
 			console.error('err,pending_trade', failed_err, failed_trade);
 			setTimeout(() => {
@@ -172,7 +175,7 @@ class watcher {
         if (failed_trade.length > 0) {
             // tslint:disable-next-line: no-shadowed-variable
             const { id, address, amount, token_name } = failed_trade[0];
-            const [ tokens_err, tokenAry ] = await to(this.psql_db.get_tokens([token_name]));
+            const [ tokens_err, tokenAry ] = await to(this.dbClient.get_tokens([token_name]));
 			if(tokens_err){
 				console.log(tokens_err);
 				setTimeout(() => {
@@ -185,14 +188,14 @@ class watcher {
             const [masterErr, masterTxid] = await send_asset(address, tokenAry[0].asim_assetid, amount);
             if (masterTxid) {
                 const update_info = [masterTxid, 'successful', currentTime, id];
-                const [err4, result4] = await to(this.psql_db.update_coin2asset_failed(update_info));
+                const [err4, result4] = await to(this.dbClient.update_coin2asset_failed(update_info));
                 if (err4) console.error(err4, result4)
             } else {
                 console.error(`the trade ${id} failed again`, masterErr)
 			}
         }
 
-        const [err, pending_trade]: [any,any] = await to(this.psql_db.filter_bridge(['coin2asset', 'pending', 'successful']));
+        const [err, pending_trade]: [any,any] = await to(this.dbClient.filter_bridge(['coin2asset', 'pending', 'successful']));
         if (err) {
             console.error(`release bridge happened error ${err}`);
             setTimeout(() => {
@@ -213,7 +216,7 @@ class watcher {
 
 
         const { id, address, fee_amount, amount, token_name, child_txid, child_txid_status } = pending_trade[0];
-        const tokens = await this.psql_db.get_tokens([token_name])
+        const tokens = await this.dbClient.get_tokens([token_name])
 
         let [master_err, master_txid] = await send_asset(address, tokens[0].asim_assetid, amount);
         const master_txid_status = master_txid === null ? 'failed' : 'successful';
@@ -226,7 +229,7 @@ class watcher {
         const current_time = this.utils.get_current_time();
 
         const info = [master_txid, master_txid_status, child_txid, child_txid_status, current_time, id];
-        const [err3, result3] = await to(this.psql_db.update_coin2asset_bridge(info));
+        const [err3, result3] = await to(this.dbClient.update_coin2asset_bridge(info));
         if (err3) console.error(err3, result3, fee_amount)
 
         setTimeout(() => {
@@ -239,7 +242,7 @@ class watcher {
     async coin2asset_burn_loop() {
 
 
-        const [err, pending_trade]: [any,any] = await to(this.psql_db.filter_bridge(['coin2asset', 'pending', 'pending']));
+        const [err, pending_trade]: [any,any] = await to(this.dbClient.filter_bridge(['coin2asset', 'pending', 'pending']));
         if (err) {
 			console.error(err)
 			setTimeout(() => {
@@ -259,7 +262,7 @@ class watcher {
         }
 
         const { id, address, fee_amount, amount, token_name } = pending_trade[0];
-        const [tokens_err,tokens] = await to(this.psql_db.get_tokens([token_name]));
+        const [tokens_err,tokens] = await to(this.dbClient.get_tokens([token_name]));
 		if(tokens_err){
 			console.log(tokens_err);
             setTimeout(() => {
@@ -303,10 +306,10 @@ class watcher {
             }
             const current_time = this.utils.get_current_time();
             if (child_txid_status === 'successful') {
-                const [err3, result3] = await to(this.psql_db.update_coin2asset_bridge([null, 'pending', child_txid, 'successful', current_time, id]));
+                const [err3, result3] = await to(this.dbClient.update_coin2asset_bridge([null, 'pending', child_txid, 'successful', current_time, id]));
                 if (err3) console.error(err3, result3)
             } else {
-                const [err3, result3] = await to(this.psql_db.update_coin2asset_bridge([null, 'failed', child_txid, 'failed', current_time, id]));
+                const [err3, result3] = await to(this.dbClient.update_coin2asset_bridge([null, 'failed', child_txid, 'failed', current_time, id]));
                 if (err3) console.error(err3, result3)
             }
             this.coin2asset_burn_loop.call(this)
@@ -316,5 +319,10 @@ class watcher {
     }
 
 }
+
+process.on('unhandledRejection', (reason, p) => {
+    console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+    // application specific logging, throwing an error, or other logic here
+});
 
 export default new watcher();

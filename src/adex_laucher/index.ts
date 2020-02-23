@@ -1,9 +1,11 @@
+import to from 'await-to-js'
+import NP from 'number-precision'
+
+import Exchange from './Exchange'
+
 import client from '../adex/models/db'
 import utils2 from '../adex/api/utils'
-import to from 'await-to-js'
 import mist_config from '../cfg'
-import Exchange from '../wallet/contract/Exchange'
-import NP from 'number-precision'
 import { chain } from '../wallet/api/chain'
 
 class launcher {
@@ -146,5 +148,10 @@ class launcher {
 
 
 }
+
+process.on('unhandledRejection', (reason, p) => {
+    console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+    // application specific logging, throwing an error, or other logic here
+});
 
 export default new launcher()

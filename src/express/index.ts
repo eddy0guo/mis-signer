@@ -49,7 +49,7 @@ async function get_price(base_token_name, quote_token_name, amount, order) {
   let base_value = 0;
   let base_amount = 0;
   if (base_token_name !== 'CNYC') {
-    const [base_book_err,base_book] = await to(order.order_book(base_token_name + '-CNYC'));
+    const [base_book_err,base_book] = await to(order.order_book(base_token_name + '-CNYC',2));
 	if( base_book_err || !base_book || !base_book.bids){
 		console.error('[ADEX EXPRESS]::(base_book):',base_book_err,base_book);
 		throw new Error(base_book_err);
@@ -74,7 +74,7 @@ async function get_price(base_token_name, quote_token_name, amount, order) {
   let quote_value = 0;
   let quote_amount = 0;
   if (quote_token_name !== 'CNYC') {
-    const [quote_book_err,quote_book] = await to(order.order_book(quote_token_name + '-CNYC'));
+    const [quote_book_err,quote_book] = await to(order.order_book(quote_token_name + '-CNYC',2));
 	if( quote_book_err || !quote_book || !quote_book.asks){
         console.error('[ADEX EXPRESS]::(quote_book):',quote_book_err,quote_book);
         throw new Error(quote_book_err);
@@ -103,8 +103,8 @@ async function get_price(base_token_name, quote_token_name, amount, order) {
 
 export default () => {
   const express = Router();
-  const mist_wallet = new mist_wallet1();
   const psql_db = new psql();
+  const mist_wallet = new mist_wallet1(psql_db);
   const utils = new utils1();
   const order = new order1(psql_db);
 
@@ -388,7 +388,7 @@ export default () => {
      * @apiVersion 1.0.0
      */
   express.all('/get_pool_info', async (req, res) => {
-    const token_arr = await mist_wallet.list_tokens();
+    const token_arr = await mist_wallet.list_mist_tokens();
 
    	  const balances = [];
 	  const asset = new Asset();
@@ -396,7 +396,7 @@ export default () => {
         asset.balanceOf(mist_config.express_address)
       );
 
-      if (assets_balance_err || !assets_balance_result) {
+      if (assets_balance_err || !assets_balance_result || assets_balance_result[0].assets === undefined) {
 		  console.error('[ADEX EXPRESS]::(balanceOf):',assets_balance_err,assets_balance_result);
 		  return  res.json({
 				  success: false,

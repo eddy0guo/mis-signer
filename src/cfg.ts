@@ -1,4 +1,35 @@
-const local = {
+interface IConfig {
+  // TEST ONLY
+  order_hash_word: string,
+  fauct_address: string,
+  fauct_word: string,
+  fauct_prikey: string,
+
+  ex_address: string,
+  relayers: {prikey: string,word: string,address: string}[],
+
+  bridge_word: string,
+  bridge_address: string,
+
+  express_word: string,
+  express_address: string,
+
+  wallet_default_passwd: string,
+  asimov_chain_rpc: string,
+  asimov_master_rpc: string,
+  asimov_child_rpc: string,
+  mist_server_port: number,
+
+  pg_host: string,
+  pg_database: string,
+  pg_user: string,
+  pg_password: string,
+  pg_port: number,
+  icon_url: string,
+}
+
+
+const local:IConfig = {
   ex_address: '0x63722839a7d46e75e4cd9f40edc7680651143084ae',
   order_hash_word:
     'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
@@ -42,8 +73,6 @@ const local = {
   express_address: '0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c',
 
   wallet_default_passwd: '111111',
-  did_seed_word:
-    'wing safe foster choose wisdom myth quality own gallery logic imitate pink',
   asimov_chain_rpc: 'https://rpc-master.mistabit.com',
   asimov_master_rpc: 'https://rpc-master.mistabit.com',
   asimov_child_rpc: 'https://rpc-child.mistabit.com',
@@ -57,7 +86,7 @@ const local = {
   icon_url: 'http://fingo-cdn.asimov.work/res/icons/',
 };
 
-const dev = {
+const dev:IConfig = {
   ex_address: '0x630329112990e5246f67ae0de752225d56e33e3121',
   order_hash_word:
     'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
@@ -100,8 +129,6 @@ const dev = {
   express_address: '0x66d0594c76342ec891017d0639792ffc7872b4df81',
 
   wallet_default_passwd: '111111',
-  did_seed_word:
-    'wing safe foster choose wisdom myth quality own gallery logic imitate pink',
   asimov_chain_rpc: 'https://rpc-fin.fingo.com',
   asimov_master_rpc: 'https://rpc-fin.fingo.com',
   asimov_child_rpc: 'https://rpc-mt.fingo.com',
@@ -114,7 +141,7 @@ const dev = {
   icon_url: 'http://fingo-cdn.asimov.work/res/icons/',
 };
 
-const product = {
+const product:IConfig = {
     ex_address:'0x630329112990e5246f67ae0de752225d56e33e3121',
     order_hash_word:'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
     fauct_address:'0x666234b6348c10fed282b95c1f1768aa3113eb96b2',
@@ -142,7 +169,6 @@ const product = {
     express_address:'0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c',
 
     wallet_default_passwd:'111111',
-    did_seed_word:'wing safe foster choose wisdom myth quality own gallery logic imitate pink',
     asimov_chain_rpc:'https://rpc-fin.fingo.com',
     asimov_master_rpc:'https://rpc-fin.fingo.com',
     asimov_child_rpc:'https://rpc-mt.fingo.com',
@@ -155,7 +181,7 @@ const product = {
 	icon_url: 'http://fingo-cdn.asimov.work/res/icons/',
 }
 
-const CONFIG_K8S = {
+const CONFIG_K8S:IConfig = {
   // TEST ONLY
   order_hash_word: '',
   fauct_address: '',
@@ -191,17 +217,17 @@ const CONFIG_K8S = {
   asimov_chain_rpc: process.env.RPC_FIN,
   asimov_master_rpc: process.env.RPC_FIN,
   asimov_child_rpc: process.env.RPC_MT,
-  mist_server_port: process.env.SERVER_PORT,
+  mist_server_port: Number(process.env.SERVER_PORT),
 
   pg_host: process.env.PG_HOST,
   pg_database: process.env.PG_DB,
   pg_user: process.env.PG_USER,
   pg_password: process.env.PG_PASS,
-  pg_port: process.env.PG_PORT,
+  pg_port: Number(process.env.PG_PORT),
   icon_url: 'https://fingo-huadong.oss-cn-shanghai.aliyuncs.com/res/icons/',
 };
 
-let mistConfig;
+let mistConfig:IConfig;
 switch (process.env.MIST_MODE) {
   case 'local':
     mistConfig = local;
