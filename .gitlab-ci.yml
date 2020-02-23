@@ -20,8 +20,8 @@ build_node:
   tags:
     - aws
 
-build_docker_image:
-  stage: build
+deploy_docker_image:
+  stage: deploy
   image:
     name: robingu/kaniko-executor:debug
     entrypoint: [""]
@@ -30,11 +30,12 @@ build_docker_image:
   script:
     - echo "{\"auths\":{\"harbor.fingo.dev\":{\"auth\":\"ZmluZ286ZWluYWhjb0M3cmFt\"}}}" > /kaniko/.docker/config.json
     - env
-    - cat /kaniko/.docker/config.json
-    - /kaniko/executor  -v debug --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile  --destination harbor.fingo.dev/fingo/mist-signer:$CI_COMMIT_SHORT_SHA
-
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile  --destination harbor.fingo.dev/fingo/mist-signer:$CI_BUILD_REF_NAME
+  only:
+    - tags
 
 test:
+  stage: test
   script:
     - apk add  --no-cach git python3 build-base
     - yarn && npm run test
