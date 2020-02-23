@@ -21,7 +21,8 @@ build:
 
 test:
   script:
-    - npm run test
+    - apk add  --no-cach git python3 build-base
+    - yarn && npm run test
   tags:
     - aws
 
