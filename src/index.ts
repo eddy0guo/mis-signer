@@ -33,8 +33,6 @@ const responseTime = () => {
 
 const app = express();
 
-app.server = http.createServer(app);
-
 // logger
 app.use(morgan('dev'));
 
@@ -71,12 +69,13 @@ app.use('/wallet', wallet());
 app.use('/adex', adex());
 app.use('/express', express_exchange());
 
-app.server.listen(process.env.PORT || mist_config.mist_server_port, () => {
-  console.log(`Started on port ${app.server.address().port}`);
+const serverPort = process.env.PORT || mist_config.mist_server_port
+app.listen(serverPort, () => {
+  console.log(`Started on port: ${serverPort}`);
 });
 
 process.on('unhandledRejection', (reason, p) => {
-  console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+  console.log('[Mist Signer] Unhandled Rejection at: Promise , reason:', reason);
   // application specific logging, throwing an error, or other logic here
 });
 

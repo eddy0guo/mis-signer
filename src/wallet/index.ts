@@ -219,7 +219,7 @@ export default () => {
 
             const available_amount = NP.divide(balance, 100000000);
 
-            if (available_amount < amount) {
+            if (available_amount < Number(amount)) {
                 return res.json({
                     success: false,
                     err: `Lack of balance,you have ${available_amount} ${token_name} but want spend ${amount}`,
