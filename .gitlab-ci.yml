@@ -21,7 +21,7 @@ build_node:
     - aws
 
 deploy_docker_image:
-  stage: deploy
+  stage: build
   image:
     name: robingu/kaniko-executor:debug
     entrypoint: [""]
