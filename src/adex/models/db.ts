@@ -12,11 +12,11 @@ const BRIDGE_SQL = 'id,address,token_name,cast(amount as float8),side,master_txi
 
 export default class db {
 
-    private clientDB:Pool;
+    private clientDB: Pool;
 
     constructor() {
         // const {Pool} = require('postgres-pool');
-        const client:Pool = new Pool({
+        const client: Pool = new Pool({
             host: mist_config.pg_host,
             database: mist_config.pg_database,
             user: mist_config.pg_user,
@@ -104,7 +104,7 @@ export default class db {
 
     }
 
-    async find_order(order_id:string[]): Promise<Order[]> {
+    async find_order(order_id: string[]): Promise<Order[]> {
         const [err, result]: [any, any] = await to(this.clientDB.query('SELECT * FROM mist_orders where id=$1', order_id));
         if (err) {
             console.error('find_order_failed', err, order_id);
@@ -191,7 +191,7 @@ export default class db {
 
     }
 
-    async order_book(filter:[string,string,string]) : Promise<any> {
+    async order_book(filter: [string, string, string]): Promise<any> {
         let err: any;
         let result: any;
         if (filter[0] === 'sell') {
@@ -214,10 +214,10 @@ export default class db {
      *
      * */
 
-    async list_tokens() : Promise<Token[]> {
-        const [err, result]: [any,any]  = await to(this.clientDB.query('select * from mist_tokens'));
+    async list_tokens(): Promise<Token[]> {
+        const [err, result]: [any, any] = await to(this.clientDB.query('select * from mist_tokens'));
         if (err) {
-            console.error('list_tokens_failed', err, );
+            console.error('list_tokens_failed', err,);
             throw new Error(err);
         }
         return result.rows;
@@ -328,8 +328,7 @@ export default class db {
 
 // 444444
     async get_market_quotations(marketID): Promise<MarketQuotation[]> {
-
-        const [err, result]: [any, any] = await to(this.clientDB.query('select k.market_id,k.price,k.ratio,m.volume from (select s.market_id,s.price,cast((s.price-t.price)/t.price as decimal(10,8)) ratio from (select * from mist_trades_tmp where market_id=$1 order by created_at desc limit 1)s left join (select price,market_id from mist_trades_tmp where market_id=$1 and (current_timestamp - created_at) < \'24 hours\' order by created_at asc  limit 1)t on s.market_id=t.market_id)k left join (select market_id,sum(amount) as volume from mist_trades_tmp where market_id=$1 and (current_timestamp - created_at) < \'24 hours\' group by market_id)m on k.market_id=m.market_id', marketID));
+        const [err, result]: [any, any] = await to(this.clientDB.query('select k.market_id,k.price,k.ratio,m.volume from (select s.market_id,s.price,cast((s.price-t.price)/t.price as decimal(10,8)) ratio from (select * from mist_trades_tmp where market_id=$1 and (current_timestamp - created_at) < \'24 hours\'order by created_at desc limit 1)s left join (select price,market_id from mist_trades_tmp where market_id=$1 and (current_timestamp - created_at) < \'24 hours\' order by created_at asc  limit 1)t on s.market_id=t.market_id)k left join (select market_id,sum(amount) as volume from mist_trades_tmp where market_id=$1 and (current_timestamp - created_at) < \'24 hours\' group by market_id)m on k.market_id=m.market_id', marketID));
         if (err) {
             console.error('get_market_quotations_ failed', err, marketID);
             throw new Error(err);
@@ -467,7 +466,6 @@ export default class db {
     }
 
 
-
     // todo:所有两表同时更新的操作应该保证原子性，现在先不管
     async update_trades(update_info): Promise<object[]> {
         const [err, result]: [any, any] = await to(this.clientDB
@@ -567,8 +565,8 @@ export default class db {
 
     }
 
-    async list_transactions() : Promise<Transaction[]> {
-        const [err, result]: [any,any] = await to(this.clientDB.query('SELECT * FROM mist_transactions  order by id desc limit 30'));
+    async list_transactions(): Promise<Transaction[]> {
+        const [err, result]: [any, any] = await to(this.clientDB.query('SELECT * FROM mist_transactions  order by id desc limit 30'));
         if (err) {
             console.error('list transactions failed', err);
             throw new Error(err);
@@ -578,8 +576,8 @@ export default class db {
     }
 
 
-    async get_transaction(id)  : Promise<Transaction[]> {
-        const [err, result]: [any,any] = await to(this.clientDB.query('SELECT * FROM mist_transactions where id=$1', id));
+    async get_transaction(id): Promise<Transaction[]> {
+        const [err, result]: [any, any] = await to(this.clientDB.query('SELECT * FROM mist_transactions where id=$1', id));
         if (err) {
             console.error('get transaction failed', err, id);
             throw new Error(err);
