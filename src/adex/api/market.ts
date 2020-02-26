@@ -16,28 +16,28 @@ export default class Market {
     }
 
 
-	async market_down(id) {
-		const update_at = this.utils.get_current_time();
-        const result = await this.db.update_market([false,id,update_at]);
+    async market_down(id) {
+        const update_at = this.utils.get_current_time();
+        const result = await this.db.update_market([false, id, update_at]);
         return result;
     }
 
 
-	async market_up(id) {
-		const update_at = this.utils.get_current_time();
-        const [err,result] = await to(this.db.update_market([true,id,update_at]));
-		if(!result){
-			console.error(err,result);
-		}
+    async market_up(id) {
+        const update_at = this.utils.get_current_time();
+        const [err, result] = await to(this.db.update_market([true, id, update_at]));
+        if (!result) {
+            console.error(err, result);
+        }
         return result;
     }
 
-	async market_add(info) {
-		const current_time = this.utils.get_current_time();
-		info = info.concat([false,current_time,current_time]);
-        const [err,result] = await to(this.db.market_add(info));
-		if(!result){
-            console.error(err,result);
+    async market_add(info) {
+        const current_time = this.utils.get_current_time();
+        info = info.concat([false, current_time, current_time]);
+        const [err, result] = await to(this.db.market_add(info));
+        if (!result) {
+            console.error(err, result);
         }
         return result;
     }
@@ -48,10 +48,10 @@ export default class Market {
         return result;
     }
 
-	async list_online_markets() {
-        const [err,result] = await to(this.db.list_online_markets());
-		if(!result){
-            console.error(err,result);
+    async list_online_markets() {
+        const [err, result] = await to(this.db.list_online_markets());
+        if (!result) {
+            console.error(err, result);
         }
         return result;
     }
@@ -63,20 +63,20 @@ export default class Market {
 
     async list_market_quotations() {
 
-        const [markets_err,markets] = await to(this.list_online_markets());
-		if(!markets){
-			console.error(markets_err,markets);
-			return [];
-		}
+        const [markets_err, markets] = await to(this.list_online_markets());
+        if (!markets) {
+            console.error(markets_err, markets);
+            return [];
+        }
         const quotations = [];
         for (const index in markets) {
-            if( !markets[index])continue
-            const [err, result]: [any,any] = await to(this.db.get_market_quotations([markets[index].id]));
-			if (!err && result && result.length > 0) {
+            if (!markets[index]) continue
+            const [err, result]: [any, any] = await to(this.db.get_market_quotations([markets[index].id]));
+            if (!err && result && result.length > 0) {
                 const base_token = result[0].market_id.split('-')[0];
                 result[0].CNYC_price = await this.quotation.get_token_price2pi(base_token);
 
-            }else if(!err && result && result.length === 0){
+            } else if (!err && result && result.length === 0) {
                 result[0] = {
                     market_id: markets[index].id,
                     price: 0,
@@ -84,11 +84,20 @@ export default class Market {
                     volume: 0,
                     CNYC_price: 0
                 }
-            }else{
-				console.error(err);
-			}
+            } else {
+                console.error(err);
+            }
             quotations.push(result[0]);
         }
+        // @ts-ignore
+        quotations.sort((a, b) => {
+            // XXX:为了和ws推送的数据的排序保持一致
+            if (a.market_id.split('').reverse().join('') < b.market_id.split('').reverse().join('')) {
+                return -1;
+            } else {
+                return 1;
+            }
+        });
         return quotations;
     }
 
