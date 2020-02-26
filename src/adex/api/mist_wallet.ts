@@ -1,4 +1,5 @@
 import utils2 from './utils';
+import {IToken} from '../interface';
 
 export default class mist_wallet {
     private db;
@@ -9,19 +10,19 @@ export default class mist_wallet {
         this.utils = new utils2();
     }
 
-    async list_mist_tokens() {
+    async list_mist_tokens() :Promise<IToken[]>{
         const result = await this.db.list_tokens();
         return result;
     }
 
-    async get_token(symbol) {
+    async get_token(symbol): Promise<IToken[]> {
         const result = await this.db.get_tokens([symbol]);
         return result;
     }
 
     // 寻找交易对的优先级依次为，PI,USDT,MT
 	// 价格为0有两种可能的原因，如果24小时没有成交的交易，交易对不存在
-    async get_token_price2pi(symbol) {
+    async get_token_price2pi(symbol) : Promise<number>{
         if (symbol === 'CNYC') {
             return 1;
         }
@@ -50,7 +51,7 @@ export default class mist_wallet {
         return result;
     }
 
-    async get_token_price2btc(symbol) {
+    async get_token_price2btc(symbol) : Promise<number>{
         const price2pi = await this.get_token_price2pi(symbol);
 
         const btc2pi = await this.get_token_price2pi('BTC');
@@ -61,7 +62,7 @@ export default class mist_wallet {
         const price2btc = price2pi / btc2pi;
 
         const result = price2btc.toFixed(6);
-        return result;
+        return parseFloat(result);
     }
 
 }

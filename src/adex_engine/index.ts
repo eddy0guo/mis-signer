@@ -7,14 +7,14 @@ import Engine from '../adex/api/engine'
 import Utils from '../adex/api/utils'
 import order from '../adex/api/order';
 import {
-    Order, Trade, OrderBook, LastTrade, Transaction,
-    Bridge, Price, MarketQuotation, FreezeToken
+    IOrder, ITrade, IOrderBook, ILastTrade, ITransaction,
+    IBridge, IPrice, IMarketQuotation, IFreezeToken
 } from '../adex/interface';
 import {number} from 'bitcoinjs-lib/types/script';
 
 // tslint:disable-next-line:no-shadowed-variable
-function computeOrderBookUpdates(trades: LastTrade[], order: Order): OrderBook {
-    const book: OrderBook = {
+function computeOrderBookUpdates(trades: ILastTrade[], order: IOrder): IOrderBook {
+    const book: IOrderBook = {
         asks: [],
         bids: []
     };
@@ -151,7 +151,7 @@ class AdexEngine {
                 let amount = 0;
                 for (const item of trades) {
                     amount = NP.plus(amount, item.amount);
-                    const trade: LastTrade = {
+                    const trade: ILastTrade = {
                         price: item.price,
                         amount: item.amount,
                         taker_side: item.taker_side,

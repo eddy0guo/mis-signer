@@ -2,6 +2,7 @@ import utils2 from './utils';
 
 import to from 'await-to-js';
 import mist_wallet from './mist_wallet';
+import {IMarket} from '../interface';
 
 export default class Market {
     private db;
@@ -16,14 +17,14 @@ export default class Market {
     }
 
 
-    async market_down(id) {
+    async market_down(id) : Promise<any[]>{
         const update_at = this.utils.get_current_time();
         const result = await this.db.update_market([false, id, update_at]);
         return result;
     }
 
 
-    async market_up(id) {
+    async market_up(id) : Promise<any[]>{
         const update_at = this.utils.get_current_time();
         const [err, result] = await to(this.db.update_market([true, id, update_at]));
         if (!result) {
@@ -32,7 +33,7 @@ export default class Market {
         return result;
     }
 
-    async market_add(info) {
+    async market_add(info) :Promise<any[]>{
         const current_time = this.utils.get_current_time();
         info = info.concat([false, current_time, current_time]);
         const [err, result] = await to(this.db.market_add(info));
@@ -43,12 +44,12 @@ export default class Market {
     }
 
 
-    async list_markets() {
+    async list_markets() :Promise<IMarket[]>{
         const result = await this.db.list_markets();
         return result;
     }
 
-    async list_online_markets() {
+    async list_online_markets() : Promise<IMarket[]>{
         const [err, result] = await to(this.db.list_online_markets());
         if (!result) {
             console.error(err, result);
@@ -57,7 +58,7 @@ export default class Market {
     }
 
 
-    async get_market(market_id) {
+    async get_market(market_id) :Promise<IMarket[]>{
         return await this.db.get_market([market_id]);
     }
 

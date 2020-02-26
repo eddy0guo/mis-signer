@@ -1,5 +1,5 @@
 // FIXME： Interface 命名务必加IClassName : IOrder .etc
-interface Order {
+interface IOrder {
     id: string;
     trader_address: string;
     market_id: string;
@@ -19,7 +19,7 @@ interface Order {
     confirm_value: string;
 }
 
-interface Trade {
+interface ITrade {
     id: string;
     trade_hash: string;
     transaction_id: number;
@@ -38,7 +38,7 @@ interface Trade {
 }
 
 
-interface Market {
+interface IMarket {
     id: string;
     base_token_address: string;
     base_token_symbol: string;
@@ -49,7 +49,7 @@ interface Market {
     created_at: string;
 }
 
-interface Token {
+interface IToken {
     symbol: string;
     name: string;
     address: string;
@@ -59,7 +59,7 @@ interface Token {
     created_at: string;
 }
 
-interface Transaction {
+interface ITransaction {
     id: string;
     transaction_hash: string;
     market_id: string;
@@ -69,7 +69,7 @@ interface Transaction {
     created_at: string;
 }
 
-interface Bridge {
+interface IBridge {
     id: string;
     address: string;
     token_name: string;
@@ -85,18 +85,18 @@ interface Bridge {
     created_at: string;
 }
 
-interface Price {
+interface IPrice {
     price: number;
 }
 
-interface MarketQuotation {
+interface IMarketQuotation {
     market_id: string;
     price: number;
     ratio: number;
     volume: number
 }
 
-interface FreezeToken{
+interface IFreezeToken{
     market_id:string;
     side:string;
     base_amount:number;
@@ -105,12 +105,12 @@ interface FreezeToken{
 }
 
 
-interface OrderBook{
+interface IOrderBook{
     asks:number[][];
     bids:number[][];
 }
 
-interface LastTrade{
+interface ILastTrade{
     price: number;
     amount: number;
     taker_side: string;
@@ -119,18 +119,6 @@ interface LastTrade{
 
 
 
-export {Order, Trade, Token, Market, Transaction, Bridge, Price, MarketQuotation,FreezeToken,OrderBook,LastTrade}
-/*
-create table asim_assets_info(
-    asset_name text PRIMARY KEY,
-    asset_id text default '',
-    contract_address text default '',
-    total text default '',
-    yesterday_total text default '',
-    updated_at  timestamp default now(),
-    created_at  timestamp default now()
-);
+export {IOrder, ITrade, IToken, IMarket, ITransaction, IBridge, IPrice, IMarketQuotation,IFreezeToken,IOrderBook,ILastTrade}
 
-
-*/
 

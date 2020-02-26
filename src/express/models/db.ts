@@ -1,8 +1,8 @@
 import to from 'await-to-js'
 import { Pool } from 'postgres-pool';
 import mist_config from '../../cfg'
-import {Trade,Token} from '../interface'
-import { Price } from 'src/adex/interface';
+import {ITrade,IToken} from '../interface'
+import { IPrice } from 'src/adex/interface';
 
 const express_params = 'trade_id,address,base_asset_name,cast(base_amount as float8),cast(price as float8),quote_asset_name,cast(quote_amount as float8),cast(fee_rate as float8),fee_token,cast(fee_amount as float8),base_txid,base_tx_status,quote_txid,quote_tx_status,updated_at,created_at';
 
@@ -25,7 +25,7 @@ export default class db {
 
 	}
 
-	async my_express(filter_info) : Promise<Trade[]> {
+	async my_express(filter_info) : Promise<ITrade[]> {
 		const [err, result]: [any,any] = await to(this.clientDB.query(`SELECT ${express_params} FROM asim_express_records  where address=$1 order by created_at desc limit $3 offset $2`, filter_info));
 		if (err) {
 			console.error('my express failed', err,result);
@@ -36,7 +36,7 @@ export default class db {
 
 	}
 
-	async find_express(trade_id) : Promise<Trade[]> {
+	async find_express(trade_id) : Promise<ITrade[]> {
 		const [err, result]: [any,any] = await to(this.clientDB.query(`SELECT ${express_params} FROM asim_express_records  where trade_id=$1`, trade_id));
 		if (err) {
 			console.error('find express failed', err,result);
@@ -58,7 +58,7 @@ export default class db {
 
 	}
 
-	async laucher_pending_trade() : Promise<Trade[]> {
+	async laucher_pending_trade() : Promise<ITrade[]> {
 		const [err, result]: [any,any] = await to(this.clientDB.query('SELECT * FROM asim_express_records  where base_tx_status=\'successful\' and quote_tx_status in (\'pending\',\'failed\') order by created_at limit 1'));
 		if (err) {
 			console.error('laucher pending trade failed',err,result);
@@ -101,7 +101,7 @@ export default class db {
 	}
 
 
-	async get_tokens(filter) : Promise<Token[]> {
+	async get_tokens(filter) : Promise<IToken[]> {
 		const [err, result]: [any,any] = await to(this.clientDB.query('select * from mist_tokens where symbol=$1 or asim_assetid=$1 or address=$1', filter));
 		if (err) {
 			console.error('get tokens failed', err, filter);
@@ -129,7 +129,7 @@ export default class db {
         return result.rows;
     }
 
-	async list_tokens() : Promise<Token[]> {
+	async list_tokens() : Promise<IToken[]> {
 		const [err, result]: [any,any]  = await to(this.clientDB.query('select * from mist_tokens'));
 		if (err) {
 			console.error('list_tokens_failed', err, );

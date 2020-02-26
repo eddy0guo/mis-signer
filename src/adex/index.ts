@@ -17,7 +17,7 @@ import MistConfig from '../cfg';
 import Token from '../wallet/contract/Token';
 import Asset from '../wallet/contract/Asset';
 
-import {Order as IOrder} from './interface';
+import {IOrder as IOrder} from './interface';
 
 async function get_available_erc20_amount(address, symbol,client,mist_wallet) {
     const token_info = await mist_wallet.get_token(symbol);
@@ -965,13 +965,13 @@ export default () => {
      */
 
     adex.all(
-        '/my_orders_v2/:address/:page/:perpage/:status1/:status2',
+        '/my_orders_v2/:address/:page/:perPage/:status1/:status2',
         async (req, res) => {
             // pending,partial_filled,当前委托
             // cancled，full_filled，历史委托
-            const {address, page, perpage, status1, status2} = req.params;
+            const {address, page, perPage, status1, status2} = req.params;
             const [err, result] = await to(
-                order.my_orders2(address, page, perpage, status1, status2)
+                order.my_orders(address, +page, +perPage, status1, status2)
             );
 
             res.json({
