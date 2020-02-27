@@ -7,8 +7,9 @@ import client from '../adex/models/db'
 import utils2 from '../adex/api/utils'
 import mist_config from '../cfg'
 import { chain } from '../wallet/api/chain'
+import { Health } from 'src/common/Health'
 
-class launcher {
+class Launcher {
     private db;
     private utils;
     private block_height;
@@ -18,7 +19,6 @@ class launcher {
         this.db = new client();
         this.utils = new utils2();
         this.block_height = 0;
-        this.start();
     }
 
 	start(ms: number = 100):void {
@@ -154,4 +154,10 @@ process.on('unhandledRejection', (reason, p) => {
     // application specific logging, throwing an error, or other logic here
 });
 
-export default new launcher()
+const health = new Health();
+health.start();
+
+
+
+const lancher = new Launcher()
+lancher.start();

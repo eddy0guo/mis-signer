@@ -9,6 +9,7 @@ import Utils from '../adex/api/utils'
 import {
     IOrder, IOrderBook, ILastTrade,
 } from '../adex/interface';
+import { Health } from 'src/common/Health'
 
 
 // tslint:disable-next-line:no-shadowed-variable
@@ -219,6 +220,9 @@ process.on('unhandledRejection', (reason, p) => {
     console.log('[ADEX ENGINE] Unhandled Rejection at: Promise', p, 'reason:', reason);
     // application specific logging, throwing an error, or other logic here
 });
+
+const health = new Health();
+health.start();
 
 const engine =  new AdexEngine();
 engine.initQueue();

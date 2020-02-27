@@ -1,20 +1,20 @@
-import client from '../adex/models/db'
-import utils2 from '../adex/api/utils'
+import DBClient from '../adex/models/db'
+import Utils from '../adex/api/utils'
 
-import {chain} from '../wallet/api/chain'
 import to from 'await-to-js'
 
 import NP from 'number-precision'
+import { Health } from 'src/common/Health'
 
 class Watcher {
 
-    private db;
-    private utils;
+    private db:DBClient;
+    private utils:Utils;
 
     constructor() {
 
-        this.db = new client();
-        this.utils = new utils2();
+        this.db = new DBClient();
+        this.utils = new Utils();
     }
 
     async start() {
@@ -120,6 +120,9 @@ process.on('unhandledRejection', (reason, p) => {
     console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
     // application specific logging, throwing an error, or other logic here
 });
+
+const health = new Health();
+health.start();
 
 const watcher =  new Watcher();
 watcher.start();

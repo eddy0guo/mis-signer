@@ -4,7 +4,7 @@ import DBClient from '../express/models/db'
 
 import mist_config from '../cfg'
 import { AsimovWallet } from '@fingo/asimov-wallet';
-
+import { Health } from 'src/common/Health';
 
 class Watcher {
 
@@ -88,6 +88,9 @@ process.on('unhandledRejection', (reason, p) => {
     console.log('[Express Watcher]Unhandled Rejection at: Promise', p, 'reason:', reason);
     // application specific logging, throwing an error, or other logic here
 });
+
+const health = new Health();
+health.start();
 
 const watcher =  new Watcher();
 watcher.start();

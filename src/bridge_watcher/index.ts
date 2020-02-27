@@ -6,6 +6,7 @@ import NP from 'number-precision'
 
 import mist_config from '../cfg'
 import { AsimovWallet, AsimovConst } from '@fingo/asimov-wallet';
+import { Health } from 'src/common/Health'
 
 async function send_asset(address, asset, amount) {
     const master_wallet = new AsimovWallet({
@@ -22,7 +23,7 @@ async function send_asset(address, asset, amount) {
  *
  */
 class Watcher {
-    // FIXME: db reconnect when error 
+    // FIXME: db reconnect when error
     private dbClient:DBClient;
     private utils:Utils;
     constructor() {
@@ -328,6 +329,9 @@ process.on('unhandledRejection', (reason, p) => {
     console.log('[Bridge Watcher] Unhandled Rejection at: Promise,reason:', reason);
     // application specific logging, throwing an error, or other logic here
 });
+
+const health = new Health();
+health.start();
 
 const watcher = new Watcher();
 watcher.start();
