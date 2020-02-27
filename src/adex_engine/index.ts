@@ -25,7 +25,7 @@ function computeOrderBookUpdates(trades: ILastTrade[], order: IOrder): IOrderBoo
             let priceExsit = false;
             for (const bid of book.bids) {
                 if (trade.price === bid[0]) {
-                    bid[1] = NP.minus(bid[1],trade.amount);
+                    bid[1] = NP.minus(bid[1], trade.amount);
                     priceExsit = true;
                     break;
                 }
@@ -38,7 +38,7 @@ function computeOrderBookUpdates(trades: ILastTrade[], order: IOrder): IOrderBoo
             let priceExsit = false;
             for (const ask of book.asks) {
                 if (trade.price === ask[0]) {
-                    ask[1] = NP.minus(ask[1],trade.amount);
+                    ask[1] = NP.minus(ask[1], trade.amount);
                     priceExsit = true;
                     break;
                 }
@@ -56,8 +56,8 @@ function computeOrderBookUpdates(trades: ILastTrade[], order: IOrder): IOrderBoo
 class AdexEngine {
 
     private orderQueue: Queue.Queue;
-    private orderBookUpdateQueue: Queue.Queue;
-    private lastTradesQueue: Queue.Queue;
+    private orderBookQueue: Queue.Queue;
+    private TradesQueue: Queue.Queue;
     private db: DBClient;
     private exchange: Engine;
     private utils: Utils;
@@ -83,23 +83,29 @@ class AdexEngine {
                 }
             });
 
-        this.orderBookUpdateQueue = new Queue('OrderBookUpdate' + process.env.MIST_MODE,
+        this.orderBookQueue = new Queue('addOrderBookQueue',
             {
                 redis: {
-                    port: Number(process.env.REDIS_PORT),
-                    host: process.env.REDIS_URL,
-                    password: process.env.REDIS_PWD
+                    port: Number(process.env.WS_REDIS_PORT),
+                    host: process.env.WS_REDIS_URL,
+                    password: process.env.WS_REDIS_PWD
                 }
             });
 
-        this.lastTradesQueue = new Queue('LastTrades' + process.env.MIST_MODE,
-            {
-                redis: {
-                    port: Number(process.env.REDIS_PORT),
-                    host: process.env.REDIS_URL,
-                    password: process.env.REDIS_PWD
-                }
-            });
+        this.TradesQueue = new Queue('addTradesQueue',
+        {
+            redis: {
+                port: Number(process.env.WS_REDIS_PORT),
+                    host
+            :
+                process.env.WS_REDIS_URL,
+                    password
+            :
+                process.env.WS_REDIS_PWD
+            }
+        }
+    )
+        ;
 
         this.orderQueue.on('error', async e => {
             console.log('[ADEX ENGINE] Queue on Error', e);
@@ -163,20 +169,21 @@ class AdexEngine {
                 message.available_amount = NP.minus(message.available_amount, amount);
                 message.pending_amount = NP.plus(message.pending_amount, amount);
             }
-            const marketLastTrades = {
-                data:lastTrades,
-                id:message.market_id,
+            if (lastTrades.length > 0) {
+                const marketLastTrades = {
+                    data: lastTrades,
+                    id: message.market_id,
+                }
+                const [lastTradesAddErr, lastTradesAddResult] = await to(this.TradesQueue.add(marketLastTrades));
+                if (lastTradesAddErr) console.error('[ADEX ENGINE]:lastTrade add queue failed %o\n', lastTradesAddErr);
             }
-            const [lastTradesAddErr, lastTradesAddResult] = await to(this.lastTradesQueue.add(marketLastTrades));
-            if (lastTradesAddErr) console.error('[ADEX ENGINE]:lastTrade add queue failed %o\n', lastTradesAddErr);
-
             const book = computeOrderBookUpdates(lastTrades, message);
-            const  marketUpdateBook = {
+            const marketUpdateBook = {
                 data: book,
-                id:message.market_id,
+                id: message.market_id,
             }
-            const [orderBookUpdateQueueErr, orderBookUpdateQueueResult] = await to(this.orderBookUpdateQueue.add(marketUpdateBook));
-            if (orderBookUpdateQueueErr) console.error('[ADEX ENGINE]:orderBookUpdateQueue failed %o\n', orderBookUpdateQueueErr);
+            const [orderBookQueueErr, orderBookQueueResult] = await to(this.orderBookQueue.add(marketUpdateBook));
+            if (orderBookQueueErr) console.error('[ADEX ENGINE]:orderBookUpdateQueue failed %o\n', orderBookQueueErr);
 
             if (message.pending_amount === 0) {
                 message.status = 'pending';

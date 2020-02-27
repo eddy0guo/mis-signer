@@ -31,21 +31,12 @@ export default class order {
                 }
             });
 
-        this.orderBookUpdateQueue = new Queue('OrderBookUpdate' + process.env.MIST_MODE,
+        this.orderBookUpdateQueue = new Queue('addOrderBookQueue',
             {
                 redis: {
-                    port: Number(process.env.REDIS_PORT),
-                    host: process.env.REDIS_URL,
-                    password: process.env.REDIS_PWD
-                }
-            });
-
-        this.orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE,
-            {
-                redis: {
-                    port: Number(process.env.REDIS_PORT),
-                    host: process.env.REDIS_URL,
-                    password: process.env.REDIS_PWD
+                    port: Number(process.env.WS_REDIS_PORT),
+                    host: process.env.WS_REDIS_URL,
+                    password: process.env.WS_REDIS_PWD
                 }
             });
 
