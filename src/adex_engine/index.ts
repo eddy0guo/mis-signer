@@ -5,12 +5,11 @@ import to from 'await-to-js'
 import DBClient from '../adex/models/db'
 import Engine from '../adex/api/engine'
 import Utils from '../adex/api/utils'
-import order from '../adex/api/order';
+
 import {
-    IOrder, ITrade, IOrderBook, ILastTrade, ITransaction,
-    IBridge, IPrice, IMarketQuotation, IFreezeToken
+    IOrder, IOrderBook, ILastTrade,
 } from '../adex/interface';
-import {number} from 'bitcoinjs-lib/types/script';
+
 
 // tslint:disable-next-line:no-shadowed-variable
 function computeOrderBookUpdates(trades: ILastTrade[], order: IOrder): IOrderBook {
@@ -53,6 +52,13 @@ function computeOrderBookUpdates(trades: ILastTrade[], order: IOrder): IOrderBoo
     return book;
 }
 
+/**
+ * OrderQueue Consumer.
+ * It pushes new jobs into 'addOrderBookQueue' and 'addTradesQueue' before new record insterted into db.
+ *
+ * The Consumer of 'addOrderBookQueue' and 'addTradesQueue' is 'Mist-Socket-Server'
+ *
+ */
 class AdexEngine {
 
     private orderQueue: Queue.Queue;
