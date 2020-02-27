@@ -17,8 +17,8 @@ export default class db {
         this.createPool();
     }
 
-    createPool(){
-        console.log('[ADEX DB] create pool at:',new Date());
+    createPool() {
+        console.log('[ADEX DB] create pool at:', new Date());
         const client: Pool = new Pool({
             host: mist_config.pg_host,
             database: mist_config.pg_database,
@@ -26,7 +26,7 @@ export default class db {
             password: mist_config.pg_password,
             port: mist_config.pg_port,
         });
-        client.on('error', async(err: any) => {
+        client.on('error', async (err: any) => {
             console.error('An idle client has experienced an error', err.stack)
             // Maybe you shold kill the process
             process.exit(-1);
@@ -47,11 +47,11 @@ export default class db {
 
     }
 
-    async handlePoolError(err:Error) {
-		await this.clientDB.end();
-		this.createPool();
-		throw err;
-	}
+    async handlePoolError(err: Error) {
+        await this.clientDB.end();
+        this.createPool();
+        throw err;
+    }
 
     /**
      *orders
@@ -604,7 +604,7 @@ export default class db {
 
 
     async get_pending_transactions(): Promise<ITransaction[]> {
-        const [err, result]: [any, any] = await to(this.clientDB.query('SELECT * FROM mist_transactions where (current_timestamp - created_at) < \'24 hours\'  and status!=\'successful\' and transaction_hash is not null order by id  limit 1'));
+        const [err, result]: [any, any] = await to(this.clientDB.query('SELECT * FROM mist_transactions where (current_timestamp - created_at) < \'24 hours\'  and status not in (\'successful\',\'failed\') and transaction_hash is not null order by id  limit 1'));
         if (err) {
             console.error('get pending transactions failed', err,);
             await this.handlePoolError(err);

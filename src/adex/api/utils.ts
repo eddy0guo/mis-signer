@@ -73,10 +73,16 @@ export default class Utils {
 
     async get_receipt_log(txid) {
         const [err, result] = await to(this.child.rpc.request('asimov_getTransactionReceipt', [txid]));
-        if (!result || !result || !result.logs) {
-            console.error(`(get_receipt_log):: err ${err} occurred or get ${txid} receipt   have no logs`);
-            throw new Error(`${txid} get_receipt_log failed,rpc error ${err} or transaction haven't found it yet`);
+        if (!result) {
+            console.error(`(get_receipt_log):: err ${err} occurred or get ${txid} receipt`);
+            throw new Error(`${txid} get_receipt_log failed,rpc error ${err}`);
         }
+
+        if (!result.logs) {
+            console.error(`(get_receipt_log):: ${txid}  have no receipt logs`);
+            throw new Error(`${txid} get_receipt_log failed,transaction haven't confirmed yet`);
+        }
+
         return result.logs.length > 0 ? 'successful' : 'failed';
     }
 
