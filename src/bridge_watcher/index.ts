@@ -22,7 +22,7 @@ async function send_asset(address, asset, amount) {
  *
  */
 class Watcher {
-    // FIXME: db reconnect when error 
+    // FIXME: db reconnect when error
     private dbClient:DBClient;
     private utils:Utils;
     constructor() {
