@@ -24,7 +24,7 @@ class Health {
   start() {
     setInterval(() => {
       this.checkHeapInfo();
-    }, 60*1000);
+    }, 10*60*1000);
   }
   printInfo() {
     console.log(
