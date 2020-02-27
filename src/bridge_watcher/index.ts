@@ -6,7 +6,7 @@ import NP from 'number-precision'
 
 import mist_config from '../cfg'
 import { AsimovWallet, AsimovConst } from '@fingo/asimov-wallet';
-import { Health } from 'src/common/Health'
+import { Health } from '../common/Health'
 
 async function send_asset(address, asset, amount) {
     const master_wallet = new AsimovWallet({

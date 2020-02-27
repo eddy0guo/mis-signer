@@ -4,7 +4,7 @@ import Utils from '../adex/api/utils'
 import to from 'await-to-js'
 
 import NP from 'number-precision'
-import { Health } from 'src/common/Health'
+import { Health } from '../common/Health'
 
 class Watcher {
 

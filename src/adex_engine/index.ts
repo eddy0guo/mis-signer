@@ -9,7 +9,7 @@ import Utils from '../adex/api/utils'
 import {
     IOrder, IOrderBook, ILastTrade,
 } from '../adex/interface';
-import { Health } from 'src/common/Health'
+import { Health } from '../common/Health'
 
 
 // tslint:disable-next-line:no-shadowed-variable

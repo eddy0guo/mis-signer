@@ -7,7 +7,7 @@ import client from '../adex/models/db'
 import utils2 from '../adex/api/utils'
 import mist_config from '../cfg'
 import { chain } from '../wallet/api/chain'
-import { Health } from 'src/common/Health'
+import { Health } from '../common/Health'
 
 class Launcher {
     private db;
@@ -156,8 +156,6 @@ process.on('unhandledRejection', (reason, p) => {
 
 const health = new Health();
 health.start();
-
-
 
 const lancher = new Launcher()
 lancher.start();

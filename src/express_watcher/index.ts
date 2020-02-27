@@ -4,7 +4,7 @@ import DBClient from '../express/models/db'
 
 import mist_config from '../cfg'
 import {AsimovWallet} from '@fingo/asimov-wallet';
-import { Health } from 'src/common/Health';
+import { Health } from '../common/Health';
 
 
 class Watcher {
