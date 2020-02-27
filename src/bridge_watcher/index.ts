@@ -17,13 +17,17 @@ async function send_asset(address, asset, amount) {
     return await to(master_wallet.commonTX.transfer(address, amount, asset))
 }
 
-class watcher {
+/**
+ * Asset and Token Convert wathcer
+ *
+ */
+class Watcher {
+    // FIXME: db reconnect when error 
     private dbClient:DBClient;
     private utils:Utils;
     constructor() {
         this.dbClient = new DBClient();
         this.utils = new Utils();
-        this.start();
     }
 
     async start() {
@@ -321,8 +325,9 @@ class watcher {
 }
 
 process.on('unhandledRejection', (reason, p) => {
-    console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+    console.log('[Bridge Watcher] Unhandled Rejection at: Promise,reason:', reason);
     // application specific logging, throwing an error, or other logic here
 });
 
-export default new watcher();
+const watcher = new Watcher();
+watcher.start();
