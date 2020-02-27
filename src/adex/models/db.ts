@@ -29,9 +29,9 @@ export default class db {
         client.on('error', async(err: any) => {
             console.error('An idle client has experienced an error', err.stack)
             // Maybe you shold kill the process
-            // process.exit(-1);
-            await client.end();
-            this.createPool();
+            process.exit(-1);
+            // await client.end();
+            // this.createPool();
         })
         this.clientDB = client;
     }
