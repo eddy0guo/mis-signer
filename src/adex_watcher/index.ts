@@ -4,16 +4,18 @@ import Utils from '../adex/api/utils'
 import to from 'await-to-js'
 
 import NP from 'number-precision'
-import { Health } from '../common/Health'
+import {Health} from '../common/Health'
 
 class Watcher {
 
-    private db:DBClient;
-    private utils:Utils;
+    private db: DBClient;
+    private utils: Utils;
+    private getReceiptTimes: number;
 
     constructor() {
         this.db = new DBClient();
         this.utils = new Utils();
+        this.getReceiptTimes = 0;
     }
 
     async start() {
@@ -24,7 +26,7 @@ class Watcher {
 
         const [transaction_err, transaction] = await to(this.db.get_pending_transactions())
         if (!transaction) {
-            console.error('[ADEX WATCHER] transaction_err Error:',transaction_err);
+            console.error('[ADEX WATCHER] transaction_err Error:', transaction_err);
             setTimeout(() => {
                 this.loop.call(this)
             }, 1000);
@@ -42,11 +44,10 @@ class Watcher {
         const id = transaction[0].id;
 
         const updateTime = this.utils.get_current_time();
-        const status = 'successful';
         const [get_receipt_err, contract_status] = await to(this.utils.get_receipt_log(transaction[0].transaction_hash));
-        if (get_receipt_err) {
+        if (get_receipt_err && this.getReceiptTimes <= 10) {
             console.error(`[ADEX Watcher Pending]:get_receipt_err ${get_receipt_err}`);
-
+            this.getReceiptTimes++;
             setTimeout(() => {
                 this.loop.call(this)
             }, 1000);
@@ -58,6 +59,8 @@ class Watcher {
             console.log(`[ADEX Watcher Pending]::now ${updateTime} get_receipt_log %o contract status %o`, transaction[0], contract_status)
         }
 
+        const status = this.getReceiptTimes <= 10 ? 'successful' : 'failed';
+
         const info = [status, updateTime, id]
         const transaction_info = [status, contract_status, updateTime, id]
         await this.db.update_transactions(transaction_info);
@@ -67,47 +70,48 @@ class Watcher {
         const updates = [];
 
         for (const trade of trades) {
-			this.updateElement(updates, trade, updateTime,'taker_order_id');
-			this.updateElement(updates, trade, updateTime,'maker_order_id');
-		}
+            this.updateElement(updates, trade, updateTime, 'taker_order_id');
+            this.updateElement(updates, trade, updateTime, 'maker_order_id');
+        }
 
-        setImmediate(()=>{
+        setImmediate(() => {
             this.loop.call(this)
         })
     }
 
-    updateElement(updates, trade, updateTime, orderIdKey):void {
-		const tradeAmount: number = +trade.amount;
+    updateElement(updates, trade, updateTime, orderIdKey): void {
+        const tradeAmount: number = +trade.amount;
 
-		let itemIndex;
-		const resultArray = updates.find((element, temp_index) => {
-			itemIndex = temp_index;
-			return element.info[3] === trade[orderIdKey];
-		});
+        let itemIndex;
+        const resultArray = updates.find((element, temp_index) => {
+            itemIndex = temp_index;
+            return element.info[3] === trade[orderIdKey];
+        });
 
-		if (!resultArray) {
-			const updateElement = {
-				info: [
-					+tradeAmount,
-					-tradeAmount,
-					updateTime,
-					trade[orderIdKey],
-				],
-			};
-			updates.push(updateElement);
-		} else {
-			const updateElement = updates[itemIndex];
-			updateElement.info[0] = NP.plus(
-				updateElement.info[0],
-				tradeAmount
-			);
-			updateElement.info[1] = NP.minus(
-				updateElement.info[1],
-				tradeAmount
-			);
-		}
+        if (!resultArray) {
+            const updateElement = {
+                info: [
+                    +tradeAmount,
+                    -tradeAmount,
+                    updateTime,
+                    trade[orderIdKey],
+                ],
+            };
+            updates.push(updateElement);
+        } else {
+            const updateElement = updates[itemIndex];
+            updateElement.info[0] = NP.plus(
+                updateElement.info[0],
+                tradeAmount
+            );
+            updateElement.info[1] = NP.minus(
+                updateElement.info[1],
+                tradeAmount
+            );
+        }
 
-	}
+    }
+
 }
 
 process.on('unhandledRejection', (reason, p) => {
@@ -118,5 +122,5 @@ process.on('unhandledRejection', (reason, p) => {
 const health = new Health();
 health.start();
 
-const watcher =  new Watcher();
+const watcher = new Watcher();
 watcher.start();
