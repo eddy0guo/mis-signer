@@ -337,7 +337,32 @@ export default class db {
 
     }
 
-// 444444
+    async get_market_max_price(marketID): Promise<IPrice[]> {
+        const [err, result]: [any, any] = await to(this.clientDB.query('select cast(price as float8) from mist_trades_tmp where (current_timestamp - created_at) < \'24 hours\' and market_id=$1 order by price limit 1', marketID));
+        if (err) {
+            console.error('get_market_max_price failed', err, marketID);
+            throw new Error(err);
+        }
+        if (result.rows.length === 0) {
+            return [{price: 0}];
+        }
+        return result.rows;
+
+    }
+
+    async get_market_min_price(marketID): Promise<IPrice[]> {
+        const [err, result]: [any, any] = await to(this.clientDB.query('select cast(price as float8) from mist_trades_tmp where (current_timestamp - created_at) < \'24 hours\' and market_id=$1 order by price desc limit 1', marketID));
+        if (err) {
+            console.error('get_market_min_price failed', err, marketID);
+            throw new Error(err);
+        }
+        if (result.rows.length === 0) {
+            return [{price: 0}];
+        }
+        return result.rows;
+
+    }
+
     async get_market_quotations(marketID): Promise<IMarketQuotation[]> {
         const [err, result]: [any, any] = await to(this.clientDB.query('select k.market_id,k.price,k.ratio,m.volume from (select s.market_id,s.price,cast((s.price-t.price)/t.price as decimal(10,8)) ratio from (select * from mist_trades_tmp where market_id=$1 and (current_timestamp - created_at) < \'24 hours\'order by created_at desc limit 1)s left join (select price,market_id from mist_trades_tmp where market_id=$1 and (current_timestamp - created_at) < \'24 hours\' order by created_at asc  limit 1)t on s.market_id=t.market_id)k left join (select market_id,sum(amount) as volume from mist_trades_tmp where market_id=$1 and (current_timestamp - created_at) < \'24 hours\' group by market_id)m on k.market_id=m.market_id', marketID));
         if (err) {
