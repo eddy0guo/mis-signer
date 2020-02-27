@@ -72,7 +72,6 @@ class AdexEngine {
         this.db = new DBClient();
         this.exchange = new Engine(this.db);
         this.utils = new Utils();
-        this.initQueue();
     }
 
     async initQueue(): Promise<void> {
@@ -221,4 +220,5 @@ process.on('unhandledRejection', (reason, p) => {
     // application specific logging, throwing an error, or other logic here
 });
 
-export default new AdexEngine();
+const engine =  new AdexEngine();
+engine.initQueue();

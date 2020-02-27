@@ -353,7 +353,7 @@ export default class db {
         const [err, result]: [any, any] = await to(this.clientDB.query('select cast(price as float8) from mist_trades_tmp where (current_timestamp - created_at) < \'24 hours\' and market_id=$1 order by price limit 1', marketID));
         if (err) {
             console.error('get_market_max_price failed', err, marketID);
-            throw new Error(err);
+            await this.handlePoolError(err);
         }
         if (result.rows.length === 0) {
             return [{price: 0}];
@@ -366,7 +366,7 @@ export default class db {
         const [err, result]: [any, any] = await to(this.clientDB.query('select cast(price as float8) from mist_trades_tmp where (current_timestamp - created_at) < \'24 hours\' and market_id=$1 order by price desc limit 1', marketID));
         if (err) {
             console.error('get_market_min_price failed', err, marketID);
-            throw new Error(err);
+            await this.handlePoolError(err);
         }
         if (result.rows.length === 0) {
             return [{price: 0}];

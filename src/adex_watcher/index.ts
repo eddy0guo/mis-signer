@@ -15,7 +15,6 @@ class Watcher {
 
         this.db = new client();
         this.utils = new utils2();
-        this.start();
     }
 
     async start() {
@@ -122,4 +121,5 @@ process.on('unhandledRejection', (reason, p) => {
     // application specific logging, throwing an error, or other logic here
 });
 
-export default new Watcher();
+const watcher =  new Watcher();
+watcher.start();

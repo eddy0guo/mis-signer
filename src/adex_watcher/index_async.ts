@@ -12,7 +12,6 @@ class Watcher {
 	constructor() {
 		this.db = new DBClient();
 		this.utils = new Utils();
-		this.start();
 	}
 
 	start(ms: number = 100):void {
@@ -136,4 +135,5 @@ process.on('unhandledRejection', (reason, p) => {
     // application specific logging, throwing an error, or other logic here
 });
 
-export default new Watcher();
+const watcher =  new Watcher();
+watcher.start();
