@@ -42,36 +42,39 @@ class Watcher {
             return;
         }
         const id = transaction[0].id;
+        let status = 'successful';
 
         const updateTime = this.utils.get_current_time();
         const [get_receipt_err, contract_status] = await to(this.utils.get_receipt_log(transaction[0].transaction_hash));
         if (get_receipt_err && this.getReceiptTimes <= 10) {
-            console.error(`[ADEX Watcher Pending]:get_receipt_err ${get_receipt_err}`);
-            this.getReceiptTimes++;
+            console.error(`[ADEX Watcher Pending]:get_receipt_err ${get_receipt_err},It's been retried ${this.getReceiptTimes} times`);
             setTimeout(() => {
+                this.getReceiptTimes++;
                 this.loop.call(this)
             }, 1000);
             return;
 
+        } else if (get_receipt_err && this.getReceiptTimes > 10) {
+            status = 'failed';
+            console.error(`[ADEX Watcher Pending]:get_receipt_log failed,It's been retried ${this.getReceiptTimes} times,please check  block chain `);
         } else if (contract_status === 'failed') {
             console.log(`[ADEX Watcher Pending] ${transaction[0].transaction_hash} contract execution log is null`);
         } else {
             console.log(`[ADEX Watcher Pending]::now ${updateTime} get_receipt_log %o contract status %o`, transaction[0], contract_status)
         }
 
-        const status = this.getReceiptTimes <= 10 ? 'successful' : 'failed';
-
+        this.getReceiptTimes = 0;
         const info = [status, updateTime, id]
         const transaction_info = [status, contract_status, updateTime, id]
         await this.db.update_transactions(transaction_info);
         await this.db.update_trades(info);
 
         const trades = await this.db.transactions_trades([id]);
-        const updates = [];
-
         for (const trade of trades) {
-            this.updateElement(updates, trade, updateTime, 'taker_order_id');
-            this.updateElement(updates, trade, updateTime, 'maker_order_id');
+            let  updates = [];
+            updates = this.updateElement(updates, trade, updateTime, trade.taker_order_id);
+            updates = this.updateElement(updates, trade, updateTime, trade.maker_order_id);
+            await this.db.update_order_confirm(updates);
         }
 
         setImmediate(() => {
@@ -79,13 +82,13 @@ class Watcher {
         })
     }
 
-    updateElement(updates, trade, updateTime, orderIdKey): void {
+    updateElement(updates, trade, updateTime, orderId) {
         const tradeAmount: number = +trade.amount;
 
         let itemIndex;
         const resultArray = updates.find((element, temp_index) => {
             itemIndex = temp_index;
-            return element.info[3] === trade[orderIdKey];
+            return element.info[3] === orderId;
         });
 
         if (!resultArray) {
@@ -94,7 +97,7 @@ class Watcher {
                     +tradeAmount,
                     -tradeAmount,
                     updateTime,
-                    trade[orderIdKey],
+                    orderId,
                 ],
             };
             updates.push(updateElement);
@@ -108,10 +111,12 @@ class Watcher {
                 updateElement.info[1],
                 tradeAmount
             );
+            updates[itemIndex] = updateElement;
         }
 
-    }
+        return updates;
 
+    }
 }
 
 process.on('unhandledRejection', (reason, p) => {

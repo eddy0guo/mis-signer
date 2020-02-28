@@ -138,7 +138,6 @@ class AdexEngine {
 
                 if (!find_orders) {
                     console.error('match orders', find_orders_err, find_orders);
-                    done();
                     return;
                 }
 
@@ -149,7 +148,6 @@ class AdexEngine {
                 const [trades_err, trades] = await to(this.exchange.make_trades(find_orders, message));
                 if (!trades) {
                     console.error('make trades', trades_err, trades);
-                    done();
                     return;
                 }
 
