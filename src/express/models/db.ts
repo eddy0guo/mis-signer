@@ -1,5 +1,5 @@
 import to from 'await-to-js'
-import { Pool } from 'postgres-pool';
+import {Pool} from 'pg';
 import mist_config from '../../cfg'
 import {ITrade,IToken} from '../interface'
 
@@ -14,6 +14,7 @@ export default class db {
 
 	createPool(){
 		console.log('[EXPRESS DB] create pool at:',new Date());
+
         const client: Pool = new Pool({
             host: mist_config.pg_host,
             database: mist_config.pg_database,
@@ -32,8 +33,8 @@ export default class db {
 	}
 
 	async handlePoolError(err:Error) {
-		await this.clientDB.end();
-		this.createPool();
+		// await this.clientDB.end();
+		// this.createPool();
 		throw err;
 	}
 

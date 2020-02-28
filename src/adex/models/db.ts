@@ -1,7 +1,7 @@
 import to from 'await-to-js';
 import mist_config from '../../cfg';
 import order from '../api/order';
-import {Pool} from 'postgres-pool';
+import {Pool} from 'pg';
 import {
     IOrder, ITrade, IToken, IMarket, ITransaction,
     IBridge, IPrice, IMarketQuotation, IFreezeToken
@@ -48,8 +48,8 @@ export default class db {
     }
 
     async handlePoolError(err: Error) {
-        await this.clientDB.end();
-        this.createPool();
+        // await this.clientDB.end();
+        // this.createPool();
         throw err;
     }
 
