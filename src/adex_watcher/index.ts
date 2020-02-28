@@ -70,11 +70,11 @@ class Watcher {
         await this.db.update_trades(info);
 
         const trades = await this.db.transactions_trades([id]);
-        const updates = [];
-
         for (const trade of trades) {
-            this.updateElement(updates, trade, updateTime, 'taker_order_id');
-            this.updateElement(updates, trade, updateTime, 'maker_order_id');
+            let  updates = [];
+            updates = this.updateElement(updates, trade, updateTime, trade.taker_order_id);
+            updates = this.updateElement(updates, trade, updateTime, trade.maker_order_id);
+            await this.db.update_order_confirm(updates);
         }
 
         setImmediate(() => {
@@ -82,13 +82,13 @@ class Watcher {
         })
     }
 
-    updateElement(updates, trade, updateTime, orderIdKey): void {
+    updateElement(updates, trade, updateTime, orderId) {
         const tradeAmount: number = +trade.amount;
 
         let itemIndex;
         const resultArray = updates.find((element, temp_index) => {
             itemIndex = temp_index;
-            return element.info[3] === trade[orderIdKey];
+            return element.info[3] === orderId;
         });
 
         if (!resultArray) {
@@ -97,7 +97,7 @@ class Watcher {
                     +tradeAmount,
                     -tradeAmount,
                     updateTime,
-                    trade[orderIdKey],
+                    orderId,
                 ],
             };
             updates.push(updateElement);
@@ -111,7 +111,10 @@ class Watcher {
                 updateElement.info[1],
                 tradeAmount
             );
+            updates[itemIndex] = updateElement;
         }
+
+        return updates;
 
     }
 }

@@ -14,7 +14,7 @@ export default class Engine {
         this.utils = new utils2();
     }
 
-    async match(message) : Promise<IOrder[]>{
+    async match(message): Promise<IOrder[]> {
         let side = 'buy';
         if (message.side === 'buy') {
             side = 'sell';
@@ -46,18 +46,19 @@ export default class Engine {
         return match_orders;
     }
 
-    async make_trades(find_orders, my_order) :Promise<ITrade[]>{
+    async make_trades(find_orders, my_order): Promise<ITrade[]> {
         const create_time = this.utils.get_current_time();
-        const trade_arr:ITrade[] = [];
+        const trade_arr: ITrade[] = [];
         let amount = 0;
+
         for (let item = 0; item < find_orders.length; item++) {
             let maker_status = 'full_filled';
             // 最低价格的一单最后成交，成交数量按照吃单剩下的额度成交,并且更新最后一个order的可用余额
             amount = NP.plus(amount, find_orders[item].available_amount);
 
             // 吃单全部成交,挂单有剩余的场景,
-            if (item === find_orders.length - 1 && amount > my_order.amount) {
-                const overflow_amount = NP.minus(amount, my_order.amount);
+            if (item === find_orders.length - 1 && amount > my_order.available_amount) {
+                const overflow_amount = NP.minus(amount, my_order.available_amount);
                 find_orders[item].available_amount = NP.minus(
                     find_orders[item].available_amount,
                     overflow_amount
@@ -65,7 +66,7 @@ export default class Engine {
                 maker_status = 'partial_filled';
             }
 
-            const trade:ITrade = {
+            const trade: ITrade = {
                 id: null,
                 trade_hash: null,
                 transaction_id: null,
@@ -98,7 +99,6 @@ export default class Engine {
 
             await this.db.update_orders(update_maker_orders_info);
         }
-
         return trade_arr;
     }
 
