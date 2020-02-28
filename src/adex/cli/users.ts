@@ -4,7 +4,7 @@ import mist_wallet1 from '../api/mist_wallet';
 import Token from '../../wallet/contract/Token';
 import Asset from '../../wallet/contract/Asset';
 
-import NP from 'number-precision';
+import NP from '../../common/NP';
 
 export default class Users {
     private db;

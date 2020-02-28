@@ -1,4 +1,4 @@
-import NP from 'number-precision';
+import NP from '../common/NP';
 import BigNumber from 'bignumber.js';
 
 let a:BigNumber = new BigNumber(0.33);

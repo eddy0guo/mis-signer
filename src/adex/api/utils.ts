@@ -1,17 +1,12 @@
-import { AsimovWallet } from '@fingo/asimov-wallet';
+import {AsimovWallet} from '@fingo/asimov-wallet';
 import crypto = require('crypto');
 import date = require('silly-datetime');
 import ethutil = require('ethereumjs-util');
 import ethabi = require('ethereumjs-abi');
-import NP from 'number-precision';
-
-// import rp = require('request-promise');
+import NP from '../../common/NP';
 import to from 'await-to-js'
 
 import Config from '../../cfg';
-
-
-// FIXME: change CUrl to axios
 
 export default class Utils {
     private bitcore;
@@ -34,7 +29,7 @@ export default class Utils {
         });
     }
 
-    arr_values(message) {
+    arr_values(message): any[] {
         const arr_message = [];
         for (const item of Object.keys(message)) {
             arr_message.push(message[item]);
@@ -43,7 +38,7 @@ export default class Utils {
         return arr_message;
     }
 
-    get_hash(message) {
+    get_hash(message): string {
         const createTime = this.get_current_time();
         const arr = this.arr_values(message);
         arr.push(createTime);
@@ -55,13 +50,13 @@ export default class Utils {
 
     }
 
-    get_current_time() {
+    get_current_time(): string {
         const milli_seconds = new Date().getMilliseconds();
         const create_time = date.format(new Date(), 'YYYY-MM-DD HH:mm:ss');
         return create_time + '.' + milli_seconds;
     }
 
-    verify(id, sign) {
+    verify(id, sign): boolean {
         const Bitcore = this.bitcore;
         const hashbuf = Buffer.alloc(32, id, 'hex');
         const publick = new Bitcore.PublicKey(sign.pubkey);
@@ -76,28 +71,22 @@ export default class Utils {
         return result;
     }
 
-    async get_receipt(txid) {
-        const [err, result] = await to(this.child.rpc.request('asimov_getTransactionReceipt', [txid]));
-        if (!result || !result || !result.logs) {
-            console.error(`(get_receipt): ${err} occurred or get ${txid} receipt  result  have no logs`);
-        }
-
-        const datas = [];
-        for (const item of result.logs) {
-            datas.push(item.data);
-        }
-        return datas;
-    }
-
     async get_receipt_log(txid) {
         const [err, result] = await to(this.child.rpc.request('asimov_getTransactionReceipt', [txid]));
-        if (!result || !result || !result.logs) {
-            console.error(`(get_receipt_log):: err ${err} occurred or get ${txid} receipt   have no logs`);
+        if (!result) {
+            console.error(`(get_receipt_log):: err ${err} occurred or get ${txid} receipt`);
+            throw new Error(`${txid} get_receipt_log failed,rpc error ${err}`);
         }
+
+        if (!result.logs) {
+            console.error(`(get_receipt_log):: ${txid}  have no receipt logs`);
+            throw new Error(`${txid} get_receipt_log failed,transaction haven't confirmed yet`);
+        }
+
         return result.logs.length > 0 ? 'successful' : 'failed';
     }
 
-    async orderTobytes(order) {
+    async orderTobytes(order): Promise<string> {
         order.taker = order.taker.substr(0, 2) + order.taker.substr(4, 44);
         order.maker = order.maker.substr(0, 2) + order.maker.substr(4, 44);
         order.baseToken = order.baseToken.substr(0, 2) + order.baseToken.substr(4, 44);
@@ -114,18 +103,18 @@ export default class Utils {
         encode = encode.replace(new RegExp(`00${order.baseToken.substr(2, 44)}`, 'g'), `63${order.baseToken.substr(2, 44)}`);
         encode = encode.replace(new RegExp(`00${order.quoteToken.substr(2, 44)}`, 'g'), `63${order.quoteToken.substr(2, 44)}`);
         encode = '0x' + encode.replace(new RegExp(`00${order.relayer.substr(2, 44)}`, 'g'), `66${order.relayer.substr(2, 44)}`);
-		/*
-		encode = encode.toString('hex').replace(eval(`/00${order.taker.substr(2, 44)}/g`), `66${order.taker.substr(2, 44)}`);
+        /*
+        encode = encode.toString('hex').replace(eval(`/00${order.taker.substr(2, 44)}/g`), `66${order.taker.substr(2, 44)}`);
         encode = encode.replace(eval(`/00${order.maker.substr(2, 44)}/g`), `66${order.maker.substr(2, 44)}`);
         encode = encode.replace(eval(`/00${order.baseToken.substr(2, 44)}/g`), `63${order.baseToken.substr(2, 44)}`);
         encode = encode.replace(eval(`/00${order.quoteToken.substr(2, 44)}/g`), `63${order.quoteToken.substr(2, 44)}`);
         encode = '0x' + encode.replace(eval(`/00${order.relayer.substr(2, 44)}/g`), `66${order.relayer.substr(2, 44)}`);
-		*/
+        */
 
         return encode;
     }
 
-    async orderhashbytes(order) {
+    async orderHashBytes(order) : Promise<string>{
         return new Promise((resolve, rejects) => {
             this.orderTobytes(order).then(res => {
                 const reshash = ethutil.keccak256(res);
@@ -140,7 +129,7 @@ export default class Utils {
         });
     }
 
-    judge_legal_num(num) {
+    judge_legal_num(num) : boolean{
         let result = true;
         if (num <= 0) {
             result = false;
@@ -155,11 +144,11 @@ export default class Utils {
      * Decode TX @ Master Chain
      * @param txid:string
      */
-    async decode_transfer_info(txid:string):Promise<any> {
+    async decode_transfer_info(txid: string): Promise<any> {
         const [err, txinfo] = await to(this.master.commonTX.detail(txid));
         if (err || !txinfo) {
             console.log('[UTILS] asimov_getRawTransaction failed', err);
-            console.log('[UTILS] TXID:',txid);
+            console.log('[UTILS] TXID:', txid);
             throw new Error('asimov_getRawTransaction failed');
         }
 
@@ -230,7 +219,7 @@ export default class Utils {
         return transfer_info;
     }
 
-    async decode_erc20_transfer(txid) {
+    async decode_erc20_transfer(txid) :Promise<any>{
         const [err, result] = await to(this.child.rpc.request('asimov_getTransactionReceipt', [txid]));
         if (err || !result || !result.logs) {
             console.error(`err ${err} occurred or get ${txid} receipt  have no logs`);
