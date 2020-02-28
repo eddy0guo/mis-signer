@@ -1,6 +1,6 @@
 import to from 'await-to-js';
 import {Router} from 'express';
-import NP from 'number-precision';
+import NP from '../common/NP';
 
 import urllib = require('url');
 import crypto_sha256 = require('crypto');

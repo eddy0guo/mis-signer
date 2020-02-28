@@ -1,6 +1,6 @@
 import {Router} from 'express';
 import to from 'await-to-js';
-import NP from 'number-precision';
+import NP from '../common/NP';
 import {AsimovWallet, AsimovConst} from '@fingo/asimov-wallet';
 import * as cryptoSha256 from 'crypto';
 

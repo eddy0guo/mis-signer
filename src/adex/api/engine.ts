@@ -1,5 +1,5 @@
 import utils2 from './utils';
-import NP from 'number-precision';
+import NP from '../../common/NP';
 import mist_config from '../../cfg';
 import to from 'await-to-js'
 import {IOrder, ITrade} from '../interface';

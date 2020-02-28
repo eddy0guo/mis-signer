@@ -3,7 +3,7 @@ import crypto = require('crypto');
 import date = require('silly-datetime');
 import ethutil = require('ethereumjs-util');
 import ethabi = require('ethereumjs-abi');
-import NP from 'number-precision';
+import NP from '../../common/NP';
 import to from 'await-to-js'
 
 import Config from '../../cfg';

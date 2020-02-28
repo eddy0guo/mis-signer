@@ -1,5 +1,5 @@
 import DBClient from '../models/db';
-import NP from 'number-precision';
+import NP from '../../common/NP';
 
 import Utils from './utils';
 import to from 'await-to-js';
