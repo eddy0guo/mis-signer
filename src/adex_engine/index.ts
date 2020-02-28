@@ -78,46 +78,25 @@ class AdexEngine {
     async initQueue(): Promise<void> {
         if (this.orderQueue) {
             await this.orderQueue.close();
-        }
+        };
 
-        this.orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE,
-            {
-                redis: {
-                    port: Number(process.env.REDIS_PORT),
-                    host: process.env.REDIS_URL,
-                    password: process.env.REDIS_PWD
-                }
-            });
-
-        this.orderBookQueue = new Queue('addOrderBookQueue',
-            {
-                redis: {
-                    port: Number(process.env.WS_REDIS_PORT),
-                    host: process.env.WS_REDIS_URL,
-                    password: process.env.WS_REDIS_PWD
-                }
-            });
-
-        this.TradesQueue = new Queue('addTradesQueue',
-        {
+        const option:Queue.QueueOptions = {
             redis: {
-                port: Number(process.env.WS_REDIS_PORT),
-                    host
-            :
-                process.env.WS_REDIS_URL,
-                    password
-            :
-                process.env.WS_REDIS_PWD
+                port: Number(process.env.REDIS_PORT),
+                host: process.env.REDIS_URL,
+                password: process.env.REDIS_PWD
             }
-        }
-    )
-        ;
+        };
+
+        this.orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE, option );
+        this.orderBookQueue = new Queue('addOrderBookQueue',option );
+        this.TradesQueue = new Queue('addTradesQueue',option  );
 
         this.orderQueue.on('error', async e => {
             console.log('[ADEX ENGINE] Queue on Error', e);
             console.log('[ADEX ENGINE] Trying initQueue...')
             await this.initQueue();
-        })
+        });
 
         this.start();
     }
