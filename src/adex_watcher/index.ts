@@ -42,25 +42,28 @@ class Watcher {
             return;
         }
         const id = transaction[0].id;
+        let status = 'successful';
 
         const updateTime = this.utils.get_current_time();
         const [get_receipt_err, contract_status] = await to(this.utils.get_receipt_log(transaction[0].transaction_hash));
         if (get_receipt_err && this.getReceiptTimes <= 10) {
-            console.error(`[ADEX Watcher Pending]:get_receipt_err ${get_receipt_err}`);
+            console.error(`[ADEX Watcher Pending]:get_receipt_err ${get_receipt_err},It's been retried ${this.getReceiptTimes} times`);
             setTimeout(() => {
-                this.loop.call(this)
                 this.getReceiptTimes++;
+                this.loop.call(this)
             }, 1000);
             return;
 
+        } else if (get_receipt_err && this.getReceiptTimes > 10) {
+            status = 'failed';
+            console.error(`[ADEX Watcher Pending]:get_receipt_log failed,It's been retried ${this.getReceiptTimes} times,please check  block chain `);
         } else if (contract_status === 'failed') {
             console.log(`[ADEX Watcher Pending] ${transaction[0].transaction_hash} contract execution log is null`);
         } else {
             console.log(`[ADEX Watcher Pending]::now ${updateTime} get_receipt_log %o contract status %o`, transaction[0], contract_status)
         }
 
-        const status = this.getReceiptTimes <= 10 ? 'successful' : 'failed';
-
+        this.getReceiptTimes = 0;
         const info = [status, updateTime, id]
         const transaction_info = [status, contract_status, updateTime, id]
         await this.db.update_transactions(transaction_info);
