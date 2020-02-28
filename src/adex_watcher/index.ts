@@ -47,9 +47,9 @@ class Watcher {
         const [get_receipt_err, contract_status] = await to(this.utils.get_receipt_log(transaction[0].transaction_hash));
         if (get_receipt_err && this.getReceiptTimes <= 10) {
             console.error(`[ADEX Watcher Pending]:get_receipt_err ${get_receipt_err}`);
-            this.getReceiptTimes++;
             setTimeout(() => {
                 this.loop.call(this)
+                this.getReceiptTimes++;
             }, 1000);
             return;
 
@@ -111,7 +111,6 @@ class Watcher {
         }
 
     }
-
 }
 
 process.on('unhandledRejection', (reason, p) => {
