@@ -820,7 +820,7 @@ export default class db {
 
 
     async get_freeze_amount(filter_info): Promise<IFreezeToken[]> {
-        const [err, result]: [any, any] = await to(this.clientDB.query('select market_id,side,sum(pending_amount+available_amount) as base_amount,sum((pending_amount+available_amount) * price) as quote_amount from mist_orders_tmp where trader_address=$1 group by market_id,side having (position($2 in market_id)=1 and side=\'sell\') or (position($2 in market_id)>1 and side=\'buy\')', filter_info));
+        const [err, result]: [any, any] = await to(this.clientDB.query('select market_id,side,sum(pending_amount+available_amount) as base_amount,sum((pending_amount+available_amount) * price) as quote_amount from mist_orders_tmp where trader_address=$1 and status in (\'pending\',\'partial_filled\') group by market_id,side having (position($2 in market_id)=1 and side=\'sell\') or (position($2 in market_id)>1 and side=\'buy\')', filter_info));
         if (err) {
             console.error('get freeze amount failed', err, filter_info);
             await this.handlePoolError(err);
