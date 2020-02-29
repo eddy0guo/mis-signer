@@ -72,35 +72,38 @@ export default class Market {
         const quotations = [];
         for (const index in markets) {
             if (!markets[index]) continue
-
+            const defaultQuotations = {
+                market_id: markets[index].id,
+                price: 0,
+                ratio: 0,
+                volume: 0,
+                CNYC_price: 0,
+                maxprice: 0,
+                minprice: 0,
+                min_CNYC_price: 0,
+                max_CNYC_price: 0,
+                symbol: markets[index].id.replace('-', '/'),
+            };
             const [err, result]: [any, any] = await to(this.db.get_market_quotations([markets[index].id]));
-            const [base_token, quote_token] = result[0].market_id.split('-');
-            const quote_price = await this.quotation.get_token_price2pi(quote_token);
-            const max_price = await this.db.get_market_max_price([base_token]);
-            const min_price = await this.db.get_market_min_price([base_token]);
-
-            if (!err && result && result.length > 0 && max_price.length > 0 && min_price.length > 0 && quote_price > 0) {
-                result[0].CNYC_price = await this.quotation.get_token_price2pi(base_token);
-                result[0].maxprice = max_price[0].price;
-                result[0].minprice = min_price[0].price;
-                result[0].min_CNYC_price = (min_price[0].price * quote_price).toFixed(2);
-                result[0].max_CNYC_price = (max_price[0].price * quote_price).toFixed(2);
-                result[0].symbol = markets[index].id.replace('-', '/');
-            } else if (!err && result && result.length === 0) {
-                result[0] = {
-                    market_id: markets[index].id,
-                    price: 0,
-                    ratio: 0,
-                    volume: 0,
-                    CNYC_price: 0,
-                    maxprice: 0,
-                    minprice: 0,
-                    min_CNYC_price: 0,
-                    max_CNYC_price: 0,
-                    symbol: markets[index].id.replace('-', '/'),
-                }
+            if (err || !result || result.length === 0) {
+                console.error(`get_market_quotations failed ${markets[index].id},err ${err}`);
+                result[0] = defaultQuotations;
             } else {
-                console.error(err);
+                const [base_token, quote_token] = result[0].market_id.split('-');
+                const quote_price = await this.quotation.get_token_price2pi(quote_token);
+                const max_price = await this.db.get_market_max_price([base_token]);
+                const min_price = await this.db.get_market_min_price([base_token]);
+
+                if (max_price.length > 0 && min_price.length > 0 && quote_price > 0) {
+                    result[0].CNYC_price = await this.quotation.get_token_price2pi(base_token);
+                    result[0].maxprice = max_price[0].price;
+                    result[0].minprice = min_price[0].price;
+                    result[0].min_CNYC_price = (min_price[0].price * quote_price).toFixed(2);
+                    result[0].max_CNYC_price = (max_price[0].price * quote_price).toFixed(2);
+                    result[0].symbol = markets[index].id.replace('-', '/');
+                } else {
+                    result[0] = defaultQuotations;
+                }
             }
             quotations.push(result[0]);
         }
