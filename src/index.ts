@@ -5,6 +5,7 @@ import * as bodyParser from 'body-parser';
 
 import wallet from './wallet';
 import adex from './adex';
+import admin from './admin';
 // import * as config from './config.json';
 import express_exchange from './express';
 import mist_config from './cfg';
@@ -68,6 +69,8 @@ app.use(responseTime());
 app.use('/wallet', wallet());
 app.use('/adex', adex());
 app.use('/express', express_exchange());
+app.use('/admin', admin());
+
 
 const serverPort = process.env.PORT || mist_config.mist_server_port
 app.listen(serverPort, () => {

@@ -837,5 +837,14 @@ export default class db {
         return result.rows;
     }
 
+    async get_engine_info(): Promise<IFreezeToken[]> {
+        const [err, result]: [any, any] = await to(this.clientDB.query('select transaction_id,transaction_hash,updated_at,status,count(1) from mist_trades_tmp where status!=\'successful\' group by transaction_id,transaction_hash,updated_at,status order by updated_at desc limit 100'));
+        if (err) {
+            console.error('get_engine_info', err);
+            await this.handlePoolError(err);
+        }
+        return result.rows;
+    }
+
 
 }
