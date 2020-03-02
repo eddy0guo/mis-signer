@@ -10,7 +10,7 @@ export default class mist_wallet {
         this.utils = new utils2();
     }
 
-    async list_mist_tokens() :Promise<IToken[]>{
+    async list_mist_tokens(): Promise<IToken[]> {
         const result = await this.db.list_tokens();
         return result;
     }
@@ -20,15 +20,22 @@ export default class mist_wallet {
         return result;
     }
 
+    async add_token(symbol: string, asset_address: string, asset_id: string, erc20_address: string): Promise<any> {
+        const currentTime = this.utils.get_current_time();
+        const token = [symbol,symbol,erc20_address,8,asset_id,asset_address,currentTime];
+        const result = await this.db.insert_token(token);
+        return result;
+    }
+
     // 寻找交易对的优先级依次为，PI,USDT,MT
-	// 价格为0有两种可能的原因，如果24小时没有成交的交易，交易对不存在
-    async get_token_price2pi(symbol) : Promise<number>{
+    // 价格为0有两种可能的原因，如果24小时没有成交的交易，交易对不存在
+    async get_token_price2pi(symbol): Promise<number> {
         if (symbol === 'CNYC') {
             return 1;
         }
         let marketID = symbol + '-CNYC';
         let [result, err] = await this.db.get_market_current_price([marketID]);
-        if (err)console.error(err);
+        if (err) console.error(err);
         err = null;
         if (result.length === 0) {
             marketID = symbol + '-USDT';
@@ -51,7 +58,7 @@ export default class mist_wallet {
         return result;
     }
 
-    async get_token_price2btc(symbol) : Promise<number>{
+    async get_token_price2btc(symbol): Promise<number> {
         const price2pi = await this.get_token_price2pi(symbol);
 
         const btc2pi = await this.get_token_price2pi('BTC');

@@ -19,7 +19,7 @@ import Asset from '../wallet/contract/Asset';
 
 import {IOrder as IOrder} from './interface';
 
-async function get_available_erc20_amount(address, symbol,client,mist_wallet) {
+async function get_available_erc20_amount(address, symbol, client, mist_wallet) {
     const token_info = await mist_wallet.get_token(symbol);
     const token = new Token(token_info[0].address);
     const [err, res] = await to(token.balanceOf(address, 'child_poa'));
@@ -807,7 +807,7 @@ export default () => {
         }
         const message = {
             amount: order_info[0].available_amount,
-            side:order_info[0].side,
+            side: order_info[0].side,
             price: order_info[0].price,
             market_id: order_info[0].market_id,
             id: order_id,
@@ -882,8 +882,8 @@ export default () => {
 
             const message = {
                 amount: order_info[0].available_amount,
-                price:order_info[0].price,
-                side:order_info[0].side,
+                price: order_info[0].price,
+                side: order_info[0].side,
                 market_id: order_info[0].market_id,
                 id: order_info[0].id,
             };
@@ -1015,9 +1015,25 @@ export default () => {
         });
     });
 
-    adex.all('/market_up/:market_id', async (req, res) => {
-        const {market_id} = req.params;
-        const [err, result] = await to(market.market_up(market_id));
+    adex.all('/market_up/:market_id/:up_at', async (req, res) => {
+        const {market_id, up_at} = req.params;
+        if (!market_id || !up_at) {
+            return res.json({
+                success: false,
+                err: 'check params failed!,Please check it'
+            });
+        }
+
+        const upDate = new Date(up_at);
+        const currentDate = new Date();
+        if (upDate < currentDate) {
+            return res.json({
+                success: false,
+                err: 'up_at must be later than now!,Please check it'
+            });
+        }
+
+        const [err, result] = await to(market.market_up(market_id, up_at));
         res.json({
             success: !result ? false : true,
             result,
@@ -1025,9 +1041,41 @@ export default () => {
         });
     });
 
-    adex.all('/market_down/:market_id', async (req, res) => {
-        const {market_id} = req.params;
-        const [err, result] = await to(market.market_down(market_id));
+    adex.all('/market_down/:market_id/:down_at', async (req, res) => {
+        const {market_id, down_at} = req.params;
+        if (!market_id || !down_at) {
+            return res.json({
+                success: false,
+                err: 'check params failed!,Please check it'
+            });
+        }
+        const downDate = new Date(down_at);
+        const currentDate = new Date();
+        if (downDate < currentDate) {
+            return res.json({
+                success: false,
+                err: 'down_at must be later than now!,Please check it'
+            });
+        }
+
+        const [err, result] = await to(market.market_down(market_id, down_at));
+        res.json({
+            success: !result ? false : true,
+            result,
+            err,
+        });
+    });
+
+
+    adex.all('/add_token/:symbol/:asset_address/:asset_id/:erc20_address', async (req, res) => {
+        const {symbol, asset_address, asset_id, erc20_address} = req.params;
+        if (!symbol || !asset_address || !asset_id || !erc20_address) {
+            return res.json({
+                success: false,
+                err: 'check params failed!,Please check it'
+            });
+        }
+        const [err, result] = await to(mist_wallet.add_token(symbol, asset_address, asset_id, erc20_address));
         res.json({
             success: !result ? false : true,
             result,

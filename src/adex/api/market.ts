@@ -17,16 +17,16 @@ export default class Market {
     }
 
 
-    async market_down(id): Promise<any[]> {
+    async market_down(id: string, down_at: string): Promise<any[]> {
         const update_at = this.utils.get_current_time();
-        const result = await this.db.update_market([false, id, update_at]);
+        const result = await this.db.market_down([down_at, id, update_at]);
         return result;
     }
 
 
-    async market_up(id): Promise<any[]> {
+    async market_up(id: string, up_at: string): Promise<any[]> {
         const update_at = this.utils.get_current_time();
-        const [err, result] = await to(this.db.update_market([true, id, update_at]));
+        const [err, result] = await to(this.db.market_up([up_at, id, update_at]));
         if (!result) {
             console.error(err, result);
         }
@@ -35,7 +35,8 @@ export default class Market {
 
     async market_add(info): Promise<any[]> {
         const current_time = this.utils.get_current_time();
-        info = info.concat([false, current_time, current_time]);
+        // online,up_at,down_at,updated_at,created_at
+        info = info.concat([false, current_time, current_time, current_time, current_time]);
         const [err, result] = await to(this.db.market_add(info));
         if (!result) {
             console.error(err, result);
