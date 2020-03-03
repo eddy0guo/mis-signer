@@ -5,6 +5,7 @@ import Token from '../../wallet/contract/Token';
 import Asset from '../../wallet/contract/Asset';
 
 import NP from '../../common/NP';
+import mistConfig from '../../cfg';
 
 export default class Users {
     private db;
@@ -29,7 +30,7 @@ export default class Users {
         const [err, balance] = await to(token.balanceOf(user_address));
         if (err)console.error(err);
 
-        const asset = new Asset();
+        const asset = new Asset(mistConfig.asimov_master_rpc);
         const [err4, assets_balance] = await to(asset.balanceOf(user_address));
         if (err4)console.error(err4);
         let asset_balance = 0;
