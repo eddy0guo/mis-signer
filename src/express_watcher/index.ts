@@ -3,7 +3,8 @@ import Utils from '../adex/api/utils'
 import DBClient from '../express/models/db'
 
 import mist_config from '../cfg'
-import { AsimovWallet } from '@fingo/asimov-wallet';
+import {AsimovWallet} from '@fingo/asimov-wallet';
+import { Health } from '../common/Health';
 
 
 class Watcher {
@@ -14,7 +15,6 @@ class Watcher {
     constructor() {
         this.db = new DBClient();
         this.utils = new Utils();
-        this.start();
     }
 
     async start() {
@@ -23,16 +23,16 @@ class Watcher {
 
     async loop() {
 
-        const [err, pendingTrade]: [any,any] = await to(this.db.laucher_pending_trade());
+        const [err, pendingTrade]: [any, any] = await to(this.db.laucher_pending_trade());
         if (!pendingTrade) {
 
             console.log(`[Express Watcher]pendingTrade=${pendingTrade},error=${err}`);
-			setTimeout(() => {
+            setTimeout(() => {
                 this.loop.call(this)
             }, 2000);
 
             return;
-		}
+        }
 
         if (pendingTrade.length <= 0) {
 
@@ -43,17 +43,17 @@ class Watcher {
 
             return;
         }
-        const { trade_id, address, quote_amount, quote_asset_name } = pendingTrade[0];
+        const {trade_id, address, quote_amount, quote_asset_name} = pendingTrade[0];
         const current_time = this.utils.get_current_time();
 
-        const [tokens_err,tokens] = await to(this.db.get_tokens([quote_asset_name]));
-		if(!tokens){
-			console.error('[Express Watcher] Token Err:',tokens_err,tokens);
-			setTimeout(() => {
+        const [tokens_err, tokens] = await to(this.db.get_tokens([quote_asset_name]));
+        if (!tokens) {
+            console.error('[Express Watcher] Token Err:', tokens_err, tokens);
+            setTimeout(() => {
                 this.loop.call(this)
             }, 2000);
             return;
-		}
+        }
 
         const wallet = new AsimovWallet({
             name: mist_config.express_address,
@@ -62,19 +62,19 @@ class Watcher {
         });
         const [quote_err, quote_txid] = await to(wallet.commonTX.transfer(address, quote_amount, tokens[0].asim_assetid));
         if (!quote_txid) {
-			console.error('[Express Watcher] quote_err:',quote_err,quote_txid)
-			setTimeout(() => {
+            console.error('[Express Watcher] quote_err:', quote_err, quote_txid)
+            setTimeout(() => {
                 this.loop.call(this)
             }, 2000);
             return;
-		}
+        }
 
         const quote_tx_status = !quote_txid ? 'failed' : 'successful';
 
         const info = [quote_txid, quote_tx_status, current_time, trade_id];
 
         const [err3, result3] = await to(this.db.update_quote(info));
-        if (!result3) console.error('[Express Watcher] update_quote Error:',err3, result3)
+        if (!result3) console.error('[Express Watcher] update_quote Error:', err3, result3)
         setTimeout(() => {
             this.loop.call(this)
             // 间隔时间随着用户量的增长而降低
@@ -86,8 +86,12 @@ class Watcher {
 }
 
 process.on('unhandledRejection', (reason, p) => {
-    console.log('[Express Watcher]Unhandled Rejection at: Promise', p, 'reason:', reason);
+    console.log('[Express Watcher]Unhandled Rejection at: Promise reason:', reason);
     // application specific logging, throwing an error, or other logic here
 });
 
-export default new Watcher();
+const health = new Health();
+health.start();
+
+const watcher = new Watcher();
+watcher.start();

@@ -78,4 +78,5 @@ node dist/adex_watcher
 node dist/bridge_watcher
 node dist/express
 node dist/express_watcher
+node dist/adex_ws
 ```

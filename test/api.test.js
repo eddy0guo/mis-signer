@@ -2,7 +2,7 @@
 //const to = require('await-to-js');
 var expect = require('chai').expect;
 var request = require("request");
-var rp = require('request-promise');
+var rp = require('axios');
 
 
 describe('API', function() {

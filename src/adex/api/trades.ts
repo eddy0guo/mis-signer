@@ -1,7 +1,8 @@
 import to from 'await-to-js';
 import date = require('silly-datetime');
 
-import { restore_order } from './order';
+import {restore_order} from './order';
+import {ITrade} from '../interface';
 
 export default class trades {
     private db;
@@ -17,19 +18,19 @@ export default class trades {
         return result;
     }
 
-    async list_trades(marketID) {
+    async list_trades(marketID: string): Promise<ITrade[]> {
 
         const result = await this.db.list_trades([marketID]);
         return result;
     }
 
-    async my_trades_length(address) {
+    async my_trades_length(address: string): Promise<number> {
 
         const result = await this.db.my_trades_length([address]);
         return result;
     }
 
-    async my_trades(message) {
+    async my_trades(message): Promise<ITrade[]> {
 
         const filter_info = [message.address];
         const result = await this.db.my_trades(filter_info);
@@ -37,9 +38,9 @@ export default class trades {
         return result;
     }
 
-    async my_trades2(address, page, perpage) {
-        const offset = (+page - 1) * perpage;
-        const [err, result] = await to(this.db.my_trades2([address, offset, perpage]));
+    async my_trades2(address, page, perPage) : Promise<ITrade[]> {
+        const offset = (+page - 1) * perPage;
+        const [err, result] = await to(this.db.my_trades2([address, offset, perPage]));
         if (!result) console.error(err, result);
         return result;
     }
@@ -85,7 +86,7 @@ export default class trades {
     }
 
     // 应该先停laucher的线程，再回滚，否则可能出现已经launched的也回滚了
-    async rollback_trades() {
+    async rollback_trades() : Promise<void>{
         const matched_trades = await this.db.get_matched_trades();
         for (const item of matched_trades) {
             restore_order(item.taker_order_id, item.amount);

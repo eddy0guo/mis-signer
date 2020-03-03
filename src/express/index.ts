@@ -1,5 +1,5 @@
 import to from 'await-to-js';
-import NP from 'number-precision';
+import NP from '../common/NP';
 import { Router } from 'express';
 
 import { chain } from '../wallet/api/chain';

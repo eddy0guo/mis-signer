@@ -26,6 +26,7 @@ interface IConfig {
   pg_password: string,
   pg_port: number,
   icon_url: string,
+  ws_port: number,
 }
 
 
@@ -84,6 +85,7 @@ const local:IConfig = {
   pg_password: 'myHzSesQc7TXSS5HOXZDsgq7SNUHY2',
   pg_port: 1433,
   icon_url: 'http://fingo-cdn.asimov.work/res/icons/',
+  ws_port: 13300,
 };
 
 const dev:IConfig = {
@@ -139,6 +141,7 @@ const dev:IConfig = {
   pg_password: 'myHzSesQc7TXSS5HOXZDsgq7SNUHY2',
   pg_port: 1433,
   icon_url: 'http://fingo-cdn.asimov.work/res/icons/',
+  ws_port: 13300,
 };
 
 const product:IConfig = {
@@ -179,6 +182,7 @@ const product:IConfig = {
     pg_password: 'myHzSesQc7TXSS5HOXZDsgq7SNUHY2',
     pg_port: 1433,
 	icon_url: 'http://fingo-cdn.asimov.work/res/icons/',
+    ws_port: 13300,
 }
 
 const CONFIG_K8S:IConfig = {
@@ -225,6 +229,7 @@ const CONFIG_K8S:IConfig = {
   pg_password: process.env.PG_PASS,
   pg_port: Number(process.env.PG_PORT),
   icon_url: 'https://fingo-huadong.oss-cn-shanghai.aliyuncs.com/res/icons/',
+  ws_port: 13300,
 };
 
 let mistConfig:IConfig;

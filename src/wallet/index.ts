@@ -1,6 +1,6 @@
 import {Router} from 'express';
 import to from 'await-to-js';
-import NP from 'number-precision';
+import NP from '../common/NP';
 import {AsimovWallet, AsimovConst} from '@fingo/asimov-wallet';
 import * as cryptoSha256 from 'crypto';
 
@@ -337,6 +337,13 @@ export default () => {
      * @apiSampleRequest https://poa.mist.exchange/api/wallet/my_converts_v3/0x6602ca6e2820ec98cc68909fdd9f87c7bd23b62000/ETH/1/10
      * @apiVersion 1.0.0
      */
+    wallet.all('/my_converts_v2/:address/:page/:perpage', async (req, res) => {
+        const {address, page, perpage} = req.params;
+        const offset = (+page - 1) * +perpage;
+        const [err, result] = await to(psql_db.my_bridge([address, offset, perpage]));
+        const success = !result ? false : true;
+        res.json({success, result, err});
+    });
 
     wallet.all(
         '/my_converts_v3/:address/:token_name/:page/:perpage',

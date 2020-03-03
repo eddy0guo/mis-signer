@@ -1,4 +1,3 @@
-import * as http from 'http';
 import * as express from 'express';
 import * as cors from 'cors';
 import * as morgan from 'morgan';
@@ -9,6 +8,7 @@ import adex from './adex';
 // import * as config from './config.json';
 import express_exchange from './express';
 import mist_config from './cfg';
+import {Health} from './common/Health';
 
 const config = {
   'bodyLimit': '100kb',
@@ -78,5 +78,8 @@ process.on('unhandledRejection', (reason, p) => {
   console.log('[Mist Signer] Unhandled Rejection at: Promise , reason:', reason);
   // application specific logging, throwing an error, or other logic here
 });
+
+const health = new Health();
+health.start();
 
 export default app;
