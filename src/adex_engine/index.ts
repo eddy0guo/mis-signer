@@ -54,6 +54,8 @@ function computeOrderBookUpdates(trades: ILastTrade[], order: IOrder): IOrderBoo
 }
 
 /**
+ * Order flow : client->[signer]->[OrderQueue]->[adex-engine]->[adex-launch]->[adex-watcher]
+ *
  * OrderQueue Consumer.
  * It pushes new jobs into 'addOrderBookQueue' and 'addTradesQueue' before new record insterted into db.
  *
@@ -179,7 +181,7 @@ class AdexEngine {
             const arr_message = this.utils.arr_values(message);
             const [insert_order_err, insert_order_result] = await to(this.db.insert_order(arr_message));
             if (!insert_order_result) {
-                console.error(insert_order_err, insert_order_result);
+                console.error(`[ADEX ENGINE] insert_order_err`,insert_order_err, insert_order_result);
             }
 
             done()
