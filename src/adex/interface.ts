@@ -45,6 +45,8 @@ interface IMarket {
     quote_token_address: string;
     quote_token_symbol: string;
     online: boolean;
+    up_at: string;
+    down_at: string;
     updated_at: string;
     created_at: string;
 }

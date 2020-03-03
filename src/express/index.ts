@@ -11,6 +11,7 @@ import psql from './models/db';
 
 import mist_config from '../cfg';
 import Asset from '../wallet/contract/Asset';
+import mistConfig from '../cfg';
 
 const express_config = [
   {
@@ -391,7 +392,7 @@ export default () => {
     const token_arr = await mist_wallet.list_mist_tokens();
 
    	  const balances = [];
-	  const asset = new Asset();
+	  const asset = new Asset(mistConfig.asimov_master_rpc);
       const [assets_balance_err, assets_balance_result] = await to(
         asset.balanceOf(mist_config.express_address)
       );

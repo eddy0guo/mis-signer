@@ -18,6 +18,8 @@ create table mist_markets(
  quote_token_address text ,
  quote_token_symbol text ,
  online  boolean ,
+  up_at  timestamp ,
+ down_at  timestamp ,
  updated_at timestamp ,
  created_at timestamp
 );
