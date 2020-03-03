@@ -20,25 +20,33 @@ build_node:
   tags:
     - aws
 
-deploy_docker_image:
+build_branch:
   stage: build
   image:
-    name: robingu/kaniko-executor:debug
+    name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
   tags:
     - aws
   script:
-    - echo "{\"auths\":{\"harbor.fingo.dev\":{\"auth\":\"ZmluZ286ZWluYWhjb0M3cmFt\"}}}" > /kaniko/.docker/config.json
     - env
+    - echo "{\"auths\":{\"harbor.fingo.dev\":{\"auth\":\"ZmluZ286ZWluYWhjb0M3cmFt\"}}}" > /kaniko/.docker/config.json
+    - echo $CI_COMMIT_SHA > $CI_PROJECT_DIR/build-info.log
     - /kaniko/executor --cache=true --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile  --destination harbor.fingo.dev/fingo/$CI_PROJECT_NAME:$CI_BUILD_REF_NAME
-  # only:
-  #   - tags
+  except:
+    - tags
 
-test:
-  stage: test
-  script:
-    - apk add  --no-cach git python3 build-base
-    - yarn && npm run test
+build_docker_image_on_tag:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
   tags:
     - aws
+  script:
+    - env
+    - echo "{\"auths\":{\"harbor.fingo.dev\":{\"auth\":\"ZmluZ286ZWluYWhjb0M3cmFt\"}}}" > /kaniko/.docker/config.json
+    - echo $CI_COMMIT_SHA > $CI_PROJECT_DIR/build-info.log
+    - /kaniko/executor --cache=true --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile  --destination harbor.fingo.dev/fingo/$CI_PROJECT_NAME:$CI_BUILD_REF_NAME
+  only:
+    - tags
 
