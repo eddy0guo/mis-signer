@@ -1,15 +1,18 @@
 import DBClient from '../models/db';
-import NP from 'number-precision';
+import NP from '../../common/NP';
 
 import Utils from './utils';
 import to from 'await-to-js';
 
 import * as Queue from 'bull';
+import * as process from 'process';
+import {IOrder, IOrderBook} from '../interface';
 
 export default class order {
 
     private db:DBClient;
     private orderQueue:Queue.Queue;
+    private orderBookUpdateQueue:Queue.Queue;
     private utils:Utils;
 
     constructor(client) {
@@ -18,7 +21,7 @@ export default class order {
         this.createQueue();
     }
 
-    createQueue() {
+    createQueue() : Queue.Queue {
         this.orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE,
             {
                 redis: {
@@ -27,10 +30,20 @@ export default class order {
                     password: process.env.REDIS_PWD
                 }
             });
+
+        this.orderBookUpdateQueue = new Queue('addOrderBookQueue',
+            {
+                redis: {
+                    port: Number(process.env.WS_REDIS_PORT),
+                    host: process.env.WS_REDIS_URL,
+                    password: process.env.WS_REDIS_PWD
+                }
+            });
+
         return this.orderQueue;
     }
 
-    async checkQueueStatus() {
+    async checkQueueStatus() : Promise<boolean>{
         const job = await this.orderQueue.add(null, {removeOnComplete: true, delay: 9999});
         await job.remove();
         return true;
@@ -59,34 +72,42 @@ export default class order {
         return job;
     }
 
-    async cancle_order(message) {
+    async cancle_order(message) : Promise<any[]>{
 
         const create_time = this.utils.get_current_time();
         const cancle_info = [-message.amount, 0, message.amount, 0, 'cancled', create_time, message.id];
         const [err, result] = await to(this.db.update_orders(cancle_info));
-        if (!result) console.error(err, result);
+        if (err) {
+            console.error(err, result);
+        }
+        let book;
+        if(message.side === 'buy'){
+            book = {
+                asks:[],
+                bids:[message.price,-message.amount]
+            }
+        }else{
+            book = {
+                asks:[message.price,-message.amount],
+                bids:[]
+            }
+        }
+
+        const marketUpdateBook = {
+            data: book,
+            id:message.market_id,
+        }
+        const [orderBookUpdateQueueErr, orderBookUpdateQueueResult] = await to(this.orderBookUpdateQueue.add(marketUpdateBook));
+        if (orderBookUpdateQueueErr) {
+            console.error('[ADEX ENGINE]:orderBookUpdateQueue failed %o\n', orderBookUpdateQueueErr);
+        }
+
 
         return result;
     }
-
-    // async list_orders() {
-
-    //     const result = await this.db.list_orders();
-
-    //     return result;
-    // }
-
-    async my_orders(message) {
-
-        const filter_info = [message.address];
-        const result = await this.db.my_orders(filter_info);
-
-        return result;
-    }
-
-    async my_orders2(address, page, perpage, status1, status2) {
-        const offset = (+page - 1) * perpage;
-        const [err, orders] = await to(this.db.my_orders2([address, offset, perpage, status1, status2]));
+    async my_orders(address:string, page:number, perPage:number, status1:string, status2:string):Promise<IOrder[]> {
+        const offset = (page - 1) * perPage;
+        const [err, orders] = await to(this.db.my_orders2([address, offset, perPage, status1, status2]));
         if (!orders) {
             console.error(err, orders);
             return orders;
@@ -114,12 +135,12 @@ export default class order {
         return orders;
     }
 
-    async my_orders_length(address, status1, status2) {
+    async my_orders_length(address:string, status1:string, status2:string) : Promise<number>{
         const result = await this.db.my_orders_length([address, status1, status2]);
         return result;
     }
 
-    async order_book(marketID, precision) {
+    async order_book(marketID:string, precision:string) : Promise<IOrderBook>{
 
         const asks = await this.db.order_book(['sell', marketID, precision]);
         const bids = await this.db.order_book(['buy', marketID, precision]);
@@ -143,7 +164,7 @@ export default class order {
         return order_book;
     }
 
-    async get_order(order_id:string) {
+    async get_order(order_id:string) : Promise<IOrder[]>{
         return await this.db.find_order([order_id]);
     }
 

@@ -1,13 +1,10 @@
 # Official framework image. Look for the different tagged releases at:
 # https://hub.docker.com/r/library/node/tags/
-image: node:latest
+image: node:12.16.1-alpine
 
 # Pick zero or more services to be used on all builds.
 # Only needed when using a docker container to run your tests in.
 # Check out: http://docs.gitlab.com/ce/ci/docker/using_docker_images.html#what-is-a-service
-services:
-  - redis:latest
-  - postgres:latest
 
 # This folder is cached between builds
 # http://docs.gitlab.com/ce/ci/yaml/README.html#cache
@@ -15,13 +12,41 @@ cache:
   paths:
     - node_modules/
 
-test_install:
+build_node:
+  stage: build
   script:
-    - npm install
+    - apk add  --no-cach git python3 build-base
+    - yarn && npm run build
   tags:
-    - docker
+    - aws
 
-#test_db:
-#  script:
-#    - npm install
-#    - node ./specs/start.js ./specs/db-postgres.spec.js
+build_branch:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  tags:
+    - aws
+  script:
+    - env
+    - echo "{\"auths\":{\"harbor.fingo.dev\":{\"auth\":\"ZmluZ286ZWluYWhjb0M3cmFt\"}}}" > /kaniko/.docker/config.json
+    - echo $CI_COMMIT_SHA > $CI_PROJECT_DIR/build-info.log
+    - /kaniko/executor --cache=true --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile  --destination harbor.fingo.dev/fingo/$CI_PROJECT_NAME:$CI_BUILD_REF_NAME
+  except:
+    - tags
+
+build_docker_image_on_tag:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  tags:
+    - aws
+  script:
+    - env
+    - echo "{\"auths\":{\"harbor.fingo.dev\":{\"auth\":\"ZmluZ286ZWluYWhjb0M3cmFt\"}}}" > /kaniko/.docker/config.json
+    - echo $CI_COMMIT_SHA > $CI_PROJECT_DIR/build-info.log
+    - /kaniko/executor --cache=true --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile  --destination harbor.fingo.dev/fingo/$CI_PROJECT_NAME:$CI_BUILD_REF_NAME
+  only:
+    - tags
+

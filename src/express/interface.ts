@@ -1,4 +1,4 @@
-interface Trade{
+interface ITrade{
     trade_id:string;
     address:string;
     base_asset_name:string;
@@ -18,7 +18,7 @@ interface Trade{
     [x: string]: any;
 }
 
-interface Token {
+interface IToken {
     symbol: string;
     name: string;
     address: string;
@@ -28,4 +28,4 @@ interface Token {
     created_at: string;
 }
 
-export {Trade,Token}
+export {ITrade,IToken}

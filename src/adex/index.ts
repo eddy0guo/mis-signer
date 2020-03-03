@@ -1,6 +1,6 @@
 import to from 'await-to-js';
 import {Router} from 'express';
-import NP from 'number-precision';
+import NP from '../common/NP';
 
 import urllib = require('url');
 import crypto_sha256 = require('crypto');
@@ -17,7 +17,7 @@ import MistConfig from '../cfg';
 import Token from '../wallet/contract/Token';
 import Asset from '../wallet/contract/Asset';
 
-import {Order as IOrder} from './interface';
+import {IOrder as IOrder} from './interface';
 
 async function get_available_erc20_amount(address, symbol,client,mist_wallet) {
     const token_info = await mist_wallet.get_token(symbol);
@@ -807,6 +807,9 @@ export default () => {
         }
         const message = {
             amount: order_info[0].available_amount,
+            side:order_info[0].side,
+            price: order_info[0].price,
+            market_id: order_info[0].market_id,
             id: order_id,
         };
 
@@ -879,6 +882,9 @@ export default () => {
 
             const message = {
                 amount: order_info[0].available_amount,
+                price:order_info[0].price,
+                side:order_info[0].side,
+                market_id: order_info[0].market_id,
                 id: order_info[0].id,
             };
 
@@ -959,13 +965,13 @@ export default () => {
      */
 
     adex.all(
-        '/my_orders_v2/:address/:page/:perpage/:status1/:status2',
+        '/my_orders_v2/:address/:page/:perPage/:status1/:status2',
         async (req, res) => {
             // pending,partial_filled,当前委托
             // cancled，full_filled，历史委托
-            const {address, page, perpage, status1, status2} = req.params;
+            const {address, page, perPage, status1, status2} = req.params;
             const [err, result] = await to(
-                order.my_orders2(address, page, perpage, status1, status2)
+                order.my_orders(address, +page, +perPage, status1, status2)
             );
 
             res.json({
