@@ -18,6 +18,7 @@ import Token from '../wallet/contract/Token';
 import Asset from '../wallet/contract/Asset';
 
 import {IOrder as IOrder} from './interface';
+import mistConfig from '../cfg';
 
 async function get_available_erc20_amount(address, symbol, client, mist_wallet) {
     const token_info = await mist_wallet.get_token(symbol);
@@ -260,7 +261,7 @@ export default () => {
 
         const address: string = obj.address as string;
 
-        const asset = new Asset();
+        const asset = new Asset(mistConfig.asimov_master_rpc);
         const [err4, result4] = await to(asset.balanceOf(address));
         if (err4 || !result4 || result4[0].assets === undefined) {
             console.error('[MIST SIGNER]::(asset.balanceOf):', err4, result4);
@@ -397,7 +398,7 @@ export default () => {
         const token_arr = await mist_wallet.list_mist_tokens();
         const balances = [];
 
-        const asset = new Asset();
+        const asset = new Asset(mistConfig.asimov_master_rpc);
         const [err4, result4] = await to(asset.balanceOf(address));
         if (err4 || !result4 || result4[0].assets === undefined) {
             console.error(err4, result4);
@@ -1015,94 +1016,11 @@ export default () => {
         });
     });
 
-    adex.all('/market_up/:market_id/:up_at', async (req, res) => {
-        const {market_id, up_at} = req.params;
-        if (!market_id || !up_at) {
-            return res.json({
-                success: false,
-                err: 'check params failed!,Please check it'
-            });
-        }
-
-        const upDate = new Date(up_at);
-        const currentDate = new Date();
-        if (upDate < currentDate) {
-            return res.json({
-                success: false,
-                err: 'up_at must be later than now!,Please check it'
-            });
-        }
-
-        const [err, result] = await to(market.market_up(market_id, up_at));
-        res.json({
-            success: !result ? false : true,
-            result,
-            err,
-        });
-    });
-
-    adex.all('/market_down/:market_id/:down_at', async (req, res) => {
-        const {market_id, down_at} = req.params;
-        if (!market_id || !down_at) {
-            return res.json({
-                success: false,
-                err: 'check params failed!,Please check it'
-            });
-        }
-        const downDate = new Date(down_at);
-        const currentDate = new Date();
-        if (downDate < currentDate) {
-            return res.json({
-                success: false,
-                err: 'down_at must be later than now!,Please check it'
-            });
-        }
-
-        const [err, result] = await to(market.market_down(market_id, down_at));
-        res.json({
-            success: !result ? false : true,
-            result,
-            err,
-        });
-    });
 
 
-    adex.all('/add_token/:symbol/:asset_address/:asset_id/:erc20_address', async (req, res) => {
-        const {symbol, asset_address, asset_id, erc20_address} = req.params;
-        if (!symbol || !asset_address || !asset_id || !erc20_address) {
-            return res.json({
-                success: false,
-                err: 'check params failed!,Please check it'
-            });
-        }
-        const [err, result] = await to(mist_wallet.add_token(symbol, asset_address, asset_id, erc20_address));
-        res.json({
-            success: !result ? false : true,
-            result,
-            err,
-        });
-    });
 
 
-    adex.all('/market_add/:market_id/:base_token_address/:base_token_symbol/:quote_token_address/:quote_token_symbol', async (req, res) => {
-        const {market_id, base_token_address, base_token_symbol, quote_token_address, quote_token_symbol} = req.params;
-        const [err, result] = await to(client.get_existed_market([market_id]));
-        if (!result || result.length !== 0) {
-            console.error('this markets id have been exsited', err);
-            return res.json({
-                success: false,
-                err: err ? err : 'this markets id have been exsited',
-            });
-        }
 
-        const info = utils.arr_values(req.params);
-        const [add_err, add_result] = await to(market.market_add(info));
-        res.json({
-            success: !add_result ? false : true,
-            result,
-            err,
-        });
-    });
 
     adex.all('/rollback_trades', async (req, res) => {
         const [err, result] = await to(trades.rollback_trades());

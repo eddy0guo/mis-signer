@@ -258,11 +258,11 @@ export default class db {
 
     }
 
-     async insert_token(info) : Promise<any> {
-        const [err, result]: [any,any]  = await to(this.clientDB.query('insert into mist_tokens values($1,$2,$3,$4,$5,$6,$7)', info));
+    async insert_token(info): Promise<any> {
+        const [err, result]: [any, any] = await to(this.clientDB.query('insert into mist_tokens values($1,$2,$3,$4,$5,$6,$7)', info));
         if (err) {
             console.error('insert tokens failed', err, info);
-			await this.handlePoolError(err);
+            await this.handlePoolError(err);
         }
         return result.rows;
 
@@ -837,10 +837,32 @@ export default class db {
         return result.rows;
     }
 
-    async get_engine_info(): Promise<IFreezeToken[]> {
-        const [err, result]: [any, any] = await to(this.clientDB.query('select transaction_id,transaction_hash,updated_at,status,count(1) from mist_trades_tmp where status!=\'successful\' group by transaction_id,transaction_hash,updated_at,status order by updated_at desc limit 100'));
-        if (err) {
+    /*
+    * ADMIN
+    * */
+
+    async get_engine_progress(): Promise<IFreezeToken[]> {
+        const [err, result]: [any, any] = await to(this.clientDB.query('select t.*,s.id,s.contract_status from (select status,transaction_hash,transaction_id,count(1) from mist_trades_tmp  where status!=\'successful\' group by transaction_hash,transaction_id,status)t left join (select * from mist_transactions)s on t.transaction_id=s.id   order by t.transaction_id desc limit 50;'));
+        if (!result) {
             console.error('get_engine_info', err);
+            await this.handlePoolError(err);
+        }
+        return result.rows;
+    }
+
+    async get_bridger_progress(): Promise<IFreezeToken[]> {
+        const [err, result]: [any, any] = await to(this.clientDB.query(' select * from mist_bridge where master_txid_status!=\'successful\' and child_txid_status!=\'successful\' order by created_at limit 100'));
+        if (!result) {
+            console.error('get_bridger_info', err);
+            await this.handlePoolError(err);
+        }
+        return result.rows;
+    }
+
+    async get_express_progress(): Promise<IFreezeToken[]> {
+        const [err, result]: [any, any] = await to(this.clientDB.query(' select * from asim_express_records where base_tx_status!=\'successful\' or quote_tx_status!=\'successful\' order by created_at desc limit 100;'));
+        if (!result) {
+            console.error('get_express_progress', err);
             await this.handlePoolError(err);
         }
         return result.rows;
