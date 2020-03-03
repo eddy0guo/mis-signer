@@ -105,7 +105,7 @@ class AdexEngine {
 
     async start(): Promise<void> {
         this.orderQueue.process(async (job, done) => {
-            console.log(`[ADEX ENGINE]receive a message %o from OrderQueue${process.env.MIST_MODE} \n`, job.data);
+            console.log(`[ADEX ENGINE]receive a message %o from OrderQueue${process.env.MIST_MODE} \n`, job.id);
             const message = job.data;
 
             const create_time = this.utils.get_current_time();
@@ -196,7 +196,7 @@ class AdexEngine {
 }
 
 process.on('unhandledRejection', (reason, p) => {
-    console.log('[ADEX ENGINE] Unhandled Rejection at: Promise', p, 'reason:', reason);
+    console.log('[ADEX ENGINE] Unhandled Rejection at: Promise reason:', reason);
     // application specific logging, throwing an error, or other logic here
 });
 
