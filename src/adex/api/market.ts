@@ -1,11 +1,11 @@
 import utils2 from './utils';
-
+import DBClient from '../models/db';
 import to from 'await-to-js';
 import mist_wallet from './mist_wallet';
 import {IMarket} from '../interface';
 
 export default class Market {
-    private db;
+    private db:DBClient;
     private utils;
     private quotation;
 
