@@ -91,8 +91,8 @@ class AdexEngine {
         };
 
         this.orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE, option );
-        this.orderBookQueue = new Queue('addOrderBookQueue2',option );
-        this.TradesQueue = new Queue('addTradesQueue2',option  );
+        this.orderBookQueue = new Queue('addOrderBookQueue',option );
+        this.TradesQueue = new Queue('addTradesQueue',option  );
 
         this.orderQueue.on('error', async e => {
             console.log('[ADEX ENGINE] Queue on Error', e);
