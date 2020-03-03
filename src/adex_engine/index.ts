@@ -11,6 +11,11 @@ import {
 } from '../adex/interface';
 import { Health } from '../common/Health'
 
+const QueueNames = {
+    OrderQueue : 'OrderQueue' + process.env.MIST_MODE,
+    AddOrderBookQueue : 'addOrderBookQueue',
+    AddTradesQueue: 'addTradesQueue',
+}
 
 // tslint:disable-next-line:no-shadowed-variable
 function computeOrderBookUpdates(trades: ILastTrade[], order: IOrder): IOrderBook {
@@ -66,7 +71,7 @@ class AdexEngine {
 
     private orderQueue: Queue.Queue;
     private orderBookQueue: Queue.Queue;
-    private TradesQueue: Queue.Queue;
+    private addTradesQueue: Queue.Queue;
     private db: DBClient;
     private exchange: Engine;
     private utils: Utils;
@@ -90,14 +95,16 @@ class AdexEngine {
             }
         };
 
-        this.orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE, option );
-        this.orderBookQueue = new Queue('addOrderBookQueue2',option );
-        this.TradesQueue = new Queue('addTradesQueue2',option  );
+        this.orderQueue = new Queue(QueueNames.OrderQueue, option );
+        this.orderBookQueue = new Queue(QueueNames.AddOrderBookQueue,option );
+        this.addTradesQueue = new Queue(QueueNames.AddTradesQueue,option  );
 
         this.orderQueue.on('error', async e => {
             console.log('[ADEX ENGINE] Queue on Error', e);
-            console.log('[ADEX ENGINE] Trying initQueue...')
-            await this.initQueue();
+            console.log('[ADEX ENGINE] Goodbye...');
+
+            // kill instance when queue on error
+            process.exit(-1);
         });
 
         this.start();
@@ -105,8 +112,10 @@ class AdexEngine {
 
     async start(): Promise<void> {
         this.orderQueue.process(async (job, done) => {
-            console.log(`[ADEX ENGINE]receive a message %o from OrderQueue${process.env.MIST_MODE} \n`, job.data);
+
             const message = job.data;
+
+            console.log(`[ADEX ENGINE] Message %o from OrderQueue${process.env.MIST_MODE} \n`, message.market_id);
 
             const create_time = this.utils.get_current_time();
             message.created_at = create_time;
@@ -159,7 +168,8 @@ class AdexEngine {
                     data: lastTrades,
                     id: message.market_id,
                 }
-                const [lastTradesAddErr, lastTradesAddResult] = await to(this.TradesQueue.add(marketLastTrades));
+                console.log('[ADEX ENGINE] New Trades Matched at:',message.market_id );
+                const [lastTradesAddErr, lastTradesAddResult] = await to(this.addTradesQueue.add(marketLastTrades));
                 if (lastTradesAddErr) console.error('[ADEX ENGINE]:lastTrade add queue failed %o\n', lastTradesAddErr);
             }
             const book = computeOrderBookUpdates(lastTrades, message);
@@ -196,7 +206,7 @@ class AdexEngine {
 }
 
 process.on('unhandledRejection', (reason, p) => {
-    console.log('[ADEX ENGINE] Unhandled Rejection at: Promise', p, 'reason:', reason);
+    console.log('[ADEX ENGINE] Unhandled Rejection at: Promise reason:', reason);
     // application specific logging, throwing an error, or other logic here
 });
 

@@ -18,7 +18,7 @@ export default class db {
     }
 
     createPool() {
-        console.log('[ADEX DB] create pool at:', new Date());
+        console.log('[ADEX DB] create pool at:', new Date().toLocaleString());
         const client: Pool = new Pool({
             host: mist_config.pg_host,
             database: mist_config.pg_database,
@@ -138,7 +138,7 @@ export default class db {
 
     }
 
-    async filter_orders(filter): Promise<order[]> {
+    async filter_orders(filter): Promise<IOrder[]> {
 
         let err: any;
         let result: any;
@@ -325,7 +325,9 @@ export default class db {
     }
 
     async get_market(marketID): Promise<IMarket[]> {
-        const [err, result]: [any, any] = await to(this.clientDB.query('select * from mist_markets where id=$1 and online=true and current_timestamp > up_at and current_timestamp < down_at', marketID));
+        // TODO: 线上版本暂时去掉up_at等判断
+        // const [err, result]: [any, any] = await to(this.clientDB.query('select * from mist_markets where id=$1 and online=true and current_timestamp > up_at and current_timestamp < down_at', marketID));
+        const [err, result]: [any, any] = await to(this.clientDB.query('select * from mist_markets where id=$1 and online=true', marketID));
         if (err) {
             console.error('get_market_faied', err, marketID);
             await this.handlePoolError(err);

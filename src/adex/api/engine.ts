@@ -3,11 +3,11 @@ import NP from '../../common/NP';
 import mist_config from '../../cfg';
 import to from 'await-to-js'
 import {IOrder, ITrade} from '../interface';
-
+import DBClient from '../models/db';
 
 export default class Engine {
-    private db;
-    private utils;
+    private db:DBClient;
+    private utils:utils2;
 
     constructor(client) {
         this.db = client;
