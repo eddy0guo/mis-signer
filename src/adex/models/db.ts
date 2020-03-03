@@ -258,18 +258,15 @@ export default class db {
 
     }
 
-    /**
-     async insert_tokens(info) : Promise<any> {
-		//insert into mist_markets values($1,$2,$3,$4,$5,$6,$7,$8)
-        const [err, result]: [any,any]  = await to(this.clientDB.query('insert into mist_tokens values($1,$2,$3,$4,$5,$6,$7,$8)', info));
+    async insert_token(info): Promise<any> {
+        const [err, result]: [any, any] = await to(this.clientDB.query('insert into mist_tokens values($1,$2,$3,$4,$5,$6,$7)', info));
         if (err) {
-            console.error('insert tokens failed', err, filter);
-			await this.handlePoolError(err);
+            console.error('insert tokens failed', err, info);
+            await this.handlePoolError(err);
         }
         return result.rows;
 
     }
-     **/
 
     /*
     *makkets
@@ -277,7 +274,9 @@ export default class db {
     * */
 
     async list_online_markets(): Promise<IMarket[]> {
-        const [err, result]: [any, any] = await to(this.clientDB.query('select * from mist_markets where online=true'));
+        // const [err, result]: [any, any] = await to(this.clientDB.query('select * from mist_markets where online=true and current_timestamp > up_at and current_timestamp < down_at'));
+        // 需且仅需要上下线时间来判断是否在线，online暂时留
+        const [err, result]: [any, any] = await to(this.clientDB.query('select * from mist_markets where current_timestamp > up_at and current_timestamp < down_at'));
         if (err) {
             console.error('list online markets failed', err);
             await this.handlePoolError(err);
@@ -285,6 +284,7 @@ export default class db {
         return result.rows;
 
     }
+
 
     async list_markets(): Promise<IMarket[]> {
         const [err, result]: [any, any] = await to(this.clientDB.query('select * from mist_markets'));
@@ -296,17 +296,26 @@ export default class db {
 
     }
 
-    async update_market(info): Promise<object[]> {
-        const [err, result]: [any, any] = await to(this.clientDB.query('update mist_markets set (online,updated_at)=($1,$3) where id=$2', info));
+    async market_up(info): Promise<object[]> {
+        const [err, result]: [any, any] = await to(this.clientDB.query('update mist_markets set (online,up_at,down_at,updated_at)=(\'true\',$1,down_at + \'10 years\',$3) where id=$2', info));
         if (err) {
-            console.error('update market failed', err, info);
+            console.error('market_up failed', err, info);
+            await this.handlePoolError(err);
+        }
+        return result.rows;
+    }
+
+    async market_down(info): Promise<object[]> {
+        const [err, result]: [any, any] = await to(this.clientDB.query('update mist_markets set (online,down_at,updated_at)=(\'false\',$1,$3) where id=$2', info));
+        if (err) {
+            console.error('market_down failed', err, info);
             await this.handlePoolError(err);
         }
         return result.rows;
     }
 
     async market_add(info): Promise<object[]> {
-        const [err, result]: [any, any] = await to(this.clientDB.query('insert into mist_markets values($1,$2,$3,$4,$5,$6,$7,$8)', info));
+        const [err, result]: [any, any] = await to(this.clientDB.query('insert into mist_markets values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)', info));
         if (err) {
             console.error('list markets failed', err, info);
             await this.handlePoolError(err);
@@ -316,7 +325,7 @@ export default class db {
     }
 
     async get_market(marketID): Promise<IMarket[]> {
-        const [err, result]: [any, any] = await to(this.clientDB.query('select * from mist_markets where id=$1 and online=true', marketID));
+        const [err, result]: [any, any] = await to(this.clientDB.query('select * from mist_markets where id=$1 and online=true and current_timestamp > up_at and current_timestamp < down_at', marketID));
         if (err) {
             console.error('get_market_faied', err, marketID);
             await this.handlePoolError(err);
@@ -820,9 +829,40 @@ export default class db {
 
 
     async get_freeze_amount(filter_info): Promise<IFreezeToken[]> {
-        const [err, result]: [any, any] = await to(this.clientDB.query('select market_id,side,sum(pending_amount+available_amount) as base_amount,sum((pending_amount+available_amount) * price) as quote_amount from mist_orders_tmp where trader_address=$1 group by market_id,side having (position($2 in market_id)=1 and side=\'sell\') or (position($2 in market_id)>1 and side=\'buy\')', filter_info));
+        const [err, result]: [any, any] = await to(this.clientDB.query('select market_id,side,sum(pending_amount+available_amount) as base_amount,sum((pending_amount+available_amount) * price) as quote_amount from mist_orders_tmp where trader_address=$1 and status in (\'pending\',\'partial_filled\') group by market_id,side having (position($2 in market_id)=1 and side=\'sell\') or (position($2 in market_id)>1 and side=\'buy\')', filter_info));
         if (err) {
             console.error('get freeze amount failed', err, filter_info);
+            await this.handlePoolError(err);
+        }
+        return result.rows;
+    }
+
+    /*
+    * ADMIN
+    * */
+
+    async get_engine_progress(): Promise<IFreezeToken[]> {
+        const [err, result]: [any, any] = await to(this.clientDB.query('select t.*,s.id,s.contract_status from (select status,transaction_hash,transaction_id,count(1) from mist_trades_tmp  where status!=\'successful\' group by transaction_hash,transaction_id,status)t left join (select * from mist_transactions)s on t.transaction_id=s.id   order by t.transaction_id desc limit 50;'));
+        if (!result) {
+            console.error('get_engine_info', err);
+            await this.handlePoolError(err);
+        }
+        return result.rows;
+    }
+
+    async get_bridger_progress(): Promise<IFreezeToken[]> {
+        const [err, result]: [any, any] = await to(this.clientDB.query(' select * from mist_bridge where master_txid_status!=\'successful\' and child_txid_status!=\'successful\' order by created_at limit 100'));
+        if (!result) {
+            console.error('get_bridger_info', err);
+            await this.handlePoolError(err);
+        }
+        return result.rows;
+    }
+
+    async get_express_progress(): Promise<IFreezeToken[]> {
+        const [err, result]: [any, any] = await to(this.clientDB.query(' select * from asim_express_records where base_tx_status!=\'successful\' or quote_tx_status!=\'successful\' order by created_at desc limit 100;'));
+        if (!result) {
+            console.error('get_express_progress', err);
             await this.handlePoolError(err);
         }
         return result.rows;
