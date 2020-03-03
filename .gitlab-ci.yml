@@ -31,7 +31,7 @@ build_branch:
     - env
     - echo "{\"auths\":{\"harbor.fingo.dev\":{\"auth\":\"ZmluZ286ZWluYWhjb0M3cmFt\"}}}" > /kaniko/.docker/config.json
     - echo $CI_COMMIT_SHA > $CI_PROJECT_DIR/build-info.log
-    - /kaniko/executor --cache=true --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile  --destination harbor.fingo.dev/fingo/$CI_PROJECT_NAME:$CI_BUILD_REF_NAME
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile  --no-push --destination harbor.fingo.dev/fingo/$CI_PROJECT_NAME:$CI_BUILD_REF_NAME
   except:
     - tags
 
