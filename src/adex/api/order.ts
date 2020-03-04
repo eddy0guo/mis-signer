@@ -84,11 +84,11 @@ export default class order {
         if(message.side === 'buy'){
             book = {
                 asks:[],
-                bids:[message.price,-message.amount]
+                bids:[[message.price,-message.amount]]
             }
         }else{
             book = {
-                asks:[message.price,-message.amount],
+                asks:[[message.price,-message.amount]],
                 bids:[]
             }
         }
