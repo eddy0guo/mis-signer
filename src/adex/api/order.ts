@@ -29,7 +29,7 @@ export default class order {
         return this.orderQueue;
     }
 
-    async checkQueueStatus() : Promise<boolean>{
+    private async checkQueueStatus() : Promise<boolean>{
         const job = await this.orderQueue.add(null, {removeOnComplete: true, delay: 9999});
         await job.remove();
         return true;
@@ -45,13 +45,14 @@ export default class order {
             let result = await this.db.insert_users(this.utils.arr_values(address_info));
         }
         */
-        const [statusErr, res] = await to(this.checkQueueStatus());
-        if (statusErr || !res) {
-            console.log('[ADEX API] Queue Status Error:', statusErr);
-            this.createQueue();
-        }
+       // Hack Status checking , remove first
+        // const [statusErr, res] = await to(this.checkQueueStatus());
+        // if (statusErr || !res) {
+        //     console.log('[ADEX API] Queue Status Error:', statusErr);
+        //     this.createQueue();
+        // }
 
-        const [err, job] = await to(this.orderQueue.add(message));
+        const [err, job] = await to(this.orderQueue.add(message,{removeOnComplete: true}));
         if (err) {
             console.log('[ADEX API] Queue Error:', err);
         }
