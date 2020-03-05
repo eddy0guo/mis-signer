@@ -17,47 +17,6 @@ import {address} from 'bitcoinjs-lib';
 import {stringify} from 'querystring';
 
 
-// tslint:disable-next-line:no-shadowed-variable
-async function get_asset_balances(asset, mist_wallet, address: string, tokenName?: string | undefined): Promise<any[]> {
-
-    let token_arr = await mist_wallet.list_mist_tokens();
-    if (tokenName) {
-        token_arr = await mist_wallet.get_token(tokenName);
-    }
-    const balances = [];
-    const [assets_balance_err, assets_balance_result] = await to(
-        asset.balanceOf(address)
-    );
-
-    if (assets_balance_err || !assets_balance_result || assets_balance_result[0].assets === undefined) {
-        throw new Error(`[FINGO ADMIN]::(get_asset_balances),${assets_balance_err}`);
-    }
-    const assets_balance = assets_balance_result[0].assets;
-
-    for (const i in token_arr as any[]) {
-        if (!token_arr[i]) continue;
-
-        let asset_balance = 0;
-        for (const j in assets_balance) {
-            if (token_arr[i].asim_assetid === assets_balance[j].asset) {
-                asset_balance = assets_balance[j].value;
-            }
-        }
-        const icon =
-            mist_config.icon_url +
-            token_arr[i].symbol +
-            'a.png';
-        const balance_info = {
-            token_symbol: token_arr[i].symbol,
-            asim_asset_id: token_arr[i].asim_assetid,
-            asim_asset_balance: asset_balance / (1 * 10 ** 8),
-            icon,
-        };
-
-        balances.push(balance_info);
-    }
-    return balances;
-}
 
 export default () => {
     const admin = Router();
@@ -168,7 +127,7 @@ export default () => {
     admin.all('/get_relayer_account', async (req, res) => {
         const relayer_address = mist_config.relayers[0].address;
         const asset = new Asset(mist_config.asimov_child_rpc);
-        const [balancesErr, balances] = await to(get_asset_balances(asset, mist_wallet, relayer_address, 'ASIM'));
+        const [balancesErr, balances] = await to(asset.get_asset_balances(mist_wallet, relayer_address, 'ASIM'));
         res.json({
             success: !!balances,
             result: balances,
@@ -188,9 +147,9 @@ export default () => {
     admin.all('/get_bridge_account', async (req, res) => {
         const bridge_address = mist_config.bridge_address;
         const masterAsset = new Asset(mist_config.asimov_master_rpc);
-        const [masterBalancesErr, masterBalances] = await to(get_asset_balances(masterAsset, mist_wallet, bridge_address));
+        const [masterBalancesErr, masterBalances] = await to(masterAsset.get_asset_balances(mist_wallet, bridge_address));
         const childAsset = new Asset(mist_config.asimov_child_rpc);
-        const [childBalancesErr, childBalances] = await to(get_asset_balances(childAsset, mist_wallet, bridge_address, 'ASIM'));
+        const [childBalancesErr, childBalances] = await to(childAsset.get_asset_balances(mist_wallet, bridge_address, 'ASIM'));
         const result = {
             masterBalances,
             childFee: childBalances,
@@ -215,7 +174,7 @@ export default () => {
         // tslint:disable-next-line:no-shadowed-variable
         const express_address = mist_config.express_address;
         const asset = new Asset(mist_config.asimov_master_rpc);
-        const [balancesErr, balances] = await to(get_asset_balances(asset, mist_wallet, express_address));
+        const [balancesErr, balances] = await to(asset.get_asset_balances(mist_wallet, express_address));
         res.json({
             success: !!balances,
             result: balances,

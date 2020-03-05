@@ -72,7 +72,7 @@ export default class db {
 	}
 
 	async laucher_pending_trade() : Promise<ITrade[]> {
-		const [err, result]: [any,any] = await to(this.clientDB.query('SELECT * FROM asim_express_records  where base_tx_status=\'successful\' and quote_tx_status in (\'pending\',\'failed\') order by created_at limit 1'));
+		const [err, result]: [any,any] = await to(this.clientDB.query('SELECT * FROM asim_express_records  where base_tx_status=\'successful\' and quote_tx_status in (\'pending\',\'failed\') order by created_at desc limit 1'));
 		if (err) {
 			console.error('laucher pending trade failed',err,result);
 			await this.handlePoolError(err);
@@ -104,8 +104,8 @@ export default class db {
 
 	async update_base(info) : Promise<string> {
 		const [err, result]: [any,any] = await to(this.clientDB.query('UPDATE asim_express_records SET \
-		(address,base_asset_name,base_amount,price,quote_amount,fee_amount,base_tx_status,quote_tx_status,updated_at)=\
-		($1,$2,$3,$4,$5,$6,$7,$8,$9) WHERE  trade_id=$10', info));
+		(address,base_asset_name,base_amount,price,quote_asset_name,quote_amount,fee_amount,base_tx_status,quote_tx_status,updated_at)=\
+		($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) WHERE  trade_id=$11', info));
 		if (err) {
 			console.error('update base failed', err, info);
 			await this.handlePoolError(err);

@@ -191,10 +191,15 @@ class Watcher {
 			}
             const currentTime = this.utils.get_current_time();
             const [masterErr, masterTxid] = await send_asset(address, tokenAry[0].asim_assetid, amount);
+            await this.dbClient.begin()
             if (masterTxid) {
                 const update_info = [masterTxid, 'successful', currentTime, id];
-                const [err4, result4] = await to(this.dbClient.update_coin2asset_failed(update_info));
-                if (err4) console.error(err4, result4)
+                const [updateFailedErr, updateFailedRes] = await to(this.dbClient.update_coin2asset_failed(update_info));
+                if (!updateFailedRes) {
+                    await this.dbClient.rollback();
+                    this.coin2asset_release_loop.call(this);
+                    return ;
+                }
             } else {
                 console.error(`the trade ${id} failed again`, masterErr)
 			}
@@ -221,7 +226,7 @@ class Watcher {
 
 
         const { id, address, fee_amount, amount, token_name, child_txid, child_txid_status } = pending_trade[0];
-        const tokens = await this.dbClient.get_tokens([token_name])
+        const tokens = await this.dbClient.get_tokens([token_name]);
 
         let [master_err, master_txid] = await send_asset(address, tokens[0].asim_assetid, amount);
         const master_txid_status = master_txid === null ? 'failed' : 'successful';
@@ -234,9 +239,14 @@ class Watcher {
         const current_time = this.utils.get_current_time();
 
         const info = [master_txid, master_txid_status, child_txid, child_txid_status, current_time, id];
-        const [err3, result3] = await to(this.dbClient.update_coin2asset_bridge(info));
-        if (err3) console.error(err3, result3, fee_amount)
-
+        const [updateBridgeErr, updateBridgeRes] = await to(this.dbClient.update_coin2asset_bridge(info));
+        if (!updateBridgeRes){
+            console.error(updateBridgeErr, updateBridgeRes, fee_amount);
+            await this.dbClient.rollback();
+            this.coin2asset_release_loop.call(this)
+            return ;
+        }
+        await this.dbClient.commit();
         setTimeout(() => {
             this.coin2asset_release_loop.call(this)
         }, 1000 * 10);

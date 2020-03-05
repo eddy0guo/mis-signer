@@ -64,22 +64,42 @@ class Watcher {
         }
 
         this.getReceiptTimes = 0;
-        const info = [status, updateTime, id]
-        const transaction_info = [status, contract_status, updateTime, id]
-        await this.db.update_transactions(transaction_info);
-        await this.db.update_trades(info);
-
-        const trades = await this.db.transactions_trades([id]);
-        for (const trade of trades) {
-            let  updates = [];
-            updates = this.updateElement(updates, trade, updateTime, trade.taker_order_id);
-            updates = this.updateElement(updates, trade, updateTime, trade.maker_order_id);
-            await this.db.update_order_confirm(updates);
-        }
+        await this.updateDB(status, contract_status, updateTime, id);
 
         setImmediate(() => {
             this.loop.call(this)
         })
+    }
+
+    async updateDB(status, contract_status, updateTime, id): Promise<void> {
+        const info = [status, updateTime, id];
+        const transaction_info = [status, contract_status, updateTime, id];
+        await this.db.begin();
+
+        const [updateTransactionsErr, updateTransactionsResult] = await to(this.db.update_transactions(transaction_info));
+        if(!updateTransactionsResult) {
+            await this.db.rollback();
+            return;
+        }
+        const [updateTradesErr,updateTradesResult] = await to(this.db.update_trades(info));
+        if(!updateTradesResult) {
+            await this.db.rollback();
+            return;
+        }
+
+
+        const trades = await this.db.transactions_trades([id]);
+        for (const trade of trades) {
+            let updates = [];
+            updates = this.updateElement(updates, trade, updateTime, trade.taker_order_id);
+            updates = this.updateElement(updates, trade, updateTime, trade.maker_order_id);
+            const [updateConfirmErr,updateConfirmRes] = await to (this.db.update_order_confirm(updates));
+            if(!updateConfirmRes) {
+                await this.db.rollback();
+                return ;
+            }
+        }
+        await this.db.commit();
     }
 
     updateElement(updates, trade, updateTime, orderId) {

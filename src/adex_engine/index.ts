@@ -9,11 +9,11 @@ import Utils from '../adex/api/utils'
 import {
     IOrder, IOrderBook, ILastTrade,
 } from '../adex/interface';
-import { Health } from '../common/Health'
+import {Health} from '../common/Health'
 
 const QueueNames = {
-    OrderQueue : 'OrderQueue' + process.env.MIST_MODE,
-    AddOrderBookQueue : 'addOrderBookQueue',
+    OrderQueue: 'OrderQueue' + process.env.MIST_MODE,
+    AddOrderBookQueue: 'addOrderBookQueue',
     AddTradesQueue: 'addTradesQueue',
 }
 
@@ -85,9 +85,10 @@ class AdexEngine {
     async initQueue(): Promise<void> {
         if (this.orderQueue) {
             await this.orderQueue.close();
-        };
+        }
+        ;
 
-        const option:Queue.QueueOptions = {
+        const option: Queue.QueueOptions = {
             redis: {
                 port: Number(process.env.REDIS_PORT),
                 host: process.env.REDIS_URL,
@@ -95,9 +96,9 @@ class AdexEngine {
             }
         };
 
-        this.orderQueue = new Queue(QueueNames.OrderQueue, option );
-        this.orderBookQueue = new Queue(QueueNames.AddOrderBookQueue,option );
-        this.addTradesQueue = new Queue(QueueNames.AddTradesQueue,option  );
+        this.orderQueue = new Queue(QueueNames.OrderQueue, option);
+        this.orderBookQueue = new Queue(QueueNames.AddOrderBookQueue, option);
+        this.addTradesQueue = new Queue(QueueNames.AddTradesQueue, option);
 
         this.orderQueue.on('error', async e => {
             console.log('[ADEX ENGINE] Queue on Error', e);
@@ -122,12 +123,15 @@ class AdexEngine {
             message.updated_at = create_time;
             const lastTrades = [];
             // 每次匹配100单，超过300的二次匹配直到匹配不到挂单
+            await this.db.begin();
             while (message.available_amount > 0) {
 
                 const [find_orders_err, find_orders] = await to(this.exchange.match(message));
 
                 if (!find_orders) {
-                    console.error('match orders', find_orders_err, find_orders);
+                    console.error('[ADEX ENGINE]:match orders', find_orders_err, find_orders);
+                    await this.db.rollback();
+                    done(new Error(find_orders_err));
                     return;
                 }
 
@@ -138,13 +142,16 @@ class AdexEngine {
                 const [trades_err, trades] = await to(this.exchange.make_trades(find_orders, message));
                 if (!trades) {
                     console.error('make trades', trades_err, trades);
+                    await this.db.rollback();
+                    done(new Error(trades_err));
                     return;
                 }
 
                 const [call_asimov_err, call_asimov_result] = await to(this.exchange.call_asimov(trades));
                 if (call_asimov_err) {
                     console.error('call asimov', call_asimov_err, call_asimov_result);
-                    done();
+                    await this.db.rollback();
+                    done(new Error(call_asimov_err));
                     return;
                 }
 
@@ -168,8 +175,8 @@ class AdexEngine {
                     data: lastTrades,
                     id: message.market_id,
                 }
-                console.log('[ADEX ENGINE] New Trades Matched at:',message.market_id );
-                const [lastTradesAddErr, lastTradesAddResult] = await to(this.addTradesQueue.add(marketLastTrades));
+                const [lastTradesAddErr, lastTradesAddResult] = await to(this.addTradesQueue.add(marketLastTrades,{removeOnComplete: true}));
+                console.log('[ADEX ENGINE] New Trades Matched %o,queue id %o ', marketLastTrades, lastTradesAddResult.id);
                 if (lastTradesAddErr) console.error('[ADEX ENGINE]:lastTrade add queue failed %o\n', lastTradesAddErr);
             }
             const book = computeOrderBookUpdates(lastTrades, message);
@@ -177,9 +184,9 @@ class AdexEngine {
                 data: book,
                 id: message.market_id,
             }
-            const [orderBookQueueErr, orderBookQueueResult] = await to(this.orderBookQueue.add(marketUpdateBook));
+            const [orderBookQueueErr, orderBookQueueResult] = await to(this.orderBookQueue.add(marketUpdateBook,{removeOnComplete: true}));
             if (orderBookQueueErr) console.error('[ADEX ENGINE]:orderBookUpdateQueue failed %o\n', orderBookQueueErr);
-
+            console.log('[ADEX ENGINE] New orderBookQueue %o,queue id  %o', marketUpdateBook, orderBookQueueResult.id);
             if (message.pending_amount === 0) {
                 message.status = 'pending';
             } else if (message.available_amount === 0) {
@@ -191,9 +198,12 @@ class AdexEngine {
             const arr_message = this.utils.arr_values(message);
             const [insert_order_err, insert_order_result] = await to(this.db.insert_order(arr_message));
             if (!insert_order_result) {
-                console.error(`[ADEX ENGINE] insert_order_err`,insert_order_err, insert_order_result);
+                console.error(`[ADEX ENGINE] insert_order_err`, insert_order_err, insert_order_result);
+                await this.db.rollback();
+                done(new Error(insert_order_err));
+                return;
             }
-
+            await this.db.commit();
             done()
         });
         const queueReady = await this.orderQueue.isReady();
@@ -213,5 +223,5 @@ process.on('unhandledRejection', (reason, p) => {
 const health = new Health();
 health.start();
 
-const engine =  new AdexEngine();
+const engine = new AdexEngine();
 engine.initQueue();
