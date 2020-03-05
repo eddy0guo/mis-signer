@@ -1,3 +1,5 @@
+import * as Queue from 'bull';
+
 interface IConfig {
   // TEST ONLY
   order_hash_word: string,
@@ -251,3 +253,13 @@ switch (process.env.MIST_MODE) {
 }
 // var mistConfig = mistConfig_test;
 export default mistConfig;
+
+const BullOption: Queue.QueueOptions = {
+  redis: {
+      port: Number(process.env.REDIS_PORT),
+      host: process.env.REDIS_URL,
+      password: process.env.REDIS_PWD
+  }
+};
+
+export {BullOption};

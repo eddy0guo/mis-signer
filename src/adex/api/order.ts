@@ -7,6 +7,7 @@ import to from 'await-to-js';
 import * as Queue from 'bull';
 import * as process from 'process';
 import {IOrder, IOrderBook} from '../interface';
+import {BullOption} from '../../cfg';
 
 export default class order {
 
@@ -22,23 +23,8 @@ export default class order {
     }
 
     createQueue() : Queue.Queue {
-        this.orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE,
-            {
-                redis: {
-                    port: Number(process.env.REDIS_PORT),
-                    host: process.env.REDIS_URL,
-                    password: process.env.REDIS_PWD
-                }
-            });
-
-        this.orderBookUpdateQueue = new Queue('addOrderBookQueue',
-            {
-                redis: {
-                    port: Number(process.env.WS_REDIS_PORT),
-                    host: process.env.WS_REDIS_URL,
-                    password: process.env.WS_REDIS_PWD
-                }
-            });
+        this.orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE,BullOption);
+        this.orderBookUpdateQueue = new Queue('addOrderBookQueue',BullOption);
 
         return this.orderQueue;
     }
