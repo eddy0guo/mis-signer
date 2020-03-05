@@ -26,6 +26,22 @@ export default class order {
         this.orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE,BullOption);
         this.orderBookUpdateQueue = new Queue('addOrderBookQueue',BullOption);
 
+        this.orderQueue.on('error', async e => {
+            console.log('[SIGNER_API] Queue on Error', e);
+            console.log('[SIGNER_API] Goodbye...');
+
+            // kill instance when queue on error
+            process.exit(-1);
+        });
+
+        this.orderBookUpdateQueue.on('error', async e => {
+            console.log('[SIGNER_API] Queue on Error', e);
+            console.log('[SIGNER_API] Goodbye...');
+
+            // kill instance when queue on error
+            process.exit(-1);
+        });
+
         return this.orderQueue;
     }
 
@@ -55,6 +71,7 @@ export default class order {
         const [err, job] = await to(this.orderQueue.add(message,{removeOnComplete: true}));
         if (err) {
             console.log('[ADEX API] Queue Error:', err);
+            throw err;
         }
         return job;
     }
