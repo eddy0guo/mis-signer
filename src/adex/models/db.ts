@@ -53,6 +53,34 @@ export default class db {
         throw err;
     }
 
+    async begin(): Promise<IFreezeToken[]> {
+        const [err, result]: [any, any] = await to(this.clientDB.query('commit'));
+        if (!result) {
+            console.error('begin failed', err);
+            process.exit(-1);
+        }
+        return ;
+    }
+
+    async commit(): Promise<void> {
+        const [err, result]: [any, any] = await to(this.clientDB.query('commit'));
+        if (!result) {
+            console.error('commit failed', err);
+            process.exit(-1);
+        }
+        return ;
+    }
+
+    async rollback(): Promise<void> {
+        const [err, result]: [any, any] = await to(this.clientDB.query('rollback'));
+        if (!result) {
+            console.error('rollback failed,', err);
+            await this.handlePoolError(err);
+            process.exit(-1);
+        }
+        return ;
+    }
+
     /**
      *orders
      *
