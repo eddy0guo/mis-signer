@@ -11,6 +11,8 @@ import {
 } from '../adex/interface';
 import {Health} from '../common/Health'
 
+import {BullOption} from '../cfg';
+
 const QueueNames = {
     OrderQueue: 'OrderQueue' + process.env.MIST_MODE,
     AddOrderBookQueue: 'addOrderBookQueue',
@@ -88,13 +90,7 @@ class AdexEngine {
         }
         ;
 
-        const option: Queue.QueueOptions = {
-            redis: {
-                port: Number(process.env.REDIS_PORT),
-                host: process.env.REDIS_URL,
-                password: process.env.REDIS_PWD
-            }
-        };
+        const option: Queue.QueueOptions = BullOption;
 
         this.orderQueue = new Queue(QueueNames.OrderQueue, option);
         this.orderBookQueue = new Queue(QueueNames.AddOrderBookQueue, option);
