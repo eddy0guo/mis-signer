@@ -720,6 +720,7 @@ export default () => {
             );
             const quota_amount = NP.times(+amount, +price);
             if (quota_amount > available_quota) {
+                console.log(`${market_id} base  balance is not enoungh,available amount is ${available_quota},but your want to sell ${amount}`)
                 return res.json({
                     success: false,
                     err: `quotation  balance is not enoungh,available amount is ${available_quota},but your order value is ${quota_amount}`,
@@ -733,9 +734,10 @@ export default () => {
                 mist_wallet
             );
             if (amount > available_base) {
+                console.log(`${market_id} base  balance is not enoungh,available amount is ${available_base},but your want to sell ${amount}`)
                 return res.json({
                     success: false,
-                    err: `base  balance is not enoungh,available amount is ${available_base},but your want to sell ${amount}`,
+                    err: `${market_id} base  balance is not enoungh,available amount is ${available_base},but your want to sell ${amount}`,
                 });
             }
         } else {
@@ -983,6 +985,24 @@ export default () => {
         }
     );
 
+    adex.all(
+        '/my_orders_v3/:address/:market_id/:page/:perPage/:status1/:status2',
+        async (req, res) => {
+            // pending,partial_filled,当前委托
+            // cancled，full_filled，历史委托
+            const {address, page, perPage, status1, status2, market_id} = req.params;
+            const [err, result] = await to(
+                order.my_orders(address, +page, +perPage, status1, status2, market_id)
+            );
+
+            res.json({
+                success: !result ? false : true,
+                result,
+                err,
+            });
+        }
+    );
+
 
     adex.all('/order_book_v2/:market_id/:precision', async (req, res) => {
         const {market_id, precision} = req.params
@@ -1015,11 +1035,6 @@ export default () => {
             err,
         });
     });
-
-
-
-
-
 
 
     adex.all('/rollback_trades', async (req, res) => {

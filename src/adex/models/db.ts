@@ -53,6 +53,34 @@ export default class db {
         throw err;
     }
 
+    async begin(): Promise<IFreezeToken[]> {
+        const [err, result]: [any, any] = await to(this.clientDB.query('begin'));
+        if (!result) {
+            console.error('begin failed', err);
+            process.exit(-1);
+        }
+        return;
+    }
+
+    async commit(): Promise<void> {
+        const [err, result]: [any, any] = await to(this.clientDB.query('commit'));
+        if (!result) {
+            console.error('commit failed', err);
+            process.exit(-1);
+        }
+        return;
+    }
+
+    async rollback(): Promise<void> {
+        const [err, result]: [any, any] = await to(this.clientDB.query('rollback'));
+        if (!result) {
+            console.error('rollback failed,', err);
+            await this.handlePoolError(err);
+            process.exit(-1);
+        }
+        return;
+    }
+
     /**
      *orders
      *
@@ -119,6 +147,16 @@ export default class db {
 
     async my_orders2(filter_info): Promise<IOrder[]> {
         const [err, result]: [any, any] = await to(this.clientDB.query('SELECT * FROM mist_orders where trader_address=$1 and (status=$4 or status=$5)order by updated_at desc limit $3 offset $2', filter_info));
+        if (err) {
+            console.error('my_orders2 failed ', err, filter_info);
+            await this.handlePoolError(err);
+        }
+        return result.rows;
+
+    }
+
+    async my_orders3(filter_info): Promise<IOrder[]> {
+        const [err, result]: [any, any] = await to(this.clientDB.query('SELECT * FROM mist_orders where trader_address=$1 and market_id=$6 and (status=$4 or status=$5)order by updated_at desc limit $3 offset $2', filter_info));
         if (err) {
             console.error('my_orders2 failed ', err, filter_info);
             await this.handlePoolError(err);
@@ -361,7 +399,7 @@ export default class db {
     }
 
     async get_market_max_price(marketID): Promise<IPrice[]> {
-        const [err, result]: [any, any] = await to(this.clientDB.query('select cast(price as float8) from mist_trades_tmp where (current_timestamp - created_at) < \'24 hours\' and market_id=$1 order by price limit 1', marketID));
+        const [err, result]: [any, any] = await to(this.clientDB.query('select cast(price as float8) from mist_trades_tmp where (current_timestamp - created_at) < \'24 hours\' and market_id=$1 order by price desc limit 1', marketID));
         if (err) {
             console.error('get_market_max_price failed', err, marketID);
             await this.handlePoolError(err);
@@ -374,7 +412,7 @@ export default class db {
     }
 
     async get_market_min_price(marketID): Promise<IPrice[]> {
-        const [err, result]: [any, any] = await to(this.clientDB.query('select cast(price as float8) from mist_trades_tmp where (current_timestamp - created_at) < \'24 hours\' and market_id=$1 order by price desc limit 1', marketID));
+        const [err, result]: [any, any] = await to(this.clientDB.query('select cast(price as float8) from mist_trades_tmp where (current_timestamp - created_at) < \'24 hours\' and market_id=$1 order by price limit 1', marketID));
         if (err) {
             console.error('get_market_min_price failed', err, marketID);
             await this.handlePoolError(err);
