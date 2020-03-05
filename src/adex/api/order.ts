@@ -105,9 +105,16 @@ export default class order {
 
         return result;
     }
-    async my_orders(address:string, page:number, perPage:number, status1:string, status2:string):Promise<IOrder[]> {
+    async my_orders(address:string, page:number, perPage:number, status1:string, status2:string,tokenName?: string | undefined):Promise<IOrder[]> {
         const offset = (page - 1) * perPage;
-        const [err, orders] = await to(this.db.my_orders2([address, offset, perPage, status1, status2]));
+        // @ts-ignore
+        let [err,orders] = [null,null];
+        if(tokenName) {
+            [err, orders] = await to(this.db.my_orders3([address, offset, perPage, status1, status2,tokenName]));
+        }
+        else{
+            [err, orders] = await to(this.db.my_orders2([address, offset, perPage, status1, status2]));
+        }
         if (!orders) {
             console.error(err, orders);
             return orders;

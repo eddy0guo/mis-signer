@@ -983,6 +983,24 @@ export default () => {
         }
     );
 
+    adex.all(
+        '/my_orders_v3/:address/:market_id/:page/:perPage/:status1/:status2',
+        async (req, res) => {
+            // pending,partial_filled,当前委托
+            // cancled，full_filled，历史委托
+            const {address, page, perPage, status1, status2, market_id} = req.params;
+            const [err, result] = await to(
+                order.my_orders(address, +page, +perPage, status1, status2, market_id)
+            );
+
+            res.json({
+                success: !result ? false : true,
+                result,
+                err,
+            });
+        }
+    );
+
 
     adex.all('/order_book_v2/:market_id/:precision', async (req, res) => {
         const {market_id, precision} = req.params
@@ -1015,11 +1033,6 @@ export default () => {
             err,
         });
     });
-
-
-
-
-
 
 
     adex.all('/rollback_trades', async (req, res) => {
