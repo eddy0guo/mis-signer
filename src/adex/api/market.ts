@@ -92,8 +92,10 @@ export default class Market {
             } else {
                 const [base_token, quote_token] = result[0].market_id.split('-');
                 const quote_price = await this.quotation.get_token_price2pi(quote_token);
-                const max_price = await this.db.get_market_max_price([base_token]);
-                const min_price = await this.db.get_market_min_price([base_token]);
+                const max_price = await this.db.get_market_max_price([markets[index].id]);
+                const min_price = await this.db.get_market_min_price([markets[index].id]);
+
+                console.log(`-----max=%o-min=%o--`,max_price,min_price);
 
                 if (max_price.length > 0 && min_price.length > 0 && quote_price > 0) {
                     result[0].CNYC_price = await this.quotation.get_token_price2pi(base_token);

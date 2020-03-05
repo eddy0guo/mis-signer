@@ -168,8 +168,8 @@ class AdexEngine {
                     data: lastTrades,
                     id: message.market_id,
                 }
-                console.log('[ADEX ENGINE] New Trades Matched at:',message.market_id );
                 const [lastTradesAddErr, lastTradesAddResult] = await to(this.addTradesQueue.add(marketLastTrades));
+                console.log('[ADEX ENGINE] New Trades Matched %o,queue id %o ',marketLastTrades,lastTradesAddResult.id);
                 if (lastTradesAddErr) console.error('[ADEX ENGINE]:lastTrade add queue failed %o\n', lastTradesAddErr);
             }
             const book = computeOrderBookUpdates(lastTrades, message);
@@ -179,7 +179,7 @@ class AdexEngine {
             }
             const [orderBookQueueErr, orderBookQueueResult] = await to(this.orderBookQueue.add(marketUpdateBook));
             if (orderBookQueueErr) console.error('[ADEX ENGINE]:orderBookUpdateQueue failed %o\n', orderBookQueueErr);
-
+            console.log('[ADEX ENGINE] New orderBookQueue %o,queue id  %o',marketUpdateBook,orderBookQueueResult.id);
             if (message.pending_amount === 0) {
                 message.status = 'pending';
             } else if (message.available_amount === 0) {
