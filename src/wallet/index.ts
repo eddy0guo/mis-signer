@@ -9,6 +9,9 @@ import {chain} from './api/chain';
 import mist_config from '../cfg';
 import adex_utils from '../adex/api/utils';
 import psql from '../adex/models/db';
+import Asset from './contract/Asset';
+import MistWallet from '../adex/api/mist_wallet';
+
 
 const Coin2AssetFee = [
     {
@@ -42,7 +45,7 @@ export default () => {
 
     const psql_db = new psql();
     const utils = new adex_utils();
-
+    const mist_wallet = new MistWallet(psql_db);
 
     /**
      * @api {post} /wallet/sendrawtransaction/asset2coin_v3/:sign_data 广播资产划转
@@ -134,6 +137,14 @@ export default () => {
 
     wallet.all('/sendrawtransaction/coin2asset_v3', async (req, res) => {
         const {signature, address, token_name, amount, expire_time} = req.body;
+
+        const asset = new Asset(mist_config.asimov_master_rpc);
+        const [balancesErr, balances] = await to(asset.get_asset_balances(mist_wallet, mist_config.bridge_address,token_name));
+        if (amount > balances[0].asim_asset_balance){
+            console.error(`bridge account  only have ${balances[0].asim_asset_balance} ${token_name}`);
+            return res.json({success: false, err: 'The official account have no enough balance'});
+        }
+
         const current_time = new Date().getTime();
         if (+current_time > +expire_time) {
             return res.json({success: false, err: 'sign data expire'});

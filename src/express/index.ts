@@ -453,7 +453,8 @@ export default () => {
   express.all(
     '/sendrawtransaction/build_express_v2/:quote_token_name/:sign_data',
     async (req, res) => {
-      const { quote_token_name, sign_data } = req.params;
+      // tslint:disable-next-line:prefer-const
+      let { quote_token_name: quote_asset_name, sign_data } = req.params;
       const [base_err, base_txid] = await to(
         chain.sendrawtransaction([sign_data])
       );
@@ -466,10 +467,10 @@ export default () => {
           base_asset_name: null,
           base_amount: null,
           price: null,
-          quote_asset_name: quote_token_name,
+          quote_asset_name,
           quote_amount: null,
           fee_rate: 0.005,
-          fee_token: quote_token_name,
+          fee_token: quote_asset_name,
           fee_amount: null,
           base_txid,
           base_tx_status: 'pending',
@@ -524,21 +525,33 @@ export default () => {
           base_tx_status = 'illegaled';
           console.error(`[ADEX EXPRESS]::(get_tokens):asset ${asset_id}  is not support`);
         }
-
-        const [err, price] = await to(
-          get_price(base_token[0].symbol, quote_token_name, to_amount, order)
+        // tslint:disable-next-line:prefer-const
+        let [err, price] = await to(
+          get_price(base_token[0].symbol, quote_asset_name, to_amount, order)
         );
         if (!price) console.error('[ADEX EXPRESS]::(get_price):',err);
         const current_time = utils.get_current_time();
 
-        const quote_amount = NP.times(to_amount, Number(price), 0.995);
-        const fee_amount = NP.times(to_amount, Number(price), 0.005);
+        let  quote_amount = NP.times(to_amount, Number(price), 0.995);
+        let  fee_amount = NP.times(to_amount, Number(price), 0.005);
+
+        const asset = new Asset(mist_config.asimov_master_rpc);
+        const [balancesErr, balances] = await to(asset.get_asset_balances(mist_wallet, mist_config.express_address,quote_asset_name));
+        if(quote_amount > balances[0].asim_asset_balance){
+          console.error(`The express account only have ${balances[0].asim_asset_balance}  ${quote_asset_name}`);
+          console.log(`Start refunding users' ${base_token[0].symbol}`);
+          price = '1';
+          quote_amount = to_amount;
+          fee_amount = 0;
+          quote_asset_name = base_token[0].symbol;
+        }
 
         const info = {
           address: from,
           base_asset_name: base_token[0].symbol,
           base_amount: to_amount,
           price,
+          quote_token_name: quote_asset_name,
           quote_amount,
           fee_amount,
           base_tx_status,
