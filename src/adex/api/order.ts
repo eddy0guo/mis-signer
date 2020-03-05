@@ -97,7 +97,7 @@ export default class order {
             data: book,
             id:message.market_id,
         }
-        const [orderBookUpdateQueueErr, orderBookUpdateQueueResult] = await to(this.orderBookUpdateQueue.add(marketUpdateBook));
+        const [orderBookUpdateQueueErr, orderBookUpdateQueueResult] = await to(this.orderBookUpdateQueue.add(marketUpdateBook,{removeOnComplete: true}));
         if (orderBookUpdateQueueErr) {
             console.error('[ADEX ENGINE]:orderBookUpdateQueue failed %o\n', orderBookUpdateQueueErr);
         }

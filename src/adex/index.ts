@@ -720,6 +720,7 @@ export default () => {
             );
             const quota_amount = NP.times(+amount, +price);
             if (quota_amount > available_quota) {
+                console.log(`${market_id} base  balance is not enoungh,available amount is ${available_quota},but your want to sell ${amount}`)
                 return res.json({
                     success: false,
                     err: `quotation  balance is not enoungh,available amount is ${available_quota},but your order value is ${quota_amount}`,
@@ -733,9 +734,10 @@ export default () => {
                 mist_wallet
             );
             if (amount > available_base) {
+                console.log(`${market_id} base  balance is not enoungh,available amount is ${available_base},but your want to sell ${amount}`)
                 return res.json({
                     success: false,
-                    err: `base  balance is not enoungh,available amount is ${available_base},but your want to sell ${amount}`,
+                    err: `${market_id} base  balance is not enoungh,available amount is ${available_base},but your want to sell ${amount}`,
                 });
             }
         } else {

@@ -131,8 +131,8 @@ class AdexEngine {
                 if (!find_orders) {
                     console.error('[ADEX ENGINE]:match orders', find_orders_err, find_orders);
                     await this.db.rollback();
+                    done(new Error(find_orders_err));
                     return;
-                    // throw new Error('some unexpected error-------');
                 }
 
                 if (find_orders.length === 0) {
@@ -143,6 +143,7 @@ class AdexEngine {
                 if (!trades) {
                     console.error('make trades', trades_err, trades);
                     await this.db.rollback();
+                    done(new Error(trades_err));
                     return;
                 }
 
@@ -150,6 +151,7 @@ class AdexEngine {
                 if (call_asimov_err) {
                     console.error('call asimov', call_asimov_err, call_asimov_result);
                     await this.db.rollback();
+                    done(new Error(call_asimov_err));
                     return;
                 }
 
@@ -173,7 +175,7 @@ class AdexEngine {
                     data: lastTrades,
                     id: message.market_id,
                 }
-                const [lastTradesAddErr, lastTradesAddResult] = await to(this.addTradesQueue.add(marketLastTrades));
+                const [lastTradesAddErr, lastTradesAddResult] = await to(this.addTradesQueue.add(marketLastTrades,{removeOnComplete: true}));
                 console.log('[ADEX ENGINE] New Trades Matched %o,queue id %o ', marketLastTrades, lastTradesAddResult.id);
                 if (lastTradesAddErr) console.error('[ADEX ENGINE]:lastTrade add queue failed %o\n', lastTradesAddErr);
             }
@@ -182,7 +184,7 @@ class AdexEngine {
                 data: book,
                 id: message.market_id,
             }
-            const [orderBookQueueErr, orderBookQueueResult] = await to(this.orderBookQueue.add(marketUpdateBook));
+            const [orderBookQueueErr, orderBookQueueResult] = await to(this.orderBookQueue.add(marketUpdateBook,{removeOnComplete: true}));
             if (orderBookQueueErr) console.error('[ADEX ENGINE]:orderBookUpdateQueue failed %o\n', orderBookQueueErr);
             console.log('[ADEX ENGINE] New orderBookQueue %o,queue id  %o', marketUpdateBook, orderBookQueueResult.id);
             if (message.pending_amount === 0) {
@@ -198,6 +200,7 @@ class AdexEngine {
             if (!insert_order_result) {
                 console.error(`[ADEX ENGINE] insert_order_err`, insert_order_err, insert_order_result);
                 await this.db.rollback();
+                done(new Error(insert_order_err));
                 return;
             }
             await this.db.commit();
