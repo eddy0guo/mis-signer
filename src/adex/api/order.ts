@@ -7,6 +7,7 @@ import to from 'await-to-js';
 import * as Queue from 'bull';
 import * as process from 'process';
 import {IOrder, IOrderBook} from '../interface';
+import {BullOption} from '../../cfg';
 
 export default class order {
 
@@ -22,28 +23,29 @@ export default class order {
     }
 
     createQueue() : Queue.Queue {
-        this.orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE,
-            {
-                redis: {
-                    port: Number(process.env.REDIS_PORT),
-                    host: process.env.REDIS_URL,
-                    password: process.env.REDIS_PWD
-                }
-            });
+        this.orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE,BullOption);
+        this.orderBookUpdateQueue = new Queue('addOrderBookQueue',BullOption);
 
-        this.orderBookUpdateQueue = new Queue('addOrderBookQueue',
-            {
-                redis: {
-                    port: Number(process.env.WS_REDIS_PORT),
-                    host: process.env.WS_REDIS_URL,
-                    password: process.env.WS_REDIS_PWD
-                }
-            });
+        this.orderQueue.on('error', async e => {
+            console.log('[SIGNER_API] Queue on Error', e);
+            console.log('[SIGNER_API] Goodbye...');
+
+            // kill instance when queue on error
+            process.exit(-1);
+        });
+
+        this.orderBookUpdateQueue.on('error', async e => {
+            console.log('[SIGNER_API] Queue on Error', e);
+            console.log('[SIGNER_API] Goodbye...');
+
+            // kill instance when queue on error
+            process.exit(-1);
+        });
 
         return this.orderQueue;
     }
 
-    async checkQueueStatus() : Promise<boolean>{
+    private async checkQueueStatus() : Promise<boolean>{
         const job = await this.orderQueue.add(null, {removeOnComplete: true, delay: 9999});
         await job.remove();
         return true;
@@ -59,15 +61,17 @@ export default class order {
             let result = await this.db.insert_users(this.utils.arr_values(address_info));
         }
         */
-        const [statusErr, res] = await to(this.checkQueueStatus());
-        if (statusErr || !res) {
-            console.log('[ADEX API] Queue Status Error:', statusErr);
-            this.createQueue();
-        }
+       // Hack Status checking , remove first
+        // const [statusErr, res] = await to(this.checkQueueStatus());
+        // if (statusErr || !res) {
+        //     console.log('[ADEX API] Queue Status Error:', statusErr);
+        //     this.createQueue();
+        // }
 
-        const [err, job] = await to(this.orderQueue.add(message));
+        const [err, job] = await to(this.orderQueue.add(message,{removeOnComplete: true}));
         if (err) {
             console.log('[ADEX API] Queue Error:', err);
+            throw err;
         }
         return job;
     }
