@@ -682,7 +682,7 @@ export default () => {
         if (!(utils.judge_legal_num(+amount) && utils.judge_legal_num(+price))) {
             return res.json({
                 success: false,
-                err: 'amount or price is cannt support',
+                err: 'The precision of quantity and price is only supported up to the fourth decimal point',
             });
         }
 
@@ -692,7 +692,7 @@ export default () => {
             console.error('[MIST SIGNER]:(trades.list_trades):', last_trade_err, last_trade);
             return res.json({
                 success: false,
-                err: 'amount or price is cannt support',
+                err: last_trade_err,
             });
         }
         // init limit 0 ～ 100000

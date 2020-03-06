@@ -570,16 +570,24 @@ export default () => {
     express.all('/check_trade/:quote_token/:quote_amount', async (req, res) => {
         const {quote_token, quote_amount} = req.params;
         const asset = new Asset(mist_config.asimov_master_rpc);
+        let [success, result, err] = [null, null, null];
         const [balancesErr, balances] = await to(asset.get_asset_balances(mist_wallet, mist_config.express_address, quote_token));
         if (!balances || !balances[0]) {
-            return res.json({
-                success: false,
-                err: balancesErr
-            });
+            success = false;
+            err = balancesErr;
+
+        } else if (+quote_amount > balances[0].asim_asset_balance / 2) {
+            success = true;
+            result = false;
+            err = `Express capital pool balance is insufficient, temporarily cannot exchange large amount`
+        } else {
+            success = true;
+            result = true;
         }
         res.json({
-            success: true,
-            result: +quote_amount > balances[0].asim_asset_balance / 2 ? false : true,
+            success,
+            result,
+            err
         });
     });
 
