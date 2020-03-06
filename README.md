@@ -2,6 +2,8 @@
 
 ## Getting Started
 
+
+
 ---------------
 
 ```sh
@@ -79,4 +81,13 @@ node dist/bridge_watcher
 node dist/express
 node dist/express_watcher
 node dist/adex_ws
+
+
+```bash
 ```
+
+## 相关文档
+
+* [部署测试流程](doc/deploy.md)
+* [交易对管理](doc/market_manage.md)
+
