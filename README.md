@@ -1,5 +1,8 @@
 # Mist Signer
 
+The Design of Mist Exchange Protocol is start from scratch. 
+All the design is based on Asimov Blockchain and take good consider of decentrelized.
+
 ## Getting Started
 
 ---------------
