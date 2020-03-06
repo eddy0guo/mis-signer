@@ -8,6 +8,7 @@ interface IConfig {
   fauct_prikey: string,
 
   ex_address: string,
+  mist_earnings_address: string,
   relayers: {prikey: string,word: string,address: string}[],
 
   bridge_word: string,
@@ -34,6 +35,7 @@ interface IConfig {
 
 const local:IConfig = {
   ex_address: '0x63722839a7d46e75e4cd9f40edc7680651143084ae',
+  mist_earnings_address:'0x634b2ee429ce7dd2d1540dfd8ee5475b5a144ce71a',
   order_hash_word:
     'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
   fauct_address: '0x666234b6348c10fed282b95c1f1768aa3113eb96b2',
@@ -92,6 +94,7 @@ const local:IConfig = {
 
 const dev:IConfig = {
   ex_address: '0x630329112990e5246f67ae0de752225d56e33e3121',
+  mist_earnings_address:'0x634b2ee429ce7dd2d1540dfd8ee5475b5a144ce71a',
   order_hash_word:
     'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
   fauct_address: '0x666234b6348c10fed282b95c1f1768aa3113eb96b2',
@@ -148,6 +151,7 @@ const dev:IConfig = {
 
 const product:IConfig = {
     ex_address:'0x630329112990e5246f67ae0de752225d56e33e3121',
+    mist_earnings_address:'0x669952fb5d185d36b168b9f6c3bbeade4ad6510aee',
     order_hash_word:'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
     fauct_address:'0x666234b6348c10fed282b95c1f1768aa3113eb96b2',
     fauct_word:'tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook',
@@ -195,6 +199,8 @@ const CONFIG_K8S:IConfig = {
   fauct_prikey: '',
 
   ex_address: process.env.EX_ADDRESS,
+ // mist_earnings_address:process.env.EARNINGS_ADDRESS,
+  mist_earnings_address:'0x634b2ee429ce7dd2d1540dfd8ee5475b5a144ce71a',
   relayers: [
     {
       prikey: process.env.RELAYER_KEY,
