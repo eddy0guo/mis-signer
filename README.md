@@ -1,6 +1,11 @@
 # Mist Signer
 
+The Design of Mist Exchange Protocol is start from scratch. 
+All the design is based on Asimov Blockchain and take good consider of decentrelized.
+
 ## Getting Started
+
+
 
 ---------------
 
@@ -79,4 +84,13 @@ node dist/bridge_watcher
 node dist/express
 node dist/express_watcher
 node dist/adex_ws
+
+
+```bash
 ```
+
+## 相关文档
+
+* [部署测试流程](doc/deploy.md)
+* [交易对管理](doc/market_manage.md)
+

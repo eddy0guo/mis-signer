@@ -35,4 +35,13 @@ export default class Token {
       )
   }
 
+  async totalSupply(network_flag:string = 'master_poa') {
+    const wallet: AsimovWallet = (network_flag === 'master_poa') ? this.master : this.child;
+    return wallet.contractCall.callReadOnly(
+        this.address,
+        'totalSupply()',
+        []
+    )
+  }
+
 }
