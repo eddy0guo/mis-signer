@@ -145,7 +145,17 @@ export default class db {
 	async list_tokens() : Promise<IToken[]> {
 		const [err, result]: [any,any]  = await to(this.clientDB.query('select * from mist_tokens'));
 		if (err) {
-			console.error('list_tokens_failed', err, );
+			console.error('list_tokens_failed', err);
+			await this.handlePoolError(err);
+		}
+		return result.rows;
+
+	}
+
+	async getPendingDecodeBaseTX() : Promise<any[]> {
+		const [err, result]: [any,any]  = await to(this.clientDB.query('select * from asim_express_records where address is null and (current_timestamp - created_at) > \'10 seconds\' limit 1'));
+		if (err) {
+			console.error('getPendingDecodeBaseTX failed', err);
 			await this.handlePoolError(err);
 		}
 		return result.rows;
