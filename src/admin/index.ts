@@ -15,7 +15,8 @@ import mist_config from '../cfg';
 import Asset from '../wallet/contract/Asset';
 import {address} from 'bitcoinjs-lib';
 import {stringify} from 'querystring';
-
+import Token from '../wallet/contract/Token';
+import mistConfig from '../cfg';
 
 
 export default () => {
@@ -134,6 +135,32 @@ export default () => {
             err: balancesErr
         });
     });
+    admin.all('/get_mist_earnings', async (req, res) => {
+        const mistTokenBalances = [];
+        const token_arr = await mist_wallet.list_mist_tokens();
+        for (const i in token_arr as any[]) {
+            if (!token_arr[i]) continue;
+            const token = new Token(token_arr[i].address);
+            const [token_balance_err, token_balance_result] = await to(token.balanceOf(mistConfig.mist_earnings_address, 'child_poa'));
+            if (token_balance_err || !token_balance_result) {
+                console.error(`[FINGO ADMIN]::(get_mist_token_balances),%o,${token_balance_err},`, token_arr[i]);
+                return res.json({
+                    success: false,
+                    err: token_balance_err
+                });
+            }
+            const balance_info = {
+                token_symbol: token_arr[i].symbol,
+                mist_token_balance: token_balance_result / (1 * 10 ** 8),
+            };
+
+            mistTokenBalances.push(balance_info);
+        }
+        res.json({
+            success: true,
+            result: mistTokenBalances,
+        });
+    });
 
     admin.all('/get_bridge_progress', async (req, res) => {
         const [err, result] = await to(psql_db.get_bridger_progress());
@@ -150,9 +177,32 @@ export default () => {
         const [masterBalancesErr, masterBalances] = await to(masterAsset.get_asset_balances(mist_wallet, bridge_address));
         const childAsset = new Asset(mist_config.asimov_child_rpc);
         const [childBalancesErr, childBalances] = await to(childAsset.get_asset_balances(mist_wallet, bridge_address, 'ASIM'));
+
+        const token_arr = await mist_wallet.list_mist_tokens();
+        const mistTokenTotals = [];
+        for (const i in token_arr as any[]) {
+            if (!token_arr[i]) continue;
+            const token = new Token(token_arr[i].address);
+            const [totalErr, total] = await to(token.totalSupply('child_poa'));
+            if (totalErr || !total) {
+                console.error(`[FINGO ADMIN]::(get_mist_token_totalSupply),%o,${totalErr},`, token_arr[i]);
+                return res.json({
+                    success: false,
+                    err: totalErr
+                });
+            }
+            const totalInfo = {
+                token_symbol: token_arr[i].symbol,
+                mist_token_balance: total / (1 * 10 ** 8),
+            };
+
+            mistTokenTotals.push(totalInfo);
+        }
+
         const result = {
             masterBalances,
             childFee: childBalances,
+            mistTokenTotals
         }
 
         res.json({
