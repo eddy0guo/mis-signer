@@ -752,11 +752,11 @@ export default () => {
             trader_address,
             market_id,
             side,
-            price,
-            amount,
+            price: +price,
+            amount: +amount,
             status: 'pending',
             type: 'limit',
-            available_amount: amount,
+            available_amount: +amount,
             confirmed_amount: 0,
             canceled_amount: 0,
             pending_amount: 0,
@@ -1124,3 +1124,4 @@ export default () => {
 
     return adex;
 };
+export {get_available_erc20_amount};
