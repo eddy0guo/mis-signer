@@ -46,7 +46,7 @@ const express_config = [
     },
 ];
 
-async function get_price(base_token_name, quote_token_name, amount, order) {
+async function get_price(base_token_name, quote_token_name, amount, order): Promise<string> {
     let base_value = 0;
     let base_amount = 0;
     if (base_token_name !== 'CNYC') {
@@ -481,89 +481,18 @@ export default () => {
                 trade_id = info.trade_id;
                 const info_arr = utils.arr_values(info);
 
-                const [err3, result3] = await to(psql_db.insert_express(info_arr));
-                if (err3 || !result3) console.error('[ADEX EXPRESS]::(insert_express):', err3, result3);
+                const [insertExpressErr, insertExpressRes] = await to(psql_db.insert_express(info_arr));
+                if (insertExpressErr || !insertExpressRes) console.error('[ADEX EXPRESS]::(insert_express):', insertExpressErr, insertExpressRes);
                 res.json({
-                    success: true,
-                    trade_id: info.trade_id,
-                });
-            } else {
-                res.json({
-                    success: false,
-                    err: base_err,
+                    success: insertExpressRes ? true : false,
+                    trade_id: !insertExpressRes ? null : info.trade_id,
                 });
             }
-            setTimeout(async () => {
-                // 失败的记录也入表
-                const [decode_err, decode_info] = await to(
-                    utils.decode_transfer_info(base_txid)
-                );
-                let base_tx_status;
-                if (decode_info) {
-                    base_tx_status = 'successful';
-                } else {
-                    console.error('[ADEX EXPRESS]::(decode_transfer_info):', decode_err, decode_info);
-                    return;
-                }
+            res.json({
+                success: false,
+                err: base_err,
+            });
 
-                const {
-                    from,
-                    asset_id,
-                    vin_amount,
-                    to_amount,
-                    remain_amount,
-                } = decode_info;
-
-
-                if (decode_info.to !== mist_config.express_address) {
-                    base_tx_status = 'illegaled';
-                    console.error(`reciver ${decode_info.to}  is not official address`);
-                }
-
-                const [base_token_err, base_token] = await to(psql_db.get_tokens([asset_id]));
-                if (base_token_err || !base_token || base_token.length === 0) {
-                    base_tx_status = 'illegaled';
-                    console.error(`[ADEX EXPRESS]::(get_tokens):asset ${asset_id}  is not support`);
-                }
-                // tslint:disable-next-line:prefer-const
-                let [err, price] = await to(
-                    get_price(base_token[0].symbol, quote_asset_name, to_amount, order)
-                );
-                if (!price) console.error('[ADEX EXPRESS]::(get_price):', err);
-                const current_time = utils.get_current_time();
-
-                let quote_amount = NP.times(to_amount, Number(price), 0.995);
-                let fee_amount = NP.times(to_amount, Number(price), 0.005);
-
-                const asset = new Asset(mist_config.asimov_master_rpc);
-                const [balancesErr, balances] = await to(asset.get_asset_balances(mist_wallet, mist_config.express_address, quote_asset_name));
-                if (quote_amount > balances[0].asim_asset_balance) {
-                    console.error(`The express account only have ${balances[0].asim_asset_balance}  ${quote_asset_name}`);
-                    console.log(`Start refunding users' ${base_token[0].symbol}`);
-                    price = '1';
-                    quote_amount = to_amount;
-                    fee_amount = 0;
-                    quote_asset_name = base_token[0].symbol;
-                }
-
-                const info = {
-                    address: from,
-                    base_asset_name: base_token[0].symbol,
-                    base_amount: to_amount,
-                    price,
-                    quote_token_name: quote_asset_name,
-                    quote_amount,
-                    fee_amount,
-                    base_tx_status,
-                    quote_tx_status: 'pending',
-                    updated_at: current_time,
-                    trade_id,
-                };
-                const info_arr = utils.arr_values(info);
-                const [err4, result4] = await to(psql_db.update_base(info_arr));
-                if (err4) console.error(err4, result4);
-
-            }, 10000);
         }
     );
 
@@ -593,3 +522,5 @@ export default () => {
 
     return express;
 };
+
+export {get_price};
