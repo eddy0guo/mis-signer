@@ -20,6 +20,10 @@ import Asset from '../wallet/contract/Asset';
 import {IOrder as IOrder} from './interface';
 import mistConfig from '../cfg';
 
+// TODO :  这个RPC请求很高频，可能成为性能瓶颈
+// 1 优化可能：rpc请求加入块高度缓存，这样一个块高度只请求一次（已在wallet sdk完成）
+// 2 同余额接口，让用户在交易所API那边也有一个登录操作，让服务端可以知道需要持续更新哪些用户的余额。
+// 对于已经登录的用户，服务端启动固定的进程去定时更新余额。该接口改为直接返回缓存余额
 async function get_available_erc20_amount(address, symbol, client, mist_wallet) {
     const token_info = await mist_wallet.get_token(symbol);
     const token = new Token(token_info[0].address);
@@ -508,6 +512,10 @@ export default () => {
      * @apiSampleRequest https://poa.mist.exchange/api/adex/erc20_balances/0x66ea4b7f7ad33b0cc7ef94bef71bc302789b815c46
      * @apiVersion 1.0.0
      */
+    // TODO :  这个接口有30秒返回的问题。
+    // 可能有2个地方可以优化，一个是token合约增加一个批量查询多地址的函数。
+    // 第二个是让用户在交易所API那边也有一个登录操作，让服务端可以知道需要持续更新哪些用户的余额。
+    // 对于已经登录的用户，服务端启动固定的进程去定时更新余额。该接口改为直接返回缓存余额
     adex.all('/erc20_balances/:address', async (req, res) => {
         const {address} = req.params;
         const token_arr = await mist_wallet.list_mist_tokens();
@@ -643,7 +651,10 @@ export default () => {
      * @apiSampleRequest https://poa.mist.exchange/api/adex/build_order_v3
      * @apiVersion 1.0.0
      */
-
+    // TODO :  这个接口有10秒返回超时的问题，并且是最高频接口之一。
+    // 1 优化可能：rpc请求加入块高度缓存，这样一个块高度只请求一次
+    // 2 同余额接口，让用户在交易所API那边也有一个登录操作，让服务端可以知道需要持续更新哪些用户的余额。
+    // 对于已经登录的用户，服务端启动固定的进程去定时更新余额。该接口改为直接返回缓存余额
     adex.all('/build_order_v3', async (req, res) => {
         const {
             trader_address,
@@ -752,11 +763,11 @@ export default () => {
             trader_address,
             market_id,
             side,
-            price,
-            amount,
+            price: +price,
+            amount: +amount,
             status: 'pending',
             type: 'limit',
-            available_amount: amount,
+            available_amount: +amount,
             confirmed_amount: 0,
             canceled_amount: 0,
             pending_amount: 0,
@@ -1124,3 +1135,4 @@ export default () => {
 
     return adex;
 };
+export {get_available_erc20_amount};

@@ -5,6 +5,8 @@ import to from 'await-to-js'
 import DBClient from '../adex/models/db'
 import Engine from '../adex/api/engine'
 import Utils from '../adex/api/utils'
+import MistWallet from '../adex/api/mist_wallet';
+
 
 import {
     IOrder, IOrderBook, ILastTrade,
@@ -12,6 +14,7 @@ import {
 import {Health} from '../common/Health'
 
 import {BullOption} from '../cfg';
+import {get_available_erc20_amount} from '../adex';
 
 const QueueNames = {
     OrderQueue: 'OrderQueue' + process.env.MIST_MODE,
@@ -77,11 +80,14 @@ class AdexEngine {
     private db: DBClient;
     private exchange: Engine;
     private utils: Utils;
+    private mistWallat: MistWallet;
+
 
     constructor() {
         this.db = new DBClient();
         this.exchange = new Engine(this.db);
         this.utils = new Utils();
+        this.mistWallat = new MistWallet(this.db);
     }
 
     async initQueue(): Promise<void> {
@@ -111,8 +117,14 @@ class AdexEngine {
         this.orderQueue.process(async (job, done) => {
 
             const message = job.data;
-
             console.log(`[ADEX ENGINE] Message %o from OrderQueue${process.env.MIST_MODE} \n`, message.market_id);
+            const checkAvailableRes =  await  this.checkOrderAvailability(message);
+            if(!checkAvailableRes){
+                // todo:临时方案直接抹掉
+                console.log(`[ADEX ENGINE]:order %o check available failed`,message);
+                done();
+                return;
+            }
 
             const create_time = this.utils.get_current_time();
             message.created_at = create_time;
@@ -207,6 +219,21 @@ class AdexEngine {
         if (queueReady) {
             console.log(`[ADEX ENGINE] started,order queue ready:`);
         }
+    }
+    async checkOrderAvailability(order:IOrder) : Promise<boolean>{
+        const {trader_address,price,side,market_id,amount} = order;
+        const [base_token, quota_token] = market_id.split('-');
+        const checkToken =  side === 'buy' ? quota_token:base_token;
+
+        const availableCheckAmount = await get_available_erc20_amount(
+            trader_address,
+            checkToken,
+            this.db,
+            this.mistWallat
+        );
+
+        const orderAmount = side === 'buy' ? (amount * price):amount;
+        return orderAmount <= availableCheckAmount ? true : false;
     }
 
 }
