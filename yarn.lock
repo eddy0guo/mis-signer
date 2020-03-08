@@ -402,10 +402,10 @@
     is-absolute "^1.0.0"
     is-negated-glob "^1.0.0"
 
-"@fingo/asimov-wallet@0.2.1":
-  version "0.2.1"
-  resolved "https://registry.npm.taobao.org/@fingo/asimov-wallet/download/@fingo/asimov-wallet-0.2.1.tgz#dfc19e015cb981fe3badc3e3da75dbd148791c94"
-  integrity sha1-38GeAVy5gf47rcPj2nXb0Uh5HJQ=
+"@fingo/asimov-wallet@0.2.5":
+  version "0.2.5"
+  resolved "https://registry.npm.taobao.org/@fingo/asimov-wallet/download/@fingo/asimov-wallet-0.2.5.tgz#c0823cdaac81662ee4c623d1b07537232c34b663"
+  integrity sha1-wII82qyBZi7kxiPRsHU3Iyw0tmM=
   dependencies:
     "@asimovdev/asimovjs" "1.1.3"
     "@types/bitcore-lib" "^0.15.1"
@@ -415,6 +415,7 @@
     crypto-js "^3.1.9-1"
     global "^4.4.0"
     nodeforage "^1.1.0"
+    object-hash "^2.0.3"
     tslint "^5.20.1"
 
 "@istanbuljs/load-nyc-config@^1.0.0":
@@ -5580,6 +5581,11 @@ object-hash@^2.0.0:
   version "2.0.0"
   resolved "https://registry.npm.taobao.org/object-hash/download/object-hash-2.0.0.tgz?cache=0&sync_timestamp=1570455938975&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fobject-hash%2Fdownload%2Fobject-hash-2.0.0.tgz#7c4cc341eb8b53367312a7c546142f00c9e0ea20"
   integrity sha1-fEzDQeuLUzZzEqfFRhQvAMng6iA=
+
+object-hash@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.npm.taobao.org/object-hash/download/object-hash-2.0.3.tgz#d12db044e03cd2ca3d77c0570d87225b02e1e6ea"
+  integrity sha1-0S2wROA80so9d8BXDYciWwLh5uo=
 
 object-inspect@^1.7.0:
   version "1.7.0"
