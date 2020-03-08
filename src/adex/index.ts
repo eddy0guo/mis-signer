@@ -63,7 +63,8 @@ export default () => {
 
 
     adex.all('/compat_query/:sql', async (req, res) => {
-        const {sql} = req.params;
+        let {sql} = req.params;
+        sql = sql.toLowerCase();
         const select = sql.includes('select');
         const insert = sql.includes('insert');
         const update = sql.includes('update');
