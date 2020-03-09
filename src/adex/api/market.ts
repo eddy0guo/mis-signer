@@ -63,7 +63,7 @@ export default class Market {
         return await this.db.get_market([market_id]);
     }
 
-    async list_market_quotations() {
+    async list_market_quotations(): Promise<any[]> {
 
         const [markets_err, markets] = await to(this.list_online_markets());
         if (!markets) {
