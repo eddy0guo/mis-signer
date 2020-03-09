@@ -522,9 +522,11 @@ export default () => {
         const token_arr = await mist_wallet.list_mist_tokens();
         const balances = [];
 
-        for (const i in token_arr as any[]) {
-            if (!token_arr[i]) continue;
-            const token = new Token(token_arr[i].address);
+        const logs = [];
+        logs.push({start:new Date().toLocaleTimeString(),address});
+
+        for (const tokenInfo of token_arr as any[]) {
+            const token = new Token(tokenInfo.address);
             const [err, result] = await to(token.balanceOf(address, 'child_poa'));
             if (err || result === undefined) {
                 console.error(err);
@@ -533,11 +535,12 @@ export default () => {
                     err,
                 });
             }
+            logs.push({balanceOf:new Date().toLocaleTimeString(),token:tokenInfo.address,result});
 
             let freeze_amount = 0;
             const freeze_result = await client.get_freeze_amount([
                 address,
-                token_arr[i].symbol,
+                tokenInfo.symbol,
             ]);
             if (freeze_result && freeze_result.length > 0) {
                 for (const freeze of freeze_result) {
@@ -550,24 +553,29 @@ export default () => {
                     }
                 }
             }
-            const price = await mist_wallet.get_token_price2pi(token_arr[i].symbol);
+            const price = await mist_wallet.get_token_price2pi(tokenInfo.symbol);
             const erc20_balance = Number(result) / (1 * 10 ** 8);
 
+            logs.push({get_token_price2pi:new Date().toLocaleTimeString(),price});
+
             const balance_info = {
-                token_symbol: token_arr[i].symbol,
-                erc20_address: token_arr[i].address,
+                token_symbol: tokenInfo.symbol,
+                erc20_address: tokenInfo.address,
                 erc20_balance,
                 erc20_freeze_amount: freeze_amount,
-                asim_assetid: token_arr[i].asim_assetid,
+                asim_assetid: tokenInfo.asim_assetid,
                 value: NP.times(erc20_balance, price),
                 token_icon:
                     MistConfig.icon_url +
-                    token_arr[i].symbol +
+                    tokenInfo.symbol +
                     'm.png',
             };
 
             balances.push(balance_info);
         }
+
+        logs.push({end:new Date().toLocaleTimeString()});
+        console.log('erc20_balances_logs',logs);
 
         res.json({
             success: true,
