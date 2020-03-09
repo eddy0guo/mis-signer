@@ -4,10 +4,10 @@ import {Router} from 'express';
 
 import {chain} from '../wallet/api/chain';
 
-import mist_wallet1 from '../adex/api/mist_wallet';
-import order1 from '../adex/api/order';
-import utils1 from '../adex/api/utils';
-import psql from './models/db';
+import MistWallet from '../adex/api/mist_wallet';
+import OrderAPI from '../adex/api/order';
+import Utils from '../adex/api/utils';
+import DBClient from './models/db';
 
 import mist_config from '../cfg';
 import Asset from '../wallet/contract/Asset';
@@ -104,10 +104,10 @@ async function get_price(base_token_name, quote_token_name, amount, order): Prom
 
 export default () => {
     const express = Router();
-    const psql_db = new psql();
-    const mist_wallet = new mist_wallet1(psql_db);
-    const utils = new utils1();
-    const order = new order1(psql_db);
+    const psql_db = new DBClient();
+    const mist_wallet = new MistWallet(psql_db);
+    const utils = new Utils();
+    const order = new OrderAPI(psql_db);
 
     /**
      * @api {post} /express/my_records/:page/:perpage 用户兑换记录
