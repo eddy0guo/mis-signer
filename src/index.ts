@@ -16,6 +16,8 @@ const config = {
   'corsHeaders': ['Link']
 };
 
+let countFast = 0;
+let countSlow = 0;
 const responseTime = () => {
   return (req, res, next) => {
     req._startTime = new Date().getTime(); // 获取时间 t1
@@ -23,7 +25,11 @@ const responseTime = () => {
     const calResponseTime = () => {
       const now = new Date().getTime();
       const deltaTime = now - req._startTime;
-      if (deltaTime > 200) console.log(`[REQ TIME]:${deltaTime}`);
+      if (deltaTime > 200) {
+        console.log(`[REQ TIME]:${deltaTime/1000}s Slow_Query:${++countSlow}/${countSlow+countFast}`);
+      } else {
+        countFast ++;
+      }
     };
 
     res.once('finish', calResponseTime);
