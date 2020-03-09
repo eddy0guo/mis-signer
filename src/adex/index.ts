@@ -124,7 +124,7 @@ export default () => {
         });
     });
 
-
+    // TODO 该方法生产环境无法访问
     adex.all('/list_market_quotations_v2', async (req, res) => {
         const result = await market.list_market_quotations();
         res.json({
