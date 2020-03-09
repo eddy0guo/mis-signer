@@ -63,18 +63,23 @@ export default class Market {
         return await this.db.get_market([market_id]);
     }
 
-    async list_market_quotations() {
+    // TODO 该方法生产环境无法访问
+    async list_market_quotations(): Promise<any[]> {
+
+        const logs = [];
+
+        logs.push({start:new Date().toLocaleString(),name:'list_market_quotations'});
 
         const [markets_err, markets] = await to(this.list_online_markets());
         if (!markets) {
             console.error(markets_err, markets);
             return [];
         }
+        logs.push({list_online_markets:new Date().toLocaleString()});
         const quotations = [];
-        for (const index in markets) {
-            if (!markets[index]) continue
+        for (const marketInfo of markets) {
             const defaultQuotations = {
-                market_id: markets[index].id,
+                market_id: marketInfo.id,
                 price: 0,
                 ratio: 0,
                 volume: 0,
@@ -83,19 +88,20 @@ export default class Market {
                 minprice: 0,
                 min_CNYC_price: 0,
                 max_CNYC_price: 0,
-                symbol: markets[index].id.replace('-', '/'),
+                symbol: marketInfo.id.replace('-', '/'),
             };
-            const [err, result]: [any, any] = await to(this.db.get_market_quotations([markets[index].id]));
-            if (err || !result || result.length === 0) {
-                console.error(`get_market_quotations failed ${markets[index].id},err ${err}`);
+            let [err, result]: [any, any] = await to(this.db.get_market_quotations([marketInfo.id]));
+            if (err || !result ) {
+                console.error(`get_market_quotations failed ${marketInfo.id},err ${err}`);
+                err = null;
+                result = [defaultQuotations];
+            } else if( result.length <= 0 ) {
                 result[0] = defaultQuotations;
             } else {
                 const [base_token, quote_token] = result[0].market_id.split('-');
                 const quote_price = await this.quotation.get_token_price2pi(quote_token);
-                const max_price = await this.db.get_market_max_price([markets[index].id]);
-                const min_price = await this.db.get_market_min_price([markets[index].id]);
-
-                console.log(`-----max=%o-min=%o--`,max_price,min_price);
+                const max_price = await this.db.get_market_max_price([marketInfo.id]);
+                const min_price = await this.db.get_market_min_price([marketInfo.id]);
 
                 if (max_price.length > 0 && min_price.length > 0 && quote_price > 0) {
                     result[0].CNYC_price = await this.quotation.get_token_price2pi(base_token);
@@ -103,13 +109,17 @@ export default class Market {
                     result[0].minprice = min_price[0].price;
                     result[0].min_CNYC_price = (min_price[0].price * quote_price).toFixed(2);
                     result[0].max_CNYC_price = (max_price[0].price * quote_price).toFixed(2);
-                    result[0].symbol = markets[index].id.replace('-', '/');
+                    result[0].symbol = marketInfo.id.replace('-', '/');
                 } else {
                     result[0] = defaultQuotations;
                 }
             }
+
+            logs.push({marketItem:new Date().toLocaleString(),marketId:marketInfo.id});
+
             quotations.push(result[0]);
         }
+        logs.push({beforeSort:new Date().toLocaleTimeString()});
         // @ts-ignore
         quotations.sort((a, b) => {
             // XXX:为了和ws推送的数据的排序保持一致
@@ -119,6 +129,10 @@ export default class Market {
                 return 1;
             }
         });
+
+        logs.push({end:new Date().toLocaleTimeString()});
+        console.log(logs);
+
         return quotations;
     }
 

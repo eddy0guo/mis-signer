@@ -1,13 +1,16 @@
-import utils2 from './utils';
+import to from 'await-to-js';
+import Utils from './utils';
 import {IToken} from '../interface';
+import DBClient from '../models/db';
+import ExpressDBClient from '../../express/models/db';
 
 export default class mist_wallet {
-    private db;
-    private utils;
+    private db:DBClient|ExpressDBClient;
+    private utils:Utils;
 
-    constructor(client) {
+    constructor(client:DBClient|ExpressDBClient) {
         this.db = client;
-        this.utils = new utils2();
+        this.utils = new Utils();
     }
 
     async list_mist_tokens(): Promise<IToken[]> {
@@ -23,7 +26,7 @@ export default class mist_wallet {
     async add_token(symbol: string, asset_address: string, asset_id: string, erc20_address: string): Promise<any> {
         const currentTime = this.utils.get_current_time();
         const token = [symbol,symbol,erc20_address,8,asset_id,asset_address,currentTime];
-        const result = await this.db.insert_token(token);
+        const result = await (this.db as DBClient).insert_token(token);
         return result;
     }
 
@@ -33,29 +36,35 @@ export default class mist_wallet {
         if (symbol === 'CNYC') {
             return 1;
         }
+        const db = (this.db as DBClient);
         let marketID = symbol + '-CNYC';
-        let [result, err] = await this.db.get_market_current_price([marketID]);
-        if (err) console.error(err);
-        err = null;
-        if (result.length === 0) {
+        const [err,result] = await to(db.get_market_current_price([marketID]));
+
+        if (err) {
+            console.error(err);
+        }
+
+        let price = 0;
+
+        if (result.length <= 0) {
             marketID = symbol + '-USDT';
-            const price2usdt = await this.db.get_market_current_price([marketID]);
-            const price_usdt2pi = await this.db.get_market_current_price(['USDT-CNYC']);
+            const price2usdt = await db.get_market_current_price([marketID]);
+            const price_usdt2pi = await db.get_market_current_price(['USDT-CNYC']);
 
             if (price2usdt.length === 0) {
                 marketID = symbol + '-MT';
-                const price2mt = await this.db.get_market_current_price([marketID]);
-                const price_mt2pi = await this.db.get_market_current_price(['MT-CNYC']);
-                result = price2mt[0].price * price_mt2pi[0].price;
+                const price2mt = await db.get_market_current_price([marketID]);
+                const price_mt2pi = await db.get_market_current_price(['MT-CNYC']);
+                price = price2mt[0].price * price_mt2pi[0].price;
             } else {
-                result = price2usdt[0].price * price_usdt2pi[0].price;
+                price = price2usdt[0].price * price_usdt2pi[0].price;
             }
 
         } else {
-            result = result.price;
+            price = result[0].price;
         }
 
-        return result;
+        return price;
     }
 
     async get_token_price2btc(symbol): Promise<number> {

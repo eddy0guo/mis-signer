@@ -1,6 +1,5 @@
 import to from 'await-to-js';
 import mist_config from '../../cfg';
-import order from '../api/order';
 import {Pool} from 'pg';
 import {
     IOrder, ITrade, IToken, IMarket, ITransaction,
@@ -9,7 +8,7 @@ import {
 
 const BRIDGE_SQL = 'id,address,token_name,cast(amount as float8),side,master_txid,master_txid_status,child_txid,child_txid_status,fee_asset,fee_amount,updated_at,created_at';
 
-export default class db {
+export default class DBClient {
 
     private clientDB: Pool;
 
