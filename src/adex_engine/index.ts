@@ -1,10 +1,12 @@
-import * as Queue from 'bull'
-import NP from 'number-precision'
-import to from 'await-to-js'
+import * as Queue from 'bull';
+import NP from 'number-precision';
+import to from 'await-to-js';
 
-import DBClient from '../adex/models/db'
-import Engine from '../adex/api/engine'
-import Utils from '../adex/api/utils'
+import {Logger} from '../common/Logger';
+
+import DBClient from '../adex/models/db';
+import Engine from '../adex/api/engine';
+import Utils from '../adex/api/utils';
 import MistWallet from '../adex/api/mist_wallet';
 
 
@@ -57,7 +59,7 @@ function computeOrderBookUpdates(trades: ILastTrade[], order: IOrder): IOrderBoo
         }
 
     } else {
-        console.error(`${order.side} must be sell or buy`)
+        this.logger.log(`${order.side} must be sell or buy`)
 
     }
     return book;
@@ -81,7 +83,8 @@ class AdexEngine {
     private exchange: Engine;
     private utils: Utils;
     private mistWallat: MistWallet;
-
+    // 5分钟无log输出会杀死进程。
+    private logger:Logger = new Logger(AdexEngine.name,5*60*1000);
 
     constructor() {
         this.db = new DBClient();
@@ -103,8 +106,8 @@ class AdexEngine {
         this.addTradesQueue = new Queue(QueueNames.AddTradesQueue, option);
 
         this.orderQueue.on('error', async e => {
-            console.log('[ADEX ENGINE] Queue on Error', e);
-            console.log('[ADEX ENGINE] Goodbye...');
+            this.logger.log('[ADEX ENGINE] Queue on Error', e);
+            this.logger.log('[ADEX ENGINE] Goodbye...');
 
             // kill instance when queue on error
             process.exit(-1);
@@ -117,11 +120,11 @@ class AdexEngine {
         this.orderQueue.process(async (job, done) => {
 
             const message = job.data;
-            console.log(`[ADEX ENGINE] Message %o from OrderQueue${process.env.MIST_MODE} \n`, message.market_id);
+            this.logger.log(`[ADEX ENGINE] Message %o from OrderQueue${process.env.MIST_MODE} \n`, message.market_id);
             const checkAvailableRes =  await  this.checkOrderAvailability(message);
             if(!checkAvailableRes){
                 // todo:临时方案直接抹掉
-                console.log(`[ADEX ENGINE]:order %o check available failed`,message);
+                this.logger.log(`[ADEX ENGINE]:order %o check available failed`,message);
                 done();
                 return;
             }
@@ -137,7 +140,7 @@ class AdexEngine {
                 const [find_orders_err, find_orders] = await to(this.exchange.match(message));
 
                 if (!find_orders) {
-                    console.error('[ADEX ENGINE]:match orders', find_orders_err, find_orders);
+                    this.logger.log('[ADEX ENGINE]:match orders', find_orders_err, find_orders);
                     await this.db.rollback();
                     done(new Error(find_orders_err));
                     return;
@@ -149,7 +152,7 @@ class AdexEngine {
 
                 const [trades_err, trades] = await to(this.exchange.make_trades(find_orders, message));
                 if (!trades) {
-                    console.error('make trades', trades_err, trades);
+                    this.logger.log('make trades', trades_err, trades);
                     await this.db.rollback();
                     done(new Error(trades_err));
                     return;
@@ -157,7 +160,7 @@ class AdexEngine {
 
                 const [call_asimov_err, call_asimov_result] = await to(this.exchange.call_asimov(trades));
                 if (call_asimov_err) {
-                    console.error('call asimov', call_asimov_err, call_asimov_result);
+                    this.logger.log('call asimov', call_asimov_err, call_asimov_result);
                     await this.db.rollback();
                     done(new Error(call_asimov_err));
                     return;
@@ -184,8 +187,8 @@ class AdexEngine {
                     id: message.market_id,
                 }
                 const [lastTradesAddErr, lastTradesAddResult] = await to(this.addTradesQueue.add(marketLastTrades,{removeOnComplete: true}));
-                console.log('[ADEX ENGINE] New Trades Matched %o,queue id %o ', marketLastTrades, lastTradesAddResult.id);
-                if (lastTradesAddErr) console.error('[ADEX ENGINE]:lastTrade add queue failed %o\n', lastTradesAddErr);
+                this.logger.log('[ADEX ENGINE] New Trades Matched %o,queue id %o ', marketLastTrades, lastTradesAddResult.id);
+                if (lastTradesAddErr) this.logger.log('[ADEX ENGINE]:lastTrade add queue failed %o\n', lastTradesAddErr);
             }
             const book = computeOrderBookUpdates(lastTrades, message);
             const marketUpdateBook = {
@@ -193,8 +196,8 @@ class AdexEngine {
                 id: message.market_id,
             }
             const [orderBookQueueErr, orderBookQueueResult] = await to(this.orderBookQueue.add(marketUpdateBook,{removeOnComplete: true}));
-            if (orderBookQueueErr) console.error('[ADEX ENGINE]:orderBookUpdateQueue failed %o\n', orderBookQueueErr);
-            console.log('[ADEX ENGINE] New orderBookQueue %o,queue id  %o', marketUpdateBook, orderBookQueueResult.id);
+            if (orderBookQueueErr) this.logger.log('[ADEX ENGINE]:orderBookUpdateQueue failed %o\n', orderBookQueueErr);
+            this.logger.log('[ADEX ENGINE] New orderBookQueue %o,queue id  %o', marketUpdateBook, orderBookQueueResult.id);
             if (message.pending_amount === 0) {
                 message.status = 'pending';
             } else if (message.available_amount === 0) {
@@ -206,7 +209,7 @@ class AdexEngine {
             const arr_message = this.utils.arr_values(message);
             const [insert_order_err, insert_order_result] = await to(this.db.insert_order(arr_message));
             if (!insert_order_result) {
-                console.error(`[ADEX ENGINE] insert_order_err`, insert_order_err, insert_order_result);
+                this.logger.log(`[ADEX ENGINE] insert_order_err`, insert_order_err, insert_order_result);
                 await this.db.rollback();
                 done(new Error(insert_order_err));
                 return;
@@ -217,7 +220,7 @@ class AdexEngine {
         const queueReady = await this.orderQueue.isReady();
 
         if (queueReady) {
-            console.log(`[ADEX ENGINE] started,order queue ready:`);
+            this.logger.log(`[ADEX ENGINE] started,order queue ready:`);
         }
     }
     async checkOrderAvailability(order:IOrder) : Promise<boolean>{
@@ -239,7 +242,7 @@ class AdexEngine {
 }
 
 process.on('unhandledRejection', (reason, p) => {
-    console.log('[ADEX ENGINE] Unhandled Rejection at: Promise reason:', reason);
+    this.logger.log('[ADEX ENGINE] Unhandled Rejection at: Promise reason:', reason);
     // application specific logging, throwing an error, or other logic here
 });
 
