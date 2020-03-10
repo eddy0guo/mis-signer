@@ -316,7 +316,7 @@ class AdexEngine {
 }
 
 process.on('unhandledRejection', (reason, p) => {
-    console.log('[ADEX ENGINE] Unhandled Rejection at: Promise reason:', reason);
+    this.logger.log('[ADEX ENGINE] Unhandled Rejection at: Promise reason:', reason);
     // application specific logging, throwing an error, or other logic here
 });
 
