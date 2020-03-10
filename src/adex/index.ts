@@ -24,7 +24,8 @@ import mistConfig from '../cfg';
 // 1 优化可能：rpc请求加入块高度缓存，这样一个块高度只请求一次（已在wallet sdk完成）
 // 2 同余额接口，让用户在交易所API那边也有一个登录操作，让服务端可以知道需要持续更新哪些用户的余额。
 // 对于已经登录的用户，服务端启动固定的进程去定时更新余额。该接口改为直接返回缓存余额
-async function get_available_erc20_amount(address, symbol, client, mist_wallet) {
+// 3 sql查询的优化
+async function get_available_erc20_amount(address, symbol, client:DBClient, mist_wallet) {
     const token_info = await mist_wallet.get_token(symbol);
     const token = new Token(token_info[0].address);
     const [err, res] = await to(token.balanceOf(address, 'child_poa'));
@@ -689,6 +690,15 @@ export default () => {
             return res.json({
                 success: false,
                 err: `Params Error`,
+            });
+        }
+
+        // 直接判断队列长度，如果消费阻塞，返回失败
+        const waitingOrders = await order.queueWaitingCount();
+        if( waitingOrders > 100 ) {
+            return res.json({
+                success: false,
+                err: 'Match Engine Busy Now:' + waitingOrders,
             });
         }
 
