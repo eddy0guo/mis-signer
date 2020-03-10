@@ -51,6 +51,14 @@ export default class order {
         return true;
     }
 
+    async queueWaitingCount() : Promise<number>{
+        const [err, num] = await to(this.orderQueue.getWaitingCount());
+        if( err ) {
+            return Number.MAX_SAFE_INTEGER;
+        }
+        return num;
+    }
+
     async build(message): Promise<any> {
         /*暂时这块业务没做先去掉此逻辑
         let mist_user = await this.db.find_user([message.trader_address]);

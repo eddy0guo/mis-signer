@@ -2,33 +2,32 @@ import * as Queue from 'bull';
 import NP from 'number-precision';
 import to from 'await-to-js';
 
-import {Logger} from '../common/Logger';
+import { Logger } from '../common/Logger';
 
 import DBClient from '../adex/models/db';
 import Engine from '../adex/api/engine';
 import Utils from '../adex/api/utils';
 import MistWallet from '../adex/api/mist_wallet';
 
+import { IOrder, IOrderBook, ILastTrade } from '../adex/interface';
 
-import {
-    IOrder, IOrderBook, ILastTrade,
-} from '../adex/interface';
-import {Health} from '../common/Health'
-
-import {BullOption} from '../cfg';
-import {get_available_erc20_amount} from '../adex';
+import { BullOption } from '../cfg';
+import { get_available_erc20_amount } from '../adex';
 
 const QueueNames = {
     OrderQueue: 'OrderQueue' + process.env.MIST_MODE,
     AddOrderBookQueue: 'addOrderBookQueue',
     AddTradesQueue: 'addTradesQueue',
-}
+};
 
 // tslint:disable-next-line:no-shadowed-variable
-function computeOrderBookUpdates(trades: ILastTrade[], order: IOrder): IOrderBook {
+function computeOrderBookUpdates(
+    trades: ILastTrade[],
+    order: IOrder
+): IOrderBook {
     const book: IOrderBook = {
         asks: [],
-        bids: []
+        bids: [],
     };
     if (order.side === 'sell') {
         book.asks[0] = [order.price, order.available_amount];
@@ -57,12 +56,18 @@ function computeOrderBookUpdates(trades: ILastTrade[], order: IOrder): IOrderBoo
             }
             if (!priceExsit) book.asks.push([trade.price, -trade.amount]);
         }
-
     } else {
-        this.logger.log(`${order.side} must be sell or buy`)
-
+        this.logger.log(`${order.side} must be sell or buy`);
     }
     return book;
+}
+
+interface IEngineStatus {
+    totalMatched:number,
+    waitingJobs:number,
+    startTime:Date,
+    workingTime:number,
+    ordersPerMin:number,
 }
 
 /**
@@ -75,7 +80,6 @@ function computeOrderBookUpdates(trades: ILastTrade[], order: IOrder): IOrderBoo
  *
  */
 class AdexEngine {
-
     private orderQueue: Queue.Queue;
     private orderBookQueue: Queue.Queue;
     private addTradesQueue: Queue.Queue;
@@ -84,7 +88,14 @@ class AdexEngine {
     private utils: Utils;
     private mistWallat: MistWallet;
     // 5分钟无log输出会杀死进程。
-    private logger:Logger = new Logger(AdexEngine.name,5*60*1000);
+    private logger: Logger = new Logger(AdexEngine.name, 5 * 60 * 1000);
+    private status: IEngineStatus = {
+        totalMatched:0,
+        waitingJobs:0,
+        startTime:new Date(),
+        workingTime:0,
+        ordersPerMin:0,
+    }
 
     constructor() {
         this.db = new DBClient();
@@ -97,8 +108,6 @@ class AdexEngine {
         if (this.orderQueue) {
             await this.orderQueue.close();
         }
-        ;
-
         const option: Queue.QueueOptions = BullOption;
 
         this.orderQueue = new Queue(QueueNames.OrderQueue, option);
@@ -118,105 +127,9 @@ class AdexEngine {
 
     async start(): Promise<void> {
         this.orderQueue.process(async (job, done) => {
-
-            const message = job.data;
-            this.logger.log(`[ADEX ENGINE] Message %o from OrderQueue${process.env.MIST_MODE} \n`, message.market_id);
-            const checkAvailableRes =  await  this.checkOrderAvailability(message);
-            if(!checkAvailableRes){
-                // todo:临时方案直接抹掉
-                this.logger.log(`[ADEX ENGINE]:order %o check available failed`,message);
-                done();
-                return;
-            }
-
-            const create_time = this.utils.get_current_time();
-            message.created_at = create_time;
-            message.updated_at = create_time;
-            const lastTrades = [];
-            // 每次匹配100单，超过300的二次匹配直到匹配不到挂单
-            await this.db.begin();
-            while (message.available_amount > 0) {
-
-                const [find_orders_err, find_orders] = await to(this.exchange.match(message));
-
-                if (!find_orders) {
-                    this.logger.log('[ADEX ENGINE]:match orders', find_orders_err, find_orders);
-                    await this.db.rollback();
-                    done(new Error(find_orders_err));
-                    return;
-                }
-
-                if (find_orders.length === 0) {
-                    break;
-                }
-
-                const [trades_err, trades] = await to(this.exchange.make_trades(find_orders, message));
-                if (!trades) {
-                    this.logger.log('make trades', trades_err, trades);
-                    await this.db.rollback();
-                    done(new Error(trades_err));
-                    return;
-                }
-
-                const [call_asimov_err, call_asimov_result] = await to(this.exchange.call_asimov(trades));
-                if (call_asimov_err) {
-                    this.logger.log('call asimov', call_asimov_err, call_asimov_result);
-                    await this.db.rollback();
-                    done(new Error(call_asimov_err));
-                    return;
-                }
-
-                let amount = 0;
-                for (const item of trades) {
-                    amount = NP.plus(amount, item.amount);
-                    const trade: ILastTrade = {
-                        price: item.price,
-                        amount: item.amount,
-                        taker_side: item.taker_side,
-                        updated_at: item.updated_at
-                    }
-                    lastTrades.push(trade);
-                }
-
-                message.available_amount = NP.minus(message.available_amount, amount);
-                message.pending_amount = NP.plus(message.pending_amount, amount);
-            }
-            if (lastTrades.length > 0) {
-                const marketLastTrades = {
-                    data: lastTrades,
-                    id: message.market_id,
-                }
-                const [lastTradesAddErr, lastTradesAddResult] = await to(this.addTradesQueue.add(marketLastTrades,{removeOnComplete: true}));
-                this.logger.log('[ADEX ENGINE] New Trades Matched %o,queue id %o ', marketLastTrades, lastTradesAddResult.id);
-                if (lastTradesAddErr) this.logger.log('[ADEX ENGINE]:lastTrade add queue failed %o\n', lastTradesAddErr);
-            }
-            const book = computeOrderBookUpdates(lastTrades, message);
-            const marketUpdateBook = {
-                data: book,
-                id: message.market_id,
-            }
-            const [orderBookQueueErr, orderBookQueueResult] = await to(this.orderBookQueue.add(marketUpdateBook,{removeOnComplete: true}));
-            if (orderBookQueueErr) this.logger.log('[ADEX ENGINE]:orderBookUpdateQueue failed %o\n', orderBookQueueErr);
-            this.logger.log('[ADEX ENGINE] New orderBookQueue %o,queue id  %o', marketUpdateBook, orderBookQueueResult.id);
-            if (message.pending_amount === 0) {
-                message.status = 'pending';
-            } else if (message.available_amount === 0) {
-                message.status = 'full_filled';
-            } else {
-                message.status = 'partial_filled';
-            }
-
-            const arr_message = this.utils.arr_values(message);
-            const [insert_order_err, insert_order_result] = await to(this.db.insert_order(arr_message));
-            if (!insert_order_result) {
-                this.logger.log(`[ADEX ENGINE] insert_order_err`, insert_order_err, insert_order_result);
-                await this.db.rollback();
-                done(new Error(insert_order_err));
-                return;
-            }
-            await this.db.commit();
-            done()
+            return this.worker(job, done);
         });
+
         const queueReady = await this.orderQueue.isReady();
         if (queueReady) {
             this.logger.log(`[ADEX ENGINE] started,order queue ready:`);
@@ -225,20 +138,170 @@ class AdexEngine {
         this.startCleanupJob();
     }
 
-    startCleanupJob() {
-        // cleanup temp orders
-        setInterval( async ()=> {
-            const [err] = await to(this.db.cleanupTempOrders())
-            if( err ){
-                this.logger.log(err);
+    async worker(job, done) {
+        this.status.workingTime = new Date().getTime() - this.status.startTime.getTime();
+        this.status.waitingJobs = await this.orderQueue.getWaitingCount();
+
+        const message = job.data;
+        this.logger.log(
+            `[ADEX ENGINE] Message ${message.market_id} from OrderQueue${process.env.MIST_MODE}`
+        );
+
+        // TODO 这里暂时当任务过多时候，跳过检测
+        let checkAvailableRes = true;
+        if(this.status.waitingJobs < 100 ){
+            checkAvailableRes = await this.checkOrderAvailability(message);
+        } else {
+            // 跳过检测会导致撮合结果合约执行失败，目前对失败对的订单没有反向处理，直接标记failed。
+            this.logger.log(`Warning too many jobs:${this.status.waitingJobs},balance checking skipped`);
+        }
+
+        if (!checkAvailableRes) {
+            // 直接抹掉非法订单
+            this.logger.log(`[ADEX ENGINE]:order %o check available failed`, message);
+            done();
+            return;
+        }
+
+        const create_time = this.utils.get_current_time();
+        message.created_at = create_time;
+        message.updated_at = create_time;
+        const lastTrades = [];
+        // 每次匹配100单，超过300的二次匹配直到匹配不到挂单
+        await this.db.begin();
+        while (message.available_amount > 0) {
+            const [find_orders_err, find_orders] = await to(
+                this.exchange.match(message)
+            );
+
+            if (!find_orders) {
+                this.logger.log(
+                    '[ADEX ENGINE]:match orders error',
+                    find_orders_err,
+                    find_orders
+                );
+                await this.db.rollback();
+                done(new Error(find_orders_err));
+                return;
             }
-        } ,60*60*1000);
+
+            if (find_orders.length === 0) {
+                break;
+            }
+
+            this.status.totalMatched += find_orders.length;
+
+            const [trades_err, trades] = await to(
+                this.exchange.make_trades(find_orders, message)
+            );
+            if (!trades) {
+                this.logger.log('make trades', trades_err, trades);
+                await this.db.rollback();
+                done(new Error(trades_err));
+                return;
+            }
+
+            const [call_asimov_err, call_asimov_result] = await to(
+                this.exchange.call_asimov(trades)
+            );
+            if (call_asimov_err) {
+                this.logger.log('call asimov', call_asimov_err, call_asimov_result);
+                await this.db.rollback();
+                done(new Error(call_asimov_err));
+                return;
+            }
+
+            let amount = 0;
+            for (const item of trades) {
+                amount = NP.plus(amount, item.amount);
+                const trade: ILastTrade = {
+                    price: item.price,
+                    amount: item.amount,
+                    taker_side: item.taker_side,
+                    updated_at: item.updated_at,
+                };
+                lastTrades.push(trade);
+            }
+
+            message.available_amount = NP.minus(message.available_amount, amount);
+            message.pending_amount = NP.plus(message.pending_amount, amount);
+        }
+        if (lastTrades.length > 0) {
+            const marketLastTrades = {
+                data: lastTrades,
+                id: message.market_id,
+            };
+            const [lastTradesAddErr, lastTradesAddResult] = await to(
+                this.addTradesQueue.add(marketLastTrades, { removeOnComplete: true })
+            );
+            this.logger.log(
+                '[ADEX ENGINE] New Trades Matched %o,queue id %o ',
+                marketLastTrades,
+                lastTradesAddResult.id
+            );
+            if (lastTradesAddErr)
+                this.logger.log(
+                    '[ADEX ENGINE]:lastTrade add queue failed %o',
+                    lastTradesAddErr
+                );
+        }
+        const book = computeOrderBookUpdates(lastTrades, message);
+        const marketUpdateBook = {
+            data: book,
+            id: message.market_id,
+        };
+        const [orderBookQueueErr, orderBookQueueResult] = await to(
+            this.orderBookQueue.add(marketUpdateBook, { removeOnComplete: true })
+        );
+        if (orderBookQueueErr){
+            this.logger.log(
+                '[ADEX ENGINE]:orderBookUpdateQueue failed %o', orderBookQueueErr
+            );
+        }
+        if (message.pending_amount === 0) {
+            message.status = 'pending';
+        } else if (message.available_amount === 0) {
+            message.status = 'full_filled';
+        } else {
+            message.status = 'partial_filled';
+        }
+
+        const arr_message = this.utils.arr_values(message);
+        const [insert_order_err, insert_order_result] = await to(
+            this.db.insert_order(arr_message)
+        );
+        if (!insert_order_result) {
+            this.logger.log(
+                `[ADEX ENGINE] insert_order_err`,
+                insert_order_err,
+                insert_order_result
+            );
+            await this.db.rollback();
+            done(new Error(insert_order_err));
+            return;
+        }
+        await this.db.commit();
+
+        this.status.ordersPerMin = this.status.totalMatched/(this.status.workingTime/1000/60)
+        this.logger.log(this.status);
+
+        done();
     }
 
-    async checkOrderAvailability(order:IOrder) : Promise<boolean>{
-        const {trader_address,price,side,market_id,amount} = order;
+    startCleanupJob() {
+        // cleanup temp orders
+        setInterval(async () => {
+            const [err] = await to(this.db.cleanupTempOrders());
+            if (err) {
+                this.logger.log(err);
+            }
+        }, 60 * 60 * 1000);
+    }
+
+    async checkOrderAvailability(order: IOrder): Promise<boolean> {
+        const { trader_address, price, side, market_id, amount } = order;
         const [base_token, quota_token] = market_id.split('-');
-        const checkToken =  side === 'buy' ? quota_token:base_token;
+        const checkToken = side === 'buy' ? quota_token : base_token;
 
         const availableCheckAmount = await get_available_erc20_amount(
             trader_address,
@@ -247,19 +310,15 @@ class AdexEngine {
             this.mistWallat
         );
 
-        const orderAmount = side === 'buy' ? (amount * price):amount;
+        const orderAmount = side === 'buy' ? amount * price : amount;
         return orderAmount <= availableCheckAmount ? true : false;
     }
-
 }
 
 process.on('unhandledRejection', (reason, p) => {
-    this.logger.log('[ADEX ENGINE] Unhandled Rejection at: Promise reason:', reason);
+    console.log('[ADEX ENGINE] Unhandled Rejection at: Promise reason:', reason);
     // application specific logging, throwing an error, or other logic here
 });
-
-const health = new Health();
-health.start();
 
 const engine = new AdexEngine();
 engine.initQueue();
