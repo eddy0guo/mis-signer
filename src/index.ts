@@ -9,7 +9,7 @@ import admin from './admin';
 import express_exchange from './express';
 import mist_config from './cfg';
 import {responseTime} from './middleware/ResponseTime';
-import {customHeader} from './middleware/customHeader';
+import {customHeader} from './middleware/CustomHeader';
 
 const app = express();
 
