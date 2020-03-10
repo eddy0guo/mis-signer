@@ -268,4 +268,8 @@ const BullOption: Queue.QueueOptions = {
   }
 };
 
-export {BullOption};
+const OrderQueueConfig = {
+  maxWaiting:100,
+}
+
+export {BullOption,OrderQueueConfig};
