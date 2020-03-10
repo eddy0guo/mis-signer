@@ -22,4 +22,5 @@ create table asim_express_records(
   updated_at  timestamp default now(),
   created_at  timestamp default now()
 );
-
+create index idx_asim_express_my_express on asim_express_records (address,created_at);
+create index idx_asim_express_pending_trade on asim_express_records (base_tx_status,quote_tx_status,created_at);
