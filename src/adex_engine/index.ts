@@ -218,7 +218,7 @@ class AdexEngine {
                     price: item.price,
                     amount: item.amount,
                     taker_side: item.taker_side,
-                    updated_at: item.updated_at,
+                    updated_at: new Date(),
                 };
                 lastTrades.push(trade);
             }
