@@ -1,18 +1,18 @@
-import utils2 from './utils';
+import Utils from './utils';
 import DBClient from '../models/db';
 import to from 'await-to-js';
-import mist_wallet from './mist_wallet';
+import MistMallet from './mist_wallet';
 import {IMarket} from '../interface';
 
 export default class Market {
     private db:DBClient;
-    private utils;
-    private quotation;
+    private utils:Utils;
+    private mistMallet:MistMallet;
 
     constructor(client) {
         this.db = client;
-        this.utils = new utils2();
-        this.quotation = new mist_wallet(client);
+        this.utils = new Utils();
+        this.mistMallet = new MistMallet(client);
 
     }
 
@@ -67,15 +67,11 @@ export default class Market {
     async list_market_quotations(): Promise<any[]> {
 
         const logs = [];
-
-        logs.push({start:new Date().toLocaleString(),name:'list_market_quotations'});
-
         const [markets_err, markets] = await to(this.list_online_markets());
         if (!markets) {
             console.error(markets_err, markets);
             return [];
         }
-        logs.push({list_online_markets:new Date().toLocaleString()});
         const quotations = [];
         for (const marketInfo of markets) {
             const defaultQuotations = {
@@ -99,12 +95,12 @@ export default class Market {
                 result[0] = defaultQuotations;
             } else {
                 const [base_token, quote_token] = result[0].market_id.split('-');
-                const quote_price = await this.quotation.get_token_price2pi(quote_token);
+                const quote_price = await this.mistMallet.get_token_price2pi(quote_token);
                 const max_price = await this.db.get_market_max_price([marketInfo.id]);
                 const min_price = await this.db.get_market_min_price([marketInfo.id]);
 
                 if (max_price.length > 0 && min_price.length > 0 && quote_price > 0) {
-                    result[0].CNYC_price = await this.quotation.get_token_price2pi(base_token);
+                    result[0].CNYC_price = await this.mistMallet.get_token_price2pi(base_token);
                     result[0].maxprice = max_price[0].price;
                     result[0].minprice = min_price[0].price;
                     result[0].min_CNYC_price = (min_price[0].price * quote_price).toFixed(2);

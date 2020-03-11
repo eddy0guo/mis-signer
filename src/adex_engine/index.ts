@@ -192,7 +192,7 @@ class AdexEngine {
             this.status.totalMatched += find_orders.length;
 
             const [trades_err, trades] = await to(
-                this.exchange.make_trades(find_orders, message)
+                this.exchange.makeTrades(find_orders, message)
             );
             if (!trades) {
                 this.logger.log('make trades', trades_err, trades);
