@@ -891,9 +891,7 @@ export default class DBClient {
 
 
     async get_freeze_amount(filter_info): Promise<IFreezeToken[]> {
-        const sql = `
-        select market_id,
-            side,
+        const sql = `select market_id,side,
             sum(pending_amount+available_amount) as base_amount,
             sum((pending_amount+available_amount) * price) as quote_amount
         from mist_orders_tmp
