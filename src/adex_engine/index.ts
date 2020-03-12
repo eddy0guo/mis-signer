@@ -136,7 +136,6 @@ class AdexEngine {
             this.logger.log(`[ADEX ENGINE] started,order queue ready:`);
         }
 
-        this.startCleanupJob();
     }
 
     async worker(job, done) {
@@ -196,7 +195,7 @@ class AdexEngine {
                     find_orders
                 );
                 await this.db.rollback();
-                done(new Error(find_orders_err));
+                done(find_orders_err);
                 return;
             }
 
@@ -207,12 +206,12 @@ class AdexEngine {
             this.status.totalMatched += find_orders.length;
 
             const [trades_err, trades] = await to(
-                this.exchange.make_trades(find_orders, message)
+                this.exchange.makeTrades(find_orders, message)
             );
             if (!trades) {
                 this.logger.log('make trades', trades_err, trades);
                 await this.db.rollback();
-                done(new Error(trades_err));
+                done(trades_err);
                 return;
             }
 
@@ -222,7 +221,7 @@ class AdexEngine {
             if (call_asimov_err) {
                 this.logger.log('call asimov', call_asimov_err, call_asimov_result);
                 await this.db.rollback();
-                done(new Error(call_asimov_err));
+                done(call_asimov_err);
                 return;
             }
 
@@ -233,7 +232,7 @@ class AdexEngine {
                     price: item.price,
                     amount: item.amount,
                     taker_side: item.taker_side,
-                    updated_at: item.updated_at,
+                    updated_at: new Date(),
                 };
                 lastTrades.push(trade);
             }
@@ -292,7 +291,7 @@ class AdexEngine {
                 insert_order_result
             );
             await this.db.rollback();
-            done(new Error(insert_order_err));
+            done(insert_order_err);
             return;
         }
         await this.db.commit();
@@ -302,16 +301,6 @@ class AdexEngine {
         this.logger.log(`Job finished in ${jobFinished-jobStarted}ms,${this.status}`);
 
         done();
-    }
-
-    startCleanupJob() {
-        // cleanup temp orders
-        setInterval(async () => {
-            const [err] = await to(this.db.cleanupTempOrders());
-            if (err) {
-                this.logger.log(err);
-            }
-        }, 60 * 60 * 1000);
     }
 
     async checkOrderAvailability(order: IOrder): Promise<boolean> {

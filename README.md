@@ -84,6 +84,7 @@ node dist/bridge_watcher
 node dist/express
 node dist/express_watcher
 node dist/adex_ws
+node dist/data_process
 
 
 ```bash

@@ -1,4 +1,4 @@
-import utils2 from './utils';
+import Utils from './utils';
 import NP from '../../common/NP';
 import mist_config from '../../cfg';
 import to from 'await-to-js'
@@ -7,19 +7,15 @@ import DBClient from '../models/db';
 
 export default class Engine {
     private db:DBClient;
-    private utils:utils2;
+    private utils:Utils;
 
-    constructor(client) {
+    constructor(client:DBClient) {
         this.db = client;
-        this.utils = new utils2();
+        this.utils = new Utils();
     }
 
     async match(message): Promise<IOrder[]> {
-        let side = 'buy';
-        if (message.side === 'buy') {
-            side = 'sell';
-        }
-
+        const  side = message.side ===  'buy'  ? 'sell':'buy';
         const filter = [message.price, side, message.market_id];
 
         const [err, result] = await to(this.db.filter_orders(filter));
@@ -31,7 +27,6 @@ export default class Engine {
         const match_orders = [];
         let amount = 0;
         // find and retunr。all orders。which's price below this order
-        // 下单量大于匹配的总额或者或者下单量小于匹配的总额，全部成交
         for (const i in result) {
             if (!result[i]) continue;
             result[i].amount = +result[i].amount;
@@ -46,7 +41,7 @@ export default class Engine {
         return match_orders;
     }
 
-    async make_trades(find_orders, my_order): Promise<ITrade[]> {
+    async makeTrades(find_orders, my_order): Promise<ITrade[]> {
         const create_time = this.utils.get_current_time();
         const trade_arr: ITrade[] = [];
         let amount = 0;
@@ -102,7 +97,7 @@ export default class Engine {
         return trade_arr;
     }
 
-    async call_asimov(trades): Promise<void> {
+    async call_asimov(trades:ITrade[]): Promise<void> {
         const [token_address_err, token_address] = await to(this.db.get_market([trades[0].market_id]));
         if (!token_address) {
             console.log('[ADEX ENGINE]::(get_market):', token_address_err, token_address);
@@ -116,12 +111,11 @@ export default class Engine {
             console.log('[ADEX ENGINE]::(list_matched_trades):', matched_trades_err, matched_trades);
             return;
         }
+        // 经验值300为单次上链trades数量，主要受rpc接口相应时间限制
         const add_queue_num = Math.floor(matched_trades / 300) + 1;
 
         const transaction_id =
-            transactions.length === 0
-                ? 0
-                : transactions[0].transaction_id + add_queue_num;
+            transactions.length === 0 ? 0 : transactions[0].transaction_id + add_queue_num;
 
         const index = transaction_id % 3;
         const order_address_set = [
@@ -153,9 +147,6 @@ export default class Engine {
 
             trades_arr.push(this.utils.arr_values(trades[i]));
         }
-
-        // 		console.log("formatch order trades_arr=%o relayers=%o transaction_id=%o index=%o",trades_arr,mist_config.relayers[index],transaction_id,index)
-
         await this.db.insert_trades(trades_arr);
     }
 }
