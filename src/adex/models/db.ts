@@ -675,7 +675,10 @@ export default class DBClient {
 
 
     async get_pending_transactions(): Promise<ITransaction[]> {
-        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_transactions where (current_timestamp - created_at) < \'24 hours\'  and status not in (\'successful\',\'failed\') and transaction_hash is not null order by id  limit 1'));
+        const sql = 'SELECT * FROM mist_transactions where (current_timestamp - created_at) < \'24 hours\' ' +
+            'and  (current_timestamp - created_at) > \'10 seconds\' ' +
+            'and status not in (\'successful\',\'failed\') and transaction_hash is not null order by id  limit 1';
+        const [err, result]: [any, any] = await to(this.queryWithLog(sql));
         if (err) {
             console.error('get pending transactions failed', err,);
             await this.handlePoolError(err);
