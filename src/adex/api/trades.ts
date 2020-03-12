@@ -3,43 +3,31 @@ import date = require('silly-datetime');
 
 import {restore_order} from './order';
 import {ITrade} from '../interface';
+import DBClient from '../models/db';
+
 
 export default class trades {
-    private db;
+    private db:DBClient;
 
 
-    constructor(client) {
+    constructor(client:DBClient) {
         this.db = client;
     }
-
-    async get_engine_info() {
-
-        const result = await this.db.get_engine_info();
-        return result;
-    }
-
     async list_trades(marketID: string): Promise<ITrade[]> {
-
-        const result = await this.db.list_trades([marketID]);
-        return result;
+        return await this.db.list_trades([marketID]);
     }
 
     async my_trades_length(address: string): Promise<number> {
-
-        const result = await this.db.my_trades_length([address]);
-        return result;
+        return await this.db.my_trades_length([address]);
     }
 
     async my_trades(message): Promise<ITrade[]> {
+        return  await this.db.my_trades([message.address]);
 
-        const filter_info = [message.address];
-        const result = await this.db.my_trades(filter_info);
-
-        return result;
     }
 
-    async my_trades2(address, page, perPage) : Promise<ITrade[]> {
-        const offset = (+page - 1) * perPage;
+    async my_trades2(address:string, page:string, perPage:string) : Promise<ITrade[]> {
+        const offset = (+page - 1) * +perPage;
         const [err, result] = await to(this.db.my_trades2([address, offset, perPage]));
         if (!result) console.error(err, result);
         return result;

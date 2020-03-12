@@ -116,7 +116,7 @@ interface ILastTrade{
     price: number;
     amount: number;
     taker_side: string;
-    updated_at: string;
+    updated_at: Date;
 }
 
 

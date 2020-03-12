@@ -28,6 +28,8 @@ class Launcher {
     }
 
     async loop(): Promise<void> {
+
+        // TODO：高度检查的逻辑暂时保留
         const [bestblock_err, bestblock_result] = await to(chain.getbestblock());
         if (bestblock_err || !bestblock_result || !bestblock_result.height || bestblock_result.height === this.block_height) {
             if (bestblock_result && bestblock_result.height) {
