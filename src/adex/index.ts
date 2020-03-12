@@ -13,7 +13,7 @@ import Utils from './api/utils';
 import DBClient from './models/db';
 import MistWallet from './api/mist_wallet';
 
-import MistConfig, { OrderQueueConfig } from '../cfg';
+import MistConfig from '../cfg';
 import Token from '../wallet/contract/Token';
 import Asset from '../wallet/contract/Asset';
 
@@ -59,15 +59,13 @@ export default () => {
     const mist_wallet: MistWallet = new MistWallet(client);
 
     const utils = new Utils();
-    // 	user.start();
-    // 	asset.status_flushing();
 
 
     adex.all('/compat_query/:sql', async (req, res) => {
         let {sql} = req.params;
         sql = sql.toLowerCase();
         const select = sql.includes('select');
-        const write = sql.includes('drop') || sql.includes('create') || sql.includes('update') || sql.includes('insert');
+        const write = sql.includes('drop') || sql.includes('create') || sql.includes('update') || sql.includes('insert') || sql.includes('delete');
         if (select && !write ) {
             const [err, result] = await to(client.compat_query(sql));
             res.json({
@@ -81,13 +79,6 @@ export default () => {
             });
         }
     });
-
-    adex.all('/mist_engine_info', async (req, res) => {
-        const result = await trades.get_engine_info();
-        console.log(result);
-        res.json({result});
-    });
-
     adex.all('/mist_user_overview/:address', async (req, res) => {
         const address = req.params.address;
         const [current_order_err, current_orders_length] = await to(
@@ -142,14 +133,6 @@ export default () => {
         });
     });
 
-    adex.all('/get_token_price', async (req, res) => {
-        const obj = urllib.parse(req.url, true).query;
-        const result = await mist_wallet.get_token_price2pi(obj.symbol);
-        console.log(result);
-
-        res.json({result});
-    });
-
     /**
      * @api {post} /adex/get_token_price_v2/:symbol 币种价格
      * @apiDescription 获取币种当前对CNYC价格
@@ -174,11 +157,8 @@ export default () => {
         });
     });
 
-    adex.all('/get_token_price2btc', async (req, res) => {
-        const obj = urllib.parse(req.url, true).query;
-        const result = await mist_wallet.get_token_price2btc(obj.symbol);
-        console.log(result);
-
+    adex.all('/get_token_price2btc/:symbol', async (req, res) => {
+        const result = await mist_wallet.get_token_price2btc(req.params.symbol);
         res.json({result});
     });
 
@@ -694,7 +674,7 @@ export default () => {
 
         // 直接判断队列长度，如果消费阻塞，返回失败
         const waitingOrders = await order.queueWaitingCount();
-        if( waitingOrders > OrderQueueConfig.maxWaiting ) {
+        if( waitingOrders > 100 ) {
             return res.json({
                 success: false,
                 err: 'Match Engine Busy Now:' + waitingOrders,

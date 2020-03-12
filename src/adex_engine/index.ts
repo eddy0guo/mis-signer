@@ -136,7 +136,6 @@ class AdexEngine {
             this.logger.log(`[ADEX ENGINE] started,order queue ready:`);
         }
 
-        this.startCleanupJob();
     }
 
     async worker(job, done) {
@@ -207,7 +206,7 @@ class AdexEngine {
             this.status.totalMatched += find_orders.length;
 
             const [trades_err, trades] = await to(
-                this.exchange.make_trades(find_orders, message)
+                this.exchange.makeTrades(find_orders, message)
             );
             if (!trades) {
                 this.logger.log('make trades', trades_err, trades);
@@ -233,7 +232,7 @@ class AdexEngine {
                     price: item.price,
                     amount: item.amount,
                     taker_side: item.taker_side,
-                    updated_at: item.updated_at,
+                    updated_at: new Date(),
                 };
                 lastTrades.push(trade);
             }
@@ -302,16 +301,6 @@ class AdexEngine {
         this.logger.log(`Job finished in ${jobFinished-jobStarted}ms,${this.status}`);
 
         done();
-    }
-
-    startCleanupJob() {
-        // cleanup temp orders
-        setInterval(async () => {
-            const [err] = await to(this.db.cleanupTempOrders());
-            if (err) {
-                this.logger.log(err);
-            }
-        }, 60 * 60 * 1000);
     }
 
     async checkOrderAvailability(order: IOrder): Promise<boolean> {
