@@ -196,7 +196,7 @@ class AdexEngine {
                     find_orders
                 );
                 await this.db.rollback();
-                done(new Error(find_orders_err));
+                done(find_orders_err);
                 return;
             }
 
@@ -212,7 +212,7 @@ class AdexEngine {
             if (!trades) {
                 this.logger.log('make trades', trades_err, trades);
                 await this.db.rollback();
-                done(new Error(trades_err));
+                done(trades_err);
                 return;
             }
 
@@ -222,7 +222,7 @@ class AdexEngine {
             if (call_asimov_err) {
                 this.logger.log('call asimov', call_asimov_err, call_asimov_result);
                 await this.db.rollback();
-                done(new Error(call_asimov_err));
+                done(call_asimov_err);
                 return;
             }
 
@@ -292,7 +292,7 @@ class AdexEngine {
                 insert_order_result
             );
             await this.db.rollback();
-            done(new Error(insert_order_err));
+            done(insert_order_err);
             return;
         }
         await this.db.commit();
