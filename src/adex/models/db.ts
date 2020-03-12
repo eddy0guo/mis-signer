@@ -278,12 +278,11 @@ export default class DBClient {
         let err: any;
         let result: any;
         if (filter[0] === 'sell') {
-            [err, result] = await to(this.queryWithLog('SELECT trunc(price,$3) as price,sum(available_amount) as amount FROM mist_orders_tmp\
-            where market_id=$2 and available_amount>0  and side=$1 group by trunc(price,$3) order by price asc limit 100', filter));
+            [err, result] = await to(this.queryWithLog('SELECT  trunc(price-0.00000001,$3) as price,sum(available_amount) as amount FROM mist_orders_tmp\
+            where market_id=$2 and available_amount>0  and side=$1 group by  trunc(price-0.00000001,$3) order by price asc limit 100', filter));
         } else {
-
-            [err, result] = await to(this.queryWithLog('SELECT trunc(price,$3) as price,sum(available_amount) as amount FROM mist_orders_tmp\
-            where market_id=$2 and available_amount>0  and side=$1 group by trunc(price,$3) order by price desc limit 100', filter));
+            [err, result] = await to(this.queryWithLog('SELECT  trunc(price,$3) as price,sum(available_amount) as amount FROM mist_orders_tmp\
+            where market_id=$2 and available_amount>0  and side=$1 group by  trunc(price,$3) order by price desc limit 100',filter));
         }
         if (err) {
             console.error('order_book failed', err, filter);
@@ -408,7 +407,7 @@ export default class DBClient {
 
 
     async get_market_current_price(marketID): Promise<IPrice[]> {
-        const [err, result]: [any, any] = await to(this.queryWithLog('select cast(price as float8) from mist_trades_tmp where (current_timestamp - created_at) < \'24 hours\' and market_id=$1 order by created_at desc limit 1', marketID));
+        const [err, result]: [any, any] = await to(this.queryWithLog('select cast(price as float8) from mist_trades_tmp where created_at > (current_timestamp - interval \'24 hours\') and market_id=$1 order by created_at desc limit 1', marketID));
         if (err) {
             console.error('get_market_current_price_ failed', err, marketID);
             await this.handlePoolError(err);
@@ -421,7 +420,7 @@ export default class DBClient {
     }
 
     async get_market_max_price(marketID): Promise<IPrice[]> {
-        const [err, result]: [any, any] = await to(this.queryWithLog('select cast(price as float8) from mist_trades_tmp where (current_timestamp - created_at) < \'24 hours\' and market_id=$1 order by price desc limit 1', marketID));
+        const [err, result]: [any, any] = await to(this.queryWithLog('select cast(price as float8) from mist_trades_tmp where created_at > (current_timestamp - interval \'24 hours\') and market_id=$1 order by price desc limit 1', marketID));
         if (err) {
             console.error('get_market_max_price failed', err, marketID);
             await this.handlePoolError(err);
@@ -434,7 +433,7 @@ export default class DBClient {
     }
 
     async get_market_min_price(marketID): Promise<IPrice[]> {
-        const [err, result]: [any, any] = await to(this.queryWithLog('select cast(price as float8) from mist_trades_tmp where (current_timestamp - created_at) < \'24 hours\' and market_id=$1 order by price limit 1', marketID));
+        const [err, result]: [any, any] = await to(this.queryWithLog('select cast(price as float8) from mist_trades_tmp where created_at > (current_timestamp - interval \'24 hours\') and market_id=$1 order by price limit 1', marketID));
         if (err) {
             console.error('get_market_min_price failed', err, marketID);
             await this.handlePoolError(err);
@@ -447,7 +446,7 @@ export default class DBClient {
     }
 
     async get_market_quotations(marketID): Promise<IMarketQuotation[]> {
-        const [err, result]: [any, any] = await to(this.queryWithLog('select k.market_id,k.price,k.ratio,m.volume from (select s.market_id,s.price,cast((s.price-t.price)/t.price as decimal(10,8)) ratio from (select * from mist_trades_tmp where market_id=$1 and (current_timestamp - created_at) < \'24 hours\'order by created_at desc limit 1)s left join (select price,market_id from mist_trades_tmp where market_id=$1 and (current_timestamp - created_at) < \'24 hours\' order by created_at asc  limit 1)t on s.market_id=t.market_id)k left join (select market_id,sum(amount) as volume from mist_trades_tmp where market_id=$1 and (current_timestamp - created_at) < \'24 hours\' group by market_id)m on k.market_id=m.market_id', marketID));
+        const [err, result]: [any, any] = await to(this.queryWithLog('select k.market_id,k.price,k.ratio,m.volume from (select s.market_id,s.price,cast((s.price-t.price)/t.price as decimal(10,8)) ratio from (select * from mist_trades_tmp where market_id=$1 and created_at > (current_timestamp - interval \'24 hours\') order by created_at desc limit 1)s left join (select price,market_id from mist_trades_tmp where market_id=$1 and created_at > (current_timestamp - interval \'24 hours\') order by created_at asc  limit 1)t on s.market_id=t.market_id)k left join (select market_id,sum(amount) as volume from mist_trades_tmp where market_id=$1 and created_at > (current_timestamp - interval \'24 hours\') group by market_id)m on k.market_id=m.market_id', marketID));
         if (err) {
             console.error('get_market_quotations_ failed', err, marketID);
             await this.handlePoolError(err);
@@ -672,11 +671,9 @@ export default class DBClient {
         }
         return JSON.stringify(result.rows);
     }
-
-
     async get_pending_transactions(): Promise<ITransaction[]> {
-        const sql = 'SELECT * FROM mist_transactions where (current_timestamp - created_at) < \'24 hours\' ' +
-            'and  (current_timestamp - created_at) > \'10 seconds\' ' +
+        const sql = 'SELECT * FROM mist_transactions where created_at > (current_timestamp - interval \'24 hours\') ' +
+            'and  created_at < (current_timestamp - interval \'10 seconds\') ' +
             'and status not in (\'successful\',\'failed\') and transaction_hash is not null order by id  limit 1';
         const [err, result]: [any, any] = await to(this.queryWithLog(sql));
         if (err) {
@@ -941,5 +938,64 @@ export default class DBClient {
         return result.rows;
     }
 
+    async insert_market_quotation(info): Promise<string> {
+        const [err, result]: [any, any] = await to(this.queryWithLog('insert into mist_market_quotation_tmp values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)', info));
+        if (err) {
+            console.error('insert_market_quotation failed', err, info);
+            await this.handlePoolError(err);
+        }
+        return JSON.stringify(result.rows);
+    }
+
+    async get_market_quotation_tmp(info): Promise<string> {
+    const [err, result]: [any, any] = await to(this.queryWithLog('select * from mist_market_quotation_tmp where market_id=$1 limit 1', info));
+        if (err) {
+            console.error('get_market_quotation failed', err, info);
+            await this.handlePoolError(err);
+        }
+        return result.rows;
+    }
+
+    async update_market_quotation(update_info): Promise<object[]> {
+        const [err, result]: [any, any] = await to(this.clientDB.query('UPDATE mist_market_quotation_tmp SET ' +
+                '(price,ratio,volume,CNYC_price,maxprice,minprice,min_CNYC_price,max_CNYC_price,symbol,updated_at)=' +
+                '($2,$3,$4,$5,$6,$7,$8,$9,$10,$11) WHERE  market_id=$1', update_info));
+
+        if (err) {
+            console.error('update_market_quotation  failed', err, update_info);
+            await this.handlePoolError(err);
+        }
+        return result.rows;
+
+    }
+
+    async insert_order_book_tmp(info): Promise<string> {
+        const [err, result]: [any, any] = await to(this.queryWithLog('insert into mist_order_book_tmp values($1,$2,$3,$4,$5)', info));
+        if (err) {
+            console.error('insert_order_book_tmp failed', err, info);
+            await this.handlePoolError(err);
+        }
+        return JSON.stringify(result.rows);
+    }
+
+    async get_order_book_tmp(info): Promise<any> {
+        const [err, result]: [any, any] = await to(this.queryWithLog('select * from mist_order_book_tmp where market_id=$1 and precision=$2 limit 1', info));
+        if (err) {
+            console.error('get_order_book_tmp failed', err, info);
+            await this.handlePoolError(err);
+        }
+        return result.rows;
+    }
+    async update_order_book_tmp(update_info): Promise<object[]> {
+        const [err, result]: [any, any] = await to(this.clientDB.query('UPDATE mist_order_book_tmp SET ' +
+            '(order_book,updated_at)=($3,$4) WHERE  market_id=$1 and precision=$2', update_info));
+
+        if (err) {
+            console.error('update update_order_book_tmp failed', err, update_info);
+            await this.handlePoolError(err);
+        }
+        return result.rows;
+
+    }
 
 }

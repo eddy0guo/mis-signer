@@ -135,7 +135,6 @@ class AdexEngine {
             this.logger.log(`[ADEX ENGINE] started,order queue ready:`);
         }
 
-        this.startCleanupJob();
     }
 
     async worker(job, done) {
@@ -286,16 +285,6 @@ class AdexEngine {
         this.logger.log(this.status);
 
         done();
-    }
-
-    startCleanupJob() {
-        // cleanup temp orders
-        setInterval(async () => {
-            const [err] = await to(this.db.cleanupTempOrders());
-            if (err) {
-                this.logger.log(err);
-            }
-        }, 60 * 60 * 1000);
     }
 
     async checkOrderAvailability(order: IOrder): Promise<boolean> {

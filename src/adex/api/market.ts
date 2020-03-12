@@ -73,6 +73,7 @@ export default class Market {
             return [];
         }
         const quotations = [];
+
         for (const marketInfo of markets) {
             const defaultQuotations = {
                 market_id: marketInfo.id,
@@ -86,34 +87,10 @@ export default class Market {
                 max_CNYC_price: 0,
                 symbol: marketInfo.id.replace('-', '/'),
             };
-            let [err, result]: [any, any] = await to(this.db.get_market_quotations([marketInfo.id]));
-            if (err || !result ) {
-                console.error(`get_market_quotations failed ${marketInfo.id},err ${err}`);
-                err = null;
-                result = [defaultQuotations];
-            } else if( result.length <= 0 ) {
-                result[0] = defaultQuotations;
-            } else {
-                const [base_token, quote_token] = result[0].market_id.split('-');
-                const quote_price = await this.mistMallet.get_token_price2pi(quote_token);
-                const max_price = await this.db.get_market_max_price([marketInfo.id]);
-                const min_price = await this.db.get_market_min_price([marketInfo.id]);
-
-                if (max_price.length > 0 && min_price.length > 0 && quote_price > 0) {
-                    result[0].CNYC_price = await this.mistMallet.get_token_price2pi(base_token);
-                    result[0].maxprice = max_price[0].price;
-                    result[0].minprice = min_price[0].price;
-                    result[0].min_CNYC_price = (min_price[0].price * quote_price).toFixed(2);
-                    result[0].max_CNYC_price = (max_price[0].price * quote_price).toFixed(2);
-                    result[0].symbol = marketInfo.id.replace('-', '/');
-                } else {
-                    result[0] = defaultQuotations;
-                }
-            }
-
-            logs.push({marketItem:new Date().toLocaleString(),marketId:marketInfo.id});
-
-            quotations.push(result[0]);
+            const [error,result] =  await to(this.db.get_market_quotation_tmp([marketInfo.id]))
+            console.log(error,result);
+            const quotation = result && result[0] ? result[0]:defaultQuotations;
+            quotations.push(quotation);
         }
         logs.push({beforeSort:new Date().toLocaleTimeString()});
         // @ts-ignore
@@ -130,6 +107,50 @@ export default class Market {
         console.log(logs);
 
         return quotations;
+    }
+
+
+    async getMarketQuotation(marketId){
+        const logs = [];
+        const defaultQuotations = {
+            market_id: marketId,
+            price: 0,
+            ratio: 0,
+            volume: 0,
+            CNYC_price: 0,
+            maxprice: 0,
+            minprice: 0,
+            min_CNYC_price: 0,
+            max_CNYC_price: 0,
+            symbol: marketId.replace('-', '/'),
+        };
+        let [err, result]: [any, any] = await to(this.db.get_market_quotations([marketId]));
+        if (err || !result ) {
+            console.error(`get_market_quotations failed ${marketId},err ${err}`);
+            err = null;
+            result = [defaultQuotations];
+        } else if( result.length <= 0 ) {
+            result[0] = defaultQuotations;
+        } else {
+            const [base_token, quote_token] = result[0].market_id.split('-');
+            const quote_price = await this.mistMallet.get_token_price2pi(quote_token);
+            const max_price = await this.db.get_market_max_price([marketId]);
+            const min_price = await this.db.get_market_min_price([marketId]);
+
+            if (max_price.length > 0 && min_price.length > 0 && quote_price > 0) {
+                result[0].CNYC_price = await this.mistMallet.get_token_price2pi(base_token);
+                result[0].maxprice = max_price[0].price;
+                result[0].minprice = min_price[0].price;
+                result[0].min_CNYC_price = (min_price[0].price * quote_price).toFixed(2);
+                result[0].max_CNYC_price = (max_price[0].price * quote_price).toFixed(2);
+                result[0].symbol = marketId.replace('-', '/');
+            } else {
+                result[0] = defaultQuotations;
+            }
+        }
+
+        logs.push({marketItem:new Date().toLocaleString(),marketId});
+        return  result[0];
     }
 
 }

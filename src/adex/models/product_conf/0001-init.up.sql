@@ -150,3 +150,26 @@ create index idx_mist_bridge_pending_trade on mist_bridge (side,master_txid_stat
 
 
 
+create table mist_market_quotation_tmp(
+  market_id text PRIMARY KEY,
+  price  numeric(32,8) default 0,
+  ratio  numeric(32,8) default 0,
+  volume numeric(32,8) default 0,
+  CNYC_price numeric(32,8) default 0,
+  maxprice numeric(32,8) default 0,
+  minprice numeric(32,8) default 0,
+  min_CNYC_price numeric(32,8) default 0,
+  max_CNYC_price numeric(32,8) default 0,
+  symbol  text default '',
+  updated_at  timestamp default now(),
+  created_at  timestamp default now()
+);
+
+create table mist_order_book_tmp(
+  market_id text default 0,
+  precision  int default 0,
+  order_book text default '',
+  updated_at  timestamp default now(),
+  created_at  timestamp default now()
+);
+

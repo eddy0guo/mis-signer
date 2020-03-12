@@ -160,26 +160,36 @@ export default class order {
     }
 
     async order_book(marketID:string, precision:string) : Promise<IOrderBook>{
+        const result =  await this.db.get_order_book_tmp([marketID,precision]);
+        const bookObj = JSON.parse(result[0].order_book);
+        console.log('----book=%o-',bookObj);
+        return bookObj;
+    }
+
+    async order_book_v2(marketID:string, precision:string) : Promise<IOrderBook>{
 
         const asks = await this.db.order_book(['sell', marketID, precision]);
         const bids = await this.db.order_book(['buy', marketID, precision]);
 
         const asks_arr = [];
         const bids_arr = [];
-        for (const item in asks) {
-            if (!asks[item]) continue
-            asks_arr.push(this.utils.arr_values(asks[item]));
+        for (const item of asks) {
+            if (!item) continue
+            const askPriceAdd  =  NP.divide(1, Math.pow(10, +precision));
+            item.price = NP.plus(item.price, askPriceAdd).toFixed(+precision).toString();
+            asks_arr.push(this.utils.arr_values(item));
         }
 
-        for (const item2 in bids) {
-            if (!bids[item2]) continue
-            bids_arr.push(this.utils.arr_values(bids[item2]));
+        for (const item2 of bids) {
+            if (!item2) continue
+            bids_arr.push(this.utils.arr_values(item2));
         }
 
         const order_book = {
             asks: asks_arr.reverse(),
             bids: bids_arr,
         };
+     //   console.log(order_book);
         return order_book;
     }
 
