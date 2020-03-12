@@ -13,7 +13,7 @@ import Utils from './api/utils';
 import DBClient from './models/db';
 import MistWallet from './api/mist_wallet';
 
-import MistConfig from '../cfg';
+import MistConfig, { OrderQueueConfig } from '../cfg';
 import Token from '../wallet/contract/Token';
 import Asset from '../wallet/contract/Asset';
 
@@ -674,7 +674,7 @@ export default () => {
 
         // 直接判断队列长度，如果消费阻塞，返回失败
         const waitingOrders = await order.queueWaitingCount();
-        if( waitingOrders > 100 ) {
+        if( waitingOrders > OrderQueueConfig.maxWaiting ) {
             return res.json({
                 success: false,
                 err: 'Match Engine Busy Now:' + waitingOrders,
