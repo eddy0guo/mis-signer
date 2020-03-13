@@ -11,7 +11,7 @@ import MistWallet from '../adex/api/mist_wallet';
 
 import { IOrder, IOrderBook, ILastTrade } from '../adex/interface';
 
-import { BullOption } from '../cfg';
+import { BullOption,OrderQueueConfig } from '../cfg';
 import { get_available_erc20_amount } from '../adex';
 
 const QueueNames = {
@@ -132,13 +132,15 @@ class AdexEngine {
 
         const queueReady = await this.orderQueue.isReady();
         if (queueReady) {
+            await this.orderQueue.resume();
             this.logger.log(`[ADEX ENGINE] started,order queue ready:`);
         }
 
     }
 
     async worker(job, done) {
-        this.status.workingTime = new Date().getTime() - this.status.startTime.getTime();
+        const jobStarted = new Date().getTime();
+        this.status.workingTime = jobStarted - this.status.startTime.getTime();
         this.status.waitingJobs = await this.orderQueue.getWaitingCount();
 
         const message = job.data;
@@ -146,13 +148,26 @@ class AdexEngine {
             `[ADEX ENGINE] Message ${message.market_id} from OrderQueue${process.env.MIST_MODE}`
         );
 
-        // TODO 这里暂时当任务过多时候，跳过检测
+
         let checkAvailableRes = true;
-        if(this.status.waitingJobs < 100 ){
+        if(this.status.waitingJobs < OrderQueueConfig.maxWaiting * 2 ){
             checkAvailableRes = await this.checkOrderAvailability(message);
         } else {
-            // 跳过检测会导致撮合结果合约执行失败，目前对失败对的订单没有反向处理，直接标记failed。
-            this.logger.log(`Warning too many jobs:${this.status.waitingJobs},balance checking skipped`);
+            // TODO 这里暂时当任务过多时候，跳过检测，并做了一些冗余的判断，HA进程小于 OrderQueueConfig.maxWaiting 个一般不会出现这问题
+            if( this.status.waitingJobs > OrderQueueConfig.maxWaiting * 10 ){
+                this.logger.log(`Warning Order list > ${OrderQueueConfig.maxWaiting * 10} ,cleanup all orders in queue!`);
+                await this.orderQueue.pause();
+                await this.orderQueue.empty();
+                await this.orderQueue.resume();
+                this.logger.log(`Order list cleanup finished.`);
+                this.status.waitingJobs = 0;
+                done();
+                return;
+            } else {
+                // 跳过检测会导致撮合结果合约执行失败，目前对失败对的订单没有反向处理，直接标记failed。
+                this.logger.log(`Warning too many jobs:${this.status.waitingJobs},balance checking skipped`);
+            }
+
         }
 
         if (!checkAvailableRes) {
@@ -180,7 +195,7 @@ class AdexEngine {
                     find_orders
                 );
                 await this.db.rollback();
-                done(new Error(find_orders_err));
+                done(find_orders_err);
                 return;
             }
 
@@ -196,7 +211,7 @@ class AdexEngine {
             if (!trades) {
                 this.logger.log('make trades', trades_err, trades);
                 await this.db.rollback();
-                done(new Error(trades_err));
+                done(trades_err);
                 return;
             }
 
@@ -206,7 +221,7 @@ class AdexEngine {
             if (call_asimov_err) {
                 this.logger.log('call asimov', call_asimov_err, call_asimov_result);
                 await this.db.rollback();
-                done(new Error(call_asimov_err));
+                done(call_asimov_err);
                 return;
             }
 
@@ -276,13 +291,14 @@ class AdexEngine {
                 insert_order_result
             );
             await this.db.rollback();
-            done(new Error(insert_order_err));
+            done(insert_order_err);
             return;
         }
         await this.db.commit();
 
+        const jobFinished = new Date().getTime();
         this.status.ordersPerMin = this.status.totalMatched/(this.status.workingTime/1000/60)
-        this.logger.log(this.status);
+        this.logger.log(`Job finished in ${jobFinished-jobStarted}ms,${this.status}`);
 
         done();
     }

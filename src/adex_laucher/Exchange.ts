@@ -1,18 +1,19 @@
 import { AsimovWallet, AsimovConst } from '@fingo/asimov-wallet';
 import * as util from 'ethereumjs-util';
-
-import mist_config from '../cfg';
-import adex_utils from '../adex/api/utils';
+import AdexUtils from '../adex/api/utils';
 
 export default class Exchange {
-  private address:string;
-  constructor(address:string){
-    this.address = address;
+  constructor(
+    private address:string,
+    private wallet:AsimovWallet,
+    ){
   }
 
-  async matchorder(trades_info, prikey, word) {
-    const utils = new adex_utils();
+  async matchorder(trades_info) {
+    const utils = new AdexUtils();
     const trades_arr = [];
+
+    // TODO: remove relayer sign next version
     for (const index in trades_info) {
       if (!trades_info[index]) {
         continue;
@@ -22,7 +23,7 @@ export default class Exchange {
         trades_info[index].trade_hash.slice(2, 66),
         'hex'
       );
-      const sign = util.ecsign(hashbuf, util.toBuffer(prikey));
+      const sign = util.ecsign(hashbuf, util.toBuffer(this.wallet.pk));
       trades_info[index].v = sign.v.toString();
       trades_info[index].r = '0x' + sign.r.toString('hex');
       trades_info[index].s = '0x' + sign.s.toString('hex');
@@ -63,12 +64,7 @@ export default class Exchange {
     };
      */
 
-    const child_wallet = new AsimovWallet({
-      name: prikey,
-      rpc: mist_config.asimov_child_rpc,
-      mnemonic: word,
-    });
-    return await child_wallet.contractCall.call(
+    return await this.wallet.contractCall.call(
       this.address,
       'matchorder(tuple[])',
       [trades_arr],

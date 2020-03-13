@@ -26,7 +26,7 @@ export default class DBClient {
             port: mist_config.pg_port,
         });
         client.on('error', async (err: any) => {
-            console.error('An idle client has experienced an error', err.stack)
+            console.error('An idle client has experienced an error,kill process and relaunch, goodbye...', err.stack)
             // Maybe you shold kill the process
             process.exit(-1);
             // await client.end();
@@ -627,7 +627,7 @@ export default class DBClient {
 
     }
 
-    async get_laucher_trades(): Promise<object[]> {
+    async get_laucher_trades(): Promise<any[]> {
         const [err, result]: [any, any] = await to(this.queryWithLog(' SELECT distinct(transaction_id)  FROM mist_trades_tmp where status in (\'pending\',\'matched\') and transaction_hash is null order by transaction_id  limit 1'));
         if (err) {
             console.error('get laucher trades failed', err);

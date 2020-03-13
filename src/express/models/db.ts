@@ -13,7 +13,7 @@ export default class ExpressDBClient {
 	}
 
 	createPool(){
-		console.log('[EXPRESS DB] create pool at:',new Date());
+		console.log('[EXPRESS DB] create pool at:',new Date().toLocaleString());
 
         const client: Pool = new Pool({
             host: mist_config.pg_host,
