@@ -26,7 +26,7 @@ export default class DBClient {
             port: mist_config.pg_port,
         });
         client.on('error', async (err: any) => {
-            console.error('An idle client has experienced an error', err.stack)
+            console.error('An idle client has experienced an error,kill process and relaunch, goodbye...', err.stack)
             // Maybe you shold kill the process
             process.exit(-1);
             // await client.end();

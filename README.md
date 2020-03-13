@@ -5,10 +5,6 @@ All the design is based on Asimov Blockchain and take good consider of decentrel
 
 ## Getting Started
 
-
-
----------------
-
 ```sh
 
 # mangodb for did
@@ -32,11 +28,13 @@ PORT=8080 npm start
 
 ## Init
 
+```bash
 source product.env
 # MIST_MODE must be product or dev
 cd  src/adex/models/ && make seed
 cd -
 cd  src/express/models/ && make seed
+```
 
 ## clean data
 
@@ -44,7 +42,25 @@ cd  src/express/models/ && make seed
 0 * * * *  psql "host=pgm-wz9m1yb4h5g4sl7x127770.pg.rds.aliyuncs.com port=1433 dbname=product user=product password=myHzSesQc7TXSS5HOXZDsgq7SNUHY2" < /opt/mist-signer_fingo_dev2/src/adex/models/mist_tmp_clean.sql
 ```
 
-##TEST
+## Code Style
+
+Normally, Using camelCase:
+
+* SomeClass
+* ISomeInterface
+* SomeGlobalFunction
+* SomeClass.someFunction
+* SomeClass.publicVariable
+* SomeClass._privateVariable
+
+Only using snake_case at:
+
+* some_folder/some_file.ts
+* api_router_name
+* db_structure
+* SOME_CONST
+
+## TEST
 
 cd test && mocha --timeout 10000 api.test.js
 
@@ -94,4 +110,3 @@ node dist/data_process
 
 * [部署测试流程](doc/deploy.md)
 * [交易对管理](doc/market_manage.md)
-
