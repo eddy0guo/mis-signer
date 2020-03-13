@@ -26,7 +26,7 @@ class Launcher {
         this.relayer = new AsimovWallet({
             name: 'Exchange_Relayer',
             rpc: MistConfig.asimov_child_rpc,
-            mnemonic: MistConfig.relayers[0].prikey,
+            pk: MistConfig.relayers[0].prikey,
           });
         this.mist = new Exchange(MistConfig.ex_address,this.relayer);
     }
