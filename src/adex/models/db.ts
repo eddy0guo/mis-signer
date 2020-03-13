@@ -807,7 +807,7 @@ export default class DBClient {
     }
 
     async getBridgeBurn(symbol:[string]): Promise<number> {
-        const sql = 'select sum(amount + to_number(fee_amount, \'999999999999999\')) from ' +
+        const sql = 'select sum(amount + to_number(fee_amount, \'9999999.99999999\')) from ' +
             'mist_bridge where side=\'coin2asset\' and token_name=$1';
         const [err, result]: [any, any] = await to(this.queryWithLog(sql,symbol));
         if (err) {
@@ -820,7 +820,7 @@ export default class DBClient {
     }
 
     async getBridgeFee(symbol:[string]): Promise<number> {
-        const sql = 'select sum(to_number(fee_amount, \'9999999999999999999\')) from' +
+        const sql = 'select sum(to_number(fee_amount, \'99999999999.99999999\')) from' +
             ' mist_bridge where side=\'coin2asset\' and token_name=$1';
         const [err, result]: [any, any] = await to(this.queryWithLog(sql,symbol));
         if (err) {
