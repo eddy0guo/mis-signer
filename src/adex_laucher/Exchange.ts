@@ -13,6 +13,8 @@ export default class Exchange {
   async matchorder(trades_info, prikey, word) {
     const utils = new adex_utils();
     const trades_arr = [];
+
+    // TODO: remove relayer sign next version
     for (const index in trades_info) {
       if (!trades_info[index]) {
         continue;
@@ -62,9 +64,9 @@ export default class Exchange {
       type: 'function',
     };
      */
-
+    // don't use prikey as name
     const child_wallet = new AsimovWallet({
-      name: prikey,
+      name: 'Exchange_Relayer',
       rpc: mist_config.asimov_child_rpc,
       mnemonic: word,
     });
