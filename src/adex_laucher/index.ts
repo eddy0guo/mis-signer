@@ -3,21 +3,21 @@ import NP from 'number-precision'
 
 import Exchange from './Exchange'
 
-import client from '../adex/models/db'
-import utils2 from '../adex/api/utils'
+import DBClient from '../adex/models/db'
+import Utils from '../adex/api/utils'
 import mist_config from '../cfg'
 import {chain} from '../wallet/api/chain'
 import {Health} from '../common/Health'
 
 class Launcher {
-    private db;
-    private utils;
+    private db:DBClient;
+    private utils:Utils;
     private block_height;
     private tmp_transaction_id;
 
     constructor() {
-        this.db = new client();
-        this.utils = new utils2();
+        this.db = new DBClient();
+        this.utils = new Utils();
         this.block_height = 0;
     }
 
