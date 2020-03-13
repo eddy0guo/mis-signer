@@ -162,4 +162,13 @@ export default class ExpressDBClient {
 
 	}
 
+	async get_order_book_tmp(info): Promise<any> {
+		const [err, result]: [any, any] = await to(this.clientDB.query('select * from mist_order_book_tmp where market_id=$1 and precision=$2 limit 1', info));
+		if (err) {
+			console.error('get_order_book_tmp failed', err, info);
+			await this.handlePoolError(err);
+		}
+		return result.rows;
+	}
+
 }
