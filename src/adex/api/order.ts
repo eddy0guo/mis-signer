@@ -162,7 +162,6 @@ export default class order {
     async order_book(marketID:string, precision:string) : Promise<IOrderBook>{
         const result =  await this.db.get_order_book_tmp([marketID,precision]);
         const bookObj = JSON.parse(result[0].order_book);
-        console.log('----book=%o-',bookObj);
         return bookObj;
     }
 

@@ -793,6 +793,47 @@ export default class DBClient {
 
     }
 
+
+    async getBridgeMint(symbol:[string]): Promise<number> {
+        const sql = 'select sum(amount) from mist_bridge where side=\'asset2coin\' and token_name=$1';
+        const [err, result]: [any, any] = await to(this.queryWithLog(sql,symbol));
+        if (err) {
+            console.error('getBridgeMint failed', err);
+            await this.handlePoolError(err);
+        }
+
+        return result.rows[0].sum;
+
+    }
+
+    async getBridgeBurn(symbol:[string]): Promise<number> {
+        const sql = 'select sum(amount + to_number(fee_amount, \'999999999999999\')) from ' +
+            'mist_bridge where side=\'coin2asset\' and token_name=$1';
+        const [err, result]: [any, any] = await to(this.queryWithLog(sql,symbol));
+        if (err) {
+            console.error('getBridgeBurn failed', err);
+            await this.handlePoolError(err);
+        }
+
+        return result.rows[0].sum;
+
+    }
+
+    async getBridgeFee(symbol:[string]): Promise<number> {
+        const sql = 'select sum(to_number(fee_amount, \'9999999999999999999\')) from' +
+            ' mist_bridge where side=\'coin2asset\' and token_name=$1';
+        const [err, result]: [any, any] = await to(this.queryWithLog(sql,symbol));
+        if (err) {
+            console.error('getBridgeFee failed', err);
+            await this.handlePoolError(err);
+        }
+
+        return result.rows[0].sum;
+
+    }
+
+
+
     async get_pending_decode_bridge(): Promise<IBridge[]> {
         const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * from  mist_bridge  where address is null  and master_txid_status=\'pending\' and (current_timestamp - created_at) > \'10 seconds\' order by created_at desc limit 1'));
         if (err) {
