@@ -40,13 +40,14 @@ class Launcher {
     async loop(): Promise<void> {
 
         // TODO：高度检查的逻辑暂时保留
+        /*
         const blockHeight = BlockChain.tracker.height;
         if ( blockHeight === this.block_height) {
             console.log(`[ADEX LAUNCHER] current height is ${blockHeight} and last is ${this.block_height}`);
             this.start(500);
             return
         }
-
+        */
         const [trades_err, trades] = await to(this.db.get_laucher_trades());
         if (!trades) {
             console.error('get_laucher_trades error count',this.errorCount,trades_err, trades);
@@ -157,8 +158,10 @@ class Launcher {
             await this.db.launch_update_trades(errInfo);
             console.log('[ADEX LAUNCHER] call dex matchorder err=%o transaction_id=%o relayers=%o\n', err, trades[0].transaction_id, this.relayer.address)
         }
-
-        this.loop.call(this);
+        // 500ms的作用：1、为等待pg磁盘写入的时间，2、防止laucher过快，watcher跟不上，因为wathcer的需要链上确认
+        setTimeout(async () => {
+            this.loop.call(this);
+        }, 500);
     }
 }
 

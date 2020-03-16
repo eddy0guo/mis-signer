@@ -23,8 +23,10 @@ export default class Exchange {
         trades_info[index].trade_hash.slice(2, 66),
         'hex'
       );
-      const sign = util.ecsign(hashbuf, util.toBuffer(this.wallet.pk));
-      trades_info[index].v = sign.v.toString();
+      const sign = util.ecsign(hashbuf, util.toBuffer('0x' + this.wallet.pk));
+      //  const sign = util.ecsign(hashbuf, util.toBuffer( this.wallet.pk));
+
+        trades_info[index].v = sign.v.toString();
       trades_info[index].r = '0x' + sign.r.toString('hex');
       trades_info[index].s = '0x' + sign.s.toString('hex');
       delete trades_info[index].trade_hash;
