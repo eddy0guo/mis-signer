@@ -199,10 +199,9 @@ export default class order {
 }
 
 // 回滚没有打包成功的交易,不过吃单变成了挂单，等别人吃
-export async function restore_order(order_id, amount) {
+export async function restore_order(db, order_id, amount) {
     const utils = new Utils();
     const update_time = utils.get_current_time();
-    const db = new DBClient();
     const current_order = await db.find_order([order_id]);
 
     const status = current_order[0].available_amount + amount < current_order[0].amount ? 'partial_filled' : 'pending';

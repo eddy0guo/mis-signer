@@ -642,7 +642,7 @@ export default class DBClient {
     }
 
     async get_matched_trades(): Promise<ITrade[]> {
-        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT *  FROM mist_trades_tmp where status=\'matched\''));
+        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT *  FROM mist_trades where status=\'matched\''));
         if (err) {
             console.error('get matched trades failed', err);
             await this.handlePoolError(err);
@@ -654,6 +654,12 @@ export default class DBClient {
     async delete_matched_trades(): Promise<object[]> {
         const [err, result]: [any, any] = await to(this.queryWithLog('delete FROM mist_trades where status=\'matched\''));
         if (err) {
+            console.error('delete matched trade failed', err);
+            await this.handlePoolError(err);
+        }
+
+        const [tmpErr, tmpResult]: [any, any] = await to(this.queryWithLog('delete FROM mist_trades_tmp where status=\'matched\''));
+        if (tmpErr) {
             console.error('delete matched trade failed', err);
             await this.handlePoolError(err);
         }

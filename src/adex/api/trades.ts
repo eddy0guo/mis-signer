@@ -77,8 +77,8 @@ export default class trades {
     async rollback_trades() : Promise<void>{
         const matched_trades = await this.db.get_matched_trades();
         for (const item of matched_trades) {
-            restore_order(item.taker_order_id, item.amount);
-            restore_order(item.maker_order_id, item.amount);
+            restore_order(this.db,item.taker_order_id, item.amount);
+            restore_order(this.db,item.maker_order_id, item.amount);
         }
 
         await this.db.delete_matched_trades();
