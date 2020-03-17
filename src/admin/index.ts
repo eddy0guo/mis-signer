@@ -21,15 +21,15 @@ import mistConfig from '../cfg';
 
 export default () => {
     const admin = Router();
-    const psql_db = new adexPGClient();
-    const mist_wallet = new MistWallet(psql_db);
+    const db = new adexPGClient();
+    const mist_wallet = new MistWallet(db);
     const utils = new Utils();
-    const order = new Order(psql_db);
-    const market: MarketAPI = new MarketAPI(psql_db);
+    const order = new Order(db);
+    const market: MarketAPI = new MarketAPI(db);
 
     admin.all('/market_add/:market_id/:base_token_address/:base_token_symbol/:quote_token_address/:quote_token_symbol', async (req, res) => {
         const {market_id, base_token_address, base_token_symbol, quote_token_address, quote_token_symbol} = req.params;
-        const [err, result] = await to(psql_db.get_existed_market([market_id]));
+        const [err, result] = await to(db.get_existed_market([market_id]));
         if (!result || result.length !== 0) {
             console.error('this markets id have been exsited', err);
             return res.json({
@@ -117,7 +117,7 @@ export default () => {
 
 
     admin.all('/get_engine_progress', async (req, res) => {
-        const [err, result] = await to(psql_db.get_engine_progress());
+        const [err, result] = await to(db.get_engine_progress());
         res.json({
             success: !!result,
             result,
@@ -163,7 +163,7 @@ export default () => {
     });
 
     admin.all('/get_bridge_progress', async (req, res) => {
-        const [err, result] = await to(psql_db.get_bridger_progress());
+        const [err, result] = await to(db.get_bridger_progress());
         res.json({
             success: !!result,
             result,
@@ -179,7 +179,7 @@ export default () => {
         const [childBalancesErr, childBalances] = await to(childAsset.get_asset_balances(mist_wallet, bridge_address, 'ASIM'));
 
         const token_arr = await mist_wallet.list_mist_tokens();
-        const mistTokenTotals = [];
+        const bridgeInfos = [];
         for (const i in token_arr as any[]) {
             if (!token_arr[i]) continue;
             const token = new Token(token_arr[i].address);
@@ -191,18 +191,26 @@ export default () => {
                     err: totalErr
                 });
             }
-            const totalInfo = {
-                token_symbol: token_arr[i].symbol,
-                mist_token_balance: total / (1 * 10 ** 8),
+          //  balance = baseAmount + feeAmount - chainTotal
+          //  chainTotal = bridgeMint - bridgeBurn
+            const bridgeMint = await db.getBridgeMint([token_arr[i].symbol]);
+            const bridgeBurn = await db.getBridgeBurn([token_arr[i].symbol]);
+            const bridgeFee = await db.getBridgeFee([token_arr[i].symbol]);
+            const bridgeInfo = {
+                symbol: token_arr[i].symbol,
+                chainTotal: total / (1 * 10 ** 8),
+                bridgeMint,
+                bridgeBurn,
+                bridgeFee,
             };
 
-            mistTokenTotals.push(totalInfo);
+            bridgeInfos.push(bridgeInfo);
         }
 
         const result = {
             masterBalances,
             childFee: childBalances,
-            mistTokenTotals
+            bridgeInfos
         }
 
         res.json({
@@ -212,7 +220,7 @@ export default () => {
     });
 
     admin.all('/get_express_progress', async (req, res) => {
-        const [err, result] = await to(psql_db.get_express_progress());
+        const [err, result] = await to(db.get_express_progress());
         res.json({
             success: !!result,
             result,
