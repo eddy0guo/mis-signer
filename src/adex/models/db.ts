@@ -555,7 +555,7 @@ export default class DBClient {
     }
 
     async list_all_trades(): Promise<ITrade[]> {
-        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_trades_tmp where status!=\'matched\' and (current_timestamp - created_at) < \'100 hours\' order by transaction_id desc limit 1'));
+        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_trades_tmp where status!=\'matched\'  order by transaction_id desc limit 1'));
         if (err) {
             console.error('list all trades failed', err);
             await this.handlePoolError(err);
