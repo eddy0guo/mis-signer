@@ -148,6 +148,9 @@ create index idx_mist_bridge_pending_decode on mist_bridge (address,master_txid_
 create index idx_mist_bridge_my_bridge on mist_bridge (address,created_at);
 create index idx_mist_bridge_pending_trade on mist_bridge (side,master_txid_status,child_txid_status,created_at);
 
+create index idx_mist_bridge_statistical on mist_bridge (side,token_name);
+
+
 
 
 create table mist_market_quotation_tmp(
@@ -172,4 +175,4 @@ create table mist_order_book_tmp(
   updated_at  timestamp default now(),
   created_at  timestamp default now()
 );
-
+create index idx_mist_order_book_tmp_market_book on mist_order_book_tmp (market_id,precision);

@@ -1130,6 +1130,22 @@ export default () => {
         });
     });
 
+    adex.all('/my_trades_v3/:address/:market_id/:page/:per_page', async (req, res) => {
+        const [err, result] = await to(
+            trades.my_trades2(
+                req.params.address,
+                req.params.page,
+                req.params.per_page,
+                req.params.market_id,
+            )
+        );
+        res.json({
+            success: !result ? false : true,
+            result,
+            err,
+        });
+    });
+
 
     return adex;
 };

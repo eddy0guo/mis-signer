@@ -33,7 +33,7 @@ export default class Engine {
             result[i].available_amount = +result[i].available_amount;
             match_orders.push(result[i]);
             amount += result[i].available_amount;
-            if (amount >= message.amount) {
+            if (amount >= message.available_amount) {
                 break;
             }
         }
@@ -44,22 +44,20 @@ export default class Engine {
     async makeTrades(find_orders, my_order): Promise<ITrade[]> {
         const create_time = this.utils.get_current_time();
         const trade_arr: ITrade[] = [];
-        let amount = 0;
+        let available_amount = my_order.available_amount;
 
         for (let item = 0; item < find_orders.length; item++) {
             let maker_status = 'full_filled';
-            // 最低价格的一单最后成交，成交数量按照吃单剩下的额度成交,并且更新最后一个order的可用余额
-            amount = NP.plus(amount, find_orders[item].available_amount);
-
-            // 吃单全部成交,挂单有剩余的场景,
-            if (item === find_orders.length - 1 && amount > my_order.available_amount) {
-                const overflow_amount = NP.minus(amount, my_order.available_amount);
+            // 吃单全部成交,挂单有剩余的场景,--24000,
+            if (item === find_orders.length - 1 && available_amount < find_orders[item].available_amount) {
+                const overflow_amount = NP.minus(find_orders[item].available_amount, available_amount);
                 find_orders[item].available_amount = NP.minus(
                     find_orders[item].available_amount,
                     overflow_amount
                 );
                 maker_status = 'partial_filled';
             }
+            available_amount = NP.minus(available_amount, find_orders[item].available_amount);
 
             const trade: ITrade = {
                 id: null,
@@ -112,12 +110,12 @@ export default class Engine {
             return;
         }
         // 经验值300为单次上链trades数量，主要受rpc接口相应时间限制
-        const add_queue_num = Math.floor(matched_trades / 300) + 1;
+        const add_queue_num = Math.floor(matched_trades / 100) + 1;
 
         const transaction_id =
             transactions.length === 0 ? 0 : transactions[0].transaction_id + add_queue_num;
 
-        const index = transaction_id % 3;
+        const index = transaction_id % 1;
         const order_address_set = [
             token_address[0].base_token_address,
             token_address[0].quote_token_address,

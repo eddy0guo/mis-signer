@@ -117,12 +117,12 @@ export default class order {
 
         return result;
     }
-    async my_orders(address:string, page:number, perPage:number, status1:string, status2:string,tokenName?: string | undefined):Promise<IOrder[]> {
+    async my_orders(address:string, page:number, perPage:number, status1:string, status2:string,MarketID?: string | undefined):Promise<IOrder[]> {
         const offset = (page - 1) * perPage;
         // @ts-ignore
         let [err,orders] = [null,null];
-        if(tokenName) {
-            [err, orders] = await to(this.db.my_orders3([address, offset, perPage, status1, status2,tokenName]));
+        if(MarketID) {
+            [err, orders] = await to(this.db.my_orders3([address, offset, perPage, status1, status2,MarketID]));
         }
         else{
             [err, orders] = await to(this.db.my_orders2([address, offset, perPage, status1, status2]));
@@ -162,7 +162,6 @@ export default class order {
     async order_book(marketID:string, precision:string) : Promise<IOrderBook>{
         const result =  await this.db.get_order_book_tmp([marketID,precision]);
         const bookObj = JSON.parse(result[0].order_book);
-        console.log('----book=%o-',bookObj);
         return bookObj;
     }
 
@@ -200,10 +199,9 @@ export default class order {
 }
 
 // 回滚没有打包成功的交易,不过吃单变成了挂单，等别人吃
-export async function restore_order(order_id, amount) {
+export async function restore_order(db, order_id, amount) {
     const utils = new Utils();
     const update_time = utils.get_current_time();
-    const db = new DBClient();
     const current_order = await db.find_order([order_id]);
 
     const status = current_order[0].available_amount + amount < current_order[0].amount ? 'partial_filled' : 'pending';
