@@ -26,7 +26,7 @@ export default class DBClient {
             port: mist_config.pg_port,
         });
         client.on('error', async (err: any) => {
-            console.error('An idle client has experienced an error', err.stack)
+            console.error('An idle client has experienced an error,kill process and relaunch, goodbye...', err.stack)
             // Maybe you shold kill the process
             process.exit(-1);
             // await client.end();
@@ -97,7 +97,10 @@ export default class DBClient {
     }
 
     async cleanupTempOrders() {
-        const sql1 = `delete from mist_trades_tmp where (current_timestamp - created_at) > '25 hours';`
+        // 临时表trade数据不能删完，保留一组定序
+        const topTradeSql = `select * from mist_trades_tmp order by created_at desc limit 1`;
+        const topTrade = await this.queryWithLog(topTradeSql);
+        const sql1 = `delete from mist_trades_tmp where (current_timestamp - created_at) > '25 hours' and transaction_id < ${topTrade[0].transaction_id}`;
         const sql2 = `delete from mist_orders_tmp where available_amount=0;`
         await this.queryWithLog(sql1);
         await this.queryWithLog(sql2);
@@ -541,6 +544,16 @@ export default class DBClient {
 
     }
 
+    async my_trades3(filter_info): Promise<ITrade[]> {
+        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_trades where market_id=$4 and (taker=$1 or maker=$1) order by created_at desc limit $3 offset $2', filter_info));
+        if (err) {
+            console.error('my trades2 failed', err, filter_info);
+            await this.handlePoolError(err);
+        }
+        return result.rows;
+
+    }
+
     async transactions_trades(id): Promise<ITrade[]> {
         const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_trades_tmp where transaction_id=$1', id));
         if (err) {
@@ -552,7 +565,7 @@ export default class DBClient {
     }
 
     async list_all_trades(): Promise<ITrade[]> {
-        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_trades_tmp where status!=\'matched\' and (current_timestamp - created_at) < \'100 hours\' order by transaction_id desc limit 1'));
+        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_trades_tmp where status!=\'matched\'  order by transaction_id desc limit 1'));
         if (err) {
             console.error('list all trades failed', err);
             await this.handlePoolError(err);
@@ -639,7 +652,7 @@ export default class DBClient {
     }
 
     async get_matched_trades(): Promise<ITrade[]> {
-        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT *  FROM mist_trades_tmp where status=\'matched\''));
+        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT *  FROM mist_trades where status=\'matched\''));
         if (err) {
             console.error('get matched trades failed', err);
             await this.handlePoolError(err);
@@ -651,6 +664,12 @@ export default class DBClient {
     async delete_matched_trades(): Promise<object[]> {
         const [err, result]: [any, any] = await to(this.queryWithLog('delete FROM mist_trades where status=\'matched\''));
         if (err) {
+            console.error('delete matched trade failed', err);
+            await this.handlePoolError(err);
+        }
+
+        const [tmpErr, tmpResult]: [any, any] = await to(this.queryWithLog('delete FROM mist_trades_tmp where status=\'matched\''));
+        if (tmpErr) {
             console.error('delete matched trade failed', err);
             await this.handlePoolError(err);
         }
@@ -792,6 +811,47 @@ export default class DBClient {
         return result.rows;
 
     }
+
+
+    async getBridgeMint(symbol:[string]): Promise<number> {
+        const sql = 'select sum(amount) from mist_bridge where side=\'asset2coin\' and token_name=$1';
+        const [err, result]: [any, any] = await to(this.queryWithLog(sql,symbol));
+        if (err) {
+            console.error('getBridgeMint failed', err);
+            await this.handlePoolError(err);
+        }
+
+        return result.rows[0].sum;
+
+    }
+
+    async getBridgeBurn(symbol:[string]): Promise<number> {
+        const sql = 'select sum(amount + to_number(fee_amount, \'9999999.99999999\')) from ' +
+            'mist_bridge where side=\'coin2asset\' and token_name=$1';
+        const [err, result]: [any, any] = await to(this.queryWithLog(sql,symbol));
+        if (err) {
+            console.error('getBridgeBurn failed', err);
+            await this.handlePoolError(err);
+        }
+
+        return result.rows[0].sum;
+
+    }
+
+    async getBridgeFee(symbol:[string]): Promise<number> {
+        const sql = 'select sum(to_number(fee_amount, \'99999999999.99999999\')) from' +
+            ' mist_bridge where side=\'coin2asset\' and token_name=$1';
+        const [err, result]: [any, any] = await to(this.queryWithLog(sql,symbol));
+        if (err) {
+            console.error('getBridgeFee failed', err);
+            await this.handlePoolError(err);
+        }
+
+        return result.rows[0].sum;
+
+    }
+
+
 
     async get_pending_decode_bridge(): Promise<IBridge[]> {
         const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * from  mist_bridge  where address is null  and master_txid_status=\'pending\' and (current_timestamp - created_at) > \'10 seconds\' order by created_at desc limit 1'));

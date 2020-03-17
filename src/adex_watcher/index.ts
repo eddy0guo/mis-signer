@@ -47,7 +47,7 @@ class Watcher {
         const updateTime = this.utils.get_current_time();
         const [get_receipt_err, contract_status] = await to(this.utils.get_receipt_log(transaction[0].transaction_hash));
         // 直接在sql里过滤待确认txid，安全起见对找不到的交易仍多做4次检查
-        const checkTimes = 4;
+        const checkTimes = 10;
         if (get_receipt_err && this.getReceiptTimes <= checkTimes) {
             console.error(`[ADEX Watcher Pending]:get_receipt_err ${get_receipt_err},It's been retried ${this.getReceiptTimes} times`);
             setTimeout(() => {

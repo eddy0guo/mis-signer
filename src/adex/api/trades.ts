@@ -26,11 +26,18 @@ export default class trades {
 
     }
 
-    async my_trades2(address:string, page:string, perPage:string) : Promise<ITrade[]> {
+    async my_trades2(address:string, page:string, perPage:string,MarketID?: string | undefined) : Promise<ITrade[]> {
         const offset = (+page - 1) * +perPage;
-        const [err, result] = await to(this.db.my_trades2([address, offset, perPage]));
-        if (!result) console.error(err, result);
-        return result;
+        // tslint:disable-next-line:no-shadowed-variable
+        let [err, trades] = [null,null];
+        if(MarketID) {
+            [err, trades] = await to(this.db.my_trades3([address, offset, perPage, MarketID]));
+        }
+        else{
+            [err, trades] = await to(this.db.my_trades2([address, offset, perPage]));
+        }
+        if (!trades) console.error(err, trades);
+        return trades;
     }
 
     async trading_view(message) {
@@ -77,8 +84,8 @@ export default class trades {
     async rollback_trades() : Promise<void>{
         const matched_trades = await this.db.get_matched_trades();
         for (const item of matched_trades) {
-            restore_order(item.taker_order_id, item.amount);
-            restore_order(item.maker_order_id, item.amount);
+            restore_order(this.db,item.taker_order_id, item.amount);
+            restore_order(this.db,item.maker_order_id, item.amount);
         }
 
         await this.db.delete_matched_trades();
