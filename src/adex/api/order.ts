@@ -117,12 +117,12 @@ export default class order {
 
         return result;
     }
-    async my_orders(address:string, page:number, perPage:number, status1:string, status2:string,tokenName?: string | undefined):Promise<IOrder[]> {
+    async my_orders(address:string, page:number, perPage:number, status1:string, status2:string,MarketID?: string | undefined):Promise<IOrder[]> {
         const offset = (page - 1) * perPage;
         // @ts-ignore
         let [err,orders] = [null,null];
-        if(tokenName) {
-            [err, orders] = await to(this.db.my_orders3([address, offset, perPage, status1, status2,tokenName]));
+        if(MarketID) {
+            [err, orders] = await to(this.db.my_orders3([address, offset, perPage, status1, status2,MarketID]));
         }
         else{
             [err, orders] = await to(this.db.my_orders2([address, offset, perPage, status1, status2]));

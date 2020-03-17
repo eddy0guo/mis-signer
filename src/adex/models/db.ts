@@ -544,6 +544,16 @@ export default class DBClient {
 
     }
 
+    async my_trades3(filter_info): Promise<ITrade[]> {
+        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_trades where market_id=$4 and (taker=$1 or maker=$1) order by created_at desc limit $3 offset $2', filter_info));
+        if (err) {
+            console.error('my trades2 failed', err, filter_info);
+            await this.handlePoolError(err);
+        }
+        return result.rows;
+
+    }
+
     async transactions_trades(id): Promise<ITrade[]> {
         const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_trades_tmp where transaction_id=$1', id));
         if (err) {
