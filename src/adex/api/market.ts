@@ -44,20 +44,6 @@ export default class Market {
         return result;
     }
 
-
-    async list_markets(): Promise<IMarket[]> {
-        const result = await this.db.list_markets();
-        return result;
-    }
-
-    async list_online_markets(): Promise<IMarket[]> {
-        const [err, result] = await to(this.db.list_online_markets());
-        if (!result) {
-            console.error(err, result);
-        }
-        return result;
-    }
-
     async list_online_markets_v2(): Promise<IMarket[]> {
         const [err, markets] = await to(this.db.list_online_markets());
         if (!markets) {
@@ -91,6 +77,18 @@ export default class Market {
         return onlineMarkets;
     }
 
+    async list_markets(): Promise<IMarket[]> {
+        const result = await this.db.list_markets();
+        return result;
+    }
+
+    async list_online_markets(): Promise<IMarket[]> {
+        const [err, result] = await to(this.db.list_online_markets());
+        if (!result) {
+            console.error(err, result);
+        }
+        return result;
+    }
 
     async get_market(market_id): Promise<IMarket[]> {
         return await this.db.get_market([market_id]);
