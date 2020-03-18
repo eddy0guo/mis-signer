@@ -15,11 +15,11 @@ import {Logger} from '../common/Logger';
 
 class ProcessData {
 
-    private db : DBClient;
-    private utils : Utils;
-    private order : Order;
+    private db;
+    private utils;
+    private order;
     private mist_wallet;
-    private market : Market;
+    private market;
     private logger: Logger = new Logger(ProcessData.name, 5 * 60 * 1000);
 
 

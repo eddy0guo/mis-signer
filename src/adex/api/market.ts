@@ -51,14 +51,6 @@ export default class Market {
     }
 
     async list_online_markets(): Promise<IMarket[]> {
-        const [err, result] = await to(this.db.list_online_markets());
-        if (!result) {
-            console.error(err, result);
-        }
-        return result;
-    }
-
-    async list_online_markets_v2(): Promise<IMarket[]> {
         const [err, markets] = await to(this.db.list_online_markets());
         if (!markets) {
             console.error(err, markets);
