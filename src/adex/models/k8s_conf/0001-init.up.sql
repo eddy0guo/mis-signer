@@ -66,6 +66,7 @@ create table mist_trades_tmp(
   updated_at timestamp ,
   created_at timestamp
 );
+create index idx_mist_trades_delete on mist_trades (status,created_at);
 create index idx_mist_trades_tmp_quotation on mist_trades_tmp (market_id,created_at);
 create index idx_mist_trades_tmp_recent on mist_trades_tmp (market_id);
 create index idx_mist_trades_tmp_launch on mist_trades_tmp (created_at,status);

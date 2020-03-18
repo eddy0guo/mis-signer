@@ -48,8 +48,8 @@ export default () => {
     const mist_wallet = new MistWallet(psql_db);
 
     /**
-     * @api {post} /wallet/sendrawtransaction/asset2coin_v3/:sign_data 广播资产划转
-     * @apiDescription 广播币币资产的划入，并且进行托管资产的划出
+     * @api {post} /wallet/sendrawtransaction/asset2coin_v3/:sign_data asset2coin_v3
+     * @apiDescription The assets of broadcast currency are delimited and the assets of custody are delimited
      * @apiName asset2coin_v3
      * @apiGroup wallet
      * @apiSuccess {json} result
@@ -58,7 +58,7 @@ export default () => {
           "success": true,
           "id": "eac9fee0a83dd7ebc2ba67012b14175f2fddf3eabbcfe435cb11f105101af46d"
       }
-     * @apiSampleRequest https://poa.mist.exchange/api/wallet/sendrawtransaction/asset2coin_v3/
+     * @apiSampleRequest http://119.23.181.166:21000/wallet/sendrawtransaction/asset2coin_v3/
      * @apiVersion 1.0.0
      */
 
@@ -103,15 +103,15 @@ export default () => {
     );
 
     /**
-     * @api {post} /wallet/sendrawtransaction/coin2asset_v3/ 广播币币划转
-     * @apiDescription 广播币币资产的划入，并且进行托管资产的划出
+     * @api {post} /wallet/sendrawtransaction/coin2asset_v3/ coin2asset_v3
+     * @apiDescription The assets of broadcast currency are delimited and the assets of custody are delimited
      * @apiName coin2asset_v3
      * @apiGroup wallet
-     * @apiParam {json} signature 签名信息
-     * @apiParam {string} address 兑入地址
-     * @apiParam {string} token_name  目标币种
-     * @apiParam {string} amount  兑换数量
-     * @apiParam {string} expire_time  过期时间
+     * @apiParam {json} signature signature info
+     * @apiParam {string} address Collection address
+     * @apiParam {string} token_name  coin of bridge
+     * @apiParam {string} amount  amount of bridge
+     * @apiParam {string} expire_time  expire_time of signature
      @apiParamExample {json} Request-Example:
      {"signature":
       {
@@ -131,7 +131,7 @@ export default () => {
       "success": true,
       "id": "aa5a2f00f03616f02bde85b5a804d096ff4a23a227a8c972d26e26ba486ba940"
   }
-     * @apiSampleRequest https://poa.mist.exchange/api/wallet/sendrawtransaction/coin2asset_v3
+     * @apiSampleRequest http://119.23.181.166:21000/wallet/sendrawtransaction/coin2asset_v3
      * @apiVersion 1.0.0
      */
 
@@ -266,8 +266,8 @@ export default () => {
     );
 
     /**
-     * @api {post} /wallet/find_convert/:id 划转订单详情
-     * @apiDescription 单笔划转订单的详情
+     * @api {post} /wallet/find_convert/:id find_convert
+     * @apiDescription Details of the bridge order
      * @apiName find_convert
      * @apiGroup wallet
      * @apiSuccess {json} result
@@ -292,7 +292,7 @@ export default () => {
           },
       "err": null
   }
-     * @apiSampleRequest https://poa.mist.exchange/api/wallet/find_convert/8c4ddabebe95718a37aea074120d3bd133196c01812935ddef42dffcdfd431ac
+     * @apiSampleRequest http://119.23.181.166:21000/wallet/find_convert/8c4ddabebe95718a37aea074120d3bd133196c01812935ddef42dffcdfd431ac
      * @apiVersion 1.0.0
      */
 
@@ -318,8 +318,8 @@ export default () => {
 
 
     /**
-     * @api {post} /wallet/my_converts_v3/:address/:token_name/:page/:perpage 单币种用户划转记录
-     * @apiDescription 获取用户的指定币种的币币划转和资产划转的记录分页查询
+     * @api {post} /wallet/my_converts_v3/:address/:token_name/:page/:perpage my_converts_v3
+     * @apiDescription Gets a record of a user's transfers in a particular asset
      * @apiName my_converts_v3
      * @apiGroup wallet
      * @apiSuccess {json} result
@@ -345,7 +345,7 @@ export default () => {
       ],
       "err": null
   }
-     * @apiSampleRequest https://poa.mist.exchange/api/wallet/my_converts_v3/0x6602ca6e2820ec98cc68909fdd9f87c7bd23b62000/ETH/1/10
+     * @apiSampleRequest http://119.23.181.166:21000/wallet/my_converts_v3/0x6602ca6e2820ec98cc68909fdd9f87c7bd23b62000/ETH/1/10
      * @apiVersion 1.0.0
      */
     wallet.all('/my_converts_v2/:address/:page/:perpage', async (req, res) => {
@@ -370,8 +370,8 @@ export default () => {
     );
 
     /**
-     * @api {post} /wallet/Coin2AssetFee_config 币币划转手续费
-     * @apiDescription 获取币币划转的手续费信息
+     * @api {post} /wallet/Coin2AssetFee_config Coin2AssetFee_config
+     * @apiDescription Get the Coin2Asset  fee information
      * @apiName Coin2AssetFee_config
      * @apiGroup wallet
      * @apiSuccess {json} result
@@ -405,7 +405,7 @@ export default () => {
           }
       ]
   }
-     * @apiSampleRequest https://poa.mist.exchange/api/wallet/Coin2AssetFee_config
+     * @apiSampleRequest http://119.23.181.166:21000/wallet/coin2asset_fee_config
      * @apiVersion 1.0.0
      */
 
@@ -423,8 +423,8 @@ export default () => {
     });
 
     /**
-     * @api {post} /wallet/my_bridge_length/:address 获取闪兑订单的记录条数
-     * @apiDescription 获取fingo相关配置
+     * @api {post} /wallet/my_bridge_length/:address my_bridge_length(Obsolete)
+     * @apiDescription Each other to transfer the length of the record
      * @apiName my_bridge_length
      * @apiGroup wallet
      * @apiSuccess {json} result
@@ -434,7 +434,7 @@ export default () => {
               "result": "30",
               "err": null
      *  }
-     * @apiSampleRequest https://poa.mist.exchange/api/wallet/my_bridge_length/0x66ea4b7f7ad33b0cc7ef94bef71bc302789b815c46
+     * @apiSampleRequest http://119.23.181.166:21000/wallet/my_bridge_length/0x66ea4b7f7ad33b0cc7ef94bef71bc302789b815c46
      * @apiVersion 1.0.0
      */
 
@@ -450,18 +450,22 @@ export default () => {
     });
 
     /**
-     * @api {post} /wallet/list_fingo_config 获取fingo相关配置
-     * @apiDescription 获取fingo相关配置
+     * @api {post} /wallet/list_fingo_config list_fingo_config
+     * @apiDescription Gets the configuration for fingo
      * @apiName list_fingo_config
      * @apiGroup wallet
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
-     *  {
-              "success": true,
-              "result": "15.70000000",
-              "err": null
-     *  }
-     * @apiSampleRequest https://poa.mist.exchange/api/express/get_price/ASIM/CNYC/1
+     {
+        "success": true,
+        "result": {
+            "dex_address": "0x630329112990e5246f67ae0de752225d56e33e3121",
+            "express_address": "0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c",
+            "asimov_chain_rpc": "https://rpc-fin.fingo.com",
+            "bridge_address": "0x66a5e2e1d9243f9dfd1d54b31952d94043a105188f"
+        }
+     }
+     * @apiSampleRequest http://119.23.181.166:21000/wallet/list_fingo_config
      * @apiVersion 1.0.0
      */
 
