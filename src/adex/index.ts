@@ -556,7 +556,7 @@ export default () => {
             "s": "13f2bb87c30fb3967ee0607a4acb1c42df988c4601bd0b920736da85fdea04e4",
             "pubkey": "037cfb1769aa470e139c30f8cfd17d47f44e5317ad7f5b6e31e358d1e6e3df2832"
         },
-     "trader_address":"0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
+     "trader_address":"0x66b1aded6908f6f3b77379703d16f3dbb55e88bf73",
      "market_id":"ASIM-CNYC",
      "side":"sell",
      "price":10000,
@@ -873,7 +873,7 @@ export default () => {
         "result": "748549",
         "err": null
     }
-     * @apiSampleRequest http://119.23.181.166:21000/adex/my_trades_length/0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9
+     * @apiSampleRequest http://119.23.181.166:21000/adex/my_trades_length/0x66b1aded6908f6f3b77379703d16f3dbb55e88bf73
      * @apiVersion 1.0.0
      */
     adex.all('/my_trades_length/:address', async (req, res) => {
@@ -900,7 +900,7 @@ export default () => {
         "result": [
             {
                 "id": "eca409738aca8385fbf77f5dcd6c629be220fbefe8b423ed1db412f118e9b774",
-                "trader_address": "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
+                "trader_address": "0x66b1aded6908f6f3b77379703d16f3dbb55e88bf73",
                 "market_id": "ETH-USDT",
                 "side": "sell",
                 "price": "136.47000000",
@@ -917,7 +917,7 @@ export default () => {
         ],
         "err": null
     }
-     * @apiSampleRequest http://119.23.181.166:21000/adex/my_orders_v2/0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9/1/1/pending/fullfuilled
+     * @apiSampleRequest http://119.23.181.166:21000/adex/my_orders_v2/0x66b1aded6908f6f3b77379703d16f3dbb55e88bf73/1/1/pending/fullfuilled
      * @apiVersion 1.0.0
      */
 
@@ -943,7 +943,7 @@ export default () => {
     /**
      * @api {post} /adex/my_orders_v3/:address/:market_id/:page/:perpage/:status1/:status2 my_orders_v3
      * @apiDescription Filter out the records of market ID based on my_orders_v2
-     * @apiName my_orders_v2
+     * @apiName my_orders_v3
      * @apiGroup adex
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
@@ -952,7 +952,7 @@ export default () => {
         "result": [
             {
                 "id": "eca409738aca8385fbf77f5dcd6c629be220fbefe8b423ed1db412f118e9b774",
-                "trader_address": "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
+                "trader_address": "0x66b1aded6908f6f3b77379703d16f3dbb55e88bf73",
                 "market_id": "ETH-USDT",
                 "side": "sell",
                 "price": "136.47000000",
@@ -969,7 +969,7 @@ export default () => {
         ],
         "err": null
     }
-     * @apiSampleRequest http://119.23.181.166:21000/adex/my_orders_v2/0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9/ETH-USDT/1/1/pending/fullfuilled
+     * @apiSampleRequest http://119.23.181.166:21000/adex/my_orders_v3/0x66b1aded6908f6f3b77379703d16f3dbb55e88bf73/ETH-USDT/1/1/pending/fullfuilled
      * @apiVersion 1.0.0
      */
     adex.all(
@@ -1140,7 +1140,7 @@ export default () => {
                "status": "matched",
                "market_id": "ETH-USDT",
                "maker": "0x66b7637198aee4fffa103fc0082e7a093f81e05a64",
-               "taker": "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
+               "taker": "0x66b1aded6908f6f3b77379703d16f3dbb55e88bf73",
                "price": "126.66000000",
                "amount": "3.39450000",
                "taker_side": "buy",
@@ -1153,7 +1153,7 @@ export default () => {
        "err": null
      }
 
-     * @apiSampleRequest http://119.23.181.166:21000/adex/my_trades_v2/0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9/1/1
+     * @apiSampleRequest http://119.23.181.166:21000/adex/my_trades_v2/0x66b1aded6908f6f3b77379703d16f3dbb55e88bf73/1/1
      * @apiVersion 1.0.0
      */
 
@@ -1190,7 +1190,7 @@ export default () => {
                "status": "matched",
                "market_id": "ETH-USDT",
                "maker": "0x66b7637198aee4fffa103fc0082e7a093f81e05a64",
-               "taker": "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
+               "taker": "0x66b1aded6908f6f3b77379703d16f3dbb55e88bf73",
                "price": "126.66000000",
                "amount": "3.39450000",
                "taker_side": "buy",
@@ -1203,7 +1203,7 @@ export default () => {
        "err": null
      }
 
-     * @apiSampleRequest http://119.23.181.166:21000/adex/my_trades_v3/0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9/ETH-USDT/1/1
+     * @apiSampleRequest http://119.23.181.166:21000/adex/my_trades_v3/0x66b1aded6908f6f3b77379703d16f3dbb55e88bf73/ETH-USDT/1/1
      * @apiVersion 1.0.0
      */
 
