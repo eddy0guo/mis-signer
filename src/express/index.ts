@@ -110,40 +110,40 @@ export default () => {
     const order = new OrderAPI(psql_db);
 
     /**
-     * @api {post} /express/my_records/:page/:perpage 用户兑换记录
-     * @apiDescription 用户登录
+     * @api {post} /express/my_records/:page/:perpage my_records
+     * @apiDescription my_records
      * @apiName my_records
      * @apiGroup express
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
-     *  {
-	 "success": true,
-    "result": [
-        {
-            "trade_id": "4e6b881de2eb3b9e8bdb4baefac9d5182c54eb274c821ca43e04301c9a7e2497",
-            "address": "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
-            "base_asset_name": "ETH",
-            "base_amount": 0.01,
-            "price": 141.9571231,
-            "quote_asset_name": "USDT",
-            "quote_amount": 1.41247337,
-            "fee_rate": 0.005,
-            "fee_token": "USDT",
-            "fee_amount": 0.00709786,
-            "base_txid": null,
-            "base_tx_status": "failed",
-            "quote_txid": null,
-            "quote_tx_status": null,
-            "updated_at": "2019-12-16T06:43:29.022Z",
-            "created_at": "2019-12-16T06:43:29.022Z",
-            "base_token_icon": "https://www.mist.exchange/res/icons/ETHa.png",
-            "quote_token_icon": "https://www.mist.exchange/res/icons/USDTa.png"
-        }
-    ],
-    "err": null
-
+     {
+        "success": true,
+        "result": [
+            {
+                "trade_id": "c743c6fc5a7484ca8d27b3ab0c36a8272b6e93ab1c1c44d05c24d48516789e9f",
+                "address": "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
+                "base_asset_name": "BTC",
+                "base_amount": 0.001,
+                "price": 57.09264327,
+                "quote_asset_name": "ETH",
+                "quote_amount": 0.05680718,
+                "fee_rate": 0.005,
+                "fee_token": "ETH",
+                "fee_amount": 0.00028546,
+                "base_txid": "76830e5e5c4239156e4d4cd8e211809b4a76351cfe0c86a17374582358ee6f3a",
+                "base_tx_status": "successful",
+                "quote_txid": "4e33b16f25a707d1191307ae7bbd204851880d67040333f4bf244d43e1bc777f",
+                "quote_tx_status": "successful",
+                "updated_at": "2020-01-02T08:24:47.747Z",
+                "created_at": "2020-01-02T08:24:33.537Z",
+                "base_token_icon": "http://fingo-cdn.asimov.work/res/icons/BTCa.png",
+                "quote_token_icon": "http://fingo-cdn.asimov.work/res/icons/ETHa.png"
+            }
+        ],
+        "err": null
+     }
      *  }
-     * @apiSampleRequest https://poa.mist.exchange/api/express/my_records/0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9/1/3
+     * @apiSampleRequest http://119.23.181.166:21000/express/my_records/0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9/1/3
      * @apiVersion 1.0.0
      */
     express.all('/my_records/:address/:page/:perpage', async (req, res) => {
@@ -172,40 +172,39 @@ export default () => {
     });
 
     /**
-     * @api {post} /express/get_express_trade/:trade_id 获取单个交易详情
-     * @apiDescription 获取单个交易详情
+     * @api {post} /express/get_express_trade/:trade_id get_express_trade
+     * @apiDescription Get order info
      * @apiName get_express_trade
      * @apiGroup express
-     * @apiParam {string} trade_id 交易ID
+     * @apiParam {string} trade_id express trade ID
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
-     *  {
-	 "success": true,
-    "result":
-        {
-            "trade_id": "4e6b881de2eb3b9e8bdb4baefac9d5182c54eb274c821ca43e04301c9a7e2497",
-            "address": "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
-            "base_asset_name": "ETH",
-            "base_amount": 0.01,
-            "price": 141.9571231,
-            "quote_asset_name": "USDT",
-            "quote_amount": 1.41247337,
+     {
+        "success": true,
+        "result": {
+            "trade_id": "f091fdef406d21f51befb99f35df67a86d0be4daf85305dab0ad78747fbbac46",
+            "address": "0x66037f1be64bdd9634f81833e90235edfe4480a80e",
+            "base_asset_name": "USDT",
+            "base_amount": 1,
+            "price": 0.53937548,
+            "quote_asset_name": "ASIM",
+            "quote_amount": 0.5366786,
             "fee_rate": 0.005,
-            "fee_token": "USDT",
-            "fee_amount": 0.00709786,
-            "base_txid": null,
-            "base_tx_status": "failed",
-            "quote_txid": null,
-            "quote_tx_status": null,
-            "updated_at": "2019-12-16T06:43:29.022Z",
-            "created_at": "2019-12-16T06:43:29.022Z",
-            "base_token_icon": "https://www.mist.exchange/res/icons/ETHa.png",
-            "quote_token_icon": "https://www.mist.exchange/res/icons/USDTa.png"
+            "fee_token": "ASIM",
+            "fee_amount": 0.00269688,
+            "base_txid": "b2aec748bcb733d62fdebc48315aef072f220bb4c90d222627d3c56c5961ef0e",
+            "base_tx_status": "successful",
+            "quote_txid": "135c7b971ed5432940e088d63a6b39de85074bc5c84fa995e49f3b0430d583bc",
+            "quote_tx_status": "successful",
+            "updated_at": "2020-03-04T03:29:21.342Z",
+            "created_at": "2020-03-04T03:29:08.685Z",
+            "base_token_icon": "http://fingo-cdn.asimov.work/res/icons/USDTa.png",
+            "quote_token_icon": "http://fingo-cdn.asimov.work/res/icons/ASIMa.png"
         },
-    "err": null
-
+        "err": null
+     }
      *  }
-     * @apiSampleRequest https://poa.mist.exchange/api/express/get_express_trade/4e6b881de2eb3b9e8bdb4baefac9d5182c54eb274c821ca43e04301c9a7e2497
+     * @apiSampleRequest http://119.23.181.166:21000/express/get_express_trade/4e6b881de2eb3b9e8bdb4baefac9d5182c54eb274c821ca43e04301c9a7e2497
      * @apiVersion 1.0.0
      */
 
@@ -247,8 +246,8 @@ export default () => {
     });
 
     /**
-     * @api {post} /express/config
-     * @apiDescription 获取手续费详情
+     * @api {post} /express/config  config
+     * @apiDescription fee config of express
      * @apiName config
      * @apiGroup express
      * @apiSuccess {json} result
@@ -290,7 +289,7 @@ export default () => {
     ]
 
      *  }
-     * @apiSampleRequest https://poa.mist.exchange/api/express/config
+     * @apiSampleRequest http://119.23.181.166:21000/express/config
      * @apiVersion 1.0.0
      */
     express.all('/config', async (req, res) => {
@@ -301,13 +300,13 @@ export default () => {
     });
 
     /**
-     * @api {post} /express/get_price/:base_token_name/:quote_token_name/:base_amount 获取兑换价格
-     * @apiDescription 根据币种和深度获取对应的兑换比例
+     * @api {post} /express/get_price/:base_token_name/:quote_token_name/:base_amount get_price
+     * @apiDescription The corresponding conversion ratio is obtained according to currency and depth
      * @apiName get_price
      * @apiGroup express
-     * @apiParam {string} base_token_name 兑出币种
-     * @apiParam {string} quote_token_name 兑入币种
-     * @apiParam {string} base_amount  兑换数量
+     * @apiParam {string} base_token_name Coin you are going to pay
+     * @apiParam {string} quote_token_name Coin you want to change
+     * @apiParam {string} base_amount  amount of base token
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
      *  {
@@ -315,7 +314,7 @@ export default () => {
     		"result": "15.70000000",
     		"err": null
      *  }
-     * @apiSampleRequest https://poa.mist.exchange/api/express/get_price/ASIM/CNYC/1
+     * @apiSampleRequest http://119.23.181.166:21000/express/get_price/ASIM/CNYC/1
      * @apiVersion 1.0.0
      */
 
@@ -335,24 +334,18 @@ export default () => {
     );
 
     /**
-     * @api {post} /express/my_express_length/:address 获取记录长度
-     * @apiDescription 获取兑换记录的条数
+     * @api {post} /express/my_express_length/:address my_express_length
+     * @apiDescription Gets the number in the express record
      * @apiName my_express_length
      * @apiGroup express
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
-     *  {
-     "success": true,
-    "result":
-        {
-            "success": true,
-            "result": "0",
-            "err": null
-        },
-    "err": null
-
-     *  }
-     * @apiSampleRequest https://poa.mist.exchange/api/express/my_express_length/0x6665bc429f51bdb3b95dac156c1c4b396c0b695162
+     {
+        "success": true,
+        "result": "0",
+        "err": null
+     }
+     * @apiSampleRequest http://119.23.181.166:21000/express/my_express_length/0x6665bc429f51bdb3b95dac156c1c4b396c0b695162
      * @apiVersion 1.0.0
      */
 
@@ -367,25 +360,24 @@ export default () => {
     });
 
     /**
-     * @api {post} /express/get_pool_info 获取资产池情况
-     * @apiDescription 获取当前闪兑资金池各币种储备量
+     * @api {post} /express/get_pool_info get_pool_info
+     * @apiDescription Access to the current flash pool of currency reserves
      * @apiName get_pool_info
      * @apiGroup express
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
-     *  {
+     {
      "success": true,
-    "result":
-        {
-            "token_symbol": "CNYC",
-            "asim_asset_id": "000000000000000c00000000",
-            "asim_asset_balance": 0,
-            "icon": "https://www.mist.exchange/res/icons/CNYCa.png"
-        },
-    "err": null
-
-     *  }
-     * @apiSampleRequest https://poa.mist.exchange/api/express/get_pool_info
+        "result":
+            {
+                "token_symbol": "CNYC",
+                "asim_asset_id": "000000000000000c00000000",
+                "asim_asset_balance": 0,
+                "icon": "https://www.mist.exchange/res/icons/CNYCa.png"
+            },
+        "err": null
+     }
+     * @apiSampleRequest http://119.23.181.166:21000/express/get_pool_info
      * @apiVersion 1.0.0
      */
     express.all('/get_pool_info', async (req, res) => {
@@ -436,8 +428,8 @@ export default () => {
     });
 
     /**
-     * @api {post} /express/sendrawtransaction/build_express_v2/:quote_token_name/:sign_data 广播闪兑交易
-     * @apiDescription 广播向官方地址的转账并获取目标币种的入账
+     * @api {post} /express/sendrawtransaction/build_express_v2/:quote_token_name/:sign_data build_express_v2
+     * @apiDescription Broadcast the transfer to the official address and start the exchange
      * @apiName build_express_v2
      * @apiGroup express
      * @apiSuccess {json} result
@@ -446,7 +438,7 @@ export default () => {
 	 "success": true,
 	 "trade_id": "3882ef7e018ed713963ae2495687276936c5e87be42f52aaee3537549e2176eb"
      *  }
-     * @apiSampleRequest https://poa.mist.exchange/api/express/sendrawtransaction/build_express_v2/ETH/xxx
+     * @apiSampleRequest http://119.23.181.166:21000/express/sendrawtransaction/build_express_v2/ETH/xxx
      * @apiVersion 1.0.0
      */
 
@@ -495,6 +487,22 @@ export default () => {
 
         }
     );
+
+    /**
+     * @api {post} /express/check_trade/:quote_token/:quote_amount check_trade
+     * @apiDescription Check whether the pool reserves allow the conversion
+     * @apiName check_trade
+     * @apiGroup express
+     * @apiSuccess {json} result
+     * @apiSuccessExample {json} Success-Response:
+     {
+        "success": true,
+        "result": false,
+        "err": "Express capital pool balance is insufficient, temporarily cannot exchange large amount"
+     }
+     * @apiSampleRequest http://119.23.181.166:21000/express/check_trade/BTC/1000000
+     * @apiVersion 1.0.0
+     */
 
     express.all('/check_trade/:quote_token/:quote_amount', async (req, res) => {
         const {quote_token, quote_amount} = req.params;

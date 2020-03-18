@@ -652,7 +652,7 @@ export default class DBClient {
     }
 
     async get_matched_trades(): Promise<ITrade[]> {
-        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT *  FROM mist_trades where status=\'matched\''));
+        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT *  FROM mist_trades where status=\'matched\' order by created_at desc limit 5000'));
         if (err) {
             console.error('get matched trades failed', err);
             await this.handlePoolError(err);
@@ -662,13 +662,13 @@ export default class DBClient {
     }
 
     async delete_matched_trades(): Promise<object[]> {
-        const [err, result]: [any, any] = await to(this.queryWithLog('delete FROM mist_trades where status=\'matched\''));
+        const [err, result]: [any, any] = await to(this.queryWithLog('delete from mist_trades where id in (select id from mist_trades where status=\'matched\' order by created_at desc limit 5000)'));
         if (err) {
             console.error('delete matched trade failed', err);
             await this.handlePoolError(err);
         }
 
-        const [tmpErr, tmpResult]: [any, any] = await to(this.queryWithLog('delete FROM mist_trades_tmp where status=\'matched\''));
+        const [tmpErr, tmpResult]: [any, any] = await to(this.queryWithLog('delete from mist_trades_tmp where id in (select id from mist_trades_tmp where status=\'matched\' order by created_at desc limit 5000)'));
         if (tmpErr) {
             console.error('delete matched trade failed', err);
             await this.handlePoolError(err);

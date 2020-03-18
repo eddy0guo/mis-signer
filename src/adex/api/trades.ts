@@ -82,12 +82,18 @@ export default class trades {
 
     // 应该先停laucher的线程，再回滚，否则可能出现已经launched的也回滚了
     async rollback_trades() : Promise<void>{
-        const matched_trades = await this.db.get_matched_trades();
-        for (const item of matched_trades) {
-            restore_order(this.db,item.taker_order_id, item.amount);
-            restore_order(this.db,item.maker_order_id, item.amount);
-        }
-
-        await this.db.delete_matched_trades();
+        let matchedNum = 0;
+        do {
+            console.log('Began to roll back');
+            const matched_trades = await this.db.get_matched_trades();
+            for (const item of matched_trades) {
+                restore_order(this.db,item.taker_order_id, item.amount);
+                restore_order(this.db,item.maker_order_id, item.amount);
+            }
+            await this.db.delete_matched_trades();
+            matchedNum = matched_trades.length;
+            console.log(`Complete 5,000 rolls back`)
+        }while (matchedNum === 5000)
+        console.log(`finished rollbacks`);
     }
 }
