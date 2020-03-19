@@ -479,6 +479,18 @@ export default class DBClient {
 
     }
 
+    async list_market_quotations(): Promise<any[]> {
+        const sql = 'select * from mist_market_quotation_tmp';
+        const [err, result]: [any, any] = await to(this.queryWithLog(sql));
+        if(!result){
+            console.error('list_market_quotations failed', err);
+            await this.handlePoolError(err);
+        }
+
+        return result.rows;
+
+    }
+
     /*
      *
      *
