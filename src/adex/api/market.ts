@@ -51,69 +51,11 @@ export default class Market {
     }
 
     async list_online_markets(): Promise<IMarket[]> {
-        const [err, markets] = await to(this.db.list_online_markets());
-        if (!markets) {
-            console.error(err, markets);
+        const [err, result] = await to(this.db.list_online_markets());
+        if (!result) {
+            console.error(err, result);
         }
-        const onlineMarkets = [];
-        for(const market of markets){
-            if(onlineMarkets.length === 0){
-                const onlineMarket = {
-                    quoteToken:market.quote_token_symbol,
-                    markets:[],
-                }
-                onlineMarkets.push(onlineMarket);
-            }
-            // tslint:disable-next-line:forin
-            for (const index in onlineMarkets){
-                if (market.quote_token_symbol === onlineMarkets[index].quoteToken){
-                    onlineMarkets[index].markets.push(market);
-                    continue;
-                }
-                if(+index === onlineMarkets.length - 1) {
-                    const onlineMarket = {
-                        quoteToken: market.quote_token_symbol,
-                        markets: [market],
-                    }
-                    onlineMarkets.push(onlineMarket);
-                }
-            }
-        }
-
-        return onlineMarkets;
-    }
-
-    async list_online_markets_v2(): Promise<IMarket[]> {
-        const [err, markets] = await to(this.db.list_online_markets());
-        if (!markets) {
-            console.error(err, markets);
-        }
-        const onlineMarkets = [];
-        for(const market of markets){
-            if(onlineMarkets.length === 0){
-                const onlineMarket = {
-                    quoteToken:market.quote_token_symbol,
-                    markets:[],
-                }
-                onlineMarkets.push(onlineMarket);
-            }
-            // tslint:disable-next-line:forin
-            for (const index in onlineMarkets){
-                if (market.quote_token_symbol === onlineMarkets[index].quoteToken){
-                    onlineMarkets[index].markets.push(market);
-                    continue;
-                }
-                if(+index === onlineMarkets.length - 1) {
-                    const onlineMarket = {
-                        quoteToken: market.quote_token_symbol,
-                        markets: [market],
-                    }
-                    onlineMarkets.push(onlineMarket);
-                }
-            }
-        }
-
-        return onlineMarkets;
+        return result;
     }
 
     async list_online_markets_v2(): Promise<IMarket[]> {
@@ -148,7 +90,6 @@ export default class Market {
 
         return onlineMarkets;
     }
-
 
     async get_market(market_id): Promise<IMarket[]> {
         return await this.db.get_market([market_id]);
