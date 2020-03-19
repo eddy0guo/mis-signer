@@ -154,6 +154,51 @@ export default class order {
         return orders;
     }
 
+
+    async my_orders_v2(address:string, page:number, perPage:number, status1:string, status2:string,MarketID: string,side:string):Promise<IOrder[]> {
+        const offset = (page - 1) * perPage;
+        // @ts-ignore
+        let [err,orders] = [null,null];
+        if(MarketID === '') {
+            if(side === '') {
+                [err, orders] = await to(this.db.my_orders2([address, offset, perPage, status1, status2]));
+            }else{
+                [err, orders] = await to(this.db.my_orders3([address, offset, perPage, status1, status2,side]));
+            }
+        } else{
+            if(side === '') {
+                [err, orders] = await to(this.db.my_orders4([address, offset, perPage, status1, status2, MarketID]));
+            }else{
+                [err, orders] = await to(this.db.my_orders5([address, offset, perPage, status1, status2, MarketID,side]));
+            }
+        }
+        if (!orders) {
+            console.error(err, orders);
+            return orders;
+        }
+
+        for (const oneOrder of orders) {
+
+            const trades:any[] = await this.db.order_trades([oneOrder.id]);
+            if (trades.length === 0) {
+                oneOrder.average_price = '--';
+                oneOrder.confirm_value = '--';
+                continue;
+            }
+            let amount = 0;
+            let value = 0;
+            for (const trade of trades) {
+                amount = NP.plus(amount, trade.amount);
+                const trade_value = NP.times(trade.amount, trade.price);
+                value = NP.plus(value, trade_value);
+            }
+            oneOrder.average_price = NP.divide(value, amount).toFixed(8);
+            oneOrder.confirm_value = value.toFixed(8);
+        }
+
+        return orders;
+    }
+
     async my_orders_length(address:string, status1:string, status2:string) : Promise<number>{
         const result = await this.db.my_orders_length([address, status1, status2]);
         return result;

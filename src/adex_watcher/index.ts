@@ -1,16 +1,18 @@
+import to from 'await-to-js'
+import NP from 'number-precision'
+
 import DBClient from '../adex/models/db'
 import Utils from '../adex/api/utils'
-
-import to from 'await-to-js'
-
-import NP from 'number-precision'
-import {Health} from '../common/Health'
+import { Logger } from '../common/Logger';
+import LogUnhandled from '../common/LogUnhandled';
 
 class Watcher {
 
     private db: DBClient;
     private utils: Utils;
     private getReceiptTimes: number;
+    // 5分钟无log输出会杀死进程。
+    private logger: Logger = new Logger(Watcher.name, 5 * 60 * 1000);
 
     constructor() {
         this.db = new DBClient();
@@ -141,13 +143,6 @@ class Watcher {
     }
 }
 
-process.on('unhandledRejection', (reason, p) => {
-    console.log('[ADEX WATCHER]:Unhandled Rejection at: Promise', p, 'reason:', reason);
-    // application specific logging, throwing an error, or other logic here
-});
-
-const health = new Health();
-health.start();
-
+LogUnhandled(Watcher.name);
 const watcher = new Watcher();
 watcher.start();
