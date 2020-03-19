@@ -76,7 +76,7 @@ export default class Market {
             for (const index in onlineMarkets){
                 if (market.quote_token_symbol === onlineMarkets[index].quoteToken){
                     onlineMarkets[index].markets.push(market);
-                    continue;
+                    break;
                 }
                 if(+index === onlineMarkets.length - 1) {
                     const onlineMarket = {

@@ -181,7 +181,27 @@ export default class DBClient {
     }
 
     async my_orders3(filter_info): Promise<IOrder[]> {
+        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_orders where trader_address=$1 and side=$6 and (status=$4 or status=$5)order by updated_at desc limit $3 offset $2', filter_info));
+        if (err) {
+            console.error('my_orders2 failed ', err, filter_info);
+            await this.handlePoolError(err);
+        }
+        return result.rows;
+
+    }
+
+    async my_orders4(filter_info): Promise<IOrder[]> {
         const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_orders where trader_address=$1 and market_id=$6 and (status=$4 or status=$5)order by updated_at desc limit $3 offset $2', filter_info));
+        if (err) {
+            console.error('my_orders2 failed ', err, filter_info);
+            await this.handlePoolError(err);
+        }
+        return result.rows;
+
+    }
+
+    async my_orders5(filter_info): Promise<IOrder[]> {
+        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_orders where trader_address=$1 and market_id=$6 and side=$7 and (status=$4 or status=$5)order by updated_at desc limit $3 offset $2', filter_info));
         if (err) {
             console.error('my_orders2 failed ', err, filter_info);
             await this.handlePoolError(err);
