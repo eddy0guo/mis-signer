@@ -44,6 +44,20 @@ export default class Market {
         return result;
     }
 
+
+    async list_markets(): Promise<IMarket[]> {
+        const result = await this.db.list_markets();
+        return result;
+    }
+
+    async list_online_markets(): Promise<IMarket[]> {
+        const [err, result] = await to(this.db.list_online_markets());
+        if (!result) {
+            console.error(err, result);
+        }
+        return result;
+    }
+
     async list_online_markets_v2(): Promise<IMarket[]> {
         const [err, markets] = await to(this.db.list_online_markets());
         if (!markets) {
@@ -62,7 +76,7 @@ export default class Market {
             for (const index in onlineMarkets){
                 if (market.quote_token_symbol === onlineMarkets[index].quoteToken){
                     onlineMarkets[index].markets.push(market);
-                    continue;
+                    break;
                 }
                 if(+index === onlineMarkets.length - 1) {
                     const onlineMarket = {
@@ -77,19 +91,6 @@ export default class Market {
         return onlineMarkets;
     }
 
-    async list_markets(): Promise<IMarket[]> {
-        const result = await this.db.list_markets();
-        return result;
-    }
-
-    async list_online_markets(): Promise<IMarket[]> {
-        const [err, result] = await to(this.db.list_online_markets());
-        if (!result) {
-            console.error(err, result);
-        }
-        return result;
-    }
-
     async get_market(market_id): Promise<IMarket[]> {
         return await this.db.get_market([market_id]);
     }
@@ -98,31 +99,7 @@ export default class Market {
     async list_market_quotations(): Promise<any[]> {
 
         const logs = [];
-        const [markets_err, markets] = await to(this.list_online_markets());
-        if (!markets) {
-            console.error(markets_err, markets);
-            return [];
-        }
-        const quotations = [];
-
-        for (const marketInfo of markets) {
-            const defaultQuotations = {
-                market_id: marketInfo.id,
-                price: 0,
-                ratio: 0,
-                volume: 0,
-                CNYC_price: 0,
-                maxprice: 0,
-                minprice: 0,
-                min_CNYC_price: 0,
-                max_CNYC_price: 0,
-                symbol: marketInfo.id.replace('-', '/'),
-            };
-            const [error,result] =  await to(this.db.get_market_quotation_tmp([marketInfo.id]))
-            console.log(error,result);
-            const quotation = result && result[0] ? result[0]:defaultQuotations;
-            quotations.push(quotation);
-        }
+        const quotations  = await this.db.list_market_quotations();
         logs.push({beforeSort:new Date().toLocaleTimeString()});
         // @ts-ignore
         quotations.sort((a, b) => {
