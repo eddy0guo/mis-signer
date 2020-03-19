@@ -889,7 +889,7 @@ export default () => {
 
 
     /**
-     * @api {post} /adex/my_orders_v2/:address/:page/:perpage/:status1/:status2 my_orders_v2
+     * @api {post} /adex/my_orders_v2/:address/:page/:perpage/:status1/:status2 my_orders_v2（Obsolete）
      * @apiDescription Gets the order record of the relevant status,（pending,partial_filled,cancled，full_filled）
      * @apiName my_orders_v2
      * @apiGroup adex
@@ -941,9 +941,9 @@ export default () => {
 
 
     /**
-     * @api {post} /adex/my_orders_v3/:address/:market_id/:page/:perpage/:status1/:status2 my_orders_v3
+     * @api {post} /adex/my_orders_v3/:address/:market_id/:page/:perpage/:status1/:status2 my_orders_v3（Obsolete）
      * @apiDescription Filter out the records of market ID based on my_orders_v2
-     * @apiName my_orders_v2
+     * @apiName my_orders_v3
      * @apiGroup adex
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
@@ -980,6 +980,115 @@ export default () => {
             const {address, page, perPage, status1, status2, market_id} = req.params;
             const [err, result] = await to(
                 order.my_orders(address, +page, +perPage, status1, status2, market_id)
+            );
+
+            res.json({
+                success: !result ? false : true,
+                result,
+                err,
+            });
+        }
+    );
+
+    /**
+     * @api {post} /adex/my_orders_v4 my_orders_v4
+     * @apiDescription  Returns the user order record based on the filter criteria
+     * @apiName my_orders_v4
+     * @apiGroup adex
+     * @apiParam {string} address         user's addrwss
+     * @apiParam {string} page          page
+     * @apiParam {string} perPage        perpage
+     * @apiParam {string} status1            "pending","partial_filled","cancled","full_filled" or ""
+     * @apiParam {string} status2             "pending","partial_filled","cancled","full_filled" or ""
+     * @apiParam {string} market_id          market ID or ""
+     * @apiParam {string} side          "buy","sell" or ""
+     * @apiParamExample {json} Request-Example:
+     空字符串表示此条件不过滤
+     当前订单
+     {
+        "address":"0x66b7637198aee4fffa103fc0082e7a093f81e05a64",
+         "page":"1",
+         "perPage":"1",
+         "status1":"pending",
+         "status2":"partial_filled",
+         "market_id":"",
+         "side":""
+     }
+     历史订单
+     {
+        "address":"0x66b7637198aee4fffa103fc0082e7a093f81e05a64",
+         "page":"1",
+         "perPage":"1",
+         "status1":"cancled",
+         "status2":"full_filled",
+         "market_id":"",
+         "side":""
+     }
+     历史订单-只过滤交易对
+     {
+        "address":"0x66b7637198aee4fffa103fc0082e7a093f81e05a64",
+         "page":"1",
+         "perPage":"1",
+         "status1":"cancled",
+         "status2":"full_filled",
+         "market_id":"ETH-USDT",
+         "side":""
+     }
+     历史订单-只过滤已取消订单
+     {
+        "address":"0x66b7637198aee4fffa103fc0082e7a093f81e05a64",
+         "page":"1",
+         "perPage":"1",
+         "status1":"cancled",
+         "status2":"",
+         "market_id":"",
+         "side":""
+     }
+     历史订单-过滤买单，已成交，ETH-USDT
+     {
+        "address":"0x66b7637198aee4fffa103fc0082e7a093f81e05a64",
+         "page":"1",
+         "perPage":"1",
+         "status1":"full_filled",
+         "status2":"",
+         "market_id":"ETH-USDT",
+         "side":"buy"
+     }
+     * @apiSuccess {json} result
+     * @apiSuccessExample {json} Success-Response:
+     {
+        "success": true,
+        "result": [
+            {
+                "id": "6124960f3f7e4832ee1f1518a1ab6f0034e40cdfe8d3cf61d3e477f3bc674dbf",
+                "trader_address": "0x66b7637198aee4fffa103fc0082e7a093f81e05a64",
+                "market_id": "ETH-USDT",
+                "side": "sell",
+                "price": "263.13000000",
+                "amount": "0.23140000",
+                "status": "pending",
+                "type": "limit",
+                "available_amount": "0.23140000",
+                "confirmed_amount": "0.00000000",
+                "canceled_amount": "0.00000000",
+                "pending_amount": "0.00000000",
+                "updated_at": "2020-02-21T10:06:15.744Z",
+                "created_at": "2020-02-21T10:06:15.744Z",
+                "average_price": "--",
+                "confirm_value": "--"
+            }
+        ],
+        "err": null
+     }
+     * @apiSampleRequest http://119.23.181.166:21000/adex/my_orders_v4
+     * @apiVersion 1.0.0
+     */
+    adex.all('/my_orders_v4', async (req, res) => {
+            // pending,partial_filled,当前委托
+            // cancled，full_filled，历史委托
+            const {address, page, perPage, status1, status2, market_id,side} = req.body;
+            const [err, result] = await to(
+                order.my_orders_v2(address, +page, +perPage, status1, status2, market_id, side)
             );
 
             res.json({

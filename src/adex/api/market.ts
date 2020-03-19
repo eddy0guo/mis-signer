@@ -134,7 +134,7 @@ export default class Market {
             for (const index in onlineMarkets){
                 if (market.quote_token_symbol === onlineMarkets[index].quoteToken){
                     onlineMarkets[index].markets.push(market);
-                    continue;
+                    break;
                 }
                 if(+index === onlineMarkets.length - 1) {
                     const onlineMarket = {
@@ -158,31 +158,7 @@ export default class Market {
     async list_market_quotations(): Promise<any[]> {
 
         const logs = [];
-        const [markets_err, markets] = await to(this.list_online_markets());
-        if (!markets) {
-            console.error(markets_err, markets);
-            return [];
-        }
-        const quotations = [];
-
-        for (const marketInfo of markets) {
-            const defaultQuotations = {
-                market_id: marketInfo.id,
-                price: 0,
-                ratio: 0,
-                volume: 0,
-                CNYC_price: 0,
-                maxprice: 0,
-                minprice: 0,
-                min_CNYC_price: 0,
-                max_CNYC_price: 0,
-                symbol: marketInfo.id.replace('-', '/'),
-            };
-            const [error,result] =  await to(this.db.get_market_quotation_tmp([marketInfo.id]))
-            console.log(error,result);
-            const quotation = result && result[0] ? result[0]:defaultQuotations;
-            quotations.push(quotation);
-        }
+        const quotations  = await this.db.list_market_quotations();
         logs.push({beforeSort:new Date().toLocaleTimeString()});
         // @ts-ignore
         quotations.sort((a, b) => {

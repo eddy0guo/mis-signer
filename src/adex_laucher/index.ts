@@ -72,7 +72,10 @@ class Launcher {
         this.tmp_transaction_id = trades[0].transaction_id;
 
         const update_trade_info = ['pending', undefined, current_time, trades[0].transaction_id];
-        await this.db.launch_update_trades(update_trade_info);
+        const [launchUpdateErr,launchUpdateRes] = await to(this.db.launch_update_trades(update_trade_info));
+        if(launchUpdateErr || !launchUpdateRes){
+            this.start(500);
+        }
 
         // 准备laucher之前先延时2秒,waiting locked in db?
         // mt 3s 一个块，所以目前问题不大。但是utxo已经拆分，其实可以更快速度进行launch
