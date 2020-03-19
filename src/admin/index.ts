@@ -13,11 +13,10 @@ import adexPGClient from '../adex/models/db';
 
 import mist_config from '../cfg';
 import Asset from '../wallet/contract/Asset';
-import {address} from 'bitcoinjs-lib';
-import {stringify} from 'querystring';
 import Token from '../wallet/contract/Token';
+import * as Queue from 'bull';
 import mistConfig from '../cfg';
-
+import {BullOption} from '../cfg';
 
 export default () => {
     const admin = Router();
@@ -26,6 +25,7 @@ export default () => {
     const utils = new Utils();
     const order = new Order(db);
     const market: MarketAPI = new MarketAPI(db);
+    const orderQueue:Queue.Queue = new Queue('OrderQueue' + process.env.MIST_MODE,BullOption);
 
     admin.all('/market_add/:market_id/:base_token_address/:base_token_symbol/:quote_token_address/:quote_token_symbol', async (req, res) => {
         const {market_id, base_token_address, base_token_symbol, quote_token_address, quote_token_symbol} = req.params;
@@ -237,6 +237,19 @@ export default () => {
             success: !!balances,
             result: balances,
             err: balancesErr
+        });
+    });
+
+    admin.all('/order_queue/:cmd', async (req, res) => {
+        const {cmd} = req.params;
+        if( cmd === 'pause'){
+            this.orderQueue.pause();
+        } else if ( cmd === 'resume' ){
+            this.orderQueue.resume();
+        }
+        res.json({
+            success: true,
+            cmd
         });
     });
 
