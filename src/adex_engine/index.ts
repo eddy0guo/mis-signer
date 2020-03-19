@@ -3,7 +3,7 @@ import NP from 'number-precision';
 import to from 'await-to-js';
 
 import { Logger } from '../common/Logger';
-
+import LogUnhandled from '../common/LogUnhandled';
 import DBClient from '../adex/models/db';
 import Engine from '../adex/api/engine';
 import Utils from '../adex/api/utils';
@@ -320,10 +320,7 @@ class AdexEngine {
     }
 }
 
-process.on('unhandledRejection', (reason, p) => {
-    this.logger.log('[ADEX ENGINE] Unhandled Rejection at: Promise reason:', reason);
-    // application specific logging, throwing an error, or other logic here
-});
+LogUnhandled(AdexEngine.name);
 
 const engine = new AdexEngine();
 engine.initQueue();

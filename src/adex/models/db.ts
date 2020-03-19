@@ -181,7 +181,27 @@ export default class DBClient {
     }
 
     async my_orders3(filter_info): Promise<IOrder[]> {
+        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_orders where trader_address=$1 and side=$6 and (status=$4 or status=$5)order by updated_at desc limit $3 offset $2', filter_info));
+        if (err) {
+            console.error('my_orders2 failed ', err, filter_info);
+            await this.handlePoolError(err);
+        }
+        return result.rows;
+
+    }
+
+    async my_orders4(filter_info): Promise<IOrder[]> {
         const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_orders where trader_address=$1 and market_id=$6 and (status=$4 or status=$5)order by updated_at desc limit $3 offset $2', filter_info));
+        if (err) {
+            console.error('my_orders2 failed ', err, filter_info);
+            await this.handlePoolError(err);
+        }
+        return result.rows;
+
+    }
+
+    async my_orders5(filter_info): Promise<IOrder[]> {
+        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_orders where trader_address=$1 and market_id=$6 and side=$7 and (status=$4 or status=$5)order by updated_at desc limit $3 offset $2', filter_info));
         if (err) {
             console.error('my_orders2 failed ', err, filter_info);
             await this.handlePoolError(err);
@@ -452,6 +472,18 @@ export default class DBClient {
         const [err, result]: [any, any] = await to(this.queryWithLog('select k.market_id,k.price,k.ratio,m.volume from (select s.market_id,s.price,cast((s.price-t.price)/t.price as decimal(10,8)) ratio from (select * from mist_trades_tmp where market_id=$1 and created_at > (current_timestamp - interval \'24 hours\') order by created_at desc limit 1)s left join (select price,market_id from mist_trades_tmp where market_id=$1 and created_at > (current_timestamp - interval \'24 hours\') order by created_at asc  limit 1)t on s.market_id=t.market_id)k left join (select market_id,sum(amount) as volume from mist_trades_tmp where market_id=$1 and created_at > (current_timestamp - interval \'24 hours\') group by market_id)m on k.market_id=m.market_id', marketID));
         if (err) {
             console.error('get_market_quotations_ failed', err, marketID);
+            await this.handlePoolError(err);
+        }
+
+        return result.rows;
+
+    }
+
+    async list_market_quotations(): Promise<any[]> {
+        const sql = 'select * from mist_market_quotation_tmp';
+        const [err, result]: [any, any] = await to(this.queryWithLog(sql));
+        if(!result){
+            console.error('list_market_quotations failed', err);
             await this.handlePoolError(err);
         }
 
