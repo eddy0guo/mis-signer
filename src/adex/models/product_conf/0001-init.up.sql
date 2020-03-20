@@ -93,10 +93,12 @@ create table mist_orders(
   updated_at  timestamp,
   created_at  timestamp
 );
--- create index idx_mist_myorders_v3 on mist_orders (trader_address, market_id,status,updated_at);
-create index idx_mist_myorders_v2 on mist_orders (trader_address,status,updated_at);
-create index idx_mist_side on mist_orders (side);
-create index idx_mist_market on mist_orders (market);
+--Update index
+create index idx_mist_myorders_v3 on mist_orders (trader_address, market_id,status,updated_at);
+-- create index idx_mist_side on mist_orders (side);
+-- create index idx_mist_market on mist_orders (market);
+create index idx_mist_myorders_v5 on mist_orders (trader_address,market_id,status,side);
+create index idx_mist_myorders_updated_at on mist_orders (updated_at);
 
 
 create table mist_orders_tmp(
@@ -131,7 +133,10 @@ create table mist_transactions(
   updated_at  timestamp,
   created_at timestamp
 );
-create unique index idx_mist_transactions_pendingTX on mist_transactions (created_at,status,transaction_hash,id);
+--Update index
+-- create unique index idx_mist_transactions_pendingTX on mist_transactions (created_at,status,transaction_hash,id);
+create unique index idx_mist_transactions_pendingtx2 on mist_transactions (created_at, status, transaction_hash)
+
 
 create table mist_bridge(
   id text PRIMARY KEY,

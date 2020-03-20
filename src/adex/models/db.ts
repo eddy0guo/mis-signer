@@ -726,14 +726,13 @@ export default class DBClient {
     async get_pending_transactions(): Promise<ITransaction[]> {
         const sql = 'SELECT * FROM mist_transactions where created_at > (current_timestamp - interval \'24 hours\') ' +
             'and  created_at < (current_timestamp - interval \'10 seconds\') ' +
-            'and status not in (\'successful\',\'failed\') and transaction_hash is not null order by id  limit 1';
+            'and status not in (\'successful\',\'failed\') and transaction_hash is not null order by created_at  limit 1';
         const [err, result]: [any, any] = await to(this.queryWithLog(sql));
         if (err) {
             console.error('get pending transactions failed', err,);
             await this.handlePoolError(err);
         }
         return result.rows;
-
     }
 
     async list_transactions(): Promise<ITransaction[]> {

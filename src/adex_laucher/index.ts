@@ -105,7 +105,7 @@ class Launcher {
         // mt 3s 一个块，所以目前问题不大。
         // 但是utxo已经主动拆分，其实可以更快速度进行launch，按目前的拆分可以一个块提交10个以内交易。
         await this.sleep(500);
-        return this.doLaunch(trades, current_time);
+        return await this.doLaunch(trades, current_time);
     }
 
     async doLaunch(trades, current_time): Promise<void> {
