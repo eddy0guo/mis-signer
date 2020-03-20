@@ -1203,6 +1203,13 @@ export default () => {
         res.json({result, err});
     });
 
+    // tmp code
+    adex.all('/rollback_zero', async (req, res) => {
+        const [err, result] = await to(trades.rollback_zero());
+
+        res.json({result, err});
+    });
+
 
     adex.all('/list_trades_v2/:market_id', async (req, res) => {
         const {market_id} = req.params;

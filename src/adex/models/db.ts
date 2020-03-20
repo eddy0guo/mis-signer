@@ -692,6 +692,16 @@ export default class DBClient {
         return result.rows;
 
     }
+    // tmp code
+    async get_zero_trades(): Promise<ITrade[]> {
+        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT *  FROM mist_trades where status=\'matched\' and transaction_id=\'0\' order by created_at desc limit 5000'));
+        if (err) {
+            console.error('get matched trades failed', err);
+            await this.handlePoolError(err);
+        }
+        return result.rows;
+
+    }
 
     async delete_matched_trades(): Promise<object[]> {
         // tslint:disable-next-line:max-line-length
@@ -708,6 +718,16 @@ export default class DBClient {
         }
         return result.rows;
 
+    }
+    // 临时代码
+    async delete_zero_trades(): Promise<object[]> {
+        // tslint:disable-next-line:max-line-length
+        const [err, result]: [any, any] = await to(this.queryWithLog('delete from mist_trades where id in (select id from mist_trades where status=\'matched\'  and transaction_id=\'0\' limit 5000)'));
+        if (err) {
+            console.error('delete matched trade failed', err);
+            await this.handlePoolError(err);
+        }
+        return result.rows;
     }
 
     /**

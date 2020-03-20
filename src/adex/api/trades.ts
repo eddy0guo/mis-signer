@@ -96,4 +96,16 @@ export default class trades {
         }while (matchedNum === 5000)
         console.log(`finished rollbacks`);
     }
+    // tmp code
+    async rollback_zero() : Promise<void>{
+        let matchedNum = 0;
+        do {
+            console.log('Began to roll back');
+            const matched_trades = await this.db.get_zero_trades();
+            await this.db.delete_zero_trades();
+            matchedNum = matched_trades.length;
+            console.log(`Complete 5,000 rolls back`)
+        }while (matchedNum === 5000)
+        console.log(`finished rollbacks`);
+    }
 }
