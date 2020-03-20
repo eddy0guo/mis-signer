@@ -207,7 +207,7 @@ class Launcher {
                 await this.db.rollback();
                 return;
             }
-            this.db.commit();
+            await this.db.commit();
         } else {
             const errInfo = ['matched', null, current_time, trades[0].transaction_id];
             const [errUpdateErr] = await to(this.db.launch_update_trades(errInfo));

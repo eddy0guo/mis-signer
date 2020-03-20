@@ -243,9 +243,9 @@ export default () => {
     admin.all('/order_queue/:cmd', async (req, res) => {
         const {cmd} = req.params;
         if( cmd === 'pause'){
-            this.orderQueue.pause();
+            await orderQueue.pause();
         } else if ( cmd === 'resume' ){
-            this.orderQueue.resume();
+            await orderQueue.resume();
         }
         res.json({
             success: true,

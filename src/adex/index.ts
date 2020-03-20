@@ -19,6 +19,7 @@ import Asset from '../wallet/contract/Asset';
 
 import {IOrder as IOrder} from './interface';
 import mistConfig from '../cfg';
+import {type} from 'os';
 
 // TODO :  这个RPC请求很高频，可能成为性能瓶颈
 // 1 优化可能：rpc请求加入块高度缓存，这样一个块高度只请求一次（已在wallet sdk完成）
@@ -132,6 +133,40 @@ export default () => {
             history_orders_length,
             trades_length,
             bridge_length,
+        });
+    });
+
+
+    adex.all('/mist_user_overview_v2/:address/:type/:start/:end', async (req, res) => {
+        // tslint:disable-next-line:no-shadowed-variable
+        const {address,type,start,end} = req.params;
+        let [error, result] = [null,null];
+        switch (type) {
+            case 'current_order':
+                [error, result] = await to(order.my_orders_length(address, 'pending', 'partial_filled'));
+                break;
+            case 'history_order':
+                [error, result] = await to(order.my_orders_length(address, 'cancled', 'full_filled'));
+                break;
+            case 'trade':
+                [error, result] = await to(trades.my_trades_length(address));
+                break;
+            case 'bridge':
+                [error, result] = await to(client.my_bridge_length([address]));
+                break;
+            default:
+                console.error(`${type} type not supported`)
+        }
+
+        if (error || !result) {
+            console.error('get fingo_user_overview error',error,result);
+            return res.json({
+                success: false,
+            });
+        }
+        res.json({
+            success: true,
+            result,
         });
     });
 
