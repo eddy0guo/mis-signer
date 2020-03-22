@@ -318,7 +318,7 @@ export default () => {
 
 
     /**
-     * @api {post} /wallet/my_converts_v3/:address/:token_name/:page/:perpage my_converts_v3
+     * @api {post} /wallet/my_converts_v3/:address/:token_name/:page/:perpage my_converts_v3(Obsolete)
      * @apiDescription Gets a record of a user's transfers in a particular asset
      * @apiName my_converts_v3
      * @apiGroup wallet
@@ -366,6 +366,81 @@ export default () => {
             );
             const success = !result ? false : true;
             res.json({success, result, err});
+        }
+    );
+
+    /**
+     * @api {post} /express/my_converts_v4 my_converts_v4
+     * @apiDescription my bridge records
+     * @apiName my_converts_v4
+     * @apiGroup wallet
+     * @apiParam {string} address    user's address
+     * @apiParam {string} token                  token symbol,Set to "" if you want to get all token
+     * @apiParam {string} page                  page
+     * @apiParam {string} perpage               perpage
+     * @apiParam {Number} start                  unix time,
+     * @apiParam {Number} end                    unix time
+     * @apiParam {Boolean} need_total_length     To calculate paging usage, This is a time-consuming option，you should only request once
+     * @apiParamExample {json} Request-Example:
+     {
+         "address":"0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
+         "token":"ETH",
+         "page":"1",
+         "perpage":"1",
+         "start":0,
+         "end":1576424202000,
+         "need_total_length":true
+     }
+     * @apiSuccess {json} result
+     * @apiSuccessExample {json} Success-Response:
+     {
+        "success": true,
+        "result": {
+            "records": [
+                {
+                    "id": "0fe6c194f4c41baed995661860910cc59bbbe546faf62a8b93a069d4e487a5a1",
+                    "address": "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
+                    "token_name": "ETH",
+                    "amount": 0.08,
+                    "side": "coin2asset",
+                    "master_txid": "c6306254471689eef6f33d6c1dbe6f388213fa87636252ac8c2231528b29d244",
+                    "master_txid_status": "successful",
+                    "child_txid": "02605b81b930666dc1bac188e79a4763fccd4e738e7da2684d33352b3658194f",
+                    "child_txid_status": "successful",
+                    "fee_asset": "ASIM",
+                    "fee_amount": "0.02",
+                    "updated_at": "2019-12-13T08:35:01.250Z",
+                    "created_at": "2019-12-13T08:34:59.185Z"
+                }
+            ],
+            "totalLength": "2"
+        },
+        "err": null
+     }
+     * @apiSampleRequest http://119.23.181.166:21000/wallet/my_converts_v4
+     * @apiVersion 1.0.0
+     */
+
+    wallet.all(
+        '/my_converts_v4', async (req, res) => {
+            const {address, token, page, perpage,start,end,need_total_length} = req.body;
+            let [totalLengthErr,totalLength] = [null,null];
+            const startDate = new Date(start);
+            const endDate = new Date(end);
+
+            const offset = (+page - 1) * +perpage;
+            const [err, records] = await to(
+                psql_db.my_bridge_v4([address, offset, perpage,startDate,endDate,token])
+            );
+            if(need_total_length === true){
+                [totalLengthErr,totalLength] = await to(psql_db.my_bridge_length_v2([address,startDate,endDate,token]));
+            }
+            const result = {records, totalLength};
+            res.json({
+                success: (!records && totalLengthErr) ? false : true,
+                result,
+                err,
+            });
         }
     );
 
@@ -421,34 +496,6 @@ export default () => {
         const [err, result] = await to(chain.sendrawtransaction(sign_data));
         res.json({result, err});
     });
-
-    /**
-     * @api {post} /wallet/my_bridge_length/:address my_bridge_length(Obsolete)
-     * @apiDescription Each other to transfer the length of the record
-     * @apiName my_bridge_length
-     * @apiGroup wallet
-     * @apiSuccess {json} result
-     * @apiSuccessExample {json} Success-Response:
-     *  {
-              "success": true,
-              "result": "30",
-              "err": null
-     *  }
-     * @apiSampleRequest http://119.23.181.166:21000/wallet/my_bridge_length/0x66ea4b7f7ad33b0cc7ef94bef71bc302789b815c46
-     * @apiVersion 1.0.0
-     */
-
-    wallet.all('/my_bridge_length/:address', async (req, res) => {
-        const {address} = req.params;
-        const [err, result] = await to(psql_db.my_bridge_length([address]));
-
-        return res.json({
-            success: !result ? false : true,
-            result,
-            err,
-        });
-    });
-
     /**
      * @api {post} /wallet/list_fingo_config list_fingo_config
      * @apiDescription Gets the configuration for fingo

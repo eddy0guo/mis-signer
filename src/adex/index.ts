@@ -102,17 +102,18 @@ export default () => {
      */
     adex.all('/mist_user_overview/:address', async (req, res) => {
         const address = req.params.address;
+        const [defaultStart, defaultEnd] = ['2019-01-01 00:00:00.000','2031-01-01 00:00:00.000'];
         const [current_order_err, current_orders_length] = await to(
-            order.my_orders_length(address, 'pending', 'partial_filled')
+            order.my_orders_length(address, 'pending', 'partial_filled',defaultStart,defaultEnd)
         );
         const [history_order_err, history_orders_length] = await to(
-            order.my_orders_length(address, 'cancled', 'full_filled')
+            order.my_orders_length(address, 'cancled', 'full_filled',defaultStart,defaultEnd)
         );
         const [trades_err, trades_length] = await to(
-            trades.my_trades_length(address)
+            trades.my_trades_length(address,defaultStart,defaultEnd)
         );
         const [birdge_err, bridge_length] = await to(
-            client.my_bridge_length([address])
+            client.my_bridge_length([address,defaultStart,defaultEnd])
         );
 
         if (current_order_err || history_order_err || trades_err || birdge_err) {
@@ -135,41 +136,6 @@ export default () => {
             bridge_length,
         });
     });
-
-
-    adex.all('/mist_user_overview_v2/:address/:type/:start/:end', async (req, res) => {
-        // tslint:disable-next-line:no-shadowed-variable
-        const {address,type,start,end} = req.params;
-        let [error, result] = [null,null];
-        switch (type) {
-            case 'current_order':
-                [error, result] = await to(order.my_orders_length(address, 'pending', 'partial_filled'));
-                break;
-            case 'history_order':
-                [error, result] = await to(order.my_orders_length(address, 'cancled', 'full_filled'));
-                break;
-            case 'trade':
-                [error, result] = await to(trades.my_trades_length(address));
-                break;
-            case 'bridge':
-                [error, result] = await to(client.my_bridge_length([address]));
-                break;
-            default:
-                console.error(`${type} type not supported`)
-        }
-
-        if (error || !result) {
-            console.error('get fingo_user_overview error',error,result);
-            return res.json({
-                success: false,
-            });
-        }
-        res.json({
-            success: true,
-            result,
-        });
-    });
-
     /**
      * @api {post} /adex/list_market_quotations_v2 list_market_quotations_v2
      * @apiDescription Get the current price of the exchange
@@ -913,7 +879,8 @@ export default () => {
      */
     adex.all('/my_trades_length/:address', async (req, res) => {
         const {address} = req.params;
-        const [err, result] = await to(trades.my_trades_length(address));
+        const [start, end] = ['2019-01-01 00:00:00.000','2031-01-01 00:00:00.000'];
+        const [err, result] = await to(trades.my_trades_length(address,start,end));
 
         res.json({
             success: !result ? false : true,
@@ -1026,7 +993,7 @@ export default () => {
     );
 
     /**
-     * @api {post} /adex/my_orders_v4 my_orders_v4
+     * @api {post} /adex/my_orders_v4 my_orders_v4(Obsolete)
      * @apiDescription  Returns the user order record based on the filter criteria
      * @apiName my_orders_v4
      * @apiGroup adex
@@ -1133,6 +1100,144 @@ export default () => {
             });
         }
     );
+
+    /**
+     * @api {post} /adex/my_orders_v5 my_orders_v5
+     * @apiDescription  Returns the user order record based on the filter criteria
+     * @apiName my_orders_v5
+     * @apiGroup adex
+     * @apiParam {string} address                   user's addrwss
+     * @apiParam {number} page                      page
+     * @apiParam {number} perPage                   perpage
+     * @apiParam {string} status1                   "pending","partial_filled","cancled","full_filled"
+     * @apiParam {string} status2                   "pending","partial_filled","cancled","full_filled",Set to "" If you don't want to filter any state
+     * @apiParam {string} market_id                 market ID,Set to "" if you want to get all token
+     * @apiParam {string} side                      "buy","sell",Set to "" if you want to get all side
+     * @apiParam {string} start                     unix time
+     * @apiParam {string} end                       unix time
+     * @apiParam {boolean} need_total_length        To calculate paging usage, This is a time-consuming option，you should only request once
+     * @apiParamExample {json} Request-Example:
+     空字符串表示此条件不过滤，status1不能为空，不想过滤时间就设置为0到一个大数(9999999999000)
+     当前订单
+     {
+        "address":"0x66b7637198aee4fffa103fc0082e7a093f81e05a64",
+         "page":1,
+         "perPage":1,
+         "status1":"pending",
+         "status2":"partial_filled",
+         "market_id":"",
+         "side":""，
+         "start":0,
+         "end":9999999999000,
+         "need_total_length":false
+     }
+     历史订单
+     {
+        "address":"0x66b7637198aee4fffa103fc0082e7a093f81e05a64",
+         "page":1,
+         "perPage":1,
+         "status1":"cancled",
+         "status2":"full_filled",
+         "market_id":"",
+         "side":""，
+          "start":0,
+         "end":1576424202000,
+         "need_total_length":false
+     }
+     历史订单-只过滤交易对
+     {
+        "address":"0x66b7637198aee4fffa103fc0082e7a093f81e05a64",
+         "page":1,
+         "perPage":1,
+         "status1":"cancled",
+         "status2":"full_filled",
+         "market_id":"ETH-USDT",
+         "side":""，
+         "start":0,
+         "end":1576424202000,
+         "need_total_length":false
+     }
+     历史订单-只过滤已取消订单
+     {
+        "address":"0x66b7637198aee4fffa103fc0082e7a093f81e05a64",
+         "page":1,
+         "perPage":1,
+         "status1":"cancled",
+         "status2":"",
+         "market_id":"",
+         "side":""，
+          "start":0,
+         "end":1576424202000,
+         "need_total_length":false
+     }
+     历史订单-过滤买单，已成交，ETH-USDT
+     {
+        "address":"0x66b7637198aee4fffa103fc0082e7a093f81e05a64",
+         "page":1,
+         "perPage":1,
+         "status1":"full_filled",
+         "status2":"",
+         "market_id":"ETH-USDT",
+         "side":"buy"，
+          "start":0,
+         "end":1576424202000,
+         "need_total_length":false
+     }
+     * @apiSuccess {json} result
+     * @apiSuccessExample {json} Success-Response:
+     {
+        "success": true,
+        "result": {
+            "records": [
+                {
+                    "id": "f69e42169e3d8f51c5b45db400756f320f2ecaaf6b8f9a076aed149be573bbab",
+                    "trader_address": "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
+                    "market_id": "ETH-USDT",
+                    "side": "sell",
+                    "price": "272.80000000",
+                    "amount": "8.11490000",
+                    "status": "pending",
+                    "type": "limit",
+                    "available_amount": "8.11490000",
+                    "confirmed_amount": "0.00000000",
+                    "canceled_amount": "0.00000000",
+                    "pending_amount": "0.00000000",
+                    "updated_at": "2020-02-16T15:36:22.269Z",
+                    "created_at": "2020-02-16T15:36:22.269Z",
+                    "average_price": "--",
+                    "confirm_value": "--"
+                }
+            ],
+            "totalLength": "2796"
+        },
+        "err": null
+     }
+     * @apiSampleRequest http://119.23.181.166:21000/adex/my_orders_v5
+     * @apiVersion 1.0.0
+     */
+
+    adex.all('/my_orders_v5', async (req, res) => {
+        // cancled，full_filled，历史委托
+        const {address, page, perPage, status1, status2, market_id, side, start, end, need_total_length} = req.body;
+        let [totalLengthErr, totalLength] = [null, null];
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        const [err, records] = await to(
+            order.my_orders_v3(address, page, perPage, status1, status2, market_id, side, startDate, endDate)
+        );
+        if(need_total_length === true){
+            const filter = [address, status1, status2, startDate, endDate,market_id, side];
+            [totalLengthErr,totalLength] = await to(client.my_orders_length_v2(filter));
+        }
+        const result = {records, totalLength};
+
+        res.json({
+            success: (!records && totalLengthErr) ? false : true,
+            result,
+            err,
+        });
+
+    });
 
 
     adex.all('/order_book_v2/:market_id/:precision', async (req, res) => {
@@ -1274,7 +1379,7 @@ export default () => {
 
 
     /**
-     * @api {post} /adex/my_trades_v2/:address/:page/:perpage/ my_trades_v2
+     * @api {post} /adex/my_trades_v2/:address/:page/:perpage/ my_trades_v2(Obsolete)
      * @apiDescription Gets the historical trade list
      * @apiName my_trades_v2
      * @apiGroup adex
@@ -1324,7 +1429,7 @@ export default () => {
     });
 
     /**
-     * @api {post} /adex/my_trades_v3/:address/:market_id/:page/:perpage/ my_trades_v3
+     * @api {post} /adex/my_trades_v3/:address/:market_id/:page/:perpage/ my_trades_v3(Obsolete)
      * @apiDescription Gets the historical trade list of specific market ID
      * @apiName my_trades_v3
      * @apiGroup adex
@@ -1372,6 +1477,75 @@ export default () => {
             result,
             err,
         });
+    });
+
+
+    /**
+     * @api {post} /adex/my_trades_v4 my_trades_v4
+     * @apiDescription  Returns the user trades record
+     * @apiName my_trades_v4
+     * @apiGroup adex
+     * @apiParam {string} address                   user's addrwss
+     * @apiParam {number} page                      page
+     * @apiParam {number} perPage                   perpage
+     * @apiParam {string} status                   "matched","pending","failed","successful",Set to "" If you don't want to filter any state
+     * @apiParam {string} market_id                 market ID,Set to "" if you want to get all token
+     * @apiParam {string} start                     unix time
+     * @apiParam {string} end                       unix time
+     * @apiParam {boolean} need_total_length         To calculate paging usage, This is a time-consuming option，you should only request once
+     * @apiParamExample {json} Request-Example:
+     空字符串表示此条件不过滤，不想过滤时间就设置为0到一个大数(9999999999000)
+     * @apiSuccess {json} result
+     * @apiSuccessExample {json} Success-Response:
+     {
+        "success": true,
+        "result": {
+            "records": [
+                {
+                    "id": "f69e42169e3d8f51c5b45db400756f320f2ecaaf6b8f9a076aed149be573bbab",
+                    "trader_address": "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
+                    "market_id": "ETH-USDT",
+                    "side": "sell",
+                    "price": "272.80000000",
+                    "amount": "8.11490000",
+                    "status": "pending",
+                    "type": "limit",
+                    "available_amount": "8.11490000",
+                    "confirmed_amount": "0.00000000",
+                    "canceled_amount": "0.00000000",
+                    "pending_amount": "0.00000000",
+                    "updated_at": "2020-02-16T15:36:22.269Z",
+                    "created_at": "2020-02-16T15:36:22.269Z",
+                    "average_price": "--",
+                    "confirm_value": "--"
+                }
+            ],
+            "totalLength": "2796"
+        },
+        "err": null
+     }
+     * @apiSampleRequest http://119.23.181.166:21000/adex/my_orders_v5
+     * @apiVersion 1.0.0
+     */
+
+    adex.all('/my_trades_v4', async (req, res) => {
+        const {address,page,perPage,market_id,status,start,end,need_total_length} = req.body;
+        let [totalLengthErr,totalLength] = [null,null];
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+
+        const [recordsErr, records] = await to(trades.my_trades4(address, page, perPage,startDate, endDate, market_id, status));
+        if(need_total_length === true){
+            const filter = [address, startDate, endDate, market_id, status];
+            [totalLengthErr,totalLength] = await to(client.my_trades_length_v2(filter));
+        }
+        const result = {recordsRes: records, totalLength};
+        res.json({
+            success: (!records && totalLengthErr) ? false : true,
+            result,
+            err: recordsErr,
+        });
+
     });
 
 

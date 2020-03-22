@@ -110,7 +110,7 @@ export default () => {
     const order = new OrderAPI(psql_db);
 
     /**
-     * @api {post} /express/my_records/:page/:perpage my_records
+     * @api {post} /express/my_records/:page/:perpage my_records(Obsolete)
      * @apiDescription my_records
      * @apiName my_records
      * @apiGroup express
@@ -148,9 +148,10 @@ export default () => {
      */
     express.all('/my_records/:address/:page/:perpage', async (req, res) => {
         const {address, page, perpage} = req.params;
+        const [start, end] = ['2019-01-01 00:00:00.000','2031-01-01 00:00:00.000'];
         const offset = (+page - 1) * +perpage;
         const [err, records] = await to(
-            psql_db.my_express([address, offset, perpage])
+            psql_db.my_express([address, offset, perpage,start,end])
         );
         if (records) {
             for (const record of records as any[]) {
@@ -168,6 +169,93 @@ export default () => {
             success: !records ? false : true,
             result: records,
             err,
+        });
+    });
+
+
+    /**
+     * @api {post} /express/my_records_v2 my_records_v2
+     * @apiDescription my_records
+     * @apiName my_records_v2
+     * @apiGroup express
+     * @apiParam {string} address    user's address
+     * @apiParam {string} page                  page
+     * @apiParam {string} perpage               perpage
+     * @apiParam {Number} start                  unix time
+     * @apiParam {Number} end                    unix time
+     * @apiParam {Boolean} need_total_length      To calculate paging usage, This is a time-consuming option，you should only request once
+     * @apiParamExample {json} Request-Example:
+     {
+         "address":"0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
+         "page":"1",
+         "perpage":"1",
+         "start":0,
+         "end":1576424202000,
+         "need_total_length":true
+     }
+     * @apiSuccess {json} result
+     * @apiSuccessExample {json} Success-Response:
+     {
+        "success": true,
+        "result": {
+            "recordsRes": [
+                {
+                    "trade_id": "d053a8824c4d13538dec9c65b24e7ce7acc21c33f123fd59ce0b8f98569114ee",
+                    "address": "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
+                    "base_asset_name": "ETH",
+                    "base_amount": 1,
+                    "price": 0.02025192,
+                    "quote_asset_name": "BTC",
+                    "quote_amount": 0.02015066,
+                    "fee_rate": 0.005,
+                    "fee_token": "BTC",
+                    "fee_amount": 0.00010126,
+                    "base_txid": "23bf09bdbb2e31c7f83e049da051679290b0daed860802679ee5b7ef4f8a9f21",
+                    "base_tx_status": "successful",
+                    "quote_txid": "3f48568de8a4ebef55f34a774c2629f050113fa128da73ae7c1da8c64af8628b",
+                    "quote_tx_status": "successful",
+                    "updated_at": "2019-12-03T08:41:27.448Z",
+                    "created_at": "2019-12-03T08:41:27.448Z",
+                    "base_token_icon": "http://fingo-cdn.asimov.work/res/icons/ETHa.png",
+                    "quote_token_icon": "http://fingo-cdn.asimov.work/res/icons/BTCa.png"
+                }
+            ],
+            "totalLength": "3"
+        },
+        "err": null
+     }
+     * @apiSampleRequest http://119.23.181.166:21000/express/my_records_v2
+     * @apiVersion 1.0.0
+     */
+
+    express.all('/my_records_v2', async (req, res) => {
+        const {address, page, perpage,start,end,need_total_length} = req.body;
+        let [totalLengthErr,totalLength] = [null,null];
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        const offset = (+page - 1) * +perpage;
+        const filter = [address, offset, perpage,startDate,endDate];
+        const [recordsErr, records] = await to(psql_db.my_express(filter));
+        if (records) {
+            for (const record of records as any[]) {
+                record.base_token_icon =
+                    mist_config.icon_url +
+                    record.base_asset_name +
+                    'a.png';
+                record.quote_token_icon =
+                    mist_config.icon_url +
+                    record.quote_asset_name +
+                    'a.png';
+            }
+        }
+        if(need_total_length === true){
+            [totalLengthErr,totalLength] = await to(psql_db.my_express_length_v2([address,startDate,endDate]));
+        }
+        const result = {recordsRes: records, totalLength};
+        res.json({
+            success: (!records && totalLengthErr) ? false : true,
+            result,
+            err: recordsErr,
         });
     });
 

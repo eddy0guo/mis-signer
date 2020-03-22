@@ -39,13 +39,26 @@ export default class ExpressDBClient {
 	}
 
 	async my_express(filter_info) : Promise<ITrade[]> {
-		const [err, result]: [any,any] = await to(this.clientDB.query(`SELECT ${express_params} FROM asim_express_records  where address=$1 order by created_at desc limit $3 offset $2`, filter_info));
+		const sql = `SELECT ${express_params} FROM asim_express_records  where address=$1 and created_at>$4 and created_at<$5 order by created_at desc limit $3 offset $2`;
+		const [err, result]: [any,any] = await to(this.clientDB.query(sql, filter_info));
 		if (err) {
 			console.error('my express failed', err,result);
 			await this.handlePoolError(err);
 		}
 
 		return result.rows;
+
+	}
+
+	async my_express_length_v2(filter_info) : Promise<number> {
+		const sql = `SELECT count(1) FROM asim_express_records  where address=$1 and created_at>$2 and created_at<$3`;
+		const [err, result]: [any,any] = await to(this.clientDB.query(sql, filter_info));
+		if (err) {
+			console.error('my express failed', err,result);
+			await this.handlePoolError(err);
+		}
+
+		return result.rows[0].count;
 
 	}
 

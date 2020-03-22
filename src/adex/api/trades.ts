@@ -17,8 +17,8 @@ export default class trades {
         return await this.db.list_trades([marketID]);
     }
 
-    async my_trades_length(address: string): Promise<number> {
-        return await this.db.my_trades_length([address]);
+    async my_trades_length(address: string, start:string, end:string): Promise<number> {
+        return await this.db.my_trades_length([address,start,end]);
     }
 
     async my_trades(message): Promise<ITrade[]> {
@@ -36,6 +36,15 @@ export default class trades {
         else{
             [err, trades] = await to(this.db.my_trades2([address, offset, perPage]));
         }
+        if (!trades) console.error(err, trades);
+        return trades;
+    }
+    // address, page, per_page,startDate, endDate, market_id, status
+    async my_trades4(address:string, page:number, perPage:number,start:Date,end:Date,MarketID: string,status:string) : Promise<ITrade[]> {
+        const offset = (page - 1) * perPage;
+        const filter = [address, offset, perPage,start,end,MarketID,status];
+        // tslint:disable-next-line:no-shadowed-variable
+        const [err, trades] = await to(this.db.my_trades4(filter));
         if (!trades) console.error(err, trades);
         return trades;
     }

@@ -48,6 +48,8 @@ create index idx_mist_trades_taker_order_id  on mist_trades (taker_order_id);
 create index idx_mist_trades_maker_order_id on mist_trades (maker_order_id);
 create index idx_mist_trades_transaction_id on mist_trades (transaction_id);
 create index idx_mist_trades_quotation  on mist_trades (market_id, created_at);
+create index idx_mist_trades_delete on mist_trades (status,created_at);
+
 
 create table mist_trades_tmp(
   id text PRIMARY KEY,
@@ -66,7 +68,6 @@ create table mist_trades_tmp(
   updated_at timestamp ,
   created_at timestamp
 );
-create index idx_mist_trades_delete on mist_trades (status,created_at);
 create index idx_mist_trades_tmp_quotation on mist_trades_tmp (market_id,created_at);
 create index idx_mist_trades_tmp_recent on mist_trades_tmp (market_id);
 create index idx_mist_trades_tmp_launch on mist_trades_tmp (created_at,status);
@@ -92,10 +93,17 @@ create table mist_orders(
   updated_at  timestamp,
   created_at  timestamp
 );
--- create index idx_mist_myorders_v3 on mist_orders (trader_address, market_id,status,updated_at);
-create index idx_mist_myorders_v2 on mist_orders (trader_address,status,updated_at);
-create index idx_mist_side on mist_orders (side);
-create index idx_mist_market on mist_orders (market);
+--Update index
+-- create index idx_mist_myorders_v4 on mist_orders (trader_address, market_id,status,side,updated_at);
+-- create index idx_mist_side on mist_orders (side);
+-- create index idx_mist_market on mist_orders (market);
+-- create index idx_mist_myorders_v5 on mist_orders (trader_address,market_id,status,side);
+-- create index idx_mist_myorders_updated_at on mist_orders (updated_at);
+create index idx_mist_myorders_status on mist_orders (status);
+create index idx_mist_myorders_v1 on mist_orders (trader_address, market_id,side,created_at);
+create index idx_mist_myorders_v2 on mist_orders (trader_address, market_id,created_at);
+create index idx_mist_myorders_v3 on mist_orders (trader_address,side,created_at);
+
 
 create table mist_orders_tmp(
   id text  primary key,
@@ -129,7 +137,10 @@ create table mist_transactions(
   updated_at  timestamp,
   created_at timestamp
 );
-create unique index idx_mist_transactions_pendingTX on mist_transactions (created_at,status,transaction_hash,id);
+--Update index
+-- create unique index idx_mist_transactions_pendingTX on mist_transactions (created_at,status,transaction_hash,id);
+create unique index idx_mist_transactions_pendingtx2 on mist_transactions (created_at, status, transaction_hash)
+
 
 create table mist_bridge(
   id text PRIMARY KEY,

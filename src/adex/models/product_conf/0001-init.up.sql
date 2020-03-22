@@ -94,11 +94,15 @@ create table mist_orders(
   created_at  timestamp
 );
 --Update index
-create index idx_mist_myorders_v3 on mist_orders (trader_address, market_id,status,updated_at);
+-- create index idx_mist_myorders_v4 on mist_orders (trader_address, market_id,status,side,updated_at);
 -- create index idx_mist_side on mist_orders (side);
 -- create index idx_mist_market on mist_orders (market);
-create index idx_mist_myorders_v5 on mist_orders (trader_address,market_id,status,side);
-create index idx_mist_myorders_updated_at on mist_orders (updated_at);
+-- create index idx_mist_myorders_v5 on mist_orders (trader_address,market_id,status,side);
+-- create index idx_mist_myorders_updated_at on mist_orders (updated_at);
+create index idx_mist_myorders_status on mist_orders (status);
+create index idx_mist_myorders_v1 on mist_orders (trader_address, market_id,side,created_at);
+create index idx_mist_myorders_v2 on mist_orders (trader_address, market_id,created_at);
+create index idx_mist_myorders_v3 on mist_orders (trader_address,side,created_at);
 
 
 create table mist_orders_tmp(

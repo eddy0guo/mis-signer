@@ -137,7 +137,7 @@ export default class DBClient {
     }
 
     async my_orders_length(info): Promise<number> {
-        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT count(1) FROM mist_orders where trader_address=$1 and status in ($2,$3)', info));
+        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT count(1) FROM mist_orders where trader_address=$1 and status in ($2,$3) and created_at>$4 and created_at<${5}', info));
         if (err) {
             console.error('my_order_length failed', err);
             await this.handlePoolError(err);
@@ -146,12 +146,54 @@ export default class DBClient {
         return result.rows[0].count;
 
     }
+    // [address, status1, status2, startDate, endDate,market_id, side];
+    async my_orders_length_v2(filter): Promise<number> {
+        let marketFilter = 'and market_id=$6 ';
+        if(filter[5] === ''){
+            filter.splice(5,1);
+            marketFilter = '';
+        }
 
+        let sideFilter = 'and side=$7 ';
+        if(filter[6] === ''){
+            filter.splice(6,1);
+            sideFilter = '';
+        }
 
-    async my_bridge_length(address): Promise<number> {
-        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT count(1) FROM mist_bridge where address=$1', address));
+        const sql = `SELECT count(1) FROM mist_orders where trader_address=$1 and status in ($2,$3) and created_at>$4 and created_at<$5 ${marketFilter} ${sideFilter}`;
+        const [err, result]: [any, any] = await to(this.queryWithLog(sql, filter));
         if (err) {
-            console.error('my_bridge_length failed ', err, address);
+            console.error('my_orders_length_v2 failed', err);
+            await this.handlePoolError(err);
+        }
+
+        return result.rows[0].count;
+
+    }
+
+
+    async my_bridge_length(filter): Promise<number> {
+        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT count(1) FROM mist_bridge where address=$1 and created_at>$2 and created_at<$3', filter));
+        if (err) {
+            console.error('my_bridge_length failed ', err, filter);
+            await this.handlePoolError(err);
+        }
+
+        return result.rows[0].count;
+
+    }
+
+
+    async my_bridge_length_v2(filter): Promise<number> {
+        let tokenFilter = 'and token_name=$4 ';
+        if(filter[3] === ''){
+            filter.splice(3,1);
+            tokenFilter = '';
+        }
+        const sql = `SELECT count(1) FROM mist_bridge where address=$1 and created_at>$2 and created_at<$3 ${tokenFilter}`;
+        const [err, result]: [any, any] = await to(this.queryWithLog(sql, filter));
+        if (err) {
+            console.error('my_bridge_length_v2 failed ', err, sql,filter);
             await this.handlePoolError(err);
         }
 
@@ -160,9 +202,33 @@ export default class DBClient {
     }
 
     async my_trades_length(info): Promise<number> {
-        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT count(1) FROM mist_trades where taker=$1 or maker=$1', info));
+        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT count(1) FROM mist_trades where created_at>$2 and created_at<$3 and (taker=$1 or maker=$1)', info));
         if (err) {
             console.error('my_trades_length failed', err);
+            await this.handlePoolError(err);
+        }
+
+        return result.rows[0].count;
+
+    }
+    // address, startDate, endDate, market_id, status
+    async my_trades_length_v2(filter): Promise<number> {
+        let marketFilter = 'and market_id=$4 ';
+        if(filter[3] === ''){
+            filter.splice(3,1);
+            marketFilter = '';
+        }
+
+        let statusFilter = 'and status=$5 ';
+        if(filter[4] === ''){
+            filter.splice(4,1);
+            statusFilter = '';
+        }
+        const sql = `SELECT count(1) FROM mist_trades where (taker=$1 or maker=$1) and created_at>$2 and created_at<$3 ${marketFilter} ${statusFilter}`;
+
+        const [err, result]: [any, any] = await to(this.queryWithLog(sql, filter));
+        if (err) {
+            console.error('my_trades_length_v2 failed', err);
             await this.handlePoolError(err);
         }
 
@@ -204,6 +270,29 @@ export default class DBClient {
         const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_orders where trader_address=$1 and market_id=$6 and side=$7 and (status=$4 or status=$5)order by updated_at desc limit $3 offset $2', filter_info));
         if (err) {
             console.error('my_orders2 failed ', err, filter_info);
+            await this.handlePoolError(err);
+        }
+        return result.rows;
+
+    }
+    // address, offset, perPage, status1, status2, start,end,MarketID,side]
+    async my_orders6(filter): Promise<IOrder[]> {
+        let marketFilter = 'and market_id=$8 ';
+        if(filter[7] === ''){
+            filter.splice(7,1);
+            marketFilter = '';
+        }
+
+        let sideFilter = 'and side=$9 ';
+        if(filter[8] === ''){
+            filter.splice(8,1);
+            sideFilter = '';
+        }
+
+        const sql = `SELECT * FROM mist_orders where trader_address=$1 ${marketFilter} ${sideFilter} and (status=$4 or status=$5)  and created_at>$6 and created_at<$7 order by created_at desc limit $3 offset $2`;
+        const [err, result]: [any, any] = await to(this.queryWithLog(sql, filter));
+        if (err) {
+            console.error('my_orders6 failed ', err, filter);
             await this.handlePoolError(err);
         }
         return result.rows;
@@ -586,6 +675,30 @@ export default class DBClient {
 
     }
 
+
+    async my_trades4(filter): Promise<ITrade[]> {
+        let marketFilter = 'and market_id=$6 ';
+        if(filter[5] === ''){
+            filter.splice(5,1);
+            marketFilter = '';
+        }
+
+        let statusFilter = 'and status=$7 ';
+        if(filter[6] === ''){
+            filter.splice(6,1);
+            statusFilter = '';
+        }
+       //  address, offset, perPage,start,end,MarketID,status
+        const sql = `SELECT * FROM mist_trades where (taker=$1 or maker=$1) and created_at>$4 and created_at<$5 ${marketFilter} ${statusFilter} order by created_at desc limit $3 offset $2`
+        const [err, result]: [any, any] = await to(this.queryWithLog(sql, filter));
+        if (err) {
+            console.error('my_trades4 failed', err, filter);
+            await this.handlePoolError(err);
+        }
+        return result.rows;
+
+    }
+
     async transactions_trades(id): Promise<ITrade[]> {
         const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_trades_tmp where transaction_id=$1', id));
         if (err) {
@@ -597,7 +710,7 @@ export default class DBClient {
     }
 
     async list_all_trades(): Promise<ITrade[]> {
-        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_trades_tmp where status!=\'matched\'  order by transaction_id desc limit 1'));
+        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_trades where status!=\'matched\'  order by transaction_id desc limit 1'));
         if (err) {
             console.error('list all trades failed', err);
             await this.handlePoolError(err);
@@ -983,6 +1096,23 @@ export default class DBClient {
 
     }
 
+    async my_bridge_v4(filter): Promise<IBridge[]> {
+        let tokenFilter = 'and token_name=$6 ';
+        if(filter[5] === ''){
+            filter.splice(5,1);
+            tokenFilter = '';
+        }
+        const sql = `SELECT ${BRIDGE_SQL} FROM mist_bridge  where address=$1  and created_at>$4 and created_at<$5  ${tokenFilter} order by created_at desc limit $3 offset $2`;
+        const [err, result]: [any, any] = await to(this.queryWithLog(sql, filter));
+        if (err) {
+            console.error('my my_bridge_v4 failed', err,sql,filter);
+            await this.handlePoolError(err);
+        }
+
+        return result.rows;
+
+    }
+
     async insert_converts(info): Promise<string> {
         const [err, result]: [any, any] = await to(this.queryWithLog('insert into mist_token_convert values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)', info));
         if (err) {
@@ -1000,8 +1130,6 @@ export default class DBClient {
         }
         return JSON.stringify(result.rows);
     }
-
-
     async get_freeze_amount(filter_info): Promise<IFreezeToken[]> {
         const sql = `select market_id,side,
             sum(pending_amount+available_amount) as base_amount,
