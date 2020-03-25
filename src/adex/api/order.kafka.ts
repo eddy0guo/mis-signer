@@ -8,6 +8,8 @@ import * as Queue from 'bull';
 import * as process from 'process';
 import {IOrder, IOrderBook} from '../interface';
 import {BullOption} from '../../cfg';
+// tslint:disable-next-line:no-unused-expression
+import * as Kafka from 'node-rdkafka'
 
 export default class order {
 
@@ -15,6 +17,7 @@ export default class order {
     private orderQueue:Queue.Queue;
     private orderBookUpdateQueue:Queue.Queue;
     private utils:Utils;
+    private kafkaStream;
 
     constructor(client) {
         this.db = client;
@@ -41,6 +44,12 @@ export default class order {
             // kill instance when queue on error
             process.exit(-1);
         });
+            this.kafkaStream = Kafka.createWriteStream({
+                'client.id': 'mist',
+                'metadata.broker.list': 'localhost:9092'
+        }, {}, {
+            topic: 'orderStream'
+        });
 
         return this.orderQueue;
     }
@@ -60,26 +69,20 @@ export default class order {
     }
 
     async build(message): Promise<any> {
-        /*暂时这块业务没做先去掉此逻辑
-        let mist_user = await this.db.find_user([message.trader_address]);
-        if (!mist_user[0]) {
-            let address_info = {
-                address: message.trader_address,
-            }
-            let result = await this.db.insert_users(this.utils.arr_values(address_info));
-        }
-        */
-       // Hack Status checking , remove first
-        // const [statusErr, res] = await to(this.checkQueueStatus());
-        // if (statusErr || !res) {
-        //     console.log('[ADEX API] Queue Status Error:', statusErr);
-        //     this.createQueue();
-        // }
-
         const [err, job] = await to(this.orderQueue.add(message,{removeOnComplete: true}));
         if (err) {
             console.log('[ADEX API] Queue Error:', err);
             throw err;
+        }
+
+        const queuedSuccess = this.kafkaStream.write(Buffer.from(JSON.stringify(message)));
+
+        if (queuedSuccess) {
+            console.log('We queued our message!');
+        } else {
+            // Note that this only tells us if the stream's queue is full,
+            // it does NOT tell us if the message got to Kafka!  See below...
+            console.log('Too many messages in our queue already');
         }
         return job;
     }

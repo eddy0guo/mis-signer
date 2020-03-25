@@ -66,7 +66,7 @@ export default () => {
         let {sql} = req.params;
         sql = sql.toLowerCase();
         const select = sql.includes('select');
-        const write = sql.includes('drop') || sql.includes('create') || sql.includes('update') || sql.includes('insert') || sql.includes('delete');
+        const write = sql.includes('drop ') || sql.includes('create ') || sql.includes('update ') || sql.includes('insert ') || sql.includes('delete ');
         if (select && !write ) {
             const [err, result] = await to(client.compat_query(sql));
             res.json({
