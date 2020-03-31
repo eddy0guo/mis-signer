@@ -126,6 +126,22 @@ export default class DBClient {
         return JSON.stringify(result.rows);
     }
 
+    async insert_order_v2(orderMessage: any[]): Promise<string> {
+        const [err, result]: [any, any] = await to(this.queryWithLog('insert into mist_orders values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)', orderMessage));
+        if (err) {
+            console.error(`insert_order_v2 faied ${err},insert data= ${orderMessage}`);
+            await this.handlePoolError(err);
+        }
+
+        const [err_tmp, result_tmp]: [any, any] = await to(this.queryWithLog('insert into mist_orders_tmp values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)', orderMessage));
+        if (err_tmp) {
+            console.error(`insert_order_v2_tmp faied ${err_tmp},insert data= ${orderMessage}`, result_tmp);
+            await this.handlePoolError(err_tmp);
+        }
+
+        return JSON.stringify(result.rows);
+    }
+
 
     async my_orders(address): Promise<IOrder[]> {
         const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_orders where trader_address=$1 order by updated_at desc limit 30', address));

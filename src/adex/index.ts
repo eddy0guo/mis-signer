@@ -537,8 +537,6 @@ export default () => {
             });
         }
     );
-
-
     /**
      * @api {post} /adex/build_order_v3 build_order_v3
      * @apiDescription Create an exchange order
@@ -702,6 +700,158 @@ export default () => {
             confirmed_amount: 0,
             canceled_amount: 0,
             pending_amount: 0,
+            updated_at: null,
+            created_at: null,
+        };
+
+        const [err, result2] = await to(order.build(message));
+        res.json({
+            success: result2 ? true : false,
+            err,
+        });
+    });
+
+
+
+
+    adex.all('/build_order_v4', async (req, res) => {
+        const {
+            trader_address,
+            market_id,
+            side,
+            price,
+            amount,
+            expire_at,
+            signature,
+            publicKey,
+        } = req.body;
+
+        if (
+            !(
+                trader_address &&
+                market_id &&
+                side &&
+                price &&
+                amount &&
+                expire_at &&
+                signature &&
+                publicKey
+            )
+        ) {
+            return res.json({
+                success: false,
+                err: `Params Error`,
+            });
+        }
+
+        // 直接判断队列长度，如果消费阻塞，返回失败
+        const waitingOrders = await order.queueWaitingCount();
+        if( waitingOrders > OrderQueueConfig.maxWaiting ) {
+            return res.json({
+                success: false,
+                err: 'Match Engine Busy Now:' + waitingOrders,
+            });
+        }
+        const amount2 = Math.round(NP.times(amount, 100000000));
+        const price2 = Math.round(NP.times(price, 100000000));
+
+        const result = utils.verify2(trader_address,amount2,price2,expire_at,market_id,side,signature,publicKey);
+        if (!result) {
+            return res.json({
+                success: false,
+                err: 'verify failed',
+            });
+        }
+        const now = new Date().valueOf();
+        if (now > expire_at) {
+            return res.json({
+                success: false,
+                err: 'The order signature has expired',
+            });
+        }
+        if (!(utils.judge_legal_num(+amount) && utils.judge_legal_num(+price))) {
+            return res.json({
+                success: false,
+                err: 'The precision of quantity and price is only supported up to the fourth decimal point',
+            });
+        }
+
+        // 参考binance下单价格限制在盘口的上下五倍
+        const [last_trade_err, last_trade] = await to(trades.list_trades(market_id));
+        if (last_trade_err || !last_trade) {
+            console.error('[MIST SIGNER]:(trades.list_trades):', last_trade_err, last_trade);
+            return res.json({
+                success: false,
+                err: last_trade_err,
+            });
+        }
+        // init limit 0 ～ 100000
+        let min_limit = 0;
+        let max_limit = 100000;
+        if (last_trade.length !== 0) {
+            max_limit = NP.times(last_trade[0].price, 5);
+            min_limit = NP.divide(last_trade[0].price, 5);
+        }
+
+        if (price < min_limit || price > max_limit) {
+            return res.json({
+                success: false,
+                err: `The price must be between ${min_limit} and ${max_limit}`,
+            });
+        }
+
+        const [base_token, quota_token] = market_id.split('-');
+        if (side === 'buy') {
+            const available_quota = await get_available_erc20_amount(
+                trader_address,
+                quota_token,
+                client,
+                mist_wallet
+            );
+            const quota_amount = NP.times(+amount, +price);
+            if (quota_amount > available_quota) {
+                console.log(`${market_id} base  balance is not enoungh,available amount is ${available_quota},but your want to sell ${amount}`)
+                return res.json({
+                    success: false,
+                    err: `quotation  balance is not enoungh,available amount is ${available_quota},but your order value is ${quota_amount}`,
+                });
+            }
+        } else if (side === 'sell') {
+            const available_base = await get_available_erc20_amount(
+                trader_address,
+                base_token,
+                client,
+                mist_wallet
+            );
+            if (amount > available_base) {
+                console.log(`${market_id} base  balance is not enoungh,available amount is ${available_base},but your want to sell ${amount}`)
+                return res.json({
+                    success: false,
+                    err: `${market_id} base  balance is not enoungh,available amount is ${available_base},but your want to sell ${amount}`,
+                });
+            }
+        } else {
+            return res.json({
+                success: false,
+                err: `side ${side} is not supported`,
+            });
+        }
+        const order_id = utils.get_hash(req.body);
+        const message = {
+            id: order_id,
+            trader_address,
+            market_id,
+            side,
+            price,
+            amount,
+            status: 'pending',
+            type: 'limit',
+            signature,
+            available_amount: amount,
+            confirmed_amount: 0,
+            canceled_amount: 0,
+            pending_amount: 0,
+            expire_at,
             updated_at: null,
             created_at: null,
         };

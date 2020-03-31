@@ -6,10 +6,10 @@ import Exchange from './Exchange';
 import DBClient from '../adex/models/db';
 import Utils from '../adex/api/utils';
 import MistConfig from '../cfg';
-import { Logger } from '../common/Logger';
+import {Logger} from '../common/Logger';
 import LogUnhandled from '../common/LogUnhandled';
 
-import { AsimovWallet } from '@fingo/asimov-wallet';
+import {AsimovWallet} from '@fingo/asimov-wallet';
 
 class Launcher {
     private db: DBClient;
@@ -120,52 +120,8 @@ class Launcher {
             );
             return;
         }
-
-        const trades_hash = [];
-        const [markets_err, markets] = await to(this.db.list_online_markets());
-        if (!markets) {
-            this.logger.log(
-                '[ADEX LAUNCHER]::(list_online_markets):',
-                markets_err,
-                markets
-            );
-            return;
-        }
-        for (const one_trade of tx_trades) {
-            let token_address;
-            for (const j in markets) {
-                if (one_trade.market_id === markets[j].id) {
-                    token_address = markets[j];
-                }
-            }
-            if (!token_address) {
-                this.logger.log('not supported token_address');
-                continue;
-            }
-
-            const base_amount = Math.round(NP.times(+one_trade.amount, 100000000));
-            const quote_amount = Math.round(
-                NP.times(+one_trade.amount, +one_trade.price, 100000000)
-            );
-
-            const trade_info = {
-                trade_hash: one_trade.trade_hash,
-                taker: one_trade.taker,
-                maker: one_trade.maker,
-                base_token_address: token_address.base_token_address,
-                quote_token_address: token_address.quote_token_address,
-                relayer: this.relayer.address,
-                base_token_amount: base_amount,
-                quote_token_amount: quote_amount,
-                r: null,
-                s: null,
-                side: one_trade.taker_side,
-                v: null,
-            };
-            trades_hash.push(trade_info);
-        }
-
-        const [err, txid] = await to(this.mist.matchorder(trades_hash));
+        const processOrders = await this.generateProcessOrders(tx_trades);
+        const [err, txid] = await to(this.mist.matchorder(processOrders));
 
         if (!err) {
             const updatedInfo = [
@@ -209,18 +165,96 @@ class Launcher {
             }
             await this.db.commit();
         } else {
-            const errInfo = ['matched', null, current_time, trades[0].transaction_id];
-            const [errUpdateErr] = await to(this.db.launch_update_trades(errInfo));
             this.logger.log(
-                `[ADEX LAUNCHER] call dex matchorder err=${errUpdateErr}
+                `[ADEX LAUNCHER] call dex matchorder err=${err}
                 transaction_id=${trades[0].transaction_id}
                 relayers=${this.relayer.address}`
             );
+            const errInfo = ['matched', null, current_time, trades[0].transaction_id];
+            const [errUpdateErr,errUpdateRes] = await to(this.db.launch_update_trades(errInfo));
+            if(errUpdateErr) {
+                this.logger.log(`[ADEX LAUNCHER] call dex matchorder err=${errUpdateErr}`);
+            }
         }
         // 500ms的作用：1、为等待pg磁盘写入的时间，2、防止laucher过快，watcher跟不上，因为wathcer的需要链上确认
         return await this.sleep(500);
     }
+
+    async generateProcessOrders(tx_trades) {
+        const processOrders = [];
+        const [markets_err, markets] = await to(this.db.list_online_markets());
+        if (!markets) {
+            this.logger.log(
+                '[ADEX LAUNCHER]::(list_online_markets):',
+                markets_err,
+                markets
+            );
+            return;
+        }
+        for (const oneTrade of tx_trades) {
+            let token_address;
+            for (const j in markets) {
+                if (oneTrade.market_id === markets[j].id) {
+                    token_address = markets[j];
+                }
+            }
+            if (!token_address) {
+                this.logger.log('not supported token_address');
+                continue;
+            }
+
+            const base_amount = Math.round(NP.times(+oneTrade.amount, 100000000));
+            const quote_amount = Math.round(NP.times(+oneTrade.amount, +oneTrade.price, 100000000));
+
+            //    let taker = ["0x66a7bc2e2041d7d15fdfae69bbce9bbbecefc8704c",10,12,time,"ASIM-BTC","sell"]
+            const takerOrder = await this.db.find_order([oneTrade.taker_order_id]);
+            const makerOrder = await this.db.find_order([oneTrade.maker_order_id]);
+            const takerProcessOrder = [
+                takerOrder[0].trader_address,
+                Math.round(NP.times(takerOrder[0].amount, 100000000)),
+                Math.round(NP.times(takerOrder[0].price, 100000000)),
+                +takerOrder[0].expire_at,
+                takerOrder[0].market_id,
+                takerOrder[0].side,
+            ];
+
+            const makerProcessOrder = [
+                makerOrder[0].trader_address,
+                Math.round(NP.times(makerOrder[0].amount, 100000000)),
+                Math.round(NP.times(makerOrder[0].price, 100000000)),
+                +makerOrder[0].expire_at,
+                makerOrder[0].market_id,
+                makerOrder[0].side,
+            ];
+
+
+            const trade_info = [takerProcessOrder,
+                makerProcessOrder,
+                base_amount,
+                quote_amount,
+                Math.round(NP.times(+oneTrade.price, 100000000)),
+                token_address.base_token_address,
+                token_address.quote_token_address,
+                oneTrade.taker_side,
+                takerOrder[0].signature,
+                makerOrder[0].signature
+            ];
+            /*
+                taker: one_trade.taker,
+                maker: one_trade.maker,
+                base_token_address: token_address.base_token_address,
+                quote_token_address: token_address.quote_token_address,
+                expire_at: token_address.quote_token_address,
+                base_token_amount: base_amount,
+                quote_token_amount: quote_amount,
+                side: one_trade.taker_side,
+            */
+            processOrders.push(trade_info);
+        }
+        return processOrders;
+    }
 }
+
 
 LogUnhandled(Launcher.name);
 const launcher = new Launcher();

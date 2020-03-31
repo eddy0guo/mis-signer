@@ -262,9 +262,9 @@ export default mistConfig;
 
 const BullOption: Queue.QueueOptions = {
   redis: {
-      port: Number(process.env.REDIS_PORT),
-      host: process.env.REDIS_URL,
-      password: process.env.REDIS_PWD
+      port: process.env.MIST_MODE === 'k8s' ? Number(process.env.REDIS_PORT):6379,
+      host: process.env.MIST_MODE === 'k8s' ? process.env.REDIS_URL:'119.23.215.121',
+      password: process.env.MIST_MODE === 'k8s' ? process.env.REDIS_PWD:'LPJQoIcvl0'
   }
 };
 

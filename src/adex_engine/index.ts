@@ -282,7 +282,7 @@ class AdexEngine {
 
         const arr_message = this.utils.arr_values(message);
         const [insert_order_err, insert_order_result] = await to(
-            this.db.insert_order(arr_message)
+            this.db.insert_order_v2(arr_message)
         );
         if (!insert_order_result) {
             this.logger.log(
