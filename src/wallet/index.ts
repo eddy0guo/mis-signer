@@ -139,8 +139,8 @@ export default () => {
         const {signature, address, token_name, amount, expire_time} = req.body;
 
         const asset = new Asset(mist_config.asimov_master_rpc);
-        const [balancesErr, balances] = await to(asset.get_asset_balances(mist_wallet, mist_config.bridge_address,token_name));
-        if (amount > balances[0].asim_asset_balance){
+        const [balancesErr, balances] = await to(asset.get_asset_balances(mist_wallet, mist_config.bridge_address, token_name));
+        if (amount > balances[0].asim_asset_balance) {
             console.error(`bridge account  only have ${balances[0].asim_asset_balance} ${token_name}`);
             return res.json({success: false, err: 'The official account have no enough balance'});
         }
@@ -423,17 +423,17 @@ export default () => {
 
     wallet.all(
         '/my_converts_v4', async (req, res) => {
-            const {address, token, page, perpage,start,end,need_total_length} = req.body;
-            let [totalLengthErr,totalLength] = [null,null];
+            const {address, token, page, perpage, start, end, need_total_length} = req.body;
+            let [totalLengthErr, totalLength] = [null, null];
             const startDate = new Date(start);
             const endDate = new Date(end);
 
             const offset = (+page - 1) * +perpage;
             const [err, records] = await to(
-                psql_db.my_bridge_v4([address, offset, perpage,startDate,endDate,token])
+                psql_db.my_bridge_v4([address, offset, perpage, startDate, endDate, token])
             );
-            if(need_total_length === true){
-                [totalLengthErr,totalLength] = await to(psql_db.my_bridge_length_v2([address,startDate,endDate,token]));
+            if (need_total_length === true) {
+                [totalLengthErr, totalLength] = await to(psql_db.my_bridge_length_v2([address, startDate, endDate, token]));
             }
             const result = {records, totalLength};
             res.json({
@@ -528,6 +528,44 @@ export default () => {
             success: true,
             result: conf,
         });
+    });
+
+
+    wallet.all('/erc20_faucet/:address', async (req, res) => {
+        if(process.env.MIST_MODE !== 'k8s') {
+            const token_arr = await mist_wallet.list_mist_tokens();
+            // tslint:disable-next-line:forin
+            let j: number = 0;
+            // tslint:disable-next-line:forin
+            // @ts-ignore
+            // tslint:disable-next-line:forin
+            for (const i: number in token_arr) {
+                // @ts-ignore
+                setTimeout(async () => {
+
+                    // tslint:disable-next-line:no-shadowed-variable
+                    const wallet = new AsimovWallet({
+                        name: 'test',
+                        rpc: mist_config.asimov_child_rpc,
+                        mnemonic: mist_config.bridge_word,
+                    });
+                    const to_amount = 90000000;
+
+                    const [child_err, child_txid] = await to(wallet.contractCall.call(
+                        token_arr[i].address,
+                        'mint(address,uint256)',
+                        [req.params.address, NP.times(to_amount, 100000000)],
+                        AsimovConst.DEFAULT_GAS_LIMIT, 0,
+                        AsimovConst.DEFAULT_ASSET_ID,
+                        AsimovConst.DEFAULT_FEE_AMOUNT,
+                        AsimovConst.DEFAULT_ASSET_ID,
+                        AsimovConst.CONTRACT_TYPE.CALL));
+                    // tslint:disable-next-line:no-unused-expression
+                    console.log('mint %o err=%o,result=%o', token_arr[i].symbol, child_err, child_txid, '\n\n\n\n');
+                }, ++j * 10000);
+            }
+        }
+        res.json({result: '', err: ''});
     });
 
     return wallet;

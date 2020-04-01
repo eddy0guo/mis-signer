@@ -153,7 +153,7 @@ export default class DBClient {
     }
 
     async my_orders_length(info): Promise<number> {
-        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT count(1) FROM mist_orders where trader_address=$1 and status in ($2,$3) and created_at>$4 and created_at<${5}', info));
+        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT count(1) FROM mist_orders where trader_address=$1 and status in ($2,$3) and created_at>$4 and created_at<$5', info));
         if (err) {
             console.error('my_order_length failed', err);
             await this.handlePoolError(err);
