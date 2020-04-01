@@ -83,11 +83,15 @@ const local:IConfig = {
   asimov_child_rpc: 'https://rpc-child.mistabit.com',
 
   mist_server_port: 15000,
-  pg_host: 'pgm-wz9m1yb4h5g4sl7x127770.pg.rds.aliyuncs.com',
-  pg_database: process.env.MIST_MODE,
-  pg_user: 'product',
-  pg_password: 'myHzSesQc7TXSS5HOXZDsgq7SNUHY2',
-  pg_port: 1433,
+  // pg_host: 'pgm-wz9m1yb4h5g4sl7x127770.pg.rds.aliyuncs.com',
+  pg_host: 'localhost',
+  // pg_database: process.env.MIST_MODE,
+  pg_database: 'mydb',
+  // pg_user: 'product',
+  pg_user: 'chunliangyang',
+  // pg_password: 'myHzSesQc7TXSS5HOXZDsgq7SNUHY2',
+  pg_password: '123',
+  pg_port: 5432,
   icon_url: 'http://fingo-cdn.asimov.work/res/icons/',
   ws_port: 13300,
 };
@@ -240,6 +244,7 @@ const CONFIG_K8S:IConfig = {
 };
 
 let mistConfig:IConfig;
+console.log('mist_Moode', process.env.MIST_MODE)
 switch (process.env.MIST_MODE) {
   case 'local':
     mistConfig = local;
@@ -264,6 +269,9 @@ const BullOption: Queue.QueueOptions = {
       port: process.env.MIST_MODE === 'k8s' ? Number(process.env.REDIS_PORT):6379,
       host: process.env.MIST_MODE === 'k8s' ? process.env.REDIS_URL:'119.23.215.121',
       password: process.env.MIST_MODE === 'k8s' ? process.env.REDIS_PWD:'LPJQoIcvl0'
+      // port: Number(process.env.REDIS_PORT || 6379),
+      // host: process.env.REDIS_URL || '127.0.0.1',
+      // password: process.env.REDIS_PWD
   }
 };
 
