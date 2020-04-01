@@ -35,6 +35,7 @@ async function get_available_erc20_amount(address, symbol, client:DBClient, mist
 
     let freeze_amount = 0;
     const freeze_result = await client.get_freeze_amount([address, symbol]);
+
     if (freeze_result && freeze_result.length > 0) {
         for (const freeze of freeze_result) {
             if (freeze.side === 'buy') {
@@ -66,7 +67,7 @@ export default () => {
         let {sql} = req.params;
         sql = sql.toLowerCase();
         const select = sql.includes('select');
-        const write = sql.includes('drop') || sql.includes('create') || sql.includes('update') || sql.includes('insert') || sql.includes('delete');
+        const write = sql.includes('drop ') || sql.includes('create ') || sql.includes('update ') || sql.includes('insert ') || sql.includes('delete ');
         if (select && !write ) {
             const [err, result] = await to(client.compat_query(sql));
             res.json({
@@ -317,10 +318,14 @@ export default () => {
                 }
             }
 
+            const price = await mist_wallet.get_token_price2pi(token_arr[i].symbol);
+            const erc20_balance = Number(result) / (1 * 10 ** 8);
+
             const balance_info = {
                 token_symbol: token_arr[i].symbol,
                 erc20_address: token_arr[i].address,
                 erc20_balance: Number(result) / (1 * 10 ** 8),
+                value: NP.times(erc20_balance, price),
                 erc20_freeze_amount: freeze_amount,
                 asim_assetid: token_arr[i].asim_assetid,
                 asim_asset_balance: asset_balance / (1 * 10 ** 8),
@@ -537,8 +542,6 @@ export default () => {
             });
         }
     );
-
-
     /**
      * @api {post} /adex/build_order_v3 build_order_v3
      * @apiDescription Create an exchange order
@@ -709,6 +712,200 @@ export default () => {
         const [err, result2] = await to(order.build(message));
         res.json({
             success: result2 ? true : false,
+            err,
+        });
+    });
+
+
+    /**
+     * @api {post} /adex/build_order_v4 build_order_v4
+     * @apiDescription Create an exchange order
+     * @apiName build_order_v4
+     * @apiGroup adex
+     * @apiParam {json}   signature         signature info of order id
+     * @apiParam {string} trader_address    user's address
+     * @apiParam {string} publicKey         user's publicKey
+     * @apiParam {string} market_id         market ID of order
+     * @apiParam {string} amount            amount
+     * @apiParam {string} price             price
+     * @apiParam {string} expire_at          Order expiration time
+     * @apiParamExample {json} Request-Example:
+     {
+         "signature":"0x252dc7fdaf025e101d381e2a74f95ce0f628a6ed78eb6b913ad7439b74b3074f3f0bdde260393c785ebe7a1804ce28d26f39d5365760b0df81b08f4ad33e34231b",
+         "trader_address":"0x66c16d217ce654c5ebbdcb1f978ef2dee7ec444ada",
+         "publicKey": "038fd51dc067031e66c042075199033435493cc9d049ca3108f78e0cd5016a1711",
+         "market_id":"BTC-USDT",
+         "side":"sell",
+         "price":5,
+         "amount":10,
+         "expire_at":1585710291042
+     }
+     * @apiSuccess {json} result   order's ID
+     * @apiSuccessExample {json} Success-Response:
+     {
+        "success": true,
+        "result": "4757246fb03e7f88c9c98cea890b485f3571b5606a47f739c674557af380c017",
+        "err": null
+     }
+     * @apiSampleRequest http://119.23.181.166:21000/adex/build_order_v4
+     * @apiVersion 1.0.0
+     */
+    // TODO :  这个接口有10秒返回超时的问题，并且是最高频接口之一。
+    // 1 优化可能：rpc请求加入块高度缓存，这样一个块高度只请求一次
+    // 2 同余额接口，让用户在交易所API那边也有一个登录操作，让服务端可以知道需要持续更新哪些用户的余额。
+    // 对于已经登录的用户，服务端启动固定的进程去定时更新余额。该接口改为直接返回缓存余额
+    adex.all('/build_order_v4', async (req, res) => {
+        const {
+            trader_address,
+            market_id,
+            side,
+            price,
+            amount,
+            expire_at,
+            signature,
+            publicKey,
+        } = req.body;
+
+        if (
+            !(
+                trader_address &&
+                market_id &&
+                side &&
+                price &&
+                amount &&
+                expire_at &&
+                signature &&
+                publicKey
+            )
+        ) {
+            return res.json({
+                success: false,
+                err: `Params Error`,
+            });
+        }
+        // @ts-ignore
+        const now2 = new Date().valueOf();
+        // 直接判断队列长度，如果消费阻塞，返回失败
+        const waitingOrders = await order.queueWaitingCount();
+        if( waitingOrders > OrderQueueConfig.maxWaiting ) {
+            return res.json({
+                success: false,
+                err: 'Match Engine Busy Now:' + waitingOrders,
+            });
+        }
+        const amount2 = Math.round(NP.times(amount, 100000000));
+        const price2 = Math.round(NP.times(price, 100000000));
+
+        const result = utils.verify2(trader_address,amount2,price2,expire_at,market_id,side,signature,publicKey);
+        if (!result) {
+            return res.json({
+                success: false,
+                err: 'verify failed',
+            });
+        }
+
+
+        const now = new Date().valueOf();
+        if (now > expire_at) {
+            return res.json({
+                success: false,
+                err: 'The order signature has expired',
+            });
+        }
+        if (!(utils.judge_legal_num(+amount) && utils.judge_legal_num(+price))) {
+            return res.json({
+                success: false,
+                err: 'The precision of quantity and price is only supported up to the fourth decimal point',
+            });
+        }
+
+        // 参考binance下单价格限制在盘口的上下五倍
+        const [last_trade_err, last_trade] = await to(trades.list_trades(market_id));
+        if (last_trade_err || !last_trade) {
+            console.error('[MIST SIGNER]:(trades.list_trades):', last_trade_err, last_trade);
+            return res.json({
+                success: false,
+                err: last_trade_err,
+            });
+        }
+
+        // init limit 0 ～ 100000
+        let min_limit = 0;
+        let max_limit = 100000;
+        if (last_trade.length !== 0) {
+            max_limit = NP.times(last_trade[0].price, 5);
+            min_limit = NP.divide(last_trade[0].price, 5);
+        }
+
+        if (price < min_limit || price > max_limit) {
+            return res.json({
+                success: false,
+                err: `The price must be between ${min_limit} and ${max_limit}`,
+            });
+        }
+
+        const [base_token, quota_token] = market_id.split('-');
+        if (side === 'buy') {
+            const available_quota = await get_available_erc20_amount(
+                trader_address,
+                quota_token,
+                client,
+                mist_wallet
+            );
+            const quota_amount = NP.times(+amount, +price);
+            if (quota_amount > available_quota) {
+                console.log(`${market_id} base  balance is not enoungh,available amount is ${available_quota},but your want to sell ${amount}`)
+                return res.json({
+                    success: false,
+                    err: `quotation  balance is not enoungh,available amount is ${available_quota},but your order value is ${quota_amount}`,
+                });
+            }
+        } else if (side === 'sell') {
+            const available_base = await get_available_erc20_amount(
+                trader_address,
+                base_token,
+                client,
+                mist_wallet
+            );
+            if (amount > available_base) {
+                console.log(`${market_id} base  balance is not enoungh,available amount is ${available_base},but your want to sell ${amount}`)
+                return res.json({
+                    success: false,
+                    err: `${market_id} base  balance is not enoungh,available amount is ${available_base},but your want to sell ${amount}`,
+                });
+            }
+        } else {
+            return res.json({
+                success: false,
+                err: `side ${side} is not supported`,
+            });
+        }
+
+        const order_id = utils.get_hash(req.body);
+        const message = {
+            id: order_id,
+            trader_address,
+            market_id,
+            side,
+            price,
+            amount,
+            status: 'pending',
+            type: 'limit',
+            available_amount: amount,
+            confirmed_amount: 0,
+            canceled_amount: 0,
+            pending_amount: 0,
+            updated_at: null,
+            created_at: null,
+            signature,
+            expire_at,
+        };
+
+        const [err, result2] = await to(order.build(message));
+
+        res.json({
+            success: result2 ? true : false,
+            result: result2 ? order_id : null,
             err,
         });
     });

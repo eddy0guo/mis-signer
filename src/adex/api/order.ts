@@ -122,7 +122,7 @@ export default class order {
         // @ts-ignore
         let [err,orders] = [null,null];
         if(MarketID) {
-            [err, orders] = await to(this.db.my_orders3([address, offset, perPage, status1, status2,MarketID]));
+            [err, orders] = await to(this.db.my_orders4([address, offset, perPage, status1, status2,MarketID]));
         }
         else{
             [err, orders] = await to(this.db.my_orders2([address, offset, perPage, status1, status2]));

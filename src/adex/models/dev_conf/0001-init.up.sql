@@ -18,6 +18,8 @@ create table mist_markets(
  quote_token_address text ,
  quote_token_symbol text ,
  online  boolean ,
+ up_at  timestamp ,
+ down_at  timestamp ,
  updated_at timestamp ,
  created_at timestamp
 );
@@ -46,6 +48,8 @@ create index idx_mist_trades_taker_order_id  on mist_trades (taker_order_id);
 create index idx_mist_trades_maker_order_id on mist_trades (maker_order_id);
 create index idx_mist_trades_transaction_id on mist_trades (transaction_id);
 create index idx_mist_trades_quotation  on mist_trades (market_id, created_at);
+create index idx_mist_trades_delete on mist_trades (status,created_at);
+
 
 create table mist_trades_tmp(
   id text PRIMARY KEY,
@@ -81,15 +85,26 @@ create table mist_orders(
   amount  numeric(32,8) ,
   status text ,
   type text ,
+  signature text ,
   available_amount  numeric(32,8) ,
   confirmed_amount  numeric(32,8) ,
   canceled_amount  numeric(32,8) ,
   pending_amount  numeric(32,8) ,
-
+  expire_at  bigint,
   updated_at  timestamp,
   created_at  timestamp
 );
-create index idx_mist_orders_myorders on mist_orders (trader_address, status);
+--Update index
+-- create index idx_mist_myorders_v4 on mist_orders (trader_address, market_id,status,side,updated_at);
+-- create index idx_mist_side on mist_orders (side);
+-- create index idx_mist_market on mist_orders (market);
+-- create index idx_mist_myorders_v5 on mist_orders (trader_address,market_id,status,side);
+-- create index idx_mist_myorders_updated_at on mist_orders (updated_at);
+create index idx_mist_myorders_status on mist_orders (status);
+create index idx_mist_myorders_v1 on mist_orders (trader_address, market_id,side,created_at);
+create index idx_mist_myorders_v2 on mist_orders (trader_address, market_id,created_at);
+create index idx_mist_myorders_v3 on mist_orders (trader_address,side,created_at);
+
 
 create table mist_orders_tmp(
   id text  primary key,
@@ -100,18 +115,19 @@ create table mist_orders_tmp(
   amount  numeric(32,8) ,
   status text ,
   type text ,
+  signature text ,
   available_amount  numeric(32,8) ,
   confirmed_amount  numeric(32,8) ,
   canceled_amount  numeric(32,8) ,
   pending_amount  numeric(32,8) ,
-
+  expire_at  bigint,
   updated_at  timestamp,
   created_at  timestamp
 );
 
-create index  idx_mist_trades_tmp_matche on mist_orders_tmp (market_id, side, price, available_amount);
-create index  idx_mist_trades_tmp_orderbook on mist_orders_tmp (market_id, available_amount, side);
-create index  idx_mist_trades_tmp_address on mist_orders_tmp (trader_address);
+create index  idx_mist_orders_tmp_matche on mist_orders_tmp (market_id, side, price, available_amount);
+create index  idx_mist_orders_tmp_orderbook on mist_orders_tmp (market_id, available_amount, side);
+create index  idx_mist_orders_tmp_address on mist_orders_tmp (trader_address,status);
 
 -- transactions table
 create table mist_transactions(
@@ -123,57 +139,9 @@ create table mist_transactions(
   updated_at  timestamp,
   created_at timestamp
 );
-create unique index idx_mist_transactions_transaction_hash on mist_transactions (transaction_hash);
-
--- launch_logs table
-create table mist_launch_logs(
-  id SERIAL PRIMARY KEY,
-  status text ,
-  transaction_hash text,
-  block_number integer,
-  t_from text ,
-  t_to text ,
-  value numeric(32,8),
-  updated_at  timestamp,
-  created_at  timestamp
-);
-create index idx_mist_created_at on mist_launch_logs (created_at);
-create unique index idx_mist_launch_logs_transaction_hash on mist_launch_logs (transaction_hash);
-
-create table mist_users(
-  address text  PRIMARY KEY,
-  PI numeric(32,8) default 0,
-  ASIM numeric(32,8) default 0,  
-  USDT numeric(32,8) default 0,    
-  ETH numeric(32,8) default 0,     
-  MT numeric(32,8) default 0,    
-  BTC numeric(32,8) default 0,
-  PI_valuation numeric(32,8) default 0,
-  ASIM_valuation numeric(32,8) default 0,  
-  USDT_valuation numeric(32,8) default 0,    
-  ETH_valuation numeric(32,8) default 0,     
-  MT_valuation numeric(32,8) default 0,    
-  BTC_valuation numeric(32,8) default 0,
-  total_value_1day numeric(32,8) default 0,
-  total_value_2day numeric(32,8) default 0,
-  total_value_3day numeric(32,8) default 0,
-  total_value_4day numeric(32,8) default 0,
-  total_value_5day numeric(32,8) default 0,
-  total_value_6day numeric(32,8) default 0,
-  total_value_7day numeric(32,8) default 0,
-  updated_at  timestamp default now(),
-  created_at  timestamp default now()
-);
-
-create table asim_assets_info(
-  asset_name text PRIMARY KEY,
-  asset_id text default '',
-  contract_address text default '',
-  total text default '',
-  yesterday_total text default '',
-  updated_at  timestamp default now(),
-  created_at  timestamp default now()
-);
+--Update index
+-- create unique index idx_mist_transactions_pendingTX on mist_transactions (created_at,status,transaction_hash,id);
+create unique index idx_mist_transactions_pendingtx2 on mist_transactions (created_at, status, transaction_hash);
 
 
 create table mist_bridge(
@@ -181,17 +149,46 @@ create table mist_bridge(
   address  text default '',
   token_name text default '',
   amount numeric(32,8) default 0,
-  side  text default '', --asset2coin,coin2asset
+  side  text default '', 
   master_txid text default '',
   master_txid_status text default '',
   child_txid  text default '',
   child_txid_status  text default '',
-  fee_asset  text default '', ---提现和充值的时候在master侧扣钱
+  fee_asset  text default '', 
   fee_amount  text default '',
   updated_at  timestamp default now(),
   created_at  timestamp default now()
 );
 
+create index idx_mist_bridge_pending_decode on mist_bridge (address,master_txid_status,created_at);
+create index idx_mist_bridge_my_bridge on mist_bridge (address,created_at);
+create index idx_mist_bridge_pending_trade on mist_bridge (side,master_txid_status,child_txid_status,created_at);
+
+create index idx_mist_bridge_statistical on mist_bridge (side,token_name);
 
 
 
+
+create table mist_market_quotation_tmp(
+  market_id text PRIMARY KEY,
+  price  numeric(32,8) default 0,
+  ratio  numeric(32,8) default 0,
+  volume numeric(32,8) default 0,
+  CNYC_price numeric(32,8) default 0,
+  maxprice numeric(32,8) default 0,
+  minprice numeric(32,8) default 0,
+  min_CNYC_price numeric(32,8) default 0,
+  max_CNYC_price numeric(32,8) default 0,
+  symbol  text default '',
+  updated_at  timestamp default now(),
+  created_at  timestamp default now()
+);
+
+create table mist_order_book_tmp(
+  market_id text default 0,
+  precision  int default 0,
+  order_book text default '',
+  updated_at  timestamp default now(),
+  created_at  timestamp default now()
+);
+create index idx_mist_order_book_tmp_market_book on mist_order_book_tmp (market_id,precision);

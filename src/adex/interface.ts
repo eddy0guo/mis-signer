@@ -8,10 +8,12 @@ interface IOrder {
     amount: number;
     status: string;
     type: string;
+    signature: string;
     available_amount: number;
     confirmed_amount: number;
     canceled_amount: number;
     pending_amount: number;
+    expire_at: number;
     updated_at: string;
     created_at: string;
     // ？非数据库的后加字段？

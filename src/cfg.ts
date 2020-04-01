@@ -93,7 +93,7 @@ const local:IConfig = {
 };
 
 const dev:IConfig = {
-  ex_address: '0x630329112990e5246f67ae0de752225d56e33e3121',
+  ex_address: '0x630122b8d818203e407eaf9ba59668934b73198f4c',
   mist_earnings_address:'0x634b2ee429ce7dd2d1540dfd8ee5475b5a144ce71a',
   order_hash_word:
     'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
@@ -136,9 +136,9 @@ const dev:IConfig = {
   express_address: '0x66d0594c76342ec891017d0639792ffc7872b4df81',
 
   wallet_default_passwd: '111111',
-  asimov_chain_rpc: 'https://rpc-fin.fingo.com',
-  asimov_master_rpc: 'https://rpc-fin.fingo.com',
-  asimov_child_rpc: 'https://rpc-mt.fingo.com',
+  asimov_chain_rpc: 'https://rpc.fin.fingo.dev',
+  asimov_master_rpc: 'https://rpc.fin.fingo.dev',
+  asimov_child_rpc: 'https://rpc.mt.fingo.dev',
   mist_server_port: 16000,
   pg_host: 'pgm-wz9m1yb4h5g4sl7x127770.pg.rds.aliyuncs.com',
   pg_database: process.env.MIST_MODE,
@@ -150,13 +150,12 @@ const dev:IConfig = {
 };
 
 const product:IConfig = {
-    ex_address:'0x630329112990e5246f67ae0de752225d56e33e3121',
+    ex_address:'0x630122b8d818203e407eaf9ba59668934b73198f4c',
     mist_earnings_address:'0x669952fb5d185d36b168b9f6c3bbeade4ad6510aee',
     order_hash_word:'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
     fauct_address:'0x666234b6348c10fed282b95c1f1768aa3113eb96b2',
     fauct_word:'tag pear master thank vehicle gap medal eyebrow asthma paddle kiss cook',
     fauct_prikey:'0x47c98c143179d48664dfc2f029a8583cb6a394a94037e06f0658dcf18ed6c66a',
-
     relayers:[
         {
             prikey:'0x1f06c8b003fa13b3ae74dd8e2320468da652ed40899d8b4eec4279de75bf6030',
@@ -178,9 +177,9 @@ const product:IConfig = {
     express_address:'0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c',
 
     wallet_default_passwd:'111111',
-    asimov_chain_rpc:'https://rpc-fin.fingo.com',
-    asimov_master_rpc:'https://rpc-fin.fingo.com',
-    asimov_child_rpc:'https://rpc-mt.fingo.com',
+    asimov_chain_rpc: 'https://rpc.fin.fingo.dev',
+    asimov_master_rpc: 'https://rpc.fin.fingo.dev',
+    asimov_child_rpc: 'https://rpc.mt.fingo.dev',
     mist_server_port:21000,
     pg_host: 'pgm-wz9m1yb4h5g4sl7x127770.pg.rds.aliyuncs.com',
     pg_database: process.env.MIST_MODE,
@@ -262,9 +261,9 @@ export default mistConfig;
 
 const BullOption: Queue.QueueOptions = {
   redis: {
-      port: Number(process.env.REDIS_PORT),
-      host: process.env.REDIS_URL,
-      password: process.env.REDIS_PWD
+      port: process.env.MIST_MODE === 'k8s' ? Number(process.env.REDIS_PORT):6379,
+      host: process.env.MIST_MODE === 'k8s' ? process.env.REDIS_URL:'119.23.215.121',
+      password: process.env.MIST_MODE === 'k8s' ? process.env.REDIS_PWD:'LPJQoIcvl0'
   }
 };
 
