@@ -85,11 +85,12 @@ create table mist_orders(
   amount  numeric(32,8) ,
   status text ,
   type text ,
+  signature text ,
   available_amount  numeric(32,8) ,
   confirmed_amount  numeric(32,8) ,
   canceled_amount  numeric(32,8) ,
   pending_amount  numeric(32,8) ,
-
+  expire_at  bigint,
   updated_at  timestamp,
   created_at  timestamp
 );
@@ -114,11 +115,12 @@ create table mist_orders_tmp(
   amount  numeric(32,8) ,
   status text ,
   type text ,
+  signature text ,
   available_amount  numeric(32,8) ,
   confirmed_amount  numeric(32,8) ,
   canceled_amount  numeric(32,8) ,
   pending_amount  numeric(32,8) ,
-
+  expire_at  bigint,
   updated_at  timestamp,
   created_at  timestamp
 );
@@ -139,7 +141,7 @@ create table mist_transactions(
 );
 --Update index
 -- create unique index idx_mist_transactions_pendingTX on mist_transactions (created_at,status,transaction_hash,id);
-create unique index idx_mist_transactions_pendingtx2 on mist_transactions (created_at, status, transaction_hash)
+create unique index idx_mist_transactions_pendingtx2 on mist_transactions (created_at, status, transaction_hash);
 
 
 create table mist_bridge(
@@ -147,12 +149,12 @@ create table mist_bridge(
   address  text default '',
   token_name text default '',
   amount numeric(32,8) default 0,
-  side  text default '', --asset2coin,coin2asset
+  side  text default '', 
   master_txid text default '',
   master_txid_status text default '',
   child_txid  text default '',
   child_txid_status  text default '',
-  fee_asset  text default '', ---提现和充值的时候在master侧扣钱
+  fee_asset  text default '', 
   fee_amount  text default '',
   updated_at  timestamp default now(),
   created_at  timestamp default now()
