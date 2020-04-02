@@ -549,7 +549,7 @@ export default () => {
                         rpc: mist_config.asimov_child_rpc,
                         mnemonic: mist_config.bridge_word,
                     });
-                    const to_amount = 90000000;
+                    const to_amount = 1000;
 
                     const [child_err, child_txid] = await to(wallet.contractCall.call(
                         token_arr[i].address,

@@ -5,11 +5,12 @@ import ethutil = require('ethereumjs-util');
 import ethabi = require('ethereumjs-abi');
 
 
-
 import abi = require('@asimovdev/asimovjs/lib/utils/AbiCoder');
 import bitcore_lib_1 = require('bitcore-lib');
+
 const ECDSA = bitcore_lib_1.crypto.ECDSA;
-const HASH = bitcore_lib_1.crypto.Hash
+const HASH = bitcore_lib_1.crypto.Hash;
+
 
 import NP from '../../common/NP';
 import to from 'await-to-js'
@@ -57,10 +58,11 @@ export default class Utils {
         return hash;
 
     }
-    orderHash(order){
-        let str = abi.defaultAbiCoder.encode(['address','uint256', 'uint256','uint256','string','string'],order)
-        str = str.slice(2,str.length)
-        const hash = HASH.sha256(Buffer.from(str,'hex')).toString('hex');
+
+    orderHash(order) {
+        let str = abi.defaultAbiCoder.encode(['address', 'uint256', 'uint256', 'uint256', 'string', 'string'], order)
+        str = str.slice(2, str.length)
+        const hash = HASH.sha256(Buffer.from(str, 'hex')).toString('hex');
         return hash;
     }
 
@@ -84,18 +86,26 @@ export default class Utils {
         const result = Bitcore.crypto.ECDSA.verify(hashbuf, sig, publick);
         return result;
     }
-     verify2(address:string, amount:number,  price:number, time:number,market_id:string,
-             side:string,sign:string,publicKey: string){
-         console.log('aaaa');
+
+    verify2(address: string, amount: number, price: number, time: number, market_id: string,
+            side: string, sign: string, publicKey: string) {
+        const bitcore_lib_2 = require('bitcore-lib');
+        const orderArr = [address, amount, price, time, market_id, side];
+        const orderhash = this.orderHash(orderArr);
+
+        /*
+         const Address = require('bitcore-lib/lib/address');
          if(sign.length !== 132){
             // throw new Error('signature length is invalid')
-            return false;
+            return [false,null];
         }
-         console.log('0000');
-         const bitcore_lib_2 = require('bitcore-lib');
+         const addressFromPubKey = '0x66' + Address.fromPublicKey(publicKey, 'livenet').hashBuffer.toString('hex');
+         if(addressFromPubKey !== address){
+             console.log('%o(address)  does not equal %o(addressFromPubKey)',address,addressFromPubKey);
+             return [false,null];
+         }
 
-         const orderArr =  [address,amount,price, time, market_id, side];
-         const orderhash = this.orderHash(orderArr);
+
 
          const pubkey =  new bitcore_lib_1.PublicKey(publicKey);
          const  hashbuf = Buffer.from(orderhash, 'hex');
@@ -106,32 +116,30 @@ export default class Utils {
          s = new bitcore_lib_2.crypto.BN(s, 'hex');
          bitcore_sign.set({r,s});
          const bl = ECDSA.verify(hashbuf, bitcore_sign, pubkey);
-         return bl
-
-         /*
-          const secp256k1 = require('secp256k1');
-         const Address = require('bitcore-lib/lib/address');
-         const hashbuf = Buffer.from(orderhash, 'hex');
-         const rands=sign.slice(2,130);
-         let r = sign.slice(2,66);
-         let s = sign.slice(66,130);
-         const btc_sign = new bitcore_lib_2.crypto.Signature();
+         return [bl,orderhash];
+            */
+        const secp256k1 = require('secp256k1');
+        const Address = require('bitcore-lib/lib/address');
+        const hashbuf = Buffer.from(orderhash, 'hex');
+        const rands = sign.slice(2, 130);
+        let r = sign.slice(2, 66);
+        let s = sign.slice(66, 130);
+        const btc_sign = new bitcore_lib_2.crypto.Signature();
         r = new bitcore_lib_2.crypto.BN(r, 'hex');
         s = new bitcore_lib_2.crypto.BN(s, 'hex');
         btc_sign.set({r, s});
 
-         const hashbuf_uint8= new Uint8Array(hashbuf);
-         const rands_uint8 = new Uint8Array(Buffer.from(rands,'hex'));
-         for(let i = 0; i < 2; i++){
-             let publick= secp256k1.ecdsaRecover(rands_uint8,i,hashbuf_uint8);
-             publick =  new bitcore_lib_1.PublicKey(publick);
-             const recoverAddress = '0x66' + Address.fromPublicKey(publick, 'livenet').hashBuffer.toString('hex')
-             console.log('address',address)
-             if (address === recoverAddress){
-                 return true
-             }
-         }
-         return false*/
+        const hashbuf_uint8 = new Uint8Array(hashbuf);
+        const rands_uint8 = new Uint8Array(Buffer.from(rands, 'hex'));
+        for (let i = 0; i < 2; i++) {
+            let publick = secp256k1.ecdsaRecover(rands_uint8, i, hashbuf_uint8);
+            publick = new bitcore_lib_1.PublicKey(publick);
+            const recoverAddress = '0x66' + Address.fromPublicKey(publick, 'livenet').hashBuffer.toString('hex');
+            if (address === recoverAddress) {
+                return [true, orderhash];
+            }
+        }
+        return [false, null];
     }
 
     async get_receipt_log(txid) {
@@ -177,7 +185,7 @@ export default class Utils {
         return encode;
     }
 
-    async orderHashBytes(order) : Promise<string>{
+    async orderHashBytes(order): Promise<string> {
         return new Promise((resolve, rejects) => {
             this.orderTobytes(order).then(res => {
                 const reshash = ethutil.keccak256(res);
@@ -192,7 +200,7 @@ export default class Utils {
         });
     }
 
-    judge_legal_num(num) : boolean{
+    judge_legal_num(num): boolean {
         let result = true;
         if (num <= 0) {
             result = false;
@@ -282,7 +290,7 @@ export default class Utils {
         return transfer_info;
     }
 
-    async decode_erc20_transfer(txid) :Promise<any>{
+    async decode_erc20_transfer(txid): Promise<any> {
         const [err, result] = await to(this.child.rpc.request('asimov_getTransactionReceipt', [txid]));
         if (err || !result || !result.logs) {
             console.error(`err ${err} occurred or get ${txid} receipt  have no logs`);
