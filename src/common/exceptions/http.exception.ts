@@ -45,6 +45,9 @@ export class HttpException extends Error {
    * @param response string or object describing the error condition.
    * @param status HTTP response status code.
    */
+
+  message: any;
+
   constructor(
     private readonly response: string | Record<string, any>,
     private readonly status: number,
