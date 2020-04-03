@@ -326,6 +326,17 @@ export default class DBClient {
 
     }
 
+    async listAvailableOrders(): Promise<IOrder[]> {
+        const [err, result]: [any, any] = await to(this.queryWithLog('select * from mist_orders_tmp where available_amount>0 limit 1000'));
+        if (err) {
+            console.error('listAvailableOrders failed', err);
+            await this.handlePoolError(err);
+        }
+        // 返回结果可能是空数组[]，使用时注意判断长度
+        return result.rows;
+
+    }
+
     async filter_orders(filter): Promise<IOrder[]> {
 
         let err: any;

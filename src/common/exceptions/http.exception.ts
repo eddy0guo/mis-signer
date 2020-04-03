@@ -11,6 +11,7 @@ import { isObject, isString } from "util";
 
 
 
+
 export class HttpException extends Error {
   /**
    * Instantiate a plain HTTP Exception.

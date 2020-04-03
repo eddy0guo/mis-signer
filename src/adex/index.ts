@@ -498,7 +498,7 @@ export default () => {
     });
 
     /**
-     * @api {post} /adex/get_order_id_v2/:trader_address/:marketID/:side/:price/:amount get_order_id_v2
+     * @api {post} /adex/get_order_id_v2/:trader_address/:marketID/:side/:price/:amount get_order_id_v2(Obsolete）
      * @apiDescription Get the order ID
      * @apiName get_order_id_v2
      * @apiGroup adex
@@ -542,8 +542,53 @@ export default () => {
             });
         }
     );
+
+
+
+
     /**
-     * @api {post} /adex/build_order_v3 build_order_v3
+     * @api {post} /adex/get_order_id_v3/:trader_address/:marketID/:side/:price/:amount get_order_id_v3
+     * @apiDescription Get the order ID
+     * @apiName get_order_id_v3
+     * @apiGroup adex
+     * @apiParam {string}   trader_address         user's address
+     * @apiParam {string}   marketID         market ID of order
+     * @apiParam {string}   side         side of order (sell or buy)
+     * @apiParam {string}   price         price of order
+     * @apiParam {string}   amount         amount of order
+     * @apiSuccess {json}   result     orderID and expire_at
+     * @apiSuccessExample {json} Success-Response:
+     {
+        "success": true,
+        "result": {
+            "orderID": "8d79b581d57fbeec0680e550fe2622cc0e29ed17c402c74f6fe8195bc6169367",
+            "expire_at": 1585810263462
+        }
+    }
+     * @apiSampleRequest http://119.23.181.166:21000/adex/get_order_id_v3/0x66b1aded6908f6f3b77379703d16f3dbb55e88bf73/ASIM-CNYC/buy/30/100
+     * @apiVersion 1.0.0
+     */
+
+    adex.all('/get_order_id_v3/:trader_address/:marketID/:side/:price/:amount', async (req, res) => {
+            const {trader_address, marketID, side} = req.params;
+            const time = new Date().valueOf();
+            const expire_at = time + 50 * 60 * 1000;
+            const amount = Math.round(NP.times(+req.params.amount, 100000000));
+            const price = Math.round(NP.times(+req.params.price, 100000000));
+            const orderArr =  [trader_address,amount,price, expire_at, marketID, side];
+            const orderID = utils.orderHash(orderArr);
+            const result = {
+                orderID,
+                expire_at
+            };
+            res.json({
+                success: true,
+                result,
+            });
+        }
+    );
+    /**
+     * @api {post} /adex/build_order_v3 build_order_v3(Obsolete）
      * @apiDescription Create an exchange order
      * @apiName build_order_v3
      * @apiGroup adex
@@ -722,13 +767,13 @@ export default () => {
      * @apiDescription Create an exchange order
      * @apiName build_order_v4
      * @apiGroup adex
-     * @apiParam {json}   signature         signature info of order id
+     * @apiParam {string}   signature         signature info of order id
      * @apiParam {string} trader_address    user's address
      * @apiParam {string} publicKey         user's publicKey
      * @apiParam {string} market_id         market ID of order
-     * @apiParam {string} amount            amount
-     * @apiParam {string} price             price
-     * @apiParam {string} expire_at          Order expiration time
+     * @apiParam {number} amount            amount
+     * @apiParam {number} price             price
+     * @apiParam {number} expire_at          Order expiration time from get_order_id_v3
      * @apiParamExample {json} Request-Example:
      {
          "signature":"0x252dc7fdaf025e101d381e2a74f95ce0f628a6ed78eb6b913ad7439b74b3074f3f0bdde260393c785ebe7a1804ce28d26f39d5365760b0df81b08f4ad33e34231b",
@@ -796,8 +841,8 @@ export default () => {
         const amount2 = Math.round(NP.times(amount, 100000000));
         const price2 = Math.round(NP.times(price, 100000000));
 
-        const result = utils.verify2(trader_address,amount2,price2,expire_at,market_id,side,signature,publicKey);
-        if (!result) {
+        const [verifySuccess,orderID] = utils.verify2(trader_address,amount2,price2,expire_at,market_id,side,signature,publicKey);
+        if (!verifySuccess) {
             return res.json({
                 success: false,
                 err: 'verify failed',
@@ -881,9 +926,9 @@ export default () => {
             });
         }
 
-        const order_id = utils.get_hash(req.body);
+        // const order_id = utils.get_hash(req.body);
         const message = {
-            id: order_id,
+            id: orderID,
             trader_address,
             market_id,
             side,
@@ -905,7 +950,7 @@ export default () => {
 
         res.json({
             success: result2 ? true : false,
-            result: result2 ? order_id : null,
+            result: result2 ? orderID : null,
             err,
         });
     });

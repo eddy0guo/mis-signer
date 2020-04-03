@@ -253,5 +253,37 @@ export default () => {
         });
     });
 
+    admin.all('/cancel_all_orders', async (req, res) => {
+        while(true) {
+            // cancle 1000 order every time
+            const orders = await db.listAvailableOrders();
+            // tslint:disable-next-line:no-shadowed-variable
+            for (const oneOrder of orders) {
+                const message = {
+                    amount: oneOrder.available_amount,
+                    price: oneOrder.price,
+                    side: oneOrder.side,
+                    market_id: oneOrder.market_id,
+                    id: oneOrder.id,
+                };
+                const [err, result] = await to(order.cancle_order(message));
+                if (err) {
+                    console.log('cancel_all_orders error',err);
+                    return res.json({
+                        success: false ,
+                        err,
+                    });
+                }
+            }
+            if(orders.length < 1000){
+                break;
+            }
+        }
+        return res.json({
+            success: true ,
+            err: null,
+        });
+    });
+
     return admin;
 };
