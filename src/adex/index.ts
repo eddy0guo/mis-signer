@@ -771,9 +771,9 @@ export default () => {
      * @apiParam {string} trader_address    user's address
      * @apiParam {string} publicKey         user's publicKey
      * @apiParam {string} market_id         market ID of order
-     * @apiParam {string} amount            amount
-     * @apiParam {string} price             price
-     * @apiParam {string} expire_at          Order expiration time from get_order_id_v3
+     * @apiParam {number} amount            amount
+     * @apiParam {number} price             price
+     * @apiParam {number} expire_at          Order expiration time from get_order_id_v3
      * @apiParamExample {json} Request-Example:
      {
          "signature":"0x252dc7fdaf025e101d381e2a74f95ce0f628a6ed78eb6b913ad7439b74b3074f3f0bdde260393c785ebe7a1804ce28d26f39d5365760b0df81b08f4ad33e34231b",
