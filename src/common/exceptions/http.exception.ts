@@ -7,8 +7,15 @@
  * @publicApi
  */
 
-import { isObject, isString } from "util";
+// import { isObject, isString } from "util";
 
+function isString(str) {
+  return typeof str === 'string'
+}
+
+function isObject(obj) {
+  return typeof obj === 'object'
+}
 
 
 
