@@ -10,6 +10,7 @@ import express_exchange from './express';
 import mist_config from './cfg';
 import {responseTime} from './middleware/ResponseTime';
 import {customHeader} from './middleware/CustomHeader';
+import { ErrorHandle } from './middleware/ErrorHandle'
 
 const app = express();
 
@@ -28,6 +29,9 @@ app.use('/wallet', wallet());
 app.use('/adex', adex());
 app.use('/express', express_exchange());
 app.use('/admin', admin());
+
+// 处理异常捕获, 需要在路由设置后设置有效
+app.use(ErrorHandle)
 
 const serverPort = process.env.PORT || mist_config.mist_server_port;
 app.listen(serverPort, () => {
