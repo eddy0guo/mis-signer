@@ -52,6 +52,7 @@
     "ethereumjs-abi": "^0.6.8",
     "ethereumjs-util": "^6.1.0",
     "express": "^4.13.3",
+    "express-async-errors": "^3.1.1",
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.24.0",
     "mongoose": "^5.7.3",
