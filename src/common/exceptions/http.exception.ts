@@ -79,6 +79,10 @@ export class HttpException extends Error {
     return this.status;
   }
 
+  public getMessage(): string {
+    return this.message
+  }
+
   public static createBody(
     objectOrError: object | string,
     message?: string,
