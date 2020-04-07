@@ -3,6 +3,8 @@ import Config, {BullOption} from '../../cfg'
 import NP from 'number-precision/src/index';
 import * as  redis from 'redis';
 import { promisify } from 'util';
+import to from 'await-to-js';
+
 
 
 export default class Token {
@@ -31,18 +33,6 @@ export default class Token {
       this.redisClient.auth(BullOption.redis.password);
     }
   }
-  text = async(key)=>{
-    const doc = await new Promise( (resolve) => {
-      this.redisClient.hget(this.address,key,(err, res) =>{
-        return resolve(res);
-      });
-    });
-    return JSON.parse(doc as string);
-  };
-  hget = async(key)=>{
-    return await this.text(key);
-  };
-
   /**
    * return balance of address
    * @param {*} address
@@ -57,7 +47,12 @@ export default class Token {
   }
   async localBalanceOf(symbol:string) {
     const hgetAsync = promisify(this.redisClient.hget).bind(this.redisClient);
-    return await hgetAsync(this.address, symbol);
+    const [balanceErr,balanceRes] = await to(hgetAsync(this.address, symbol));
+    if(balanceErr || balanceRes === null){
+      console.error('localBalanceOf ',balanceErr);
+      return 0;
+    }
+    return balanceRes;
   }
   async batchquery(address:string[], network_flag:string = 'master_poa') {
     const wallet: AsimovWallet = (network_flag === 'master_poa') ? this.master : this.child;

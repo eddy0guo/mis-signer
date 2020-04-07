@@ -12,6 +12,7 @@ import LogUnhandled from '../common/LogUnhandled';
 import {AsimovWallet} from '@fingo/asimov-wallet';
 import {ITrade} from '../../dist/adex/interface';
 import * as redis from 'redis';
+import { promisify } from 'util';
 
 class Launcher {
     private db: DBClient;
@@ -124,36 +125,37 @@ class Launcher {
     }
     // 按照合约逻辑进行本地账本更新
     async updateLocalBook(tx_trades: ITrade[]) {
+        const hgetAsync = promisify(this.redisClient.hget).bind(this.redisClient);
         console.log('update local book on redis');
         for (const trade of tx_trades) {
             const {taker_side,price,amount,taker,maker} = trade;
             const [baseToken, quoteToken] = trade.market_id.split('-');
             if (taker_side === 'buy'){
-                this.redisClient.hget(taker, baseToken, async (err, value) => {
-                    await this.redisClient.HMSET(taker, baseToken, NP.plus(value, NP.times(amount,0.995)));
-                });
-                this.redisClient.hget(taker, quoteToken, async (err, value) => {
-                    await this.redisClient.HMSET(taker, quoteToken, NP.minus(value, NP.times(amount,price)));
-                });
-                this.redisClient.hget(maker, baseToken, async (err, value) => {
-                    await this.redisClient.HMSET(maker, baseToken, NP.minus(value, amount));
-                });
-                this.redisClient.hget(maker, quoteToken, async (err, value) => {
-                    await this.redisClient.HMSET(maker, quoteToken, NP.plus(value, NP.times(amount,price,0.995)));
-                });
+                // @ts-ignore
+                const [takerBaseErr,takerBaseRes] = await to(hgetAsync(taker, baseToken));
+                await this.redisClient.HMSET(taker, baseToken, NP.plus(takerBaseRes, NP.times(amount,0.995)));
+                //
+                const [takeQuoteErr,takerQuoteRes] = await to(hgetAsync(taker, quoteToken));
+                await this.redisClient.HMSET(taker, quoteToken, NP.minus(takerQuoteRes, NP.times(amount,price)));
+                //
+                const [makerBaseErr,makerBaseRes] = await to(hgetAsync(maker, baseToken));
+                await this.redisClient.HMSET(maker, baseToken, NP.minus(makerBaseRes, amount));
+                //
+                const [makerQuoteErr,makerQuoteRes] = await to(hgetAsync(maker, quoteToken));
+                await this.redisClient.HMSET(maker, quoteToken, NP.plus(makerQuoteRes, NP.times(amount,price,0.995)));
             }else if (taker_side === 'sell'){
-                this.redisClient.hget(taker, baseToken, async (err, value) => {
-                    await this.redisClient.HMSET(taker, baseToken, NP.minus(value,amount));
-                });
-                this.redisClient.hget(taker, quoteToken, async (err, value) => {
-                    await this.redisClient.HMSET(taker, quoteToken, NP.plus(value,NP.times(amount,price,0.995)));
-                });
-                this.redisClient.hget(maker, quoteToken, async (err, value) => {
-                    await this.redisClient.HMSET(maker, quoteToken, NP.minus(value, NP.times(amount,price)));
-                });
-                this.redisClient.hget(maker, baseToken, async (err, value) => {
-                    await this.redisClient.HMSET(maker, baseToken, NP.plus(value, NP.times(amount,0.995)));
-                });
+                // @ts-ignore
+                const [takerBaseErr,takerBaseRes] = await to(hgetAsync(taker, baseToken));
+                await this.redisClient.HMSET(taker, baseToken, NP.minus(takerBaseRes,amount));
+
+                const [takeQuoteErr,takerQuoteRes] = await to(hgetAsync(taker, quoteToken));
+                await this.redisClient.HMSET(taker, quoteToken, NP.plus(takerQuoteRes,NP.times(amount,price,0.995)));
+
+                const [makerQuoteErr,makerQuoteRes] = await to(hgetAsync(taker, quoteToken));
+                await this.redisClient.HMSET(maker, quoteToken, NP.minus(makerQuoteRes, NP.times(amount,price)));
+
+                const [makerBaseErr,makerBaseRes] = await to(hgetAsync(maker, baseToken));
+                await this.redisClient.HMSET(maker, baseToken, NP.plus(makerBaseRes, NP.times(amount,0.995)));
             }
             else{
                 console.error('[ADEX_LAUNCHER]:updateLocalBook unknown side',taker_side);

@@ -31,7 +31,7 @@ import add = Networks.add;
 async function get_available_erc20_amount(address, symbol, client:DBClient, mist_wallet) {
     // fixme:此处本地账本传用户地址链上账本用合约地址，容易歧义
     const token = new Token(address);
-    const [err, balance] = await token.localBalanceOf(symbol);
+    const [err, balance] = await to(token.localBalanceOf(symbol));
     // const [err, res] = await to(token.balanceOf(address,'child_poa'));
     if (err) console.error(err);
     let freeze_amount = 0;
@@ -48,7 +48,6 @@ async function get_available_erc20_amount(address, symbol, client:DBClient, mist
             }
         }
     }
-
     return NP.minus(balance, freeze_amount);
 }
 

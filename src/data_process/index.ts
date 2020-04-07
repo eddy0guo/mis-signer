@@ -61,6 +61,7 @@ class ProcessData {
         addressArr.push('0x66b6bd24a0f97499c61b0520d2c21b6fd332f41206');
         addressArr.push('0x66757d1d284fdbe795b8ec9c77071bd49776385371');
         addressArr.push('0x660b26beb33778dbece8148bf32e83373dd1fee80e');
+        addressArr.push('0x662fa3b6eabb4a6fa6015bc769f47035d91695f973');
         console.log('start refreshCoinBook');
         const tokens = await this.mist_wallet.list_mist_tokens();
         for (const token of tokens) {
