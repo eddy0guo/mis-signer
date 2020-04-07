@@ -3,3 +3,4 @@ dist
 k8s.env
 build
 .vscode
+yarn.lock
