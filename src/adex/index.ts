@@ -20,6 +20,8 @@ import Asset from '../wallet/contract/Asset';
 import {IOrder as IOrder} from './interface';
 import mistConfig from '../cfg';
 import {type} from 'os';
+import {Networks} from 'bitcore-lib';
+import add = Networks.add;
 
 // TODO :  这个RPC请求很高频，可能成为性能瓶颈
 // 1 优化可能：rpc请求加入块高度缓存，这样一个块高度只请求一次（已在wallet sdk完成）
@@ -27,12 +29,11 @@ import {type} from 'os';
 // 对于已经登录的用户，服务端启动固定的进程去定时更新余额。该接口改为直接返回缓存余额
 // 3 sql查询的优化
 async function get_available_erc20_amount(address, symbol, client:DBClient, mist_wallet) {
-    const token_info = await mist_wallet.get_token(symbol);
-    const token = new Token(token_info[0].address);
-    const [err, res] = await to(token.balanceOf(address, 'child_poa'));
+    // fixme:此处本地账本传用户地址链上账本用合约地址，容易歧义
+    const token = new Token(address);
+    const [err, balance] = await token.localBalanceOf(symbol);
+    // const [err, res] = await to(token.balanceOf(address,'child_poa'));
     if (err) console.error(err);
-    const balance = NP.divide(Number(res), 1 * 10 ** 8);
-
     let freeze_amount = 0;
     const freeze_result = await client.get_freeze_amount([address, symbol]);
 
@@ -284,10 +285,10 @@ export default () => {
 
         for (const i in token_arr as any[]) {
             if (!token_arr[i]) continue;
-            const token = new Token(token_arr[i].address);
-            const [err, result] = await to(token.balanceOf(address, 'child_poa'));
-            if (err || result === undefined) {
-                console.error('[MIST SIGNER]::(2222token.balanceOf):', err, result);
+            const token = new Token(address);
+            const [err, localErc20Err] = await to(token.localBalanceOf(token_arr[i].symbol));
+            if (err || localErc20Err === undefined) {
+                console.error('[MIST SIGNER]::(token.balanceOf):', err, localErc20Err);
                 return res.json({
                     success: false,
                     err,
@@ -319,13 +320,11 @@ export default () => {
             }
 
             const price = await mist_wallet.get_token_price2pi(token_arr[i].symbol);
-            const erc20_balance = Number(result) / (1 * 10 ** 8);
-
             const balance_info = {
                 token_symbol: token_arr[i].symbol,
                 erc20_address: token_arr[i].address,
-                erc20_balance: Number(result) / (1 * 10 ** 8),
-                value: NP.times(erc20_balance, price),
+                erc20_balance: localErc20Err,
+                value: NP.times(localErc20Err, price),
                 erc20_freeze_amount: freeze_amount,
                 asim_assetid: token_arr[i].asim_assetid,
                 asim_asset_balance: asset_balance / (1 * 10 ** 8),
@@ -440,16 +439,16 @@ export default () => {
         logs.push({start:new Date().toLocaleTimeString(),address});
 
         for (const tokenInfo of token_arr as any[]) {
-            const token = new Token(tokenInfo.address);
-            const [err, result] = await to(token.balanceOf(address, 'child_poa'));
-            if (err || result === undefined) {
+            const token = new Token(address);
+            const [err, localErc20Err] = await to(token.localBalanceOf(tokenInfo.symbol));
+            if (err || localErc20Err === undefined) {
                 console.error(err);
                 return res.json({
                     success: false,
                     err,
                 });
             }
-            logs.push({balanceOf:new Date().toLocaleTimeString(),token:tokenInfo.address,result});
+            logs.push({balanceOf:new Date().toLocaleTimeString(),token:tokenInfo.address,localErc20Err});
 
             let freeze_amount = 0;
             const freeze_result = await client.get_freeze_amount([
@@ -468,17 +467,15 @@ export default () => {
                 }
             }
             const price = await mist_wallet.get_token_price2pi(tokenInfo.symbol);
-            const erc20_balance = Number(result) / (1 * 10 ** 8);
-
             logs.push({get_token_price2pi:new Date().toLocaleTimeString(),price});
 
             const balance_info = {
                 token_symbol: tokenInfo.symbol,
                 erc20_address: tokenInfo.address,
-                erc20_balance,
+                erc20_balance:localErc20Err,
                 erc20_freeze_amount: freeze_amount,
                 asim_assetid: tokenInfo.asim_assetid,
-                value: NP.times(erc20_balance, price),
+                value: NP.times(localErc20Err, price),
                 token_icon:
                     MistConfig.icon_url +
                     tokenInfo.symbol +

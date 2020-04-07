@@ -61,6 +61,7 @@
     "passport": "^0.4.0",
     "passport-jwt": "^4.0.0",
     "pg": "7.18.2",
+    "redist": "^0.2.0",
     "secp256k1": "^4.0.0",
     "silly-datetime": "^0.1.2"
   },

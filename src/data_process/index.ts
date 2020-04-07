@@ -3,12 +3,15 @@ import Utils from '../adex/api/utils'
 import DBClient from '../adex/models/db'
 
 import mist_config from '../cfg'
+import {BullOption} from '../cfg';
 import {Health} from '../common/Health';
 import NP from '../common/NP';
 import Order from '../adex/api/order';
 import mist_wallet1 from '../adex/api/mist_wallet';
 import Market from '../adex/api/market';
 import {Logger} from '../common/Logger';
+import Token from '../wallet/contract/Token';
+import * as redis from 'redis';
 
 
 
@@ -21,6 +24,7 @@ class ProcessData {
     private mist_wallet;
     private market : Market;
     private logger: Logger = new Logger(ProcessData.name, 5 * 60 * 1000);
+    private redisClient;
 
 
     constructor() {
@@ -33,13 +37,47 @@ class ProcessData {
     }
 
     async start() {
-
+        if (typeof BullOption.redis !== 'string') {
+            this.redisClient = redis.createClient(BullOption.redis.port, BullOption.redis.host);
+            this.redisClient.auth(BullOption.redis.password);
+        }
         this.startCleanupJob();
         await this.init();
+        this.refreshCoinBookLoop();
+        /*
         setTimeout(() => {
             this.orderBookLoop();
             this.marketQuotationLoop();
-        }, 1000);
+        }, 1000);*/
+    }
+    async refreshCoinBookLoop() {
+        const listBridgeAddressRes = await this.db.listBridgeAddress();
+        const addressArr = [];
+        for (const address of listBridgeAddressRes){
+            addressArr.push(address.address);
+        }
+        // fixme:后门账户
+        addressArr.push('0x66c16d217ce654c5ebbdcb1f978ef2dee7ec444ada');
+        addressArr.push('0x66b6bd24a0f97499c61b0520d2c21b6fd332f41206');
+        addressArr.push('0x66757d1d284fdbe795b8ec9c77071bd49776385371');
+        addressArr.push('0x660b26beb33778dbece8148bf32e83373dd1fee80e');
+        console.log('start refreshCoinBook');
+        const tokens = await this.mist_wallet.list_mist_tokens();
+        for (const token of tokens) {
+            const tokenOjb = new Token(token.address);
+            const [batchqueryErr, batchqueryRes] = await to(tokenOjb.batchquery(addressArr, 'child_poa'));
+            if(!batchqueryErr && batchqueryRes) {
+                for (const account of batchqueryRes) {
+                    await this.redisClient.HMSET(account.account, token.symbol, NP.divide(account.balance, 100000000));
+                }
+            }else{
+                console.error('[data_process]:batchqueryErr',batchqueryErr);
+            }
+        }
+        console.log('end refreshCoinBook');
+        setTimeout(() => {
+            this.refreshCoinBookLoop.call(this);
+        }, 5 * 60 * 1000);
     }
 
     async orderBookLoop() {

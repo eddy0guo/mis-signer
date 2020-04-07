@@ -4,9 +4,10 @@ import DBClient from '../adex/models/db'
 
 import NP from 'number-precision'
 
-import mist_config from '../cfg'
+import mist_config, {BullOption} from '../cfg'
 import { AsimovWallet, AsimovConst } from '@fingo/asimov-wallet';
 import { Health } from '../common/Health'
+import * as redis from 'redis';
 
 async function send_asset(address, asset, amount) {
     const master_wallet = new AsimovWallet({
@@ -26,12 +27,17 @@ class Watcher {
     // FIXME: db reconnect when error
     private dbClient:DBClient;
     private utils:Utils;
+    private redisClient;
     constructor() {
         this.dbClient = new DBClient();
         this.utils = new Utils();
     }
 
     async start() {
+        if (typeof BullOption.redis !== 'string') {
+            this.redisClient = redis.createClient(BullOption.redis.port, BullOption.redis.host);
+            this.redisClient.auth(BullOption.redis.password);
+        }
         this.asset2coin_loop();
         this.asset2coin_decode_loop();
         this.coin2asset_release_loop();
@@ -155,7 +161,16 @@ class Watcher {
         if (child_txid) {
             const info = [child_txid, 'successful', current_time, id];
             const [err3, result3] = await to(this.dbClient.update_asset2coin_bridge(info));
-            if (err3) console.error(err3, result3)
+            if (err3) {
+                console.error(err3, result3)
+                return ;
+            }else{
+                // tslint:disable-next-line:no-shadowed-variable
+               this.redisClient.hget(address,token_name, async (err, value) => {
+                   console.log(value); // > "bar"
+                   await this.redisClient.HMSET(address, token_name, NP.plus(value,amount));
+               });
+            }
         } else {
             console.error(`error happend in send coin`, child_err)
         }
@@ -313,6 +328,11 @@ class Watcher {
 
             return
         }
+        // tslint:disable-next-line:no-shadowed-variable
+        this.redisClient.hget(address,token_name, async (err, value) => {
+            console.log(value); // > "bar"
+            await this.redisClient.HMSET(address, token_name, NP.minus(value,amount));
+        });
         setTimeout(async () => {
             const [get_receipt_err, child_txid_status] = await to(this.utils.get_receipt_log(child_txid));
             if (get_receipt_err) {

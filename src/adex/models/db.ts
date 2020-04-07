@@ -1196,6 +1196,20 @@ export default class DBClient {
         return result.rows;
     }
 
+
+    // select distinct(address) from mist_bridge where side='asset2coin' and child_txid is not null;
+
+
+    async listBridgeAddress(): Promise<any[]> {
+        const sql = 'select distinct(address) from mist_bridge where side=\'asset2coin\' and child_txid is not null';
+        const [err, result]: [any, any] = await to(this.queryWithLog(sql));
+        if (!result) {
+            console.error('listBridgeAddress', err);
+            await this.handlePoolError(err);
+        }
+        return result.rows;
+    }
+
     async get_express_progress(): Promise<IFreezeToken[]> {
         const [err, result]: [any, any] = await to(this.queryWithLog(' select * from asim_express_records where base_tx_status!=\'successful\' or quote_tx_status!=\'successful\' order by created_at desc limit 100;'));
         if (!result) {

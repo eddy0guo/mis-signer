@@ -140,8 +140,8 @@ export default () => {
         const token_arr = await mist_wallet.list_mist_tokens();
         for (const i in token_arr as any[]) {
             if (!token_arr[i]) continue;
-            const token = new Token(token_arr[i].address);
-            const [token_balance_err, token_balance_result] = await to(token.balanceOf(mistConfig.mist_earnings_address, 'child_poa'));
+            const token = new Token(mistConfig.mist_earnings_address);
+            const [token_balance_err, token_balance_result] = await to(token.balanceOf(token_arr[i].symbol));
             if (token_balance_err || !token_balance_result) {
                 console.error(`[FINGO ADMIN]::(get_mist_token_balances),%o,${token_balance_err},`, token_arr[i]);
                 return res.json({
@@ -151,7 +151,7 @@ export default () => {
             }
             const balance_info = {
                 token_symbol: token_arr[i].symbol,
-                mist_token_balance: token_balance_result / (1 * 10 ** 8),
+                mist_token_balance: token_balance_result,
             };
 
             mistTokenBalances.push(balance_info);
