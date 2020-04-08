@@ -837,15 +837,15 @@ export default () => {
         const amount2 = Math.round(NP.times(amount, 100000000));
         const price2 = Math.round(NP.times(price, 100000000));
 
-        const [verifySuccess,orderID] = utils.verify2(trader_address,amount2,price2,expire_at,market_id,side,signature,publicKey);
-        if (!verifySuccess) {
+        const orderArr = [trader_address, amount2, price2, expire_at, market_id, side];
+        const orderhash = utils.orderHash(orderArr);
+        const [verifyErr,verifyRes] = await to(utils.verify2(trader_address,orderhash,signature,publicKey));
+        if (!verifyRes) {
             return res.json({
                 success: false,
-                err: 'verify failed',
+                err: 'verify failed' + verifyErr,
             });
         }
-
-
         const now = new Date().valueOf();
         if (now > expire_at) {
             return res.json({
@@ -924,7 +924,7 @@ export default () => {
 
         // const order_id = utils.get_hash(req.body);
         const message = {
-            id: orderID,
+            id: orderhash,
             trader_address,
             market_id,
             side,
@@ -946,14 +946,14 @@ export default () => {
 
         res.json({
             success: result2 ? true : false,
-            result: result2 ? orderID : null,
+            result: result2 ? orderhash : null,
             err,
         });
     });
 
 
     /**
-     * @api {post} /adex/cancle_order_v2 cancle_order_v2
+     * @api {post} /adex/cancle_order_v2 cancle_order_v2(Obsolete)
      * @apiDescription 取消撮合订单
      * @apiName cancle_order_v2
      * @apiGroup adex
@@ -1016,7 +1016,66 @@ export default () => {
 
 
     /**
-     * @api {post} /adex/cancle_orders_v2 cancle_orders_v2
+     * @api {post} /adex/cancle_order_v3 cancle_order_v3
+     * @apiDescription 取消撮合订单
+     * @apiName cancle_order_v3
+     * @apiGroup adex
+     * @apiParam {string}   signature         signature info of order
+     * @apiParam {string}   publicKey         public key of user
+     * @apiParam {string} order_id          ID of order to be cancelled
+     * @apiParamExample {json} Request-Example:
+     {
+         "signature":"0x5e3242a3989359b59350dfdb600b921aa844a66c6e17e8ee856cb22a3759ed0d1501056e4983e04ae61f1cc09084d87c2e09a97036e54a176506c61d7d7d58e51c",
+         "publicKey": "038fd51dc067031e66c042075199033435493cc9d049ca3108f78e0cd5016a1711",
+         "order_id":"6c659b39698dd8bce0c036ddccc923a866eea29efc5c2a99e9e758859e894f5e"
+    }
+     * @apiSuccess {json} result
+     * @apiSuccessExample {json} Success-Response:
+     {
+        "success": true,
+        "result": "[]",
+        "err": null
+    }
+     * @apiSampleRequest http://119.23.181.166:21000/adex/cancle_order_v3
+     * @apiVersion 1.0.0
+     */
+
+    adex.all('/cancle_order_v3', async (req, res) => {
+        // FIXME : cancel spell error
+        const {order_id, signature,publicKey} = req.body;
+        const orderInfo: IOrder[] = await order.get_order(order_id);
+        if (!orderInfo || orderInfo.length <= 0) {
+            return res.json({
+                success: false,
+                err: 'Order ID Not Found.',
+            });
+        }
+        const [verifyErr,verifyRes] = await to(utils.verify2(orderInfo[0].trader_address,order_id, signature,publicKey));
+        if (!verifyRes) {
+            return res.json({
+                success: false,
+                err: 'Verify failed' + verifyErr,
+            });
+        }
+        const message = {
+            amount: orderInfo[0].available_amount,
+            side: orderInfo[0].side,
+            price: orderInfo[0].price,
+            market_id: orderInfo[0].market_id,
+            id: order_id,
+        };
+
+        const [err, result] = await to(order.cancle_order(message));
+        res.json({
+            success: !result ? false : true,
+            result,
+            err,
+        });
+    });
+
+
+    /**
+     * @api {post} /adex/cancle_orders_v2 cancle_orders_v2(Obsolete)
      * @apiDescription Cancel multiple orders for a particular address
      * @apiName cancle_orders_v2
      * @apiGroup adex
@@ -1095,6 +1154,81 @@ export default () => {
         return res.json({
             success: errs.length === 0 ? true : false,
             result: results,
+            err: errs,
+        });
+    });
+
+    /**
+     * @api {post} /adex/cancle_orders_v3 cancle_orders_v3
+     * @apiDescription Cancel multiple orders for a particular address
+     * @apiName cancle_orders_v3
+     * @apiGroup adex
+     * @apiParam {string}   signature         signature info
+     * @apiParam {String[]} orders_id          order ID
+     * @apiParam {string} publicKey           publick key of user
+     * @apiParamExample {json} Request-Example:
+        {
+            "signature": "0x22754db1423fea182a9bbbc03de295931c994d09c9ffc1efef45b4f0d2e2f65b3191a5928d6af40f0552c509648010d709d02b33ad52b4832e01eebb95495ae41b",
+            "publicKey": "038fd51dc067031e66c042075199033435493cc9d049ca3108f78e0cd5016a1711",
+            "orders_id":["6ddaf8a1dc7beefeb98f7b2ecb5802f65f368e7dc29a090e488bf2deb758812d","488cbf43db042ad01646146bbad4dca98fe35bd19a1b903a41e89fc580a803f8"]
+        }
+     * @apiSuccess {json} result
+     * @apiSuccessExample {json} Success-Response:
+     {
+        "success": true,
+        "err": null
+    }
+     * @apiSampleRequest http://119.23.181.166:21000/adex/cancle_orders_v3
+     * @apiVersion 1.0.0
+     */
+
+    adex.all('/cancle_orders_v3', async (req, res) => {
+        const {address, orders_id, signature,publicKey} = req.body;
+        console.log('cancle_orders_v3', address, orders_id, signature);
+        const str = orders_id.join();
+        const root_hash = crypto_sha256.createHmac('sha256', '123');
+        const hash = root_hash.update(str, 'utf8').digest('hex');
+        const errs = [];
+        // tslint:disable-next-line:forin
+        for (const index in orders_id) {
+            const [orderInfoErr,orderInfoRes] = await to(order.get_order(orders_id[index]));
+            if(orderInfoErr || !orderInfoRes || orderInfoRes.length === 0){
+                return res.json({
+                    success: false,
+                    err: 'get order failed ' + orderInfoErr,
+                });
+            }
+            const [verifyErr,verifyRes] = await to(utils.verify2(orderInfoRes[0].trader_address,hash, signature,publicKey));
+            if (!verifyRes) {
+                return res.json({
+                    success: false,
+                    err: 'Verify failed' + verifyErr,
+                });
+            }
+        }
+        for (const index in orders_id) {
+            if (!orders_id[index]) continue;
+            const order_info = await order.get_order(orders_id[index]);
+            // 已经取消过的不报错直接跳过
+            if (order_info[0].available_amount <= 0) {
+                continue;
+            }
+            const message = {
+                amount: order_info[0].available_amount,
+                price: order_info[0].price,
+                side: order_info[0].side,
+                market_id: order_info[0].market_id,
+                id: order_info[0].id,
+            };
+
+            const [err, result] = await to(order.cancle_order(message));
+            if (err) {
+                errs.push(err);
+            }
+        }
+
+        return res.json({
+            success: errs.length === 0 ? true : false,
             err: errs,
         });
     });

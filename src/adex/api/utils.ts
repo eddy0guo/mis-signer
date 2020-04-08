@@ -88,11 +88,8 @@ export default class Utils {
         return result;
     }
 
-    verify2(address: string, amount: number, price: number, time: number, market_id: string,
-            side: string, sign: string, publicKey: string) {
+    async verify2(address:string,orderhash: string,sign: string, publicKey: string) {
         const bitcore_lib_2 = require('bitcore-lib');
-        const orderArr = [address, amount, price, time, market_id, side];
-        const orderhash = this.orderHash(orderArr);
         if(sign.length !== 132){
             throw new Error('signature length is invalid')
         }
@@ -110,8 +107,7 @@ export default class Utils {
         r = new bitcore_lib_2.crypto.BN(r, 'hex');
         s = new bitcore_lib_2.crypto.BN(s, 'hex');
         bitcore_sign.set({r, s,});
-        const bl = ECDSA.verify(hashbuf, bitcore_sign, pubKeyObj)
-        return [bl, orderhash];
+        return  ECDSA.verify(hashbuf, bitcore_sign, pubKeyObj)
     }
 
     async get_receipt_log(txid) {

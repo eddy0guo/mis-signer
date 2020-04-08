@@ -11,6 +11,7 @@ import adex_utils from '../adex/api/utils';
 import psql from '../adex/models/db';
 import Asset from './contract/Asset';
 import MistWallet from '../adex/api/mist_wallet';
+import Token from './contract/Token';
 
 
 const Coin2AssetFee = [
@@ -103,7 +104,7 @@ export default () => {
     );
 
     /**
-     * @api {post} /wallet/sendrawtransaction/coin2asset_v3/ coin2asset_v3
+     * @api {post} /wallet/sendrawtransaction/coin2asset_v3/ coin2asset_v3(Obsolete)
      * @apiDescription The assets of broadcast currency are delimited and the assets of custody are delimited
      * @apiName coin2asset_v3
      * @apiGroup wallet
@@ -209,27 +210,119 @@ export default () => {
         });
     });
 
+    /**
+     * @api {post} /wallet/sendrawtransaction/coin2asset_v4/ coin2asset_v4
+     * @apiDescription The assets of broadcast currency are delimited and the assets of custody are delimited
+     * @apiName coin2asset_v4
+     * @apiGroup wallet
+     * @apiParam {string} signature signature info
+     * @apiParam {string} publicKey publicKey info
+     * @apiParam {string} address Collection address
+     * @apiParam {string} token_name  coin of bridge
+     * @apiParam {string} amount  amount of bridge
+     * @apiParam {string} expire_time  expire_time of signature
+     @apiParamExample {json} Request-Example:
+     {
+         "signature":"0x80635e66cd8bdbd85a9083e1aa948a19c3b1eaa6e17375bac4075d1239eff87d1efc085da5419022c51d76415a60f3f84b8179d3c013e0e9dad7ca83122625f21c",
+         "publicKey": "038fd51dc067031e66c042075199033435493cc9d049ca3108f78e0cd5016a1711",
+         "address":"0x66c16d217ce654c5ebbdcb1f978ef2dee7ec444ada",
+         "token_name":"CNYC",
+         "amount":5678,
+         "expire_time":1586316572140
+       }
+     *
+     * @apiSuccess {json} result
+     * @apiSuccessExample {json} Success-Response:
+     {
+      "success": true,
+      "id": "aa5a2f00f03616f02bde85b5a804d096ff4a23a227a8c972d26e26ba486ba940"
+  }
+     * @apiSampleRequest http://119.23.181.166:21000/wallet/sendrawtransaction/coin2asset_v4
+     * @apiVersion 1.0.0
+     */
+
+    wallet.all('/sendrawtransaction/coin2asset_v4', async (req, res) => {
+        const {signature, address, token_name, amount, expire_time,publicKey} = req.body;
+
+        const asset = new Asset(mist_config.asimov_master_rpc);
+        const [balancesErr, balances] = await to(asset.get_asset_balances(mist_wallet, mist_config.bridge_address, token_name));
+        if (amount > balances[0].asim_asset_balance) {
+            console.error(`bridge account  only have ${balances[0].asim_asset_balance} ${token_name}`);
+            return res.json({success: false, err: 'The official account have no enough balance'});
+        }
+
+        const current_time = new Date().getTime();
+        if (+current_time > expire_time) {
+            return res.json({success: false, err: 'sign data expire'});
+        }
+
+        const tokens = await psql_db.get_tokens([token_name]);
+
+        const info = [
+            'MIST_BURN',
+            tokens[0].address,
+            mist_config.bridge_address,
+            amount,
+            expire_time,
+        ];
+        const str = info.join('');
+        const root_hash = cryptoSha256.createHmac('sha256', '123');
+        const hash = root_hash.update(str, 'utf8').digest('hex');
+        const [verifyErr,verifyRes] = await to(utils.verify2(address,hash, signature,publicKey));
+        if (!verifyRes) {
+            return res.json({
+                success: false,
+                err: 'verify failed' + verifyErr,
+            });
+        }
+        let fee_amount = 0;
+        for (const fee of Coin2AssetFee) {
+            if (token_name === fee.token) {
+                fee_amount = fee.amount;
+                if (amount <= fee_amount) {
+                    return res.json({
+                        success: false,
+                        err: 'fee is not enough',
+                    });
+                }
+            }
+        }
+
+        const insert_info = {
+            id: null,
+            address,
+            token_name: tokens[0].symbol,
+            amount: NP.minus(amount, fee_amount),
+            side: 'coin2asset',
+            master_txid: null,
+            master_txid_status: 'pending',
+            child_txid: null,
+            child_txid_status: 'pending',
+            fee_asset: tokens[0].symbol,
+            fee_amount,
+        };
+
+        insert_info.id = utils.get_hash(insert_info);
+        const info_arr = utils.arr_values(insert_info);
+        const [err3, result3] = await to(psql_db.insert_bridge(info_arr));
+
+        if (err3) console.log(err3);
+
+        return res.json({
+            success: !result3 ? false : true,
+            id: !result3 ? '' : insert_info.id,
+        });
+    });
+
     wallet.all(
         '/burn_coin_tohex/:address/:token_name/:amount',
         async (req, res) => {
             const {address, token_name, amount} = req.params;
             const expire_time = 600;
             const tokens = await psql_db.get_tokens([token_name]);
-
-            const awallet = new AsimovWallet({
-                name: address,
-                rpc: mist_config.asimov_child_rpc,
-                address,
-            });
-
-            const balance = await awallet.contractCall.callReadOnly(
-                tokens[0].address,
-                'balanceOf(address)',
-                [address]
-            );
-
-            const available_amount = NP.divide(balance, 100000000);
-
+            const token = new Token(tokens[0].address);
+            const [balanceErr, balanceRes] = await to(token.balanceOf(address,'child_poa'));
+            const available_amount = NP.divide(balanceRes, 100000000);
             if (available_amount < Number(amount)) {
                 return res.json({
                     success: false,

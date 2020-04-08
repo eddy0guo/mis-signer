@@ -10,15 +10,16 @@ export default class Exchange {
   }
 
   async matchorder(trades_info) {
-      console.log(trades_info);
+    // fixme：经验值
+    const feeTimes =  trades_info.length;
     return await this.wallet.contractCall.call(
       this.address,
       'processOrders(tuple[])',
       [trades_info],
-      1000000 * 40,
+      10000 * 40 * feeTimes,
       0,
       AsimovConst.DEFAULT_ASSET_ID,
-      AsimovConst.DEFAULT_FEE_AMOUNT * 100,
+      AsimovConst.DEFAULT_FEE_AMOUNT * feeTimes,
       AsimovConst.DEFAULT_ASSET_ID,
       AsimovConst.CONTRACT_TYPE.CALL
     );
