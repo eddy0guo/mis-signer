@@ -44,11 +44,10 @@ class ProcessData {
         this.startCleanupJob();
         await this.init();
         this.refreshCoinBookLoop();
-        /*
         setTimeout(() => {
             this.orderBookLoop();
             this.marketQuotationLoop();
-        }, 1000);*/
+        }, 1000);
     }
     async refreshCoinBookLoop() {
         const listBridgeAddressRes = await this.db.listBridgeAddress();
