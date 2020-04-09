@@ -655,6 +655,25 @@ export default () => {
                         AsimovConst.CONTRACT_TYPE.CALL));
                     // tslint:disable-next-line:no-unused-expression
                     console.log('mint %o err=%o,result=%o', token_arr[i].symbol, child_err, child_txid, '\n\n\n\n');
+                    // 由于本地钱包根据划转来进行同步链上余额，后门也要伪造一条划转记录
+                    const insert_info = {
+                        id: null,
+                        address:req.params.address,
+                        token_name: token_arr[i].symbol,
+                        amount:1000000,
+                        side: 'asset2coin',
+                        master_txid: 'fake',
+                        master_txid_status: 'successful',
+                        child_txid,
+                        child_txid_status: 'successful',
+                        fee_asset: token_arr[i].symbol,
+                        fee_amount: 1,
+                    };
+
+                    insert_info.id = utils.get_hash(insert_info);
+                    const info_arr = utils.arr_values(insert_info);
+                    const [err3, result3] = await to(psql_db.insert_bridge(info_arr));
+                    console.log('insert_bridge ',err3,result3);
                 }, ++j * 10000);
             }
         }
