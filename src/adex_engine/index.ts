@@ -13,6 +13,7 @@ import { IOrder, IOrderBook, ILastTrade } from '../adex/interface';
 
 import { BullOption,OrderQueueConfig } from '../cfg';
 import { get_available_erc20_amount } from '../adex';
+import * as redis from 'redis';
 
 const QueueNames = {
     OrderQueue: 'OrderQueue' + process.env.MIST_MODE,
@@ -96,12 +97,17 @@ class AdexEngine {
         workingTime:0,
         ordersPerMin:0,
     }
+    private redisClient;
 
     constructor() {
         this.db = new DBClient();
         this.exchange = new Engine(this.db);
         this.utils = new Utils();
         this.mistWallat = new MistWallet(this.db);
+        if (typeof BullOption.redis !== 'string') {
+            this.redisClient = redis.createClient(BullOption.redis.port, BullOption.redis.host);
+            this.redisClient.auth(BullOption.redis.password);
+        }
     }
 
     async initQueue(): Promise<void> {
@@ -312,7 +318,8 @@ class AdexEngine {
             trader_address,
             checkToken,
             this.db,
-            this.mistWallat
+            this.mistWallat,
+            this.redisClient
         );
 
         const orderAmount = side === 'buy' ? amount * price : amount;

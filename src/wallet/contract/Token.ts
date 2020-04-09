@@ -27,11 +27,6 @@ export default class Token {
       address: Config.bridge_address,
       rpc: Config.asimov_child_rpc,
     });
-
-    if (typeof BullOption.redis !== 'string') {
-      this.redisClient = redis.createClient(BullOption.redis.port, BullOption.redis.host);
-      this.redisClient.auth(BullOption.redis.password);
-    }
   }
   /**
    * return balance of address
@@ -45,14 +40,14 @@ export default class Token {
         [address]
       )
   }
-  async localBalanceOf(symbol:string) {
-    const hgetAsync = promisify(this.redisClient.hget).bind(this.redisClient);
+  async localBalanceOf(symbol:string,redisClient) {
+    const hgetAsync = promisify(redisClient.hget).bind(redisClient);
     const [balanceErr,balanceRes] = await to(hgetAsync(this.address, symbol));
     if(balanceErr || balanceRes === null){
       console.error('localBalanceOf ',balanceErr);
       return 0;
     }
-    return balanceRes;
+    return +balanceRes.toString();
   }
   async batchquery(address:string[], network_flag:string = 'master_poa') {
     const wallet: AsimovWallet = (network_flag === 'master_poa') ? this.master : this.child;

@@ -13,7 +13,7 @@ import Utils from './api/utils';
 import DBClient from './models/db';
 import MistWallet from './api/mist_wallet';
 
-import MistConfig, { OrderQueueConfig } from '../cfg';
+import MistConfig, {BullOption, OrderQueueConfig} from '../cfg';
 import Token from '../wallet/contract/Token';
 import Asset from '../wallet/contract/Asset';
 
@@ -22,16 +22,17 @@ import mistConfig from '../cfg';
 import {type} from 'os';
 import {Networks} from 'bitcore-lib';
 import add = Networks.add;
+import * as redis from 'redis';
 
 // TODO :  这个RPC请求很高频，可能成为性能瓶颈
 // 1 优化可能：rpc请求加入块高度缓存，这样一个块高度只请求一次（已在wallet sdk完成）
 // 2 同余额接口，让用户在交易所API那边也有一个登录操作，让服务端可以知道需要持续更新哪些用户的余额。
 // 对于已经登录的用户，服务端启动固定的进程去定时更新余额。该接口改为直接返回缓存余额
 // 3 sql查询的优化
-async function get_available_erc20_amount(address, symbol, client:DBClient, mist_wallet) {
+async function get_available_erc20_amount(address, symbol, client:DBClient, mist_wallet,redisClient) {
     // fixme:此处本地账本传用户地址链上账本用合约地址，容易歧义
     const token = new Token(address);
-    const [err, balance] = await to(token.localBalanceOf(symbol));
+    const [err, balance] = await to(token.localBalanceOf(symbol,redisClient));
     // const [err, res] = await to(token.balanceOf(address,'child_poa'));
     if (err) console.error(err);
     let freeze_amount = 0;
@@ -61,6 +62,11 @@ export default () => {
     const mist_wallet: MistWallet = new MistWallet(client);
 
     const utils = new Utils();
+    let redisClient;
+    if (typeof BullOption.redis !== 'string') {
+        redisClient = redis.createClient(BullOption.redis.port, BullOption.redis.host);
+        redisClient.auth(BullOption.redis.password);
+    }
 
 
     adex.all('/compat_query/:sql', async (req, res) => {
@@ -285,8 +291,8 @@ export default () => {
         for (const i in token_arr as any[]) {
             if (!token_arr[i]) continue;
             const token = new Token(address);
-            const [err, localErc20Err] = await to(token.localBalanceOf(token_arr[i].symbol));
-            if (err || localErc20Err === undefined) {
+            const [err, localErc20Err] = await to(token.localBalanceOf(token_arr[i].symbol,redisClient));
+            if (err || localErc20Err === undefined || typeof localErc20Err !== 'number') {
                 console.error('[MIST SIGNER]::(token.balanceOf):', err, localErc20Err);
                 return res.json({
                     success: false,
@@ -439,7 +445,7 @@ export default () => {
 
         for (const tokenInfo of token_arr as any[]) {
             const token = new Token(address);
-            const [err, localErc20Err] = await to(token.localBalanceOf(tokenInfo.symbol));
+            const [err, localErc20Err] = await to(token.localBalanceOf(tokenInfo.symbol,redisClient));
             if (err || localErc20Err === undefined) {
                 console.error(err);
                 return res.json({
@@ -702,7 +708,8 @@ export default () => {
                 trader_address,
                 quota_token,
                 client,
-                mist_wallet
+                mist_wallet,
+                redisClient
             );
             const quota_amount = NP.times(+amount, +price);
             if (quota_amount > available_quota) {
@@ -717,7 +724,8 @@ export default () => {
                 trader_address,
                 base_token,
                 client,
-                mist_wallet
+                mist_wallet,
+                redisClient
             );
             if (amount > available_base) {
                 console.log(`${market_id} base  balance is not enoungh,available amount is ${available_base},but your want to sell ${amount}`)
@@ -874,8 +882,8 @@ export default () => {
         let min_limit = 0;
         let max_limit = 100000;
         if (last_trade.length !== 0) {
-            max_limit = NP.times(last_trade[0].price, 5);
-            min_limit = NP.divide(last_trade[0].price, 5);
+            max_limit = NP.times(last_trade[0].price, 10);
+            min_limit = NP.divide(last_trade[0].price, 10);
         }
 
         if (price < min_limit || price > max_limit) {
@@ -891,7 +899,8 @@ export default () => {
                 trader_address,
                 quota_token,
                 client,
-                mist_wallet
+                mist_wallet,
+                redisClient
             );
             const quota_amount = NP.times(+amount, +price);
             if (quota_amount > available_quota) {
@@ -906,7 +915,8 @@ export default () => {
                 trader_address,
                 base_token,
                 client,
-                mist_wallet
+                mist_wallet,
+                redisClient
             );
             if (amount > available_base) {
                 console.log(`${market_id} base  balance is not enoungh,available amount is ${available_base},but your want to sell ${amount}`)
