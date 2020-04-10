@@ -31,7 +31,9 @@ function computeOrderBookUpdates(
         bids: [],
     };
     if (order.side === 'sell') {
-        book.asks[0] = [order.price, order.available_amount];
+        if(order.available_amount !== 0) {
+            book.asks[0] = [order.price, order.available_amount];
+        }
         // +，-表示深度的增减
         for (const trade of trades) {
             let priceExsit = false;
@@ -42,10 +44,12 @@ function computeOrderBookUpdates(
                     break;
                 }
             }
-            if (!priceExsit) book.bids.push([trade.price, -trade.amount]);
+            if (!priceExsit && trade.amount !== 0) book.bids.push([trade.price, -trade.amount]);
         }
     } else if (order.side === 'buy') {
-        book.bids[0] = [order.price, order.available_amount];
+        if(order.available_amount !== 0) {
+            book.bids[0] = [order.price, order.available_amount];
+        }
         for (const trade of trades) {
             let priceExsit = false;
             for (const ask of book.asks) {
@@ -55,7 +59,7 @@ function computeOrderBookUpdates(
                     break;
                 }
             }
-            if (!priceExsit) book.asks.push([trade.price, -trade.amount]);
+            if (!priceExsit && trade.amount !== 0) book.asks.push([trade.price, -trade.amount]);
         }
     } else {
         this.logger.log(`${order.side} must be sell or buy`);
