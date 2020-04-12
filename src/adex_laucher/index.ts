@@ -133,21 +133,24 @@ class Launcher {
             if (taker_side === 'buy'){
                 // @ts-ignore
                 const [takerBaseErr,takerBaseRes] = await to(hgetAsync(taker, baseToken));
-                console.log('takerBaseRes--',takerBaseRes);
                 const takerBase = +takerBaseRes.toString();
                 await this.redisClient.HMSET(taker, baseToken, NP.plus(takerBase, NP.times(amount,0.995)));
                 //
                 const [takeQuoteErr,takerQuoteRes] = await to(hgetAsync(taker, quoteToken));
-                const takerQuote = +takerBaseRes.toString();
+                const takerQuote = +takerQuoteRes.toString();
                 await this.redisClient.HMSET(taker, quoteToken, NP.minus(takerQuote, NP.times(amount,price)));
+                console.log('gxy123--',taker, quoteToken,
+                    takerQuote,amount,price,NP.minus(takerQuote, NP.times(amount,price)));
                 //
                 const [makerBaseErr,makerBaseRes] = await to(hgetAsync(maker, baseToken));
-                const makerBase = +takerBaseRes.toString();
+                const makerBase = +makerBaseRes.toString();
                 await this.redisClient.HMSET(maker, baseToken, NP.minus(makerBase, amount));
                 //
                 const [makerQuoteErr,makerQuoteRes] = await to(hgetAsync(maker, quoteToken));
-                const makerQuote = +takerBaseRes.toString();
+                const makerQuote = +makerQuoteRes.toString();
                 await this.redisClient.HMSET(maker, quoteToken, NP.plus(makerQuote, NP.times(amount,price,0.995)));
+                console.log('gxy1234--',maker, quoteToken,
+                    makerQuote,amount,price,NP.minus(makerQuote, NP.times(amount,price,0.995)));
             }else if (taker_side === 'sell'){
                 // @ts-ignore
                 const [takerBaseErr,takerBaseRes] = await to(hgetAsync(taker, baseToken));
@@ -158,7 +161,7 @@ class Launcher {
                 const takerQuote = +takerQuoteRes.toString();
                 await this.redisClient.HMSET(taker, quoteToken, NP.plus(takerQuote,NP.times(amount,price,0.995)));
 
-                const [makerQuoteErr,makerQuoteRes] = await to(hgetAsync(taker, quoteToken));
+                const [makerQuoteErr,makerQuoteRes] = await to(hgetAsync(maker, quoteToken));
                 const makerQuote = +makerQuoteRes.toString();
                 await this.redisClient.HMSET(maker, quoteToken, NP.minus(makerQuote, NP.times(amount,price)));
 
