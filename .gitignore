@@ -4,3 +4,4 @@ k8s.env
 build
 .vscode
 yarn.lock
+doc_dist
