@@ -4,6 +4,7 @@ import {Router} from 'express';
 
 import {chain} from '../wallet/api/chain';
 
+import { ITrade, IPoolInfo } from './interface'
 import MistWallet from '../adex/api/mist_wallet';
 import OrderAPI from '../adex/api/order';
 import Utils from '../adex/api/utils';
@@ -46,11 +47,11 @@ const express_config = [
     },
 ];
 
-async function get_price(base_token_name, quote_token_name, amount, order): Promise<string> {
+async function get_price(base_token_name :string, quote_token_name: string, amount: number, order: OrderAPI): Promise<string> {
     let base_value = 0;
     let base_amount = 0;
     if (base_token_name !== 'CNYC') {
-        const [base_book_err, base_book] = await to(order.order_book(base_token_name + '-CNYC', 2));
+        const [base_book_err, base_book] = await to(order.order_book(base_token_name + '-CNYC', `${2}`));
         if (base_book_err || !base_book || !base_book.bids) {
             console.error('[ADEX EXPRESS]::(base_book):', base_book_err, base_book);
             throw new Error(base_book_err);
@@ -154,7 +155,7 @@ export default () => {
             psql_db.my_express([address, offset, perpage,start,end])
         );
         if (records) {
-            for (const record of records as any[]) {
+            for (const record of records as ITrade[]) {
                 record.base_token_icon =
                     mist_config.icon_url +
                     record.base_asset_name +
@@ -411,7 +412,7 @@ export default () => {
         async (req, res) => {
             const {base_token_name, quote_token_name, base_amount} = req.params;
             const [err, price] = await to(
-                get_price(base_token_name, quote_token_name, base_amount, order)
+                get_price(base_token_name, quote_token_name, Number(base_amount), order)
             );
             res.json({
                 success: !price ? false : true,
@@ -456,13 +457,14 @@ export default () => {
      * @apiSuccessExample {json} Success-Response:
      {
      "success": true,
-        "result":
+        "result":[
             {
                 "token_symbol": "CNYC",
                 "asim_asset_id": "000000000000000c00000000",
                 "asim_asset_balance": 0,
                 "icon": "https://www.mist.exchange/res/icons/CNYCa.png"
             },
+        ],
         "err": null
      }
      * @apiSampleRequest http://119.23.181.166:21000/express/get_pool_info
@@ -471,7 +473,7 @@ export default () => {
     express.all('/get_pool_info', async (req, res) => {
         const token_arr = await mist_wallet.list_mist_tokens();
 
-        const balances = [];
+        const balances: IPoolInfo[] = [];
         const asset = new Asset(mistConfig.asimov_master_rpc);
         const [assets_balance_err, assets_balance_result] = await to(
             asset.balanceOf(mist_config.express_address)

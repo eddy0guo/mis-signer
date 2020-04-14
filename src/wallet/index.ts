@@ -6,6 +6,7 @@ import * as cryptoSha256 from 'crypto';
 
 import {chain} from './api/chain';
 
+import { ListFingoConfig, CoinAssetFeeConfig } from './interfacce'
 import mist_config from '../cfg';
 import adex_utils from '../adex/api/utils';
 import psql from '../adex/models/db';
@@ -14,7 +15,7 @@ import MistWallet from '../adex/api/mist_wallet';
 import Token from './contract/Token';
 
 
-const Coin2AssetFee = [
+const Coin2AssetFee: CoinAssetFeeConfig [] = [
     {
         token: 'CNYC',
         amount: 10,
@@ -502,7 +503,7 @@ export default () => {
      */
 
     wallet.all('/list_fingo_config', async (req, res) => {
-        const conf = {
+        const conf: ListFingoConfig = {
             dex_address: mist_config.ex_address,
             express_address: mist_config.express_address,
             asimov_chain_rpc: mist_config.asimov_chain_rpc,

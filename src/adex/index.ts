@@ -5,6 +5,7 @@ import NP from '../common/NP';
 import urllib = require('url');
 import crypto_sha256 = require('crypto');
 
+import { IBalance } from './interface'
 import OrderAPI from './api/order';
 import TradesAPI from './api/trades';
 import MarketAPI from './api/market';
@@ -273,7 +274,7 @@ export default () => {
     adex.all('/balances_v2', async (req, res) => {
         const obj = urllib.parse(req.url, true).query;
         const token_arr = await mist_wallet.list_mist_tokens();
-        const balances = [];
+        const balances: IBalance[] = [];
 
         const address: string = obj.address as string;
 
@@ -438,7 +439,7 @@ export default () => {
     adex.all('/erc20_balances/:address', async (req, res) => {
         const {address} = req.params;
         const token_arr = await mist_wallet.list_mist_tokens();
-        const balances = [];
+        const balances: IBalance[] = [];
 
         const logs = [];
         logs.push({start:new Date().toLocaleTimeString(),address});

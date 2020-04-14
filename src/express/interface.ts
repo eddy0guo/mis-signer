@@ -3,9 +3,11 @@ interface ITrade{
     address:string;
     base_asset_name:string;
     base_amount:string;
+    base_token_icon?: string;
     price:string;
     quote_asset_name:string;
     quote_amount:string;
+    quote_token_icon?: string;
     fee_rate:string;
     fee_token:string;
     fee_amount:string;
@@ -28,4 +30,12 @@ interface IToken {
     created_at: string;
 }
 
-export {ITrade,IToken}
+interface IPoolInfo {
+    token_symbol: string
+    asim_asset_id: string
+    asim_asset_balance: number
+    icon: string
+}
+
+
+export {ITrade,IToken, IPoolInfo}

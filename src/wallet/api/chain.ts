@@ -307,7 +307,7 @@ export const chain = {
 
     // marshalled: {"jsonrpc":"1.0","method":"asimov_sendRawTransaction","params":["1122"],"id":1},
     // marshalled: {"jsonrpc":"1.0","method":"asimov_sendRawTransaction","params":["1122",false],"id":1},
-    sendrawtransaction(params, network?: string|undefined) {
+    sendrawtransaction(params, network?: string|undefined): Promise<string> {
         // console.log("sendrawtransaction:",params)
         return network === 'child_poa' ?  child_rpc('asimov_sendRawTransaction', params) : rpc('asimov_sendRawTransaction', params);
     },

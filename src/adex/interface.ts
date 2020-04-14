@@ -121,8 +121,22 @@ interface ILastTrade{
     updated_at: Date;
 }
 
+interface IBalance {
+    token_symbol: string
+    erc20_address: string
+    erc20_balance: number
+    erc20_freeze_amount: number
+    asim_assetid: string
+    value: number
+    asim_asset_balance?: number
+    asset_icon?: string
+    coin_icon?: string
+    token_icon?: string
+}
 
 
-export {IOrder, ITrade, IToken, IMarket, ITransaction, IBridge, IPrice, IMarketQuotation,IFreezeToken,IOrderBook,ILastTrade}
+
+
+export {IOrder, ITrade, IToken, IMarket, ITransaction, IBridge, IPrice, IMarketQuotation,IFreezeToken,IOrderBook,ILastTrade,IBalance}
 
 

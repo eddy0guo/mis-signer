@@ -2,7 +2,7 @@ import Utils from './utils';
 import DBClient from '../models/db';
 import to from 'await-to-js';
 import MistMallet from './mist_wallet';
-import {IMarket} from '../interface';
+import {IMarket, IMarketQuotation} from '../interface';
 
 export default class Market {
     private db:DBClient;
@@ -96,7 +96,7 @@ export default class Market {
     }
 
     // TODO 该方法生产环境无法访问
-    async list_market_quotations(): Promise<any[]> {
+    async list_market_quotations(): Promise<IMarketQuotation[]> {
 
         const logs = [];
         const quotations  = await this.db.list_market_quotations();

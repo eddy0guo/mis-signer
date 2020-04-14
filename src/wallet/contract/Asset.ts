@@ -1,4 +1,5 @@
 import {AsimovWallet} from '@fingo/asimov-wallet';
+import MistWallet from '../../adex/api/mist_wallet'
 import mist_config from '../../cfg';
 import utils2 from '../../adex/api/utils';
 import {address} from 'bitcoinjs-lib';
@@ -23,7 +24,7 @@ export default class Asset {
     }
 
     // tslint:disable-next-line:no-shadowed-variable
-    public async get_asset_balances(mist_wallet, address: string, tokenName?: string | undefined): Promise<any[]> {
+    public async get_asset_balances(mist_wallet: MistWallet, address: string, tokenName?: string | undefined): Promise<any[]> {
 
         let token_arr = await mist_wallet.list_mist_tokens();
         if (tokenName) {
