@@ -610,6 +610,7 @@ export default () => {
         const now2 = new Date().valueOf();
         // 直接判断队列长度，如果消费阻塞，返回失败
         const waitingOrders = await order.queueWaitingCount();
+        console.log('waitingOrders ',waitingOrders);
         if( waitingOrders > OrderQueueConfig.maxWaiting ) {
             return res.json({
                 success: false,
@@ -767,6 +768,12 @@ export default () => {
             return res.json({
                 success: false,
                 err: 'Order ID Not Found.',
+            });
+        }
+        if(orderInfo[0].available_amount <= 0){
+            return res.json({
+                success: false,
+                err: 'Orders have already been completed or cancelled',
             });
         }
         const [verifyErr,verifyRes] = await to(utils.verify2(orderInfo[0].trader_address,order_id, signature,publicKey));
