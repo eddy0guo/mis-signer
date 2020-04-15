@@ -8,6 +8,26 @@ import * as Queue from 'bull';
 import * as process from 'process';
 import {IOrder, IOrderBook} from '../interface';
 import {BullOption} from '../../cfg';
+import {promisify} from 'util';
+const FREEZE_PREFIX = 'freeze::';
+
+async function updateFreeze(trader_address,amount,price,side,market_id,redisClient):Promise<void>{
+    let  [baseToken, quoteToken] = market_id.split('-');
+    quoteToken = FREEZE_PREFIX + quoteToken;
+    baseToken = FREEZE_PREFIX + baseToken;
+    const hgetAsync = promisify(redisClient.hget).bind(redisClient);
+    if(side === 'buy') {
+        const quoteRes = await hgetAsync(trader_address, quoteToken);
+        const quoteAmount = +quoteRes.toString();
+        await redisClient.HMSET(trader_address, quoteToken, NP.plus(quoteAmount, NP.times(price,amount)));
+    }else if(side === 'sell'){
+        const baseRes = await hgetAsync(trader_address, baseToken);
+        const baseAmount = +baseRes.toString();
+        await redisClient.HMSET(trader_address, baseToken, NP.plus(baseAmount, amount));
+        // tslint:disable-next-line:no-empty
+    }else{}
+    return ;
+}
 
 export default class order {
 
@@ -59,7 +79,7 @@ export default class order {
         return num;
     }
 
-    async build(message): Promise<any> {
+    async build(message,redisClient): Promise<any> {
         /*暂时这块业务没做先去掉此逻辑
         let mist_user = await this.db.find_user([message.trader_address]);
         if (!mist_user[0]) {
@@ -75,23 +95,21 @@ export default class order {
         //     console.log('[ADEX API] Queue Status Error:', statusErr);
         //     this.createQueue();
         // }
-
         const [err, job] = await to(this.orderQueue.add(message,{removeOnComplete: true}));
         if (err) {
             console.log('[ADEX API] Queue Error:', err);
             throw err;
         }
+        const {trader_address,amount,price,side,market_id} = message;
+        await updateFreeze(trader_address,amount,price,side,market_id,redisClient);
         return job;
     }
 
-    async cancle_order(message) : Promise<any[]>{
-
+    async cancle_order(message,redisClient) : Promise<any>{
+        const {trader_address,amount,price,side,market_id,id} = message;
         const create_time = this.utils.get_current_time();
         const cancle_info = [-message.amount, 0, message.amount, 0, 'cancled', create_time, message.id];
-        const [err, result] = await to(this.db.update_orders(cancle_info));
-        if (err) {
-            console.error(err, result);
-        }
+        await this.db.update_orders(cancle_info);
         let book;
         if(message.side === 'buy'){
             book = {
@@ -109,13 +127,10 @@ export default class order {
             data: book,
             id:message.market_id,
         }
-        const [orderBookUpdateQueueErr, orderBookUpdateQueueResult] = await to(this.orderBookUpdateQueue.add(marketUpdateBook,{removeOnComplete: true}));
-        if (orderBookUpdateQueueErr) {
-            console.error('[ADEX ENGINE]:orderBookUpdateQueue failed %o\n', orderBookUpdateQueueErr);
-        }
-
-
-        return result;
+        await this.orderBookUpdateQueue.add(marketUpdateBook,{removeOnComplete: true});
+        // cancle解冻，加上负值
+        await updateFreeze(trader_address,-amount,price,side,market_id,redisClient);
+        return ;
     }
     async my_orders(address:string, page:number, perPage:number, status1:string, status2:string,MarketID?: string | undefined):Promise<IOrder[]> {
         const offset = (page - 1) * perPage;

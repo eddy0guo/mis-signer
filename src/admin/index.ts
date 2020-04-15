@@ -17,6 +17,7 @@ import Token from '../wallet/contract/Token';
 import * as Queue from 'bull';
 import mistConfig from '../cfg';
 import {BullOption} from '../cfg';
+import * as redis from 'redis';
 
 export default () => {
     const admin = Router();
@@ -26,6 +27,11 @@ export default () => {
     const order = new Order(db);
     const market: MarketAPI = new MarketAPI(db);
     const orderQueue:Queue.Queue = new Queue('OrderQueue' + process.env.MIST_MODE,BullOption);
+    let redisClient;
+    if (typeof BullOption.redis !== 'string') {
+        redisClient = redis.createClient(BullOption.redis.port, BullOption.redis.host);
+        redisClient.auth(BullOption.redis.password);
+    }
 
     admin.all('/market_add/:market_id/:base_token_address/:base_token_symbol/:quote_token_address/:quote_token_symbol', async (req, res) => {
         const {market_id, base_token_address, base_token_symbol, quote_token_address, quote_token_symbol} = req.params;
@@ -260,13 +266,14 @@ export default () => {
             // tslint:disable-next-line:no-shadowed-variable
             for (const oneOrder of orders) {
                 const message = {
+                    trader_address: oneOrder.trader_address,
                     amount: oneOrder.available_amount,
                     price: oneOrder.price,
                     side: oneOrder.side,
                     market_id: oneOrder.market_id,
                     id: oneOrder.id,
                 };
-                const [err, result] = await to(order.cancle_order(message));
+                const [err, result] = await to(order.cancle_order(message,this.redisClient));
                 if (err) {
                     console.log('cancel_all_orders error',err);
                     return res.json({

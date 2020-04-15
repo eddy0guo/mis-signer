@@ -12,9 +12,7 @@ import Market from '../adex/api/market';
 import {Logger} from '../common/Logger';
 import Token from '../wallet/contract/Token';
 import * as redis from 'redis';
-
-
-
+const FREEZE_PREFIX = 'freeze::';
 
 class ProcessData {
 
@@ -67,11 +65,27 @@ class ProcessData {
             }else{
                 console.error('[data_process]:batchqueryErr',batchqueryErr);
             }
+            for (const address of addressArr){
+                let freeze_amount = 0;
+                const freezeResult = await this.db.get_freeze_amount([address,token.symbol]);
+                if (freezeResult && freezeResult.length > 0) {
+                    for (const freeze of freezeResult) {
+                        if (freeze.side === 'buy') {
+                            freeze_amount = NP.plus(freeze_amount, freeze.quote_amount);
+                        } else if (freeze.side === 'sell') {
+                            freeze_amount = NP.plus(freeze_amount, freeze.base_amount);
+                        } else {
+                            console.error(`${freeze.side} error`);
+                        }
+                    }
+                }
+                await this.redisClient.HMSET(address, FREEZE_PREFIX + token.symbol,freeze_amount);
+            }
         }
         console.log('end refreshCoinBook');
         setTimeout(() => {
             this.refreshCoinBookLoop.call(this);
-        }, 5 * 60 * 1000);
+        }, 60 * 60 * 1000);
     }
 
     async orderBookLoop() {

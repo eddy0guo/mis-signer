@@ -24,6 +24,7 @@ import {type} from 'os';
 import {Networks} from 'bitcore-lib';
 import add = Networks.add;
 import * as redis from 'redis';
+import {promisify} from 'util';
 
 // TODO :  这个RPC请求很高频，可能成为性能瓶颈
 // 1 优化可能：rpc请求加入块高度缓存，这样一个块高度只请求一次（已在wallet sdk完成）
@@ -36,6 +37,7 @@ async function get_available_erc20_amount(address, symbol, client:DBClient, mist
     const [err, balance] = await to(token.localBalanceOf(symbol,redisClient));
     // const [err, res] = await to(token.balanceOf(address,'child_poa'));
     if (err) console.error(err);
+    /*
     let freeze_amount = 0;
     const freeze_result = await client.get_freeze_amount([address, symbol]);
 
@@ -50,7 +52,11 @@ async function get_available_erc20_amount(address, symbol, client:DBClient, mist
             }
         }
     }
-    return NP.minus(balance, freeze_amount);
+     */
+    const hgetAsync = promisify(redisClient.hget).bind(redisClient);
+    const [freezeErr,freezeRes] = await to(hgetAsync(address, 'freeze::' + symbol));
+    const freeze = +freezeRes.toString();
+    return NP.minus(balance, freeze);
 }
 
 export default () => {
@@ -727,11 +733,10 @@ export default () => {
             expire_at,
         };
 
-        const [err, result2] = await to(order.build(message));
-
+        const [err, result2] = await to(order.build(message,redisClient));
         res.json({
-            success: result2 ? true : false,
-            result: result2 ? orderhash : null,
+            success: err ? false : true,
+            result: err ? null : orderhash,
             err,
         });
     });
@@ -784,6 +789,7 @@ export default () => {
             });
         }
         const message = {
+            trader_address: orderInfo[0].trader_address,
             amount: orderInfo[0].available_amount,
             side: orderInfo[0].side,
             price: orderInfo[0].price,
@@ -791,9 +797,9 @@ export default () => {
             id: order_id,
         };
 
-        const [err, result] = await to(order.cancle_order(message));
+        const [err, result] = await to(order.cancle_order(message,redisClient));
         res.json({
-            success: !result ? false : true,
+            success: err ? false : true,
             result,
             err,
         });
@@ -854,6 +860,7 @@ export default () => {
                 continue;
             }
             const message = {
+                trader_address: order_info[0].trader_address,
                 amount: order_info[0].available_amount,
                 price: order_info[0].price,
                 side: order_info[0].side,
@@ -861,7 +868,7 @@ export default () => {
                 id: order_info[0].id,
             };
 
-            const [err, result] = await to(order.cancle_order(message));
+            const [err, result] = await to(order.cancle_order(message,redisClient));
             if (err) {
                 errs.push(err);
             }

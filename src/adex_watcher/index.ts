@@ -5,6 +5,11 @@ import DBClient from '../adex/models/db'
 import Utils from '../adex/api/utils'
 import { Logger } from '../common/Logger';
 import LogUnhandled from '../common/LogUnhandled';
+import {promisify} from 'util';
+import {BullOption} from '../cfg';
+import * as redis from 'redis';
+import {ITrade} from '../adex/interface';
+const FREEZE_PREFIX = 'freeze::';
 
 class Watcher {
 
@@ -13,11 +18,17 @@ class Watcher {
     private getReceiptTimes: number;
     // 5分钟无log输出会杀死进程。
     private logger: Logger = new Logger(Watcher.name, 5 * 60 * 1000);
-
+    private hgetAsync;
+    private redisClient;
     constructor() {
         this.db = new DBClient();
         this.utils = new Utils();
         this.getReceiptTimes = 0;
+        if (typeof BullOption.redis !== 'string') {
+            this.redisClient = redis.createClient(BullOption.redis.port, BullOption.redis.host);
+            this.redisClient.auth(BullOption.redis.password);
+        }
+        this.hgetAsync = promisify(this.redisClient.hget).bind(this.redisClient);
     }
 
     async start() {
@@ -102,6 +113,12 @@ class Watcher {
                 await this.db.rollback();
                 return ;
             }
+            const [updateFreezeErr,updateFreezeRes] = await to (this.updateFreeze(trade));
+            if (updateFreezeErr) {
+                console.error('[ADEX_WATCHER]::updateFreezeErr',updateFreezeErr)
+                await this.db.rollback();
+                return ;
+            }
         }
         await this.db.commit();
     }
@@ -140,6 +157,35 @@ class Watcher {
 
         return updates;
 
+    }
+    async updateFreeze(trade:ITrade) : Promise<void>{
+        const {taker_side,market_id,taker,maker,price,amount} = trade;
+        let [baseToken, quoteToken] = market_id.split('-');
+        quoteToken = FREEZE_PREFIX + quoteToken;
+        baseToken = FREEZE_PREFIX + baseToken;
+        console.log('start updateFreeze');
+        if (taker_side === 'buy'){
+            const takerQuoteRes = await this.hgetAsync(taker, quoteToken);
+            const takerQuote = +takerQuoteRes.toString();
+            await this.redisClient.HMSET(taker, quoteToken, NP.minus(takerQuote, NP.times(amount,price)));
+
+            const makerBaseRes = await this.hgetAsync(maker, baseToken);
+            const makerBase = +makerBaseRes.toString();
+            await this.redisClient.HMSET(maker, baseToken, NP.minus(makerBase, amount));
+        }else if (taker_side === 'sell'){
+            // @ts-ignore
+            const takerBaseRes = await this.hgetAsync(taker, baseToken);
+            const takerBase = +takerBaseRes.toString();
+            await this.redisClient.HMSET(taker, baseToken, NP.minus(takerBase,amount));
+
+            const makerQuoteRes = await this.hgetAsync(maker, quoteToken);
+            const makerQuote = +makerQuoteRes.toString();
+            await this.redisClient.HMSET(maker, quoteToken, NP.minus(makerQuote, NP.times(amount,price)));
+        }
+        else{
+            console.error('[ADEX_watcher]:updateFreeze unknown side',taker_side);
+            return;
+        }
     }
 }
 
