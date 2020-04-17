@@ -620,11 +620,11 @@ export default class DBClient {
         for (const index in tradesInfo as any[]) {
             if (tradesInfo[index]) {
                 let temp_value = '';
-                for (let i = 1; i <= 15; i++) {
-                    if (i < 15) {
-                        temp_value += '$' + (i + 15 * Number(index)) + ',';
+                for (let i = 1; i <= 14; i++) {
+                    if (i < 14) {
+                        temp_value += '$' + (i + 14 * Number(index)) + ',';
                     } else {
-                        temp_value += '$' + (i + 15 * Number(index));
+                        temp_value += '$' + (i + 14 * Number(index));
                     }
                 }
                 if (Number(index) < tradesInfo.length - 1) {

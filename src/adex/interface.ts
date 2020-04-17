@@ -23,7 +23,6 @@ interface IOrder {
 
 interface ITrade {
     id: string;
-    trade_hash: string;
     transaction_id: number;
     transaction_hash: string;
     status: string;

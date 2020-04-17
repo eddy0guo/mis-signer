@@ -27,7 +27,6 @@ create table mist_markets(
 -- trades table
 create table mist_trades(
   id text PRIMARY KEY,
-  trade_hash text,
   transaction_id integer ,
   transaction_hash text,
   status text ,
@@ -53,7 +52,6 @@ create index idx_mist_trades_delete on mist_trades (status,created_at);
 
 create table mist_trades_tmp(
   id text PRIMARY KEY,
-  trade_hash text,
   transaction_id integer ,
   transaction_hash text,
   status text ,
@@ -85,14 +83,14 @@ create table mist_orders(
   amount  numeric(32,8) ,
   status text ,
   type text ,
-  signature text ,
   available_amount  numeric(32,8) ,
   confirmed_amount  numeric(32,8) ,
   canceled_amount  numeric(32,8) ,
   pending_amount  numeric(32,8) ,
-  expire_at  bigint,
   updated_at  timestamp,
-  created_at  timestamp
+  created_at  timestamp,
+  signature text ,
+  expire_at  bigint
 );
 --Update index
 -- create index idx_mist_myorders_v4 on mist_orders (trader_address, market_id,status,side,updated_at);
@@ -115,14 +113,14 @@ create table mist_orders_tmp(
   amount  numeric(32,8) ,
   status text ,
   type text ,
-  signature text ,
   available_amount  numeric(32,8) ,
   confirmed_amount  numeric(32,8) ,
   canceled_amount  numeric(32,8) ,
   pending_amount  numeric(32,8) ,
-  expire_at  bigint,
   updated_at  timestamp,
-  created_at  timestamp
+  created_at  timestamp,
+  signature text ,
+  expire_at  bigint
 );
 
 create index  idx_mist_orders_tmp_matche on mist_orders_tmp (market_id, side, price, available_amount);

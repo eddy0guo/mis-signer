@@ -1409,7 +1409,6 @@ export default () => {
        "result": [
            {
                "id": "a55b5c0b6e269a5851ecb40def6191a77c5c6e4d57106f402339edbe60a51fa9",
-               "trade_hash": "0x53f3fe73e5a90292070f168fc22786208532b80d5207e195cacb9c98ddc4ffde",
                "transaction_id": 40717,
                "transaction_hash": null,
                "status": "matched",
@@ -1459,7 +1458,6 @@ export default () => {
        "result": [
            {
                "id": "a55b5c0b6e269a5851ecb40def6191a77c5c6e4d57106f402339edbe60a51fa9",
-               "trade_hash": "0x53f3fe73e5a90292070f168fc22786208532b80d5207e195cacb9c98ddc4ffde",
                "transaction_id": 40717,
                "transaction_hash": null,
                "status": "matched",

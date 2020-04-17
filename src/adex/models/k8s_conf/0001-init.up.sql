@@ -27,7 +27,6 @@ create table mist_markets(
 -- trades table
 create table mist_trades(
   id text PRIMARY KEY,
-  trade_hash text,
   transaction_id integer ,
   transaction_hash text,
   status text ,
@@ -53,7 +52,6 @@ create index idx_mist_trades_delete on mist_trades (status,created_at);
 
 create table mist_trades_tmp(
   id text PRIMARY KEY,
-  trade_hash text,
   transaction_id integer ,
   transaction_hash text,
   status text ,
@@ -89,9 +87,10 @@ create table mist_orders(
   confirmed_amount  numeric(32,8) ,
   canceled_amount  numeric(32,8) ,
   pending_amount  numeric(32,8) ,
-
   updated_at  timestamp,
-  created_at  timestamp
+  created_at  timestamp,
+  signature text ,
+  expire_at  bigint
 );
 --Update index
 -- create index idx_mist_myorders_v4 on mist_orders (trader_address, market_id,status,side,updated_at);
@@ -118,9 +117,10 @@ create table mist_orders_tmp(
   confirmed_amount  numeric(32,8) ,
   canceled_amount  numeric(32,8) ,
   pending_amount  numeric(32,8) ,
-
   updated_at  timestamp,
-  created_at  timestamp
+  created_at  timestamp,
+  signature text ,
+  expire_at  bigint
 );
 
 create index  idx_mist_orders_tmp_matche on mist_orders_tmp (market_id, side, price, available_amount);
@@ -139,7 +139,7 @@ create table mist_transactions(
 );
 --Update index
 -- create unique index idx_mist_transactions_pendingTX on mist_transactions (created_at,status,transaction_hash,id);
-create unique index idx_mist_transactions_pendingtx2 on mist_transactions (created_at, status, transaction_hash)
+create unique index idx_mist_transactions_pendingtx2 on mist_transactions (created_at, status, transaction_hash);
 
 
 create table mist_bridge(
@@ -147,12 +147,12 @@ create table mist_bridge(
   address  text default '',
   token_name text default '',
   amount numeric(32,8) default 0,
-  side  text default '', --asset2coin,coin2asset
+  side  text default '', 
   master_txid text default '',
   master_txid_status text default '',
   child_txid  text default '',
   child_txid_status  text default '',
-  fee_asset  text default '', ---提现和充值的时候在master侧扣钱
+  fee_asset  text default '', 
   fee_amount  text default '',
   updated_at  timestamp default now(),
   created_at  timestamp default now()

@@ -61,7 +61,6 @@ export default class Engine {
 
             const trade: ITrade = {
                 id: null,
-                trade_hash: null,
                 transaction_id: null,
                 transaction_hash: null,
                 status: 'matched', // 匹配完成事matched，打包带确认pending，确认ok为successful，失败为failed
@@ -141,7 +140,6 @@ export default class Engine {
             };
 
             trades[i].transaction_id = transaction_id;
-            trades[i].trade_hash = await this.utils.orderHashBytes(trade_info);
 
             trades_arr.push(this.utils.arr_values(trades[i]));
         }
