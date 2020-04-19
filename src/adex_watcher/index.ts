@@ -59,8 +59,8 @@ class Watcher {
 
         const updateTime = this.utils.get_current_time();
         const [get_receipt_err, contract_status] = await to(this.utils.get_receipt_log(transaction[0].transaction_hash));
-        // 直接在sql里过滤待确认txid，安全起见对找不到的交易仍多做4次检查
-        const checkTimes = 10;
+        // 直接在sql里过滤待确认txid，安全起见对找不到的交易仍多做4次检查,实际运行中发现30秒没确认de交易这里，放到到60次
+        const checkTimes = 60;
         if (get_receipt_err && this.getReceiptTimes <= checkTimes) {
             console.error(`[ADEX Watcher Pending]:get_receipt_err ${get_receipt_err},It's been retried ${this.getReceiptTimes} times`);
             setTimeout(() => {
@@ -163,7 +163,6 @@ class Watcher {
         let [baseToken, quoteToken] = market_id.split('-');
         quoteToken = FREEZE_PREFIX + quoteToken;
         baseToken = FREEZE_PREFIX + baseToken;
-        console.log('start updateFreeze');
         if (taker_side === 'buy'){
             const takerQuoteRes = await this.hgetAsync(taker, quoteToken);
             const takerQuote = +takerQuoteRes.toString();
