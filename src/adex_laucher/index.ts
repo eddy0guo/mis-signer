@@ -12,7 +12,7 @@ import LogUnhandled from '../common/LogUnhandled';
 import {AsimovWallet} from '@fingo/asimov-wallet';
 import {ITrade} from '../../dist/adex/interface';
 import * as redis from 'redis';
-import { promisify } from 'util';
+import {promisify} from 'util';
 
 class Launcher {
     private db: DBClient;
@@ -123,54 +123,52 @@ class Launcher {
         }
         return processOrders;
     }
+
     // 按照合约逻辑进行本地账本更新
-    async updateLocalBook(tx_trades: ITrade[]) {
+    async updateLocalBook(tx_trades: ITrade[]): Promise<void> {
         const hgetAsync = promisify(this.redisClient.hget).bind(this.redisClient);
         console.log('update local book on redis');
         for (const trade of tx_trades) {
-            const {taker_side,price,amount,taker,maker} = trade;
+            const {taker_side, price, amount, taker, maker} = trade;
             const [baseToken, quoteToken] = trade.market_id.split('-');
-            if (taker_side === 'buy'){
+            if (taker_side === 'buy') {
                 // @ts-ignore
-                const [takerBaseErr,takerBaseRes] = await to(hgetAsync(taker, baseToken));
+                const takerBaseRes = await hgetAsync(taker, baseToken);
                 const takerBase = +takerBaseRes.toString();
-                await this.redisClient.HMSET(taker, baseToken, NP.plus(takerBase, NP.times(amount,0.995)));
+                await this.redisClient.HMSET(taker, baseToken, NP.plus(takerBase, NP.times(amount, 0.995)));
                 //
-                const [takeQuoteErr,takerQuoteRes] = await to(hgetAsync(taker, quoteToken));
+                const takerQuoteRes = await hgetAsync(taker, quoteToken);
                 const takerQuote = +takerQuoteRes.toString();
-                await this.redisClient.HMSET(taker, quoteToken, NP.minus(takerQuote, NP.times(amount,price)));
-                console.log('gxy123--',taker, quoteToken,
-                    takerQuote,amount,price,NP.minus(takerQuote, NP.times(amount,price)));
+                await this.redisClient.HMSET(taker, quoteToken, NP.minus(takerQuote, NP.times(amount, price)));
+                console.log('gxy123--', taker, quoteToken,
+                    takerQuote, amount, price, NP.minus(takerQuote, NP.times(amount, price)));
                 //
-                const [makerBaseErr,makerBaseRes] = await to(hgetAsync(maker, baseToken));
+                const makerBaseRes = await hgetAsync(maker, baseToken);
                 const makerBase = +makerBaseRes.toString();
                 await this.redisClient.HMSET(maker, baseToken, NP.minus(makerBase, amount));
                 //
-                const [makerQuoteErr,makerQuoteRes] = await to(hgetAsync(maker, quoteToken));
+                const makerQuoteRes = await hgetAsync(maker, quoteToken);
                 const makerQuote = +makerQuoteRes.toString();
-                await this.redisClient.HMSET(maker, quoteToken, NP.plus(makerQuote, NP.times(amount,price,0.995)));
-                console.log('gxy1234--',maker, quoteToken,
-                    makerQuote,amount,price,NP.minus(makerQuote, NP.times(amount,price,0.995)));
-            }else if (taker_side === 'sell'){
+                await this.redisClient.HMSET(maker, quoteToken, NP.plus(makerQuote, NP.times(amount, price, 0.995)));
+            } else if (taker_side === 'sell') {
                 // @ts-ignore
-                const [takerBaseErr,takerBaseRes] = await to(hgetAsync(taker, baseToken));
+                const takerBaseRes = await hgetAsync(taker, baseToken);
                 const takerBase = +takerBaseRes.toString();
-                await this.redisClient.HMSET(taker, baseToken, NP.minus(takerBase,amount));
+                await this.redisClient.HMSET(taker, baseToken, NP.minus(takerBase, amount));
 
-                const [takeQuoteErr,takerQuoteRes] = await to(hgetAsync(taker, quoteToken));
+                const takerQuoteRes = await hgetAsync(taker, quoteToken);
                 const takerQuote = +takerQuoteRes.toString();
-                await this.redisClient.HMSET(taker, quoteToken, NP.plus(takerQuote,NP.times(amount,price,0.995)));
+                await this.redisClient.HMSET(taker, quoteToken, NP.plus(takerQuote, NP.times(amount, price, 0.995)));
 
-                const [makerQuoteErr,makerQuoteRes] = await to(hgetAsync(maker, quoteToken));
+                const makerQuoteRes = await hgetAsync(maker, quoteToken);
                 const makerQuote = +makerQuoteRes.toString();
-                await this.redisClient.HMSET(maker, quoteToken, NP.minus(makerQuote, NP.times(amount,price)));
+                await this.redisClient.HMSET(maker, quoteToken, NP.minus(makerQuote, NP.times(amount, price)));
 
-                const [makerBaseErr,makerBaseRes] = await to(hgetAsync(maker, baseToken));
+                const makerBaseRes = await hgetAsync(maker, baseToken);
                 const makerBase = +makerBaseRes.toString();
-                await this.redisClient.HMSET(maker, baseToken, NP.plus(makerBase, NP.times(amount,0.995)));
-            }
-            else{
-                console.error('[ADEX_LAUNCHER]:updateLocalBook unknown side',taker_side);
+                await this.redisClient.HMSET(maker, baseToken, NP.plus(makerBase, NP.times(amount, 0.995)));
+            } else {
+                console.error('[ADEX_LAUNCHER]:updateLocalBook unknown side', taker_side);
                 return;
             }
         }
@@ -191,7 +189,11 @@ class Launcher {
         const processOrders = await this.generateProcessOrders(tx_trades);
         const [err, txid] = await to(this.mist.matchorder(processOrders));
         if (!err) {
-            await this.updateLocalBook(tx_trades);
+            const [updateLocalBookErr, updateLocalBookRes] = await to(this.updateLocalBook(tx_trades));
+            if (updateLocalBookErr) {
+                console.error('[ADEX LAUCNHER]', updateLocalBookErr);
+                process.exit(-1);
+            }
             const updatedInfo = [
                 'pending',
                 txid,
