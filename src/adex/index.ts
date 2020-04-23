@@ -313,31 +313,20 @@ export default () => {
                     asset_balance = assets_balance[j].value;
                 }
             }
-
-            let freeze_amount = 0;
-            const freeze_result = await client.get_freeze_amount([
-                obj.address,
+            const available_amount = await get_available_erc20_amount(
+                address,
                 token_arr[i].symbol,
-            ]);
-            if (freeze_result && freeze_result.length > 0) {
-                for (const freeze of freeze_result) {
-                    if (freeze.side === 'buy') {
-                        freeze_amount = NP.plus(freeze_amount, freeze.quote_amount);
-                    } else if (freeze.side === 'sell') {
-                        freeze_amount = NP.plus(freeze_amount, freeze.base_amount);
-                    } else {
-                        console.error(`${freeze.side} error`);
-                    }
-                }
-            }
-
+                client,
+                mist_wallet,
+                redisClient
+            );
             const price = await mist_wallet.get_token_price2pi(token_arr[i].symbol);
             const balance_info = {
                 token_symbol: token_arr[i].symbol,
                 erc20_address: token_arr[i].address,
                 erc20_balance: localErc20Err,
                 value: NP.times(localErc20Err, price),
-                erc20_freeze_amount: freeze_amount,
+                erc20_freeze_amount: NP.divide(localErc20Err,available_amount),
                 asim_assetid: token_arr[i].asim_assetid,
                 asim_asset_balance: asset_balance / (1 * 10 ** 8),
                 asset_icon:
@@ -461,7 +450,7 @@ export default () => {
                 });
             }
             logs.push({balanceOf:new Date().toLocaleTimeString(),token:tokenInfo.address,localErc20Err});
-
+            /*
             let freeze_amount = 0;
             const freeze_result = await client.get_freeze_amount([
                 address,
@@ -477,15 +466,22 @@ export default () => {
                         console.error(`${freeze.side} error`);
                     }
                 }
-            }
+            }*/
+
+            const available_amount = await get_available_erc20_amount(
+                address,
+                tokenInfo.symbol,
+                client,
+                mist_wallet,
+                redisClient
+            );
             const price = await mist_wallet.get_token_price2pi(tokenInfo.symbol);
             logs.push({get_token_price2pi:new Date().toLocaleTimeString(),price});
-
             const balance_info = {
                 token_symbol: tokenInfo.symbol,
                 erc20_address: tokenInfo.address,
                 erc20_balance:localErc20Err,
-                erc20_freeze_amount: freeze_amount,
+                erc20_freeze_amount: NP.divide(localErc20Err,available_amount),
                 asim_assetid: tokenInfo.asim_assetid,
                 value: NP.times(localErc20Err, price),
                 token_icon:

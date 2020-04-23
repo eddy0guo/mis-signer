@@ -32,7 +32,7 @@ export default class Engine {
             result[i].amount = +result[i].amount;
             result[i].available_amount = +result[i].available_amount;
             match_orders.push(result[i]);
-            amount += result[i].available_amount;
+            amount = NP.plus(amount,result[i].available_amount);
             if (amount >= message.available_amount) {
                 break;
             }

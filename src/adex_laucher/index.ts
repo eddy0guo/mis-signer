@@ -240,7 +240,7 @@ class Launcher {
                 transaction_id=${trades[0].transaction_id}
                 relayers=${this.relayer.address}`
             );
-            const errInfo = ['matched', null, current_time, trades[0].transaction_id];
+            const errInfo = ['pending', null, current_time, trades[0].transaction_id];
             const [errUpdateErr, errUpdateRes] = await to(this.db.launch_update_trades(errInfo));
             if (errUpdateErr) {
                 this.logger.log(`[ADEX LAUNCHER] call dex matchorder err=${errUpdateErr}`);
