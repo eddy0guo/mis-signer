@@ -55,6 +55,10 @@ async function get_available_erc20_amount(address, symbol, client:DBClient, mist
      */
     const hgetAsync = promisify(redisClient.hget).bind(redisClient);
     const [freezeErr,freezeRes] = await to(hgetAsync(address, 'freeze::' + symbol));
+    if(freezeErr || freezeRes === null){
+        console.error('localBalanceOf2 ',freezeErr,freezeRes);
+        return balance;
+    }
     const freeze = +freezeRes.toString();
     return NP.minus(balance, freeze);
 }
@@ -475,13 +479,14 @@ export default () => {
                 mist_wallet,
                 redisClient
             );
+
             const price = await mist_wallet.get_token_price2pi(tokenInfo.symbol);
             logs.push({get_token_price2pi:new Date().toLocaleTimeString(),price});
             const balance_info = {
                 token_symbol: tokenInfo.symbol,
                 erc20_address: tokenInfo.address,
                 erc20_balance:localErc20Err,
-                erc20_freeze_amount: NP.divide(localErc20Err,available_amount),
+                erc20_freeze_amount: NP.minus(localErc20Err,available_amount),
                 asim_assetid: tokenInfo.asim_assetid,
                 value: NP.times(localErc20Err, price),
                 token_icon:

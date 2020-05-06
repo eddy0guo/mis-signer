@@ -331,7 +331,7 @@ class Watcher {
         // tslint:disable-next-line:no-shadowed-variable
         this.redisClient.hget(address,token_name, async (err, value) => {
             console.log(value); // > "bar"
-            await this.redisClient.HMSET(address, token_name, NP.minus(value,amount));
+            await this.redisClient.HMSET(address, token_name, NP.minus(value,burn_amount));
         });
         setTimeout(async () => {
             const [get_receipt_err, child_txid_status] = await to(this.utils.get_receipt_log(child_txid));
