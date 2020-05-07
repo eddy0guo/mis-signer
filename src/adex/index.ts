@@ -330,7 +330,7 @@ export default () => {
                 erc20_address: token_arr[i].address,
                 erc20_balance: localErc20Err,
                 value: NP.times(localErc20Err, price),
-                erc20_freeze_amount: NP.divide(localErc20Err,available_amount),
+                erc20_freeze_amount: NP.minus(localErc20Err,available_amount),
                 asim_assetid: token_arr[i].asim_assetid,
                 asim_asset_balance: asset_balance / (1 * 10 ** 8),
                 asset_icon:
