@@ -4,15 +4,17 @@ import {Router} from 'express';
 
 import {chain} from '../wallet/api/chain';
 
-import { ITrade, IPoolInfo } from './interface'
+import {IPoolInfo, ITrade} from './interface'
 import MistWallet from '../adex/api/mist_wallet';
 import OrderAPI from '../adex/api/order';
 import Utils from '../adex/api/utils';
 import DBClient from './models/db';
 
 import mist_config from '../cfg';
-import Asset from '../wallet/contract/Asset';
 import mistConfig from '../cfg';
+import Asset from '../wallet/contract/Asset';
+import {errorCode} from '../error_code'
+
 
 const express_config = [
     {
@@ -61,7 +63,7 @@ async function get_price(base_token_name :string, quote_token_name: string, amou
         for (const index in base_bids) {
             if (!base_bids[index]) continue;
             const tmp_amount = base_amount;
-            base_amount += +base_bids[index][1];
+            base_amount = NP.plus(base_amount,+base_bids[index][1]);
             if (base_amount >= amount) {
                 base_value += NP.times(amount - tmp_amount, base_bids[index][0]);
                 break;
@@ -255,6 +257,7 @@ export default () => {
         const result = {recordsRes: records, totalLength};
         res.json({
             success: (!records && totalLengthErr) ? false : true,
+            errorCode: (!records && totalLengthErr) ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
             result,
             err: recordsErr,
         });
@@ -303,6 +306,7 @@ export default () => {
         if (err || !record) {
             return res.json({
                 success: false,
+                errorCode: errorCode.EXTERNAL_DEPENDENCIES_ERROR,
                 err,
             });
         }
@@ -416,6 +420,7 @@ export default () => {
             );
             res.json({
                 success: !price ? false : true,
+                errorCode: !price ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
                 result: price,
                 err,
             });
@@ -443,6 +448,7 @@ export default () => {
         const [err, result] = await to(psql_db.my_express_length([address]));
         res.json({
             success: !result ? false : true,
+            errorCode: !result ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
             result,
             err,
         });
@@ -483,6 +489,7 @@ export default () => {
             console.error('[ADEX EXPRESS]::(balanceOf):', assets_balance_err, assets_balance_result);
             return res.json({
                 success: false,
+                errorCode: errorCode.EXTERNAL_DEPENDENCIES_ERROR ,
                 err: assets_balance_err,
             });
         }
@@ -567,11 +574,13 @@ export default () => {
                 if (insertExpressErr || !insertExpressRes) console.error('[ADEX EXPRESS]::(insert_express):', insertExpressErr, insertExpressRes);
                 res.json({
                     success: insertExpressRes ? true : false,
+                    errorCode: insertExpressRes ? errorCode.SUCCESSFUL : errorCode.EXTERNAL_DEPENDENCIES_ERROR ,
                     trade_id: !insertExpressRes ? null : info.trade_id,
                 });
             }
             res.json({
                 success: false,
+                errorCode: errorCode.EXTERNAL_DEPENDENCIES_ERROR ,
                 err: base_err,
             });
 
@@ -598,11 +607,14 @@ export default () => {
         const {quote_token, quote_amount} = req.params;
         const asset = new Asset(mist_config.asimov_master_rpc);
         let [success, result, err] = [null, null, null];
+        // @ts-ignore
+        // tslint:disable-next-line:no-shadowed-variable
+        let code = errorCode.SUCCESSFUL;
         const [balancesErr, balances] = await to(asset.get_asset_balances(mist_wallet, mist_config.express_address, quote_token));
         if (!balances || !balances[0]) {
             success = false;
             err = balancesErr;
-
+            code = errorCode.EXTERNAL_DEPENDENCIES_ERROR;
         } else if (+quote_amount > balances[0].asim_asset_balance / 2) {
             success = true;
             result = false;
@@ -613,6 +625,7 @@ export default () => {
         }
         res.json({
             success,
+            errorCode:code,
             result,
             err
         });

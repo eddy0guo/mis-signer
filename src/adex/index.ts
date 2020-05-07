@@ -25,6 +25,7 @@ import {Networks} from 'bitcore-lib';
 import add = Networks.add;
 import * as redis from 'redis';
 import {promisify} from 'util';
+import {errorCode} from '../error_code'
 
 // TODO :  这个RPC请求很高频，可能成为性能瓶颈
 // 1 优化可能：rpc请求加入块高度缓存，这样一个块高度只请求一次（已在wallet sdk完成）
@@ -94,6 +95,7 @@ export default () => {
         } else {
             res.json({
                 success: true,
+                errorCode: errorCode.INVALID_PARAMS,
                 err: 'support readonly',
             });
         }
@@ -144,6 +146,7 @@ export default () => {
             );
             return res.json({
                 success: false,
+                errorCode: errorCode.EXTERNAL_DEPENDENCIES_ERROR,
             });
         }
         res.json({
@@ -294,6 +297,7 @@ export default () => {
             console.error('[MIST SIGNER]::(asset.balanceOf):', err4, result4);
             return res.json({
                 success: false,
+                errorCode:errorCode.EXTERNAL_DEPENDENCIES_ERROR,
                 err: err4,
             });
         }
@@ -307,6 +311,7 @@ export default () => {
                 console.error('[MIST SIGNER]::(token.balanceOf):', err, localErc20Err);
                 return res.json({
                     success: false,
+                    errorCode:errorCode.EXTERNAL_DEPENDENCIES_ERROR,
                     err,
                 });
             }
@@ -450,28 +455,11 @@ export default () => {
                 console.error(err);
                 return res.json({
                     success: false,
+                    errorCode:errorCode.EXTERNAL_DEPENDENCIES_ERROR,
                     err,
                 });
             }
             logs.push({balanceOf:new Date().toLocaleTimeString(),token:tokenInfo.address,localErc20Err});
-            /*
-            let freeze_amount = 0;
-            const freeze_result = await client.get_freeze_amount([
-                address,
-                tokenInfo.symbol,
-            ]);
-            if (freeze_result && freeze_result.length > 0) {
-                for (const freeze of freeze_result) {
-                    if (freeze.side === 'buy') {
-                        freeze_amount = NP.plus(freeze_amount, freeze.quote_amount);
-                    } else if (freeze.side === 'sell') {
-                        freeze_amount = NP.plus(freeze_amount, freeze.base_amount);
-                    } else {
-                        console.error(`${freeze.side} error`);
-                    }
-                }
-            }*/
-
             const available_amount = await get_available_erc20_amount(
                 address,
                 tokenInfo.symbol,
@@ -499,8 +487,6 @@ export default () => {
         }
 
         logs.push({end:new Date().toLocaleTimeString()});
-        console.log('erc20_balances_logs',logs);
-
         res.json({
             success: true,
             result: balances,
@@ -633,6 +619,7 @@ export default () => {
         if (!verifyRes) {
             return res.json({
                 success: false,
+                errorCode: errorCode.VERIFY_FAILED,
                 err: 'verify failed' + verifyErr,
             });
         }
@@ -640,22 +627,24 @@ export default () => {
         if (now > expire_at) {
             return res.json({
                 success: false,
+                errorCode:errorCode.SIGNATURE_EXPIRED,
                 err: 'The order signature has expired',
             });
         }
         if (!(utils.judge_legal_num(+amount) && utils.judge_legal_num(+price))) {
             return res.json({
                 success: false,
+                errorCode:errorCode.INVALID_PARAMS,
                 err: 'The precision of quantity and price is only supported up to the fourth decimal point',
             });
         }
 
-        // 参考binance下单价格限制在盘口的上下五倍
         const [last_trade_err, last_trade] = await to(trades.list_trades(market_id));
         if (last_trade_err || !last_trade) {
             console.error('[MIST SIGNER]:(trades.list_trades):', last_trade_err, last_trade);
             return res.json({
                 success: false,
+                errorCode:errorCode.EXTERNAL_DEPENDENCIES_ERROR,
                 err: last_trade_err,
             });
         }
@@ -671,6 +660,7 @@ export default () => {
         if (price < min_limit || price > max_limit) {
             return res.json({
                 success: false,
+                errorCode:errorCode.INVALID_PARAMS,
                 err: `The price must be between ${min_limit} and ${max_limit}`,
             });
         }
@@ -689,6 +679,7 @@ export default () => {
                 console.log(`${market_id} base  balance is not enoungh,available amount is ${available_quota},but your want to sell ${amount}`)
                 return res.json({
                     success: false,
+                    errorCode:errorCode.BALANCE_INSUFFICIENT,
                     err: `quotation  balance is not enoungh,available amount is ${available_quota},but your order value is ${quota_amount}`,
                 });
             }
@@ -704,12 +695,14 @@ export default () => {
                 console.log(`${market_id} base  balance is not enoungh,available amount is ${available_base},but your want to sell ${amount}`)
                 return res.json({
                     success: false,
+                    errorCode:errorCode.BALANCE_INSUFFICIENT,
                     err: `${market_id} base  balance is not enoungh,available amount is ${available_base},but your want to sell ${amount}`,
                 });
             }
         } else {
             return res.json({
                 success: false,
+                errorCode:errorCode.INVALID_PARAMS,
                 err: `side ${side} is not supported`,
             });
         }
@@ -737,6 +730,7 @@ export default () => {
         const [err, result2] = await to(order.build(message,redisClient));
         res.json({
             success: err ? false : true,
+            errorCode: err ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
             result: err ? null : orderhash,
             err,
         });
@@ -773,12 +767,14 @@ export default () => {
         if (!orderInfo || orderInfo.length <= 0) {
             return res.json({
                 success: false,
+                errorCode: errorCode.INVALID_PARAMS,
                 err: 'Order ID Not Found.',
             });
         }
         if(orderInfo[0].available_amount <= 0){
             return res.json({
                 success: false,
+                errorCode: errorCode.INVALID_PARAMS,
                 err: 'Orders have already been completed or cancelled',
             });
         }
@@ -786,6 +782,7 @@ export default () => {
         if (!verifyRes) {
             return res.json({
                 success: false,
+                errorCode: errorCode.VERIFY_FAILED,
                 err: 'Verify failed' + verifyErr,
             });
         }
@@ -801,6 +798,7 @@ export default () => {
         const [err, result] = await to(order.cancle_order(message,redisClient));
         res.json({
             success: err ? false : true,
+            errorCode: err ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
             result,
             err,
         });
@@ -842,6 +840,7 @@ export default () => {
             if(orderInfoErr || !orderInfoRes || orderInfoRes.length === 0){
                 return res.json({
                     success: false,
+                    errorCode: errorCode.INVALID_PARAMS,
                     err: 'get order failed ' + orderInfoErr,
                 });
             }
@@ -849,6 +848,7 @@ export default () => {
             if (!verifyRes) {
                 return res.json({
                     success: false,
+                    errorCode: errorCode.VERIFY_FAILED,
                     err: 'Verify failed' + verifyErr,
                 });
             }
@@ -877,39 +877,10 @@ export default () => {
 
         return res.json({
             success: errs.length === 0 ? true : false,
+            errorCode: errs.length !== 0 ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
             err: errs,
         });
     });
-
-
-    /**
-     * @api {post} /adex/my_trades_length/:address my_trades_length(Obsolete)
-     * @apiDescription 获取用户历史成交总数
-     * @apiName my_trades_length
-     * @apiGroup adex
-     * @apiSuccess {json} result
-     * @apiSuccessExample {json} Success-Response:
-     {
-        "success": true,
-        "result": "748549",
-        "err": null
-    }
-     * @apiSampleRequest http://119.23.181.166:21000/adex/my_trades_length/0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9
-     * @apiVersion 1.0.0
-     */
-    adex.all('/my_trades_length/:address', async (req, res) => {
-        const {address} = req.params;
-        const [start, end] = ['2019-01-01 00:00:00.000','2031-01-01 00:00:00.000'];
-        const [err, result] = await to(trades.my_trades_length(address,start,end));
-
-        res.json({
-            success: !result ? false : true,
-            result,
-            err,
-        });
-    });
-
-
     /**
      * @api {post} /adex/my_orders_v2/:address/:page/:perpage/:status1/:status2 my_orders_v2（Obsolete）
      * @apiDescription Gets the order record of the relevant status,（pending,partial_filled,cancled，full_filled）
@@ -1133,8 +1104,8 @@ export default () => {
      * @apiParam {string} status2                   "pending","partial_filled","cancled","full_filled",Set to "" If you don't want to filter any state
      * @apiParam {string} market_id                 market ID,Set to "" if you want to get all token
      * @apiParam {string} side                      "buy","sell",Set to "" if you want to get all side
-     * @apiParam {string} start                     unix time
-     * @apiParam {string} end                       unix time
+     * @apiParam {number} start                     unix time
+     * @apiParam {number\} end                       unix time
      * @apiParam {boolean} need_total_length        To calculate paging usage, This is a time-consuming option，you should only request once
      * @apiParamExample {json} Request-Example:
      空字符串表示此条件不过滤，status1不能为空，不想过滤时间就设置为0到一个大数(9999999999000)
@@ -1253,6 +1224,7 @@ export default () => {
 
         res.json({
             success: (!records && totalLengthErr) ? false : true,
+            errorCode: (!records && totalLengthErr) ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
             result,
             err,
         });
@@ -1351,6 +1323,7 @@ export default () => {
         const [err, result] = await to(market.list_online_markets_v2());
         res.json({
             success: !result ? false : true,
+            errorCode: !result ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
             result,
             err,
         });
@@ -1560,6 +1533,7 @@ export default () => {
         const result = {recordsRes: records, totalLength};
         res.json({
             success: (!records && totalLengthErr) ? false : true,
+            errorCode: (!records && totalLengthErr) ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
             result,
             err: recordsErr,
         });

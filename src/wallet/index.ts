@@ -1,18 +1,19 @@
 import {Router} from 'express';
 import to from 'await-to-js';
 import NP from '../common/NP';
-import {AsimovWallet, AsimovConst} from '@fingo/asimov-wallet';
+import {AsimovConst, AsimovWallet} from '@fingo/asimov-wallet';
 import * as cryptoSha256 from 'crypto';
 
 import {chain} from './api/chain';
 
-import { ListFingoConfig, CoinAssetFeeConfig } from './interfacce'
+import {CoinAssetFeeConfig, ListFingoConfig} from './interfacce'
 import mist_config from '../cfg';
 import adex_utils from '../adex/api/utils';
 import psql from '../adex/models/db';
 import Asset from './contract/Asset';
 import MistWallet from '../adex/api/mist_wallet';
 import Token from './contract/Token';
+import {errorCode} from '../error_code'
 
 
 const Coin2AssetFee: CoinAssetFeeConfig [] = [
@@ -94,13 +95,21 @@ export default () => {
                 const [err3, result3] = await to(psql_db.insert_bridge(info_arr));
                 if (err3 || !result3) {
                     console.log('[MIST SIGNER]::(psql_db.insert_bridge):', err3, result3);
-                    res.json({success: false, err: err3});
+                    res.json({
+                        success: false,
+                        errorCode: errorCode.EXTERNAL_DEPENDENCIES_ERROR,
+                        err: err3
+                    });
                 }
 
                 return res.json({success: true, id: info.id});
             }
 
-            res.json({success: false, err: master_err});
+            res.json({
+                success: false,
+                errorCode: errorCode.EXTERNAL_DEPENDENCIES_ERROR,
+                err: master_err
+            });
         }
     );
     /**
@@ -141,12 +150,20 @@ export default () => {
         const [balancesErr, balances] = await to(asset.get_asset_balances(mist_wallet, mist_config.bridge_address, token_name));
         if (amount > balances[0].asim_asset_balance) {
             console.error(`bridge account  only have ${balances[0].asim_asset_balance} ${token_name}`);
-            return res.json({success: false, err: 'The official account have no enough balance'});
+            return res.json({
+                success: false,
+                errorCode:errorCode.OFFICIAL_RESOURCES_INSUFFICIENT,
+                err: 'The official account have no enough balance'
+            });
         }
 
         const current_time = new Date().getTime();
         if (+current_time > expire_time) {
-            return res.json({success: false, err: 'sign data expire'});
+            return res.json({
+                success: false,
+                errorCode:errorCode.SIGNATURE_EXPIRED,
+                err: 'sign data expire'
+            });
         }
 
         const tokens = await psql_db.get_tokens([token_name]);
@@ -165,6 +182,7 @@ export default () => {
         if (!verifyRes) {
             return res.json({
                 success: false,
+                errorCode:errorCode.VERIFY_FAILED,
                 err: 'verify failed' + verifyErr,
             });
         }
@@ -175,6 +193,7 @@ export default () => {
                 if (amount <= fee_amount) {
                     return res.json({
                         success: false,
+                        errorCode:errorCode.FEE_INSUFFICIENT,
                         err: 'fee is not enough',
                     });
                 }
@@ -203,6 +222,7 @@ export default () => {
 
         return res.json({
             success: !result3 ? false : true,
+            errorCode:!result3 ? errorCode.EXTERNAL_DEPENDENCIES_ERROR:errorCode.SUCCESSFUL,
             id: !result3 ? '' : insert_info.id,
         });
     });
@@ -219,6 +239,7 @@ export default () => {
             if (available_amount < Number(amount)) {
                 return res.json({
                     success: false,
+                    errorCode: errorCode.BALANCE_INSUFFICIENT,
                     err: `Lack of balance,you have ${available_amount} ${token_name} but want spend ${amount}`,
                 });
             }
@@ -226,6 +247,7 @@ export default () => {
             if (expire_time <= 0 || expire_time > 3600) {
                 return res.json({
                     success: false,
+                    errorCode: errorCode.SIGNATURE_EXPIRED,
                     err: 'the expire_time must be less than 1 hour and more than 0',
                 });
             }
@@ -287,6 +309,7 @@ export default () => {
         if (err) {
             return res.json({
                 success: false,
+                errorCode: errorCode.EXTERNAL_DEPENDENCIES_ERROR,
                 err,
             });
         } else if (convert && convert.length === 0) {
@@ -424,6 +447,7 @@ export default () => {
             const result = {records, totalLength};
             res.json({
                 success: (!records && totalLengthErr) ? false : true,
+                errorCode: (!records && totalLengthErr) ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
                 result,
                 err,
             });
