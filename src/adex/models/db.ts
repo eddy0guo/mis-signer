@@ -138,7 +138,21 @@ export default class DBClient {
             console.error(`insert_order_v2_tmp faied ${err_tmp},insert data= ${orderMessage}`, result_tmp);
             await this.handlePoolError(err_tmp);
         }
+        return JSON.stringify(result.rows);
+    }
 
+    async insert_order_v3(orderMessage: any[]): Promise<string> {
+        const [err, result]: [any, any] = await to(this.queryWithLog('insert into mist_orders2 values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)', orderMessage));
+        if (err) {
+            console.error(`insert_order_v2 faied ${err},insert data= ${orderMessage}`);
+            await this.handlePoolError(err);
+        }
+
+        const [err_tmp, result_tmp]: [any, any] = await to(this.queryWithLog('insert into mist_orders_tmp2 values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)', orderMessage));
+        if (err_tmp) {
+            console.error(`insert_order_v2_tmp faied ${err_tmp},insert data= ${orderMessage}`, result_tmp);
+            await this.handlePoolError(err_tmp);
+        }
         return JSON.stringify(result.rows);
     }
 
@@ -298,12 +312,20 @@ export default class DBClient {
             filter.splice(7,1);
             marketFilter = '';
         }
-
-        let sideFilter = 'and side=$9 ';
-        if(filter[8] === ''){
-            filter.splice(8,1);
-            sideFilter = '';
-        }
+		let sideFilter = '';
+		if(marketFilter === ''){
+        	sideFilter = 'and side=$8 ';
+			if(filter[7] === ''){
+				filter.splice(7,1);
+				sideFilter = '';
+			}
+		}else{
+        	sideFilter = 'and side=$9 ';
+			if(filter[8] === ''){
+				filter.splice(8,1);
+				sideFilter = '';
+			}
+		}
 
         const sql = `SELECT * FROM mist_orders where trader_address=$1 ${marketFilter} ${sideFilter} and (status=$4 or status=$5)  and created_at>$6 and created_at<$7 order by created_at desc limit $3 offset $2`;
         const [err, result]: [any, any] = await to(this.queryWithLog(sql, filter));
@@ -635,7 +657,7 @@ export default class DBClient {
                 tradesArr = tradesArr.concat(tradesInfo[index]);
             }
         }
-
+		console.log('abc--%s-%o-',query,tradesArr);
         const [err, result]: [any, any] = await to(this.queryWithLog('insert into mist_trades ' + query, tradesArr));
         if (err) {
             console.error('insert_traders_ failed', err, tradesInfo);
@@ -704,24 +726,34 @@ export default class DBClient {
 
 
     async my_trades4(filter): Promise<ITrade[]> {
+		console.log('ssssss--%o--',filter);
         let marketFilter = 'and market_id=$6 ';
         if(filter[5] === ''){
-            filter.splice(5,1);
+			filter.splice(5,1);
             marketFilter = '';
         }
-
-        let statusFilter = 'and status=$7 ';
-        if(filter[6] === ''){
-            filter.splice(6,1);
-            statusFilter = '';
-        }
-       //  address, offset, perPage,start,end,MarketID,status
+		let statusFilter = '';
+		if(marketFilter === ''){
+			statusFilter = 'and status=$6 '
+			if(filter[5] === ''){
+				filter.splice(5,1);
+				statusFilter = '';
+			}
+		}else{
+			statusFilter = 'and status=$7 '
+            if(filter[6] === ''){
+                filter.splice(6,1);
+                statusFilter = '';
+            }
+		}
+       // address, offset, perPage,start,end,MarketID,status
         const sql = `SELECT * FROM mist_trades where (taker=$1 or maker=$1) and created_at>$4 and created_at<$5 ${marketFilter} ${statusFilter} order by created_at desc limit $3 offset $2`
         const [err, result]: [any, any] = await to(this.queryWithLog(sql, filter));
         if (err) {
-            console.error('my_trades4 failed', err, filter);
+            console.error('my_trades4 failed', err, filter,sql);
             await this.handlePoolError(err);
         }
+		console.error('my_trades4 successful2', err, filter,sql);
         return result.rows;
 
     }

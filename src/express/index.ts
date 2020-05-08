@@ -201,7 +201,7 @@ export default () => {
      {
         "success": true,
         "result": {
-            "recordsRes": [
+            "records": [
                 {
                     "trade_id": "d053a8824c4d13538dec9c65b24e7ce7acc21c33f123fd59ce0b8f98569114ee",
                     "address": "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
@@ -254,7 +254,7 @@ export default () => {
         if(need_total_length === true){
             [totalLengthErr,totalLength] = await to(psql_db.my_express_length_v2([address,startDate,endDate]));
         }
-        const result = {recordsRes: records, totalLength};
+        const result = {records, totalLength};
         res.json({
             success: (!records && totalLengthErr) ? false : true,
             errorCode: (!records && totalLengthErr) ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
