@@ -10,7 +10,7 @@ import {Logger} from '../common/Logger';
 import LogUnhandled from '../common/LogUnhandled';
 
 import {AsimovWallet} from '@fingo/asimov-wallet';
-import {ITrade} from '../../dist/adex/interface';
+import {ITrade} from '../../src/adex/interface';
 import * as redis from 'redis';
 import {promisify} from 'util';
 
@@ -58,6 +58,67 @@ class Launcher {
         } else {
             this.logger.log('Count Error', this.errorCount, err);
         }
+    }
+    async verifyLocalTXid(txid){
+        // 经验值10秒内找不到就判断未上链
+        let   tryTimes = 20;
+        while(tryTimes--){
+            const [err, txinfo] = await to(this.relayer.commonTX.detail(txid));
+            if (err || !txinfo) {
+                console.log('[UTILS] asimov_getRawTransaction failed', err,txid,tryTimes);
+                await this.sleep(500);
+            }else{
+                return true;
+            }
+        }
+        return false;
+    }
+    async updateDataBase(tx_trades,trades,txid,current_time){
+        const [updateLocalBookErr, updateLocalBookRes] = await to(this.updateLocalBook(tx_trades));
+        if (updateLocalBookErr) {
+            console.error('[ADEX LAUCNHER]', updateLocalBookErr);
+            process.exit(-1);
+        }
+        const updatedInfo = [
+            'pending',
+            txid,
+            current_time,
+            trades[0].transaction_id,
+        ];
+        await this.db.begin();
+        const [updatedInfoErr, updatedInfoResult] = await to(
+            this.db.launch_update_trades(updatedInfo)
+        );
+        if (!updatedInfoResult) {
+            this.logger.log(
+                `[ADEX LAUCNER]:launch_update_trades failed %o`,
+                updatedInfoErr
+            );
+            await this.db.rollback();
+            return;
+        }
+
+        const TXinfo = [
+            trades[0].transaction_id,
+            txid,
+            trades[0].market_id,
+            'pending',
+            'pending',
+            current_time,
+            current_time,
+        ];
+        const [insertTransactionsErr, insertTransactionsResult] = await to(
+            this.db.insert_transactions(TXinfo)
+        );
+        if (!insertTransactionsResult) {
+            this.logger.log(
+                `[ADEX LAUCNER]:launch_update_trades failed %o`,
+                insertTransactionsErr
+            );
+            await this.db.rollback();
+            return;
+        }
+        await this.db.commit();
     }
 
     async generateProcessOrders(tx_trades) {
@@ -188,52 +249,20 @@ class Launcher {
         }
         const processOrders = await this.generateProcessOrders(tx_trades);
         const [err, txid] = await to(this.mist.matchorder(processOrders));
-        if (!err) {
-            const [updateLocalBookErr, updateLocalBookRes] = await to(this.updateLocalBook(tx_trades));
-            if (updateLocalBookErr) {
-                console.error('[ADEX LAUCNHER]', updateLocalBookErr);
-                process.exit(-1);
+        if (!err && !txid.remoteErr) {
+            await this.updateDataBase(tx_trades,trades,txid.remoteTXid,current_time);
+        }else if(!err && txid.remoteErr.message && txid.remoteErr.message.includes('timeout')) {
+            this.logger.log('matchorder catch timeout,local txid ', txid.localTXid,this.tmpTransactionId);
+            const result = await this.verifyLocalTXid(txid.localTXid);
+            if (result === true){
+                await this.updateDataBase(tx_trades,trades,txid.localTXid,current_time);
+            }else{
+                const errInfo = ['pending', null, current_time, trades[0].transaction_id];
+                const [errUpdateErr, errUpdateRes] = await to(this.db.launch_update_trades(errInfo));
+                if (errUpdateErr) {
+                    this.logger.log(`[ADEX LAUNCHER] launch_update_trades err=${errUpdateErr}`);
+                }
             }
-            const updatedInfo = [
-                'pending',
-                txid,
-                current_time,
-                trades[0].transaction_id,
-            ];
-            await this.db.begin();
-            const [updatedInfoErr, updatedInfoResult] = await to(
-                this.db.launch_update_trades(updatedInfo)
-            );
-            if (!updatedInfoResult) {
-                this.logger.log(
-                    `[ADEX LAUCNER]:launch_update_trades failed %o`,
-                    updatedInfoErr
-                );
-                await this.db.rollback();
-                return;
-            }
-
-            const TXinfo = [
-                trades[0].transaction_id,
-                txid,
-                trades[0].market_id,
-                'pending',
-                'pending',
-                current_time,
-                current_time,
-            ];
-            const [insertTransactionsErr, insertTransactionsResult] = await to(
-                this.db.insert_transactions(TXinfo)
-            );
-            if (!insertTransactionsResult) {
-                this.logger.log(
-                    `[ADEX LAUCNER]:launch_update_trades failed %o`,
-                    insertTransactionsErr
-                );
-                await this.db.rollback();
-                return;
-            }
-            await this.db.commit();
         } else {
             this.logger.log(
                 `[ADEX LAUNCHER] call dex matchorder err=${err}
@@ -243,7 +272,7 @@ class Launcher {
             const errInfo = ['pending', null, current_time, trades[0].transaction_id];
             const [errUpdateErr, errUpdateRes] = await to(this.db.launch_update_trades(errInfo));
             if (errUpdateErr) {
-                this.logger.log(`[ADEX LAUNCHER] call dex matchorder err=${errUpdateErr}`);
+                this.logger.log(`[ADEX LAUNCHER] launch_update_trades err=${errUpdateErr}`);
             }
         }
         // 500ms的作用：1、为等待pg磁盘写入的时间，2、防止laucher过快，watcher跟不上，因为wathcer的需要链上确认

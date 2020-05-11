@@ -9,6 +9,7 @@ import {promisify} from 'util';
 import {BullOption} from '../cfg';
 import * as redis from 'redis';
 import {ITrade} from '../adex/interface';
+import Token from '../wallet/contract/Token';
 const FREEZE_PREFIX = 'freeze::';
 
 class Watcher {
@@ -73,6 +74,24 @@ class Watcher {
             status = 'failed';
             console.error(`[ADEX Watcher Pending]:get_receipt_log failed,It's been retried ${this.getReceiptTimes} times,please check  block chain `);
         } else if (contract_status === 'failed') {
+            const trades = await  this.db.get_trades([id]);
+            for (const trade of trades){
+                console.log('contract_status_gxy_failed trade  %o',trade);
+                const [base_token, quota_token] = trade.market_id.split('-');
+                const tokenMaker = new Token(trade.maker);
+                const tokenTaker = new Token(trade.taker);
+                if(trade.taker_side === 'sell'){
+                    const maker_balance = await tokenMaker.localBalanceOf(quota_token,this.redisClient);
+                    const taker_balance = await tokenTaker.localBalanceOf(base_token,this.redisClient);
+                    console.log('contract_status_gxy_failed side=%o maker_balance=%o,takker_balance=%o',
+                        trade.taker_side,maker_balance,taker_balance)
+                }else{
+                     const maker_balance = await tokenMaker.localBalanceOf(base_token,this.redisClient);
+                     const taker_balance = await tokenTaker.localBalanceOf(quota_token,this.redisClient);
+                    console.log('contract_status_gxy_failed side=%o maker_balance=%o,takker_balance=%o',
+                        trade.taker_side,maker_balance,taker_balance)
+                }
+            }
             console.log(`[ADEX Watcher Pending] ${transaction[0].transaction_hash} contract execution log is null`);
         } else {
             console.log(`[ADEX Watcher Pending]::now ${updateTime} get_receipt_log %o contract status %o`, transaction[0], contract_status)
