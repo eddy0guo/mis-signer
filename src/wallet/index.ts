@@ -347,52 +347,6 @@ export default () => {
             });
         }
     });
-
-
-    /**
-     * @api {post} /wallet/my_converts_v3/:address/:token_name/:page/:perpage my_converts_v3(Obsolete)
-     * @apiDescription Gets a record of a user's transfers in a particular asset
-     * @apiName my_converts_v3
-     * @apiGroup wallet
-     * @apiSuccess {json} result
-     * @apiSuccessExample {json} Success-Response:
-     {
-      "success": true,
-      "result": [
-          {
-              "id": "8c4ddabebe95718a37aea074120d3bd133196c01812935ddef42dffcdfd431ac",
-              "address": "0x6602ca6e2820ec98cc68909fdd9f87c7bd23b62000",
-              "token_name": "ETH",
-              "amount": 1,
-              "side": "asset2coin",
-              "master_txid": "225a905c4e7fe2579f0217b49af2496f57424e512eacf2718ef2348a28cabb68",
-              "master_txid_status": "successful",
-              "child_txid": "dc5bf2c1208a832d898bff32e7118f0d558b8c66e26c4bb1e729f3caeebffffe",
-              "child_txid_status": "successful",
-              "fee_asset": "ASIM",
-              "fee_amount": "0.00105252",
-              "updated_at": "2019-12-18T10:06:45.317Z",
-              "created_at": "2019-12-18T10:06:34.273Z"
-          }
-      ],
-      "err": null
-  }
-     * @apiSampleRequest http://119.23.181.166:21000/wallet/my_converts_v3/0x6602ca6e2820ec98cc68909fdd9f87c7bd23b62000/ETH/1/10
-     * @apiVersion 1.0.0
-     */
-    wallet.all(
-        '/my_converts_v3/:address/:token_name/:page/:perpage',
-        async (req, res) => {
-            const {address, token_name, page, perpage} = req.params;
-            const offset = (+page - 1) * +perpage;
-            const [err, result] = await to(
-                psql_db.my_bridge_v3([address, token_name, offset, perpage])
-            );
-            const success = !result ? false : true;
-            res.json({success, result, err});
-        }
-    );
-
     /**
      * @api {post} /express/my_converts_v4 my_converts_v4
      * @apiDescription my bridge records

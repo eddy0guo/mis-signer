@@ -90,11 +90,6 @@ export default class Market {
 
         return onlineMarkets;
     }
-
-    async get_market(market_id): Promise<IMarket[]> {
-        return await this.db.get_market([market_id]);
-    }
-
     // TODO 该方法生产环境无法访问
     async list_market_quotations(): Promise<IMarketQuotation[]> {
 

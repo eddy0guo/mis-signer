@@ -110,22 +110,6 @@ export default class DBClient {
      *orders
      *
      */
-    async insert_order(orderMessage: any[]): Promise<string> {
-        const [err, result]: [any, any] = await to(this.queryWithLog('insert into mist_orders values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)', orderMessage));
-        if (err) {
-            console.error(`insert_order_faied ${err},insert data= ${orderMessage}`);
-            await this.handlePoolError(err);
-        }
-
-        const [err_tmp, result_tmp]: [any, any] = await to(this.queryWithLog('insert into mist_orders_tmp values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)', orderMessage));
-        if (err_tmp) {
-            console.error(`insert_order_tmp_faied ${err_tmp},insert data= ${orderMessage}`, result_tmp);
-            await this.handlePoolError(err_tmp);
-        }
-
-        return JSON.stringify(result.rows);
-    }
-
     async insert_order_v2(orderMessage: any[]): Promise<string> {
         const [err, result]: [any, any] = await to(this.queryWithLog('insert into mist_orders values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)', orderMessage));
         if (err) {
@@ -208,19 +192,6 @@ export default class DBClient {
         return result.rows[0].count;
 
     }
-
-
-    async my_bridge_length(filter): Promise<number> {
-        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT count(1) FROM mist_bridge where address=$1 and created_at>$2 and created_at<$3', filter));
-        if (err) {
-            console.error('my_bridge_length failed ', err, filter);
-            await this.handlePoolError(err);
-        }
-
-        return result.rows[0].count;
-
-    }
-
 
     async my_bridge_length_v2(filter): Promise<number> {
         let tokenFilter = 'and token_name=$4 ';
@@ -742,7 +713,6 @@ export default class DBClient {
 
 
     async my_trades4(filter): Promise<ITrade[]> {
-		console.log('ssssss--%o--',filter);
         let marketFilter = 'and market_id=$6 ';
         if(filter[5] === ''){
 			filter.splice(5,1);
@@ -952,29 +922,6 @@ export default class DBClient {
         }
         return result.rows;
     }
-
-    async list_transactions(): Promise<ITransaction[]> {
-        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_transactions  order by id desc limit 30'));
-        if (err) {
-            console.error('list transactions failed', err);
-            await this.handlePoolError(err);
-        }
-        return result.rows;
-
-    }
-
-
-    async get_transaction(id): Promise<ITransaction[]> {
-        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_transactions where id=$1', id));
-        if (err) {
-            console.error('get transaction failed', err, id);
-            await this.handlePoolError(err);
-        }
-        return result.rows;
-
-    }
-
-
     async update_transactions(update_info): Promise<object[]> {
         const [err, result]: [any, any] = await to(this.clientDB
             .query('UPDATE mist_transactions SET (status,contract_status,updated_at)=($1,$2,$3) WHERE  id=$4', update_info));
@@ -1015,17 +962,6 @@ export default class DBClient {
         return result.rows;
 
     }
-
-
-    async find_user(address): Promise<object[]> {
-        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_users  where address=$1', address));
-        if (err) {
-            console.error('find user failed', err, address);
-            await this.handlePoolError(err);
-        }
-        return result.rows;
-    }
-
     async list_users(): Promise<object[]> {
         const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_users'));
         if (err) {
@@ -1050,19 +986,6 @@ export default class DBClient {
         return result.rows;
 
     }
-
-    async my_bridge(filter_info): Promise<IBridge[]> {
-        const [err, result]: [any, any] = await to(this.queryWithLog(`SELECT ${BRIDGE_SQL} FROM mist_bridge  where address=$1 order by created_at desc limit $3 offset $2`, filter_info));
-        if (err) {
-            console.error('my bridge failed', err, filter_info);
-            await this.handlePoolError(err);
-        }
-
-        return result.rows;
-
-    }
-
-
     async getBridgeMint(symbol:[string]): Promise<number> {
         const sql = 'select sum(amount) from mist_bridge where side=\'asset2coin\' and token_name=$1';
         const [err, result]: [any, any] = await to(this.queryWithLog(sql,symbol));
@@ -1169,18 +1092,6 @@ export default class DBClient {
         return result.rows;
 
     }
-
-    async my_bridge_v3(filter_info): Promise<IBridge[]> {
-        const [err, result]: [any, any] = await to(this.queryWithLog(`SELECT ${BRIDGE_SQL} FROM mist_bridge  where address=$1 and token_name=$2 order by created_at desc limit $4 offset $3`, filter_info));
-        if (err) {
-            console.error('my bridge_v3 failed', err, filter_info);
-            await this.handlePoolError(err);
-        }
-
-        return result.rows;
-
-    }
-
     async my_bridge_v4(filter): Promise<IBridge[]> {
         let tokenFilter = 'and token_name=$6 ';
         if(filter[5] === ''){
@@ -1197,16 +1108,6 @@ export default class DBClient {
         return result.rows;
 
     }
-
-    async insert_converts(info): Promise<string> {
-        const [err, result]: [any, any] = await to(this.queryWithLog('insert into mist_token_convert values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)', info));
-        if (err) {
-            console.error('insert converts failed', err);
-            await this.handlePoolError(err);
-        }
-        return JSON.stringify(result.rows);
-    }
-
     async insert_bridge(info): Promise<string> {
         const [err, result]: [any, any] = await to(this.queryWithLog('insert into mist_bridge values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)', info));
         if (err) {
@@ -1253,11 +1154,6 @@ export default class DBClient {
         }
         return result.rows;
     }
-
-
-    // select distinct(address) from mist_bridge where side='asset2coin' and child_txid is not null;
-
-
     async listBridgeAddress(): Promise<any[]> {
         const sql = 'select distinct(address) from mist_bridge where side=\'asset2coin\' and child_txid is not null';
         const [err, result]: [any, any] = await to(this.queryWithLog(sql));

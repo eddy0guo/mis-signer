@@ -72,22 +72,6 @@ export default class Utils {
         const create_time = date.format(new Date(), 'YYYY-MM-DD HH:mm:ss');
         return create_time + '.' + milli_seconds;
     }
-
-    verify(id, sign): boolean {
-        const Bitcore = this.bitcore;
-        const hashbuf = Buffer.alloc(32, id, 'hex');
-        const publick = new Bitcore.PublicKey(sign.pubkey);
-        const sig = new Bitcore.crypto.Signature();
-        const r = new Bitcore.crypto.BN(sign.r, 'hex');
-        const s = new Bitcore.crypto.BN(sign.s, 'hex');
-        sig.set({
-            r,
-            s,
-        });
-        const result = Bitcore.crypto.ECDSA.verify(hashbuf, sig, publick);
-        return result;
-    }
-
     async verify2(address:string,orderhash: string,sign: string, publicKey: string) {
         const bitcore_lib_2 = require('bitcore-lib');
         if(sign.length !== 132){
@@ -124,50 +108,6 @@ export default class Utils {
 
         return result.logs.length > 0 ? 'successful' : 'failed';
     }
-
-    async orderTobytes(order): Promise<string> {
-        order.taker = order.taker.substr(0, 2) + order.taker.substr(4, 44);
-        order.maker = order.maker.substr(0, 2) + order.maker.substr(4, 44);
-        order.baseToken = order.baseToken.substr(0, 2) + order.baseToken.substr(4, 44);
-        order.quoteToken = order.quoteToken.substr(0, 2) + order.quoteToken.substr(4, 44);
-        order.relayer = order.relayer.substr(0, 2) + order.relayer.substr(4, 44);
-        order.takerSide = ethutil.keccak256(order.takerSide);
-
-        let encode = ethabi.rawEncode(['bytes32', 'address', 'address', 'address', 'address', 'address', 'uint256', 'uint256', 'bytes32'],
-            ['0x45eab75b1706cbb42c832fc66a1bcdaafebcdaea71ed2f08efbf3057c588fcb6',
-                order.taker, order.maker, order.baseToken, order.quoteToken, order.relayer, order.baseTokenAmount, order.quoteTokenAmount, order.takerSide]);
-
-        encode = encode.toString('hex').replace(new RegExp(`00${order.taker.substr(2, 44)}`, 'g'), `66${order.taker.substr(2, 44)}`);
-        encode = encode.replace(new RegExp(`00${order.maker.substr(2, 44)}`, 'g'), `66${order.maker.substr(2, 44)}`);
-        encode = encode.replace(new RegExp(`00${order.baseToken.substr(2, 44)}`, 'g'), `63${order.baseToken.substr(2, 44)}`);
-        encode = encode.replace(new RegExp(`00${order.quoteToken.substr(2, 44)}`, 'g'), `63${order.quoteToken.substr(2, 44)}`);
-        encode = '0x' + encode.replace(new RegExp(`00${order.relayer.substr(2, 44)}`, 'g'), `66${order.relayer.substr(2, 44)}`);
-        /*
-        encode = encode.toString('hex').replace(eval(`/00${order.taker.substr(2, 44)}/g`), `66${order.taker.substr(2, 44)}`);
-        encode = encode.replace(eval(`/00${order.maker.substr(2, 44)}/g`), `66${order.maker.substr(2, 44)}`);
-        encode = encode.replace(eval(`/00${order.baseToken.substr(2, 44)}/g`), `63${order.baseToken.substr(2, 44)}`);
-        encode = encode.replace(eval(`/00${order.quoteToken.substr(2, 44)}/g`), `63${order.quoteToken.substr(2, 44)}`);
-        encode = '0x' + encode.replace(eval(`/00${order.relayer.substr(2, 44)}/g`), `66${order.relayer.substr(2, 44)}`);
-        */
-
-        return encode;
-    }
-
-    async orderHashBytes(order): Promise<string> {
-        return new Promise((resolve, rejects) => {
-            this.orderTobytes(order).then(res => {
-                const reshash = ethutil.keccak256(res);
-                const buf = Buffer.from('\x19\x01');
-                const encode = ethabi.rawEncode(['bytes32', 'bytes32'], ['0x1e026a98781f922f66258de623ab260b5d525da93b3fd8e9b845d83ae3c1711e', reshash]);
-                const endencode = '0x' + buf.toString('hex') + encode.toString('hex');
-                const endhash = '0x' + ethutil.keccak256(endencode).toString('hex');
-                resolve(endhash);
-            }).catch(e => {
-                rejects(e);
-            });
-        });
-    }
-
     judge_legal_num(num): boolean {
         let result = true;
         if (num <= 0) {
@@ -257,21 +197,4 @@ export default class Utils {
 
         return transfer_info;
     }
-
-    async decode_erc20_transfer(txid): Promise<any> {
-        const [err, result] = await to(this.child.rpc.request('asimov_getTransactionReceipt', [txid]));
-        if (err || !result || !result.logs) {
-            console.error(`err ${err} occurred or get ${txid} receipt  have no logs`);
-        }
-        const amount = parseInt(result.logs[0].data, 16);
-        const info = {
-            contract_address: result.logs[0].address,
-            from: '0x' + result.logs[0].topics[1].substring(24),
-            to: '0x' + result.logs[0].topics[2].substring(24),
-            amount: NP.divide(amount, 100000000),
-        };
-
-        return info;
-    }
-
 }
