@@ -252,7 +252,7 @@ class Launcher {
         if (!err && !txid.remoteErr) {
             await this.updateDataBase(tx_trades,trades,txid.remoteTXid,current_time);
         }else if(!err && txid.remoteErr.message && txid.remoteErr.message.includes('timeout')) {
-            this.logger.log('matchorder catch timeout,local txid ', txid.localTXid,this.tmpTransactionId);
+            this.logger.log('matchorder catch timeout,local txid ', txid.remoteErr.message,txid.localTXid,this.tmpTransactionId);
             const result = await this.verifyLocalTXid(txid.localTXid);
             if (result === true){
                 await this.updateDataBase(tx_trades,trades,txid.localTXid,current_time);

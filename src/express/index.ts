@@ -256,10 +256,10 @@ export default () => {
         }
         const result = {records, totalLength};
         res.json({
-            success: (!records && totalLengthErr) ? false : true,
-            errorCode: (!records && totalLengthErr) ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
-            result,
-            err: recordsErr,
+            code: (recordsErr || totalLengthErr) ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
+            errorMsg:recordsErr + totalLengthErr,
+            timeStamp:Date.now(),
+            data:result
         });
     });
 
@@ -305,16 +305,19 @@ export default () => {
         const [err, record] = await to(psql_db.find_express([trade_id]));
         if (err || !record) {
             return res.json({
-                success: false,
-                errorCode: errorCode.EXTERNAL_DEPENDENCIES_ERROR,
-                err,
+                code: errorCode.EXTERNAL_DEPENDENCIES_ERROR,
+                errorMsg:err,
+                timeStamp:Date.now(),
+                data:null
             });
         }
 
         if (record && record.length === 0) {
             return res.json({
-                success: true,
-                result: [],
+                code: errorCode.SUCCESSFUL,
+                errorMsg:null,
+                timeStamp:Date.now(),
+                data:[]
             });
         }
 
@@ -332,9 +335,10 @@ export default () => {
             record[0].quote_token_icon = null;
         }
         res.json({
-            success: true,
-            result: record[0],
-            err,
+            code: errorCode.SUCCESSFUL,
+            errorMsg:null,
+            timeStamp:Date.now(),
+            data:record[0]
         });
     });
 
@@ -387,8 +391,10 @@ export default () => {
      */
     express.all('/config', async (req, res) => {
         res.json({
-            success: true,
-            result: express_config,
+            code: errorCode.SUCCESSFUL,
+            errorMsg:null,
+            timeStamp:Date.now(),
+            data:express_config
         });
     });
 
@@ -419,10 +425,10 @@ export default () => {
                 get_price(base_token_name, quote_token_name, Number(base_amount), order)
             );
             res.json({
-                success: !price ? false : true,
-                errorCode: !price ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
-                result: price,
-                err,
+                code: !price ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
+                errorMsg:!price ? err: null,
+                timeStamp:Date.now(),
+                data:!price ? null: price,
             });
         }
     );
@@ -447,10 +453,11 @@ export default () => {
         const {address} = req.params;
         const [err, result] = await to(psql_db.my_express_length([address]));
         res.json({
-            success: !result ? false : true,
-            errorCode: !result ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
-            result,
-            err,
+            code: !result ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
+            errorMsg:!result ? err: null,
+            timeStamp:Date.now(),
+            data:!result ? null: result,
+
         });
     });
 
@@ -488,9 +495,10 @@ export default () => {
         if (assets_balance_err || !assets_balance_result || assets_balance_result[0].assets === undefined) {
             console.error('[ADEX EXPRESS]::(balanceOf):', assets_balance_err, assets_balance_result);
             return res.json({
-                success: false,
-                errorCode: errorCode.EXTERNAL_DEPENDENCIES_ERROR ,
-                err: assets_balance_err,
+                code: errorCode.EXTERNAL_DEPENDENCIES_ERROR,
+                errorMsg:assets_balance_err,
+                timeStamp:Date.now(),
+                data:null,
             });
         }
         const assets_balance = assets_balance_result[0].assets;
@@ -519,8 +527,10 @@ export default () => {
             console.log(balance_info);
         }
         res.json({
-            success: true,
-            result: balances,
+            code: errorCode.SUCCESSFUL,
+            errorMsg:null,
+            timeStamp:Date.now(),
+            data:balances,
         });
     });
 
@@ -573,15 +583,17 @@ export default () => {
                 const [insertExpressErr, insertExpressRes] = await to(psql_db.insert_express(info_arr));
                 if (insertExpressErr || !insertExpressRes) console.error('[ADEX EXPRESS]::(insert_express):', insertExpressErr, insertExpressRes);
                 res.json({
-                    success: insertExpressRes ? true : false,
-                    errorCode: insertExpressRes ? errorCode.SUCCESSFUL : errorCode.EXTERNAL_DEPENDENCIES_ERROR ,
-                    trade_id: !insertExpressRes ? null : info.trade_id,
+                    code: insertExpressRes ? errorCode.SUCCESSFUL : errorCode.EXTERNAL_DEPENDENCIES_ERROR ,
+                    errorMsg:insertExpressErr,
+                    timeStamp:Date.now(),
+                    data:!insertExpressRes ? null: info.trade_id,
                 });
             }
             res.json({
-                success: false,
-                errorCode: errorCode.EXTERNAL_DEPENDENCIES_ERROR ,
-                err: base_err,
+                code: errorCode.EXTERNAL_DEPENDENCIES_ERROR,
+                errorMsg:base_err,
+                timeStamp:Date.now(),
+                data:null,
             });
 
         }
@@ -624,10 +636,10 @@ export default () => {
             result = true;
         }
         res.json({
-            success,
-            errorCode:code,
-            result,
-            err
+            code,
+            errorMsg:err,
+            timeStamp:Date.now(),
+            data:result,
         });
     });
 

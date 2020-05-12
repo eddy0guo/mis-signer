@@ -96,19 +96,26 @@ export default () => {
                 if (err3 || !result3) {
                     console.log('[MIST SIGNER]::(psql_db.insert_bridge):', err3, result3);
                     res.json({
-                        success: false,
-                        errorCode: errorCode.EXTERNAL_DEPENDENCIES_ERROR,
-                        err: err3
+                        code:errorCode.EXTERNAL_DEPENDENCIES_ERROR,
+                        errorMsg:err3,
+                        timeStamp:Date.now(),
+                        data:null,
                     });
                 }
 
-                return res.json({success: true, id: info.id});
+                return res.json({
+                    code:errorCode.SUCCESSFUL,
+                    errorMsg:null,
+                    timeStamp:Date.now(),
+                    data:info.id,
+                });
             }
 
             res.json({
-                success: false,
-                errorCode: errorCode.EXTERNAL_DEPENDENCIES_ERROR,
-                err: master_err
+                code:errorCode.EXTERNAL_DEPENDENCIES_ERROR,
+                errorMsg:master_err,
+                timeStamp:Date.now(),
+                data:null,
             });
         }
     );
@@ -151,18 +158,20 @@ export default () => {
         if (amount > balances[0].asim_asset_balance) {
             console.error(`bridge account  only have ${balances[0].asim_asset_balance} ${token_name}`);
             return res.json({
-                success: false,
-                errorCode:errorCode.OFFICIAL_RESOURCES_INSUFFICIENT,
-                err: 'The official account have no enough balance'
+                code:errorCode.OFFICIAL_RESOURCES_INSUFFICIENT,
+                errorMsg:'The official account have no enough balance',
+                timeStamp:Date.now(),
+                data:null,
             });
         }
 
         const current_time = new Date().getTime();
         if (+current_time > expire_time) {
             return res.json({
-                success: false,
-                errorCode:errorCode.SIGNATURE_EXPIRED,
-                err: 'sign data expire'
+                code:errorCode.SIGNATURE_EXPIRED,
+                errorMsg:'sign data expire',
+                timeStamp:Date.now(),
+                data:null,
             });
         }
 
@@ -181,9 +190,10 @@ export default () => {
         const [verifyErr,verifyRes] = await to(utils.verify2(address,hash, signature,publicKey));
         if (!verifyRes) {
             return res.json({
-                success: false,
-                errorCode:errorCode.VERIFY_FAILED,
-                err: 'verify failed' + verifyErr,
+                code:errorCode.VERIFY_FAILED,
+                errorMsg:'verify failed' + verifyErr,
+                timeStamp:Date.now(),
+                data:null,
             });
         }
         let fee_amount = 0;
@@ -192,9 +202,10 @@ export default () => {
                 fee_amount = fee.amount;
                 if (amount <= fee_amount) {
                     return res.json({
-                        success: false,
-                        errorCode:errorCode.FEE_INSUFFICIENT,
-                        err: 'fee is not enough',
+                        code:errorCode.FEE_INSUFFICIENT,
+                        errorMsg:'fee is not enough',
+                        timeStamp:Date.now(),
+                        data:null,
                     });
                 }
             }
@@ -221,9 +232,10 @@ export default () => {
         if (err3) console.log(err3);
 
         return res.json({
-            success: !result3 ? false : true,
-            errorCode:!result3 ? errorCode.EXTERNAL_DEPENDENCIES_ERROR:errorCode.SUCCESSFUL,
-            id: !result3 ? '' : insert_info.id,
+            code:!result3 ? errorCode.EXTERNAL_DEPENDENCIES_ERROR:errorCode.SUCCESSFUL,
+            errorMsg:err3,
+            timeStamp:Date.now(),
+            data:!result3 ? null:insert_info.id,
         });
     });
 
@@ -238,17 +250,19 @@ export default () => {
             const available_amount = NP.divide(balanceRes, 100000000);
             if (available_amount < Number(amount)) {
                 return res.json({
-                    success: false,
-                    errorCode: errorCode.BALANCE_INSUFFICIENT,
-                    err: `Lack of balance,you have ${available_amount} ${token_name} but want spend ${amount}`,
+                    code:errorCode.BALANCE_INSUFFICIENT,
+                    errorMsg:`Lack of balance,you have ${available_amount} ${token_name} but want spend ${amount}`,
+                    timeStamp:Date.now(),
+                    data:null,
                 });
             }
 
             if (expire_time <= 0 || expire_time > 3600) {
                 return res.json({
-                    success: false,
-                    errorCode: errorCode.SIGNATURE_EXPIRED,
-                    err: 'the expire_time must be less than 1 hour and more than 0',
+                    code:errorCode.SIGNATURE_EXPIRED,
+                    errorMsg:'the expire_time must be less than 1 hour and more than 0',
+                    timeStamp:Date.now(),
+                    data:null
                 });
             }
 
@@ -266,9 +280,13 @@ export default () => {
             const hash = root_hash.update(str, 'utf8').digest('hex');
 
             res.json({
-                success: true,
-                hash,
-                expire_at,
+                code:errorCode.SUCCESSFUL,
+                errorMsg:null,
+                timeStamp:Date.now(),
+                data:{
+                    hash,
+                    expire_at
+                }
             });
         }
     );
@@ -308,19 +326,24 @@ export default () => {
         const [err, convert] = await to(psql_db.find_bridge([req.params.id]));
         if (err) {
             return res.json({
-                success: false,
-                errorCode: errorCode.EXTERNAL_DEPENDENCIES_ERROR,
-                err,
+                code:errorCode.EXTERNAL_DEPENDENCIES_ERROR,
+                errorMsg:err,
+                timeStamp:Date.now(),
+                data:null
             });
         } else if (convert && convert.length === 0) {
             return res.json({
-                success: true,
-                result: [],
+                code:errorCode.SUCCESSFUL,
+                errorMsg:null,
+                timeStamp:Date.now(),
+                data:[]
             });
         } else {
             return res.json({
-                success: true,
-                result: convert[0],
+                code:errorCode.SUCCESSFUL,
+                errorMsg:null,
+                timeStamp:Date.now(),
+                data:convert[0]
             });
         }
     });
@@ -357,14 +380,6 @@ export default () => {
      * @apiSampleRequest http://119.23.181.166:21000/wallet/my_converts_v3/0x6602ca6e2820ec98cc68909fdd9f87c7bd23b62000/ETH/1/10
      * @apiVersion 1.0.0
      */
-    wallet.all('/my_converts_v2/:address/:page/:perpage', async (req, res) => {
-        const {address, page, perpage} = req.params;
-        const offset = (+page - 1) * +perpage;
-        const [err, result] = await to(psql_db.my_bridge([address, offset, perpage]));
-        const success = !result ? false : true;
-        res.json({success, result, err});
-    });
-
     wallet.all(
         '/my_converts_v3/:address/:token_name/:page/:perpage',
         async (req, res) => {
@@ -446,10 +461,10 @@ export default () => {
             }
             const result = {records, totalLength};
             res.json({
-                success: (!records && totalLengthErr) ? false : true,
-                errorCode: (!records && totalLengthErr) ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
-                result,
-                err,
+                code:(err || totalLengthErr) ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
+                errorMsg:err + totalLengthErr,
+                timeStamp:Date.now(),
+                data:(err || totalLengthErr) ? null:result
             });
         }
     );
@@ -496,8 +511,10 @@ export default () => {
 
     wallet.all('/coin2asset_fee_config', async (req, res) => {
         res.json({
-            success: true,
-            result: Coin2AssetFee,
+            code:errorCode.SUCCESSFUL,
+            errorMsg:null,
+            timeStamp:Date.now(),
+            data:Coin2AssetFee
         });
     });
 
@@ -531,12 +548,15 @@ export default () => {
             dex_address: mist_config.ex_address,
             express_address: mist_config.express_address,
             asimov_chain_rpc: mist_config.asimov_chain_rpc,
+            asimov_child_rpc: mist_config.asimov_child_rpc,
             bridge_address: mist_config.bridge_address,
         };
 
         res.json({
-            success: true,
-            result: conf,
+            code:errorCode.SUCCESSFUL,
+            errorMsg:null,
+            timeStamp:Date.now(),
+            data:conf
         });
     });
 

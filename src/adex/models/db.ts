@@ -100,7 +100,7 @@ export default class DBClient {
         // 临时表trade数据不能删完，保留一组定序
         const topTradeSql = `select * from mist_trades_tmp order by created_at desc limit 1`;
         const topTrade = await this.queryWithLog(topTradeSql);
-        const sql1 = `delete from mist_trades_tmp where (current_timestamp - created_at) > '25 hours' and transaction_id < ${topTrade[0].transaction_id}`;
+        const sql1 = `delete from mist_trades_tmp where (current_timestamp - created_at) > '25 hours' and transaction_id < ${topTrade[0].transaction_id} and status='successful'`;
         const sql2 = `delete from mist_orders_tmp where available_amount=0;`
         await this.queryWithLog(sql1);
         await this.queryWithLog(sql2);
@@ -183,11 +183,19 @@ export default class DBClient {
             filter.splice(5,1);
             marketFilter = '';
         }
-
-        let sideFilter = 'and side=$7 ';
-        if(filter[6] === ''){
-            filter.splice(6,1);
-            sideFilter = '';
+        let sideFilter = '';
+        if(marketFilter === ''){
+            sideFilter = 'and side=$6 ';
+            if(filter[5] === ''){
+                filter.splice(5,1);
+                sideFilter = '';
+            }
+        }else{
+            sideFilter = 'and side=$7 ';
+            if(filter[6] === ''){
+                filter.splice(6,1);
+                sideFilter = '';
+            }
         }
 
         const sql = `SELECT count(1) FROM mist_orders where trader_address=$1 and status in ($2,$3) and created_at>$4 and created_at<$5 ${marketFilter} ${sideFilter}`;
@@ -248,11 +256,19 @@ export default class DBClient {
             filter.splice(3,1);
             marketFilter = '';
         }
-
-        let statusFilter = 'and status=$5 ';
-        if(filter[4] === ''){
-            filter.splice(4,1);
-            statusFilter = '';
+        let statusFilter = '';
+        if(marketFilter === ''){
+            statusFilter = 'and status=$4 ';
+            if(filter[3] === ''){
+                filter.splice(3,1);
+                statusFilter = '';
+            }
+        }else{
+            statusFilter = 'and status=$5 ';
+            if(filter[4] === ''){
+                filter.splice(4,1);
+                statusFilter = '';
+            }
         }
         const sql = `SELECT count(1) FROM mist_trades where (taker=$1 or maker=$1) and created_at>$2 and created_at<$3 ${marketFilter} ${statusFilter}`;
 
@@ -819,6 +835,16 @@ export default class DBClient {
             await this.handlePoolError(err_tmp);
         }
 
+        return result.rows;
+
+    }
+
+    async get_trades(id): Promise<ITrade[]> {
+        const [err, result]: [any, any] = await to(this.queryWithLog('SELECT * FROM mist_trades_tmp where transaction_id=$1', id));
+        if (err) {
+            console.error('get transaction failed', err, id);
+            await this.handlePoolError(err);
+        }
         return result.rows;
 
     }

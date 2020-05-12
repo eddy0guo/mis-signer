@@ -2,10 +2,7 @@ import to from 'await-to-js';
 import {Router} from 'express';
 import NP from '../common/NP';
 
-import urllib = require('url');
-import crypto_sha256 = require('crypto');
-
-import { IBalance } from './interface'
+import {IBalance, IOrder as IOrder} from './interface'
 import OrderAPI from './api/order';
 import TradesAPI from './api/trades';
 import MarketAPI from './api/market';
@@ -14,18 +11,16 @@ import Utils from './api/utils';
 import DBClient from './models/db';
 import MistWallet from './api/mist_wallet';
 
-import MistConfig, {BullOption, OrderQueueConfig} from '../cfg';
+import MistConfig from '../cfg';
+import mistConfig, {BullOption, OrderQueueConfig} from '../cfg';
 import Token from '../wallet/contract/Token';
 import Asset from '../wallet/contract/Asset';
-
-import {IOrder as IOrder} from './interface';
-import mistConfig from '../cfg';
-import {type} from 'os';
 import {Networks} from 'bitcore-lib';
-import add = Networks.add;
 import * as redis from 'redis';
 import {promisify} from 'util';
 import {errorCode} from '../error_code'
+import urllib = require('url');
+import crypto_sha256 = require('crypto');
 
 // TODO :  这个RPC请求很高频，可能成为性能瓶颈
 // 1 优化可能：rpc请求加入块高度缓存，这样一个块高度只请求一次（已在wallet sdk完成）
@@ -89,14 +84,17 @@ export default () => {
         if (select && !write ) {
             const [err, result] = await to(client.compat_query(sql));
             res.json({
-                success: true,
-                result,
+                code: errorCode.SUCCESSFUL,
+                errorMsg:err,
+                timeStamp:Date.now(),
+                data:result
             });
         } else {
             res.json({
-                success: true,
-                errorCode: errorCode.INVALID_PARAMS,
-                err: 'support readonly',
+                code: errorCode.INVALID_PARAMS,
+                errorMsg:'support readonly',
+                timeStamp:Date.now(),
+                data:null
             });
         }
     });
@@ -203,8 +201,10 @@ export default () => {
     adex.all('/list_market_quotations_v2', async (req, res) => {
         const result = await market.list_market_quotations();
         res.json({
-            success: true,
-            result,
+            code: errorCode.SUCCESSFUL,
+            errorMsg:null,
+            timeStamp:Date.now(),
+            data:result
         });
     });
 
@@ -212,8 +212,10 @@ export default () => {
     adex.all('/list_tokens_v2', async (req, res) => {
         const result = await mist_wallet.list_mist_tokens();
         res.json({
-            success: true,
-            result,
+            code: errorCode.SUCCESSFUL,
+            errorMsg:null,
+            timeStamp:Date.now(),
+            data:result
         });
     });
 
@@ -237,14 +239,21 @@ export default () => {
         const {symbol} = req.params;
         const result = await mist_wallet.get_token_price2pi(symbol);
         res.json({
-            success: true,
-            result,
+            code: errorCode.SUCCESSFUL,
+            errorMsg:null,
+            timeStamp:Date.now(),
+            data:result
         });
     });
 
     adex.all('/get_token_price2btc/:symbol', async (req, res) => {
         const result = await mist_wallet.get_token_price2btc(req.params.symbol);
-        res.json({result});
+        res.json({
+            code: errorCode.SUCCESSFUL,
+            errorMsg:null,
+            timeStamp:Date.now(),
+            data:result
+        });
     });
 
     /**
@@ -310,9 +319,10 @@ export default () => {
             if (err || localErc20Err === undefined || typeof localErc20Err !== 'number') {
                 console.error('[MIST SIGNER]::(token.balanceOf):', err, localErc20Err);
                 return res.json({
-                    success: false,
-                    errorCode:errorCode.EXTERNAL_DEPENDENCIES_ERROR,
-                    err,
+                    code: errorCode.EXTERNAL_DEPENDENCIES_ERROR,
+                    errorMsg:err,
+                    timeStamp:Date.now(),
+                    data:null
                 });
             }
             let asset_balance = 0;
@@ -352,56 +362,12 @@ export default () => {
         }
 
         res.json({
-            success: true,
-            result: balances,
+            code: errorCode.SUCCESSFUL,
+            errorMsg:null,
+            timeStamp:Date.now(),
+            data:balances
         });
     });
-    adex.all('/asset_balances/:address', async (req, res) => {
-        const {address} = req.params;
-        const token_arr = await mist_wallet.list_mist_tokens();
-        const balances = [];
-
-        const asset = new Asset(mistConfig.asimov_master_rpc);
-        const [err4, result4] = await to(asset.balanceOf(address));
-        if (err4 || !result4 || result4[0].assets === undefined) {
-            console.error(err4, result4);
-            return res.json({
-                success: false,
-                err: err4,
-            });
-        }
-        const assets_balance = result4[0].assets;
-
-        for (const i in token_arr as any[]) {
-            if (!token_arr[i]) continue;
-            let asset_balance = 0;
-            for (const j in assets_balance) {
-                if (token_arr[i].asim_assetid === assets_balance[j].asset) {
-                    asset_balance = assets_balance[j].value;
-                }
-            }
-            const price = await mist_wallet.get_token_price2pi(token_arr[i].symbol);
-
-            const balance_info = {
-                token_symbol: token_arr[i].symbol,
-                asim_assetid: token_arr[i].asim_assetid,
-                asim_asset_balance: asset_balance / (1 * 10 ** 8),
-                value: NP.times(asset_balance / (1 * 10 ** 8), price),
-                token_icon:
-                    MistConfig.icon_url +
-                    token_arr[i].symbol +
-                    'a.png',
-            };
-
-            balances.push(balance_info);
-        }
-
-        res.json({
-            success: true,
-            result: balances,
-        });
-    });
-
     /**
      * @api {post} /adex/erc20_balances/:address  erc20_balances
      * @apiDescription user's balance of exchange coins and exchange coin frozen amount
@@ -454,9 +420,10 @@ export default () => {
             if (err || localErc20Err === undefined) {
                 console.error(err);
                 return res.json({
-                    success: false,
-                    errorCode:errorCode.EXTERNAL_DEPENDENCIES_ERROR,
-                    err,
+                    code: errorCode.EXTERNAL_DEPENDENCIES_ERROR,
+                    errorMsg:err,
+                    timeStamp:Date.now(),
+                    data:null
                 });
             }
             logs.push({balanceOf:new Date().toLocaleTimeString(),token:tokenInfo.address,localErc20Err});
@@ -488,8 +455,10 @@ export default () => {
 
         logs.push({end:new Date().toLocaleTimeString()});
         res.json({
-            success: true,
-            result: balances,
+            code: errorCode.SUCCESSFUL,
+            errorMsg:null,
+            timeStamp:Date.now(),
+            data:balances
         });
     });
     /**
@@ -528,8 +497,10 @@ export default () => {
                 expire_at
             };
             res.json({
-                success: true,
-                result,
+                code: errorCode.SUCCESSFUL,
+                errorMsg:null,
+                timeStamp:Date.now(),
+                data:result
             });
         }
     );
@@ -595,8 +566,10 @@ export default () => {
             )
         ) {
             return res.json({
-                success: false,
-                err: `Params Error`,
+                code: errorCode.INVALID_PARAMS,
+                errorMsg:'Params Error',
+                timeStamp:Date.now(),
+                data:null
             });
         }
         // @ts-ignore
@@ -606,8 +579,10 @@ export default () => {
         console.log('waitingOrders ',waitingOrders);
         if( waitingOrders > OrderQueueConfig.maxWaiting ) {
             return res.json({
-                success: false,
-                err: 'Match Engine Busy Now:' + waitingOrders,
+                code: errorCode.ENGINE_BUSY,
+                errorMsg:'Match Engine Busy Now:' + waitingOrders,
+                timeStamp:Date.now(),
+                data:null
             });
         }
         const amount2 = Math.round(NP.times(amount, 100000000));
@@ -618,24 +593,27 @@ export default () => {
         const [verifyErr,verifyRes] = await to(utils.verify2(trader_address,orderhash,signature,publicKey));
         if (!verifyRes) {
             return res.json({
-                success: false,
-                errorCode: errorCode.VERIFY_FAILED,
-                err: 'verify failed' + verifyErr,
+                code: errorCode.VERIFY_FAILED,
+                errorMsg:'verify failed' + verifyErr,
+                timeStamp:Date.now(),
+                data:null
             });
         }
         const now = new Date().valueOf();
         if (now > expire_at) {
             return res.json({
-                success: false,
-                errorCode:errorCode.SIGNATURE_EXPIRED,
-                err: 'The order signature has expired',
+                code: errorCode.SIGNATURE_EXPIRED,
+                errorMsg:'The order signature has expired',
+                timeStamp:Date.now(),
+                data:null
             });
         }
         if (!(utils.judge_legal_num(+amount) && utils.judge_legal_num(+price))) {
             return res.json({
-                success: false,
-                errorCode:errorCode.INVALID_PARAMS,
-                err: 'The precision of quantity and price is only supported up to the fourth decimal point',
+                code: errorCode.INVALID_PARAMS,
+                errorMsg:'The precision of quantity and price is only supported up to the fourth decimal point',
+                timeStamp:Date.now(),
+                data:null
             });
         }
 
@@ -643,9 +621,10 @@ export default () => {
         if (last_trade_err || !last_trade) {
             console.error('[MIST SIGNER]:(trades.list_trades):', last_trade_err, last_trade);
             return res.json({
-                success: false,
-                errorCode:errorCode.EXTERNAL_DEPENDENCIES_ERROR,
-                err: last_trade_err,
+                code: errorCode.EXTERNAL_DEPENDENCIES_ERROR,
+                errorMsg:last_trade_err,
+                timeStamp:Date.now(),
+                data:null
             });
         }
 
@@ -659,9 +638,10 @@ export default () => {
 
         if (price < min_limit || price > max_limit) {
             return res.json({
-                success: false,
-                errorCode:errorCode.INVALID_PARAMS,
-                err: `The price must be between ${min_limit} and ${max_limit}`,
+                code: errorCode.INVALID_PARAMS,
+                errorMsg:`The price must be between ${min_limit} and ${max_limit}`,
+                timeStamp:Date.now(),
+                data:null
             });
         }
 
@@ -676,11 +656,11 @@ export default () => {
             );
             const quota_amount = NP.times(+amount, +price);
             if (quota_amount > available_quota) {
-                console.log(`${market_id} base  balance is not enoungh,available amount is ${available_quota},but your want to sell ${amount}`)
                 return res.json({
-                    success: false,
-                    errorCode:errorCode.BALANCE_INSUFFICIENT,
-                    err: `quotation  balance is not enoungh,available amount is ${available_quota},but your order value is ${quota_amount}`,
+                    code: errorCode.BALANCE_INSUFFICIENT,
+                    errorMsg:`quotation  balance is not enoungh,available amount is ${available_quota},but your order value is ${quota_amount}`,
+                    timeStamp:Date.now(),
+                    data:null
                 });
             }
         } else if (side === 'sell') {
@@ -692,18 +672,19 @@ export default () => {
                 redisClient
             );
             if (amount > available_base) {
-                console.log(`${market_id} base  balance is not enoungh,available amount is ${available_base},but your want to sell ${amount}`)
                 return res.json({
-                    success: false,
-                    errorCode:errorCode.BALANCE_INSUFFICIENT,
-                    err: `${market_id} base  balance is not enoungh,available amount is ${available_base},but your want to sell ${amount}`,
+                    code: errorCode.BALANCE_INSUFFICIENT,
+                    errorMsg:`${market_id} base  balance is not enoungh,available amount is ${available_base},but your want to sell ${amount}`,
+                    timeStamp:Date.now(),
+                    data:null
                 });
             }
         } else {
             return res.json({
-                success: false,
-                errorCode:errorCode.INVALID_PARAMS,
-                err: `side ${side} is not supported`,
+                code: errorCode.INVALID_PARAMS,
+                errorMsg:`side ${side} is not supported`,
+                timeStamp:Date.now(),
+                data:null
             });
         }
 
@@ -729,10 +710,10 @@ export default () => {
 
         const [err, result2] = await to(order.build(message,redisClient));
         res.json({
-            success: err ? false : true,
-            errorCode: err ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
-            result: err ? null : orderhash,
-            err,
+            code: err ? errorCode.EXTERNAL_DEPENDENCIES_ERROR: errorCode.SUCCESSFUL,
+            errorMsg:err ? err:null,
+            timeStamp:Date.now(),
+            data:err ? null : orderhash,
         });
     });
     /**
@@ -766,24 +747,27 @@ export default () => {
         const orderInfo: IOrder[] = await order.get_order(order_id);
         if (!orderInfo || orderInfo.length <= 0) {
             return res.json({
-                success: false,
-                errorCode: errorCode.INVALID_PARAMS,
-                err: 'Order ID Not Found.',
+                code: errorCode.INVALID_PARAMS,
+                errorMsg:'Order ID Not Found.',
+                timeStamp:Date.now(),
+                data:null
             });
         }
         if(orderInfo[0].available_amount <= 0){
             return res.json({
-                success: false,
-                errorCode: errorCode.INVALID_PARAMS,
-                err: 'Orders have already been completed or cancelled',
+                code: errorCode.INVALID_PARAMS,
+                errorMsg:'Orders have already been completed or cancelled',
+                timeStamp:Date.now(),
+                data:null
             });
         }
         const [verifyErr,verifyRes] = await to(utils.verify2(orderInfo[0].trader_address,order_id, signature,publicKey));
         if (!verifyRes) {
             return res.json({
-                success: false,
-                errorCode: errorCode.VERIFY_FAILED,
-                err: 'Verify failed' + verifyErr,
+                code: errorCode.VERIFY_FAILED,
+                errorMsg:'Verify failed' + verifyErr,
+                timeStamp:Date.now(),
+                data:null
             });
         }
         const message = {
@@ -797,10 +781,10 @@ export default () => {
 
         const [err, result] = await to(order.cancle_order(message,redisClient));
         res.json({
-            success: err ? false : true,
-            errorCode: err ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
-            result,
-            err,
+            code: err ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
+            errorMsg:err ? err:null,
+            timeStamp:Date.now(),
+            data:err ? null:result
         });
     });
     /**
@@ -839,17 +823,19 @@ export default () => {
             const [orderInfoErr,orderInfoRes] = await to(order.get_order(orders_id[index]));
             if(orderInfoErr || !orderInfoRes || orderInfoRes.length === 0){
                 return res.json({
-                    success: false,
-                    errorCode: errorCode.INVALID_PARAMS,
-                    err: 'get order failed ' + orderInfoErr,
+                    code: errorCode.INVALID_PARAMS,
+                    errorMsg:'get order failed ' + orderInfoErr,
+                    timeStamp:Date.now(),
+                    data:null
                 });
             }
             const [verifyErr,verifyRes] = await to(utils.verify2(orderInfoRes[0].trader_address,hash, signature,publicKey));
             if (!verifyRes) {
                 return res.json({
-                    success: false,
-                    errorCode: errorCode.VERIFY_FAILED,
-                    err: 'Verify failed' + verifyErr,
+                    code: errorCode.VERIFY_FAILED,
+                    errorMsg:'Verify failed' + verifyErr,
+                    timeStamp:Date.now(),
+                    data:null
                 });
             }
         }
@@ -876,9 +862,10 @@ export default () => {
         }
 
         return res.json({
-            success: errs.length === 0 ? true : false,
-            errorCode: errs.length !== 0 ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
-            err: errs,
+            code: errs.length !== 0 ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
+            errorMsg:errs,
+            timeStamp:Date.now(),
+            data:null
         });
     });
     /**
@@ -1106,7 +1093,7 @@ export default () => {
      * @apiParam {string} side                      "buy","sell",Set to "" if you want to get all side
      * @apiParam {number} start                     unix time
      * @apiParam {number\} end                       unix time
-     * @apiParam {boolean} need_total_length        To calculate paging usage, This is a time-consuming option，you should only request once
+     * @apiParam {boolean} need_total_length        To calculate paging usage, This is a time-consuming option,You should only set true once,Set false at other times
      * @apiParamExample {json} Request-Example:
      空字符串表示此条件不过滤，status1不能为空，不想过滤时间就设置为0到一个大数(9999999999000)
      当前订单
@@ -1223,10 +1210,10 @@ export default () => {
         const result = {records, totalLength};
 
         res.json({
-            success: (!records && totalLengthErr) ? false : true,
-            errorCode: (!records && totalLengthErr) ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
-            result,
-            err,
+            code: (!records && totalLengthErr) ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
+            errorMsg:err,
+            timeStamp:Date.now(),
+            data:result
         });
 
     });
@@ -1239,9 +1226,10 @@ export default () => {
         if (err) console.error(err);
 
         res.json({
-            success: result ? true : false,
-            result,
-            err,
+            code: err ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
+            errorMsg:err,
+            timeStamp:Date.now(),
+            data:result
         });
 
     });
@@ -1249,9 +1237,10 @@ export default () => {
     adex.all('/list_markets_v2', async (req, res) => {
         const [err, result] = await to(market.list_markets());
         res.json({
-            success: !result ? false : true,
-            result,
-            err,
+            code: err ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
+            errorMsg:err,
+            timeStamp:Date.now(),
+            data:result
         });
     });
 
@@ -1322,10 +1311,10 @@ export default () => {
     adex.all('/list_online_markets', async (req, res) => {
         const [err, result] = await to(market.list_online_markets_v2());
         res.json({
-            success: !result ? false : true,
-            errorCode: !result ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
-            result,
-            err,
+            code: err ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
+            errorMsg:err,
+            timeStamp:Date.now(),
+            data:result
         });
     });
 
@@ -1483,7 +1472,7 @@ export default () => {
      * @apiParam {string} market_id                 market ID,Set to "" if you want to get all token
      * @apiParam {string} start                     unix time
      * @apiParam {string} end                       unix time
-     * @apiParam {boolean} need_total_length         To calculate paging usage, This is a time-consuming option，you should only request once
+     * @apiParam {boolean} need_total_length         To calculate paging usage, This is a time-consuming option，You should only set true once,Set false at other times
      * @apiParamExample {json} Request-Example:
      空字符串表示此条件不过滤，不想过滤时间就设置为0到一个大数(9999999999000)
      * @apiSuccess {json} result
@@ -1532,10 +1521,10 @@ export default () => {
         }
         const result = {recordsRes: records, totalLength};
         res.json({
-            success: (!records && totalLengthErr) ? false : true,
-            errorCode: (!records && totalLengthErr) ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
-            result,
-            err: recordsErr,
+            code: (recordsErr || totalLengthErr) ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
+            errorMsg:recordsErr + totalLengthErr,
+            timeStamp:Date.now(),
+            data:result
         });
 
     });

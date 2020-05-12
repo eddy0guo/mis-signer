@@ -2,6 +2,7 @@ interface ListFingoConfig {
   dex_address: string
   express_address: string
   asimov_chain_rpc: string
+  asimov_child_rpc: string
   bridge_address: string
 }
 
