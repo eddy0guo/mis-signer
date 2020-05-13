@@ -328,19 +328,20 @@ class Watcher {
 
             return
         }
-        // tslint:disable-next-line:no-shadowed-variable
-        this.redisClient.hget(address,token_name, async (err, value) => {
-            console.log(value); // > "bar"
-            await this.redisClient.HMSET(address, token_name, NP.minus(value,burn_amount));
-        });
         setTimeout(async () => {
             const [get_receipt_err, child_txid_status] = await to(this.utils.get_receipt_log(child_txid));
             if (get_receipt_err) {
+                console.log('sssss----',child_txid);
                 this.coin2asset_burn_loop.call(this)
                 return;
             }
             const current_time = this.utils.get_current_time();
             if (child_txid_status === 'successful') {
+                // tslint:disable-next-line:no-shadowed-variable
+                this.redisClient.hget(address,token_name, async (err, value) => {
+                    console.log(value); // > "bar"
+                    await this.redisClient.HMSET(address, token_name, NP.minus(value,burn_amount));
+                });
                 const [err3, result3] = await to(this.dbClient.update_coin2asset_bridge([null, 'pending', child_txid, 'successful', current_time, id]));
                 if (err3) console.error(err3, result3)
             } else {
