@@ -58,9 +58,11 @@ export default () => {
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
      {
-          "success": true,
-          "id": "eac9fee0a83dd7ebc2ba67012b14175f2fddf3eabbcfe435cb11f105101af46d"
-      }
+        "code": 0,
+        "errorMsg": null,
+        "timeStamp": 1589339554976,
+        "data": "4ae713eb4622148f41a687040f203c3455738c46f1d6850a2bf7f215e226b175"
+    }
      * @apiSampleRequest http://119.23.181.166:21000/wallet/sendrawtransaction/asset2coin_v3/
      * @apiVersion 1.0.0
      */
@@ -143,9 +145,11 @@ export default () => {
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
      {
-      "success": true,
-      "id": "aa5a2f00f03616f02bde85b5a804d096ff4a23a227a8c972d26e26ba486ba940"
-  }
+        "code": 200003,
+        "errorMsg": "sign data expire",
+        "timeStamp": 1589339614779,
+        "data": null
+    }
      * @apiSampleRequest http://119.23.181.166:21000/wallet/sendrawtransaction/coin2asset_v4
      * @apiVersion 1.0.0
      */
@@ -299,25 +303,25 @@ export default () => {
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
      {
-      "success": true,
-      "result": [
-          {
-              "id": "8c4ddabebe95718a37aea074120d3bd133196c01812935ddef42dffcdfd431ac",
-              "address": "0x6602ca6e2820ec98cc68909fdd9f87c7bd23b62000",
-              "token_name": "ETH",
-              "amount": 1,
-              "side": "asset2coin",
-              "master_txid": "225a905c4e7fe2579f0217b49af2496f57424e512eacf2718ef2348a28cabb68",
-              "master_txid_status": "successful",
-              "child_txid": "dc5bf2c1208a832d898bff32e7118f0d558b8c66e26c4bb1e729f3caeebffffe",
-              "child_txid_status": "successful",
-              "fee_asset": "ASIM",
-              "fee_amount": "0.00105252",
-              "updated_at": "2019-12-18T10:06:45.317Z",
-              "created_at": "2019-12-18T10:06:34.273Z"
-          },
-      "err": null
-  }
+        "code": 0,
+        "errorMsg": null,
+        "timeStamp": 1589339642684,
+        "data": {
+            "id": "8c4ddabebe95718a37aea074120d3bd133196c01812935ddef42dffcdfd431ac",
+            "address": "0x6602ca6e2820ec98cc68909fdd9f87c7bd23b62000",
+            "token_name": "ETH",
+            "amount": 1,
+            "side": "asset2coin",
+            "master_txid": "225a905c4e7fe2579f0217b49af2496f57424e512eacf2718ef2348a28cabb68",
+            "master_txid_status": "successful",
+            "child_txid": "dc5bf2c1208a832d898bff32e7118f0d558b8c66e26c4bb1e729f3caeebffffe",
+            "child_txid_status": "successful",
+            "fee_asset": "ASIM",
+            "fee_amount": "0.00105252",
+            "updated_at": "2019-12-18T10:06:45.317Z",
+            "created_at": "2019-12-18T10:06:34.273Z"
+        }
+    }
      * @apiSampleRequest http://119.23.181.166:21000/wallet/find_convert/8c4ddabebe95718a37aea074120d3bd133196c01812935ddef42dffcdfd431ac
      * @apiVersion 1.0.0
      */
@@ -372,8 +376,10 @@ export default () => {
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
      {
-        "success": true,
-        "result": {
+        "code": 0,
+        "errorMsg": 0,
+        "timeStamp": 1589339743197,
+        "data": {
             "records": [
                 {
                     "id": "0fe6c194f4c41baed995661860910cc59bbbe546faf62a8b93a069d4e487a5a1",
@@ -392,9 +398,8 @@ export default () => {
                 }
             ],
             "totalLength": "2"
-        },
-        "err": null
-     }
+        }
+    }
      * @apiSampleRequest http://119.23.181.166:21000/wallet/my_converts_v4
      * @apiVersion 1.0.0
      */
@@ -416,7 +421,7 @@ export default () => {
             const result = {records, totalLength};
             res.json({
                 code:(err || totalLengthErr) ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
-                errorMsg:err + totalLengthErr,
+                errorMsg:err,
                 timeStamp:Date.now(),
                 data:(err || totalLengthErr) ? null:result
             });
@@ -431,34 +436,36 @@ export default () => {
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
      {
-      "success": true,
-      "result": [
-          {
-              "token": "CNYC",
-              "amount": 10
-          },
-          {
-              "token": "USDT",
-              "amount": 1.5
-          },
-          {
-              "token": "ASIM",
-              "amount": 0.6
-          },
-          {
-              "token": "MT",
-              "amount": 0.2
-          },
-          {
-              "token": "ETH",
-              "amount": 0.01
-          },
-          {
-              "token": "BTC",
-              "amount": 0.0002
-          }
-      ]
-  }
+        "code": 0,
+        "errorMsg": null,
+        "timeStamp": 1589339389504,
+        "data": [
+            {
+                "token": "CNYC",
+                "amount": 10
+            },
+            {
+                "token": "USDT",
+                "amount": 1.5
+            },
+            {
+                "token": "ASIM",
+                "amount": 0.6
+            },
+            {
+                "token": "MT",
+                "amount": 0.2
+            },
+            {
+                "token": "ETH",
+                "amount": 0.01
+            },
+            {
+                "token": "BTC",
+                "amount": 0.0002
+            }
+        ]
+    }
      * @apiSampleRequest http://119.23.181.166:21000/wallet/coin2asset_fee_config
      * @apiVersion 1.0.0
      */
@@ -485,14 +492,17 @@ export default () => {
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
      {
-        "success": true,
-        "result": {
-            "dex_address": "0x630329112990e5246f67ae0de752225d56e33e3121",
+        "code": 0,
+        "errorMsg": null,
+        "timeStamp": 1589339686736,
+        "data": {
+            "dex_address": "0x630122b8d818203e407eaf9ba59668934b73198f4c",
             "express_address": "0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c",
-            "asimov_chain_rpc": "https://rpc-fin.fingo.com",
+            "asimov_chain_rpc": "https://rpc.fin.fingo.dev",
+            "asimov_child_rpc": "https://rpc.mt.fingo.dev",
             "bridge_address": "0x66a5e2e1d9243f9dfd1d54b31952d94043a105188f"
         }
-     }
+    }
      * @apiSampleRequest http://119.23.181.166:21000/wallet/list_fingo_config
      * @apiVersion 1.0.0
      */

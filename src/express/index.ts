@@ -4,7 +4,7 @@ import {Router} from 'express';
 
 import {chain} from '../wallet/api/chain';
 
-import {IPoolInfo, ITrade} from './interface'
+import {IPoolInfo} from './interface'
 import MistWallet from '../adex/api/mist_wallet';
 import OrderAPI from '../adex/api/order';
 import Utils from '../adex/api/utils';
@@ -134,8 +134,10 @@ export default () => {
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
      {
-        "success": true,
-        "result": {
+        "code": 0,
+        "errorMsg": null,
+        "timeStamp": 1589339305575,
+        "data": {
             "records": [
                 {
                     "trade_id": "d053a8824c4d13538dec9c65b24e7ce7acc21c33f123fd59ce0b8f98569114ee",
@@ -159,9 +161,8 @@ export default () => {
                 }
             ],
             "totalLength": "3"
-        },
-        "err": null
-     }
+        }
+    }
      * @apiSampleRequest http://119.23.181.166:21000/express/my_records_v2
      * @apiVersion 1.0.0
      */
@@ -192,7 +193,7 @@ export default () => {
         const result = {records, totalLength};
         res.json({
             code: (recordsErr || totalLengthErr) ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
-            errorMsg:recordsErr + totalLengthErr,
+            errorMsg:recordsErr,
             timeStamp:Date.now(),
             data:result
         });
@@ -207,29 +208,30 @@ export default () => {
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
      {
-        "success": true,
-        "result": {
-            "trade_id": "f091fdef406d21f51befb99f35df67a86d0be4daf85305dab0ad78747fbbac46",
-            "address": "0x66037f1be64bdd9634f81833e90235edfe4480a80e",
-            "base_asset_name": "USDT",
-            "base_amount": 1,
-            "price": 0.53937548,
-            "quote_asset_name": "ASIM",
-            "quote_amount": 0.5366786,
-            "fee_rate": 0.005,
-            "fee_token": "ASIM",
-            "fee_amount": 0.00269688,
-            "base_txid": "b2aec748bcb733d62fdebc48315aef072f220bb4c90d222627d3c56c5961ef0e",
-            "base_tx_status": "successful",
-            "quote_txid": "135c7b971ed5432940e088d63a6b39de85074bc5c84fa995e49f3b0430d583bc",
-            "quote_tx_status": "successful",
-            "updated_at": "2020-03-04T03:29:21.342Z",
-            "created_at": "2020-03-04T03:29:08.685Z",
-            "base_token_icon": "http://fingo-cdn.asimov.work/res/icons/USDTa.png",
-            "quote_token_icon": "http://fingo-cdn.asimov.work/res/icons/ASIMa.png"
-        },
-        "err": null
-     }
+            "code": 0,
+            "errorMsg": null,
+            "timeStamp": 1589339059982,
+            "data": {
+                "trade_id": "2c16fdc36a429f852f302ee39e66431948fcfcbb948138e1c218c396feefbe6d",
+                "address": "0x66408727e66a156b9e35c69621f3fd62c5305d36f3",
+                "base_asset_name": "ASIM",
+                "base_amount": 189.487,
+                "price": 13.69976197,
+                "quote_asset_name": "CNYC",
+                "quote_amount": 2582.94716243,
+                "fee_rate": 0.005,
+                "fee_token": "CNYC",
+                "fee_amount": 12.97963398,
+                "base_txid": "85ad39f9dfff7f03f08d3f50e917105b259327695ea1911c608df58d00a35f6e",
+                "base_tx_status": "successful",
+                "quote_txid": "c20900de8f344bc5d13509391aded4d81a7e2d79527f4f0c14a5bae8128dfb78",
+                "quote_tx_status": "successful",
+                "updated_at": "2020-05-13T02:16:59.296Z",
+                "created_at": "2020-05-13T02:16:38.368Z",
+                "base_token_icon": "http://fingo-cdn.asimov.work/res/icons/ASIMa.png",
+                "quote_token_icon": "http://fingo-cdn.asimov.work/res/icons/CNYCa.png"
+            }
+        }
      *  }
      * @apiSampleRequest http://119.23.181.166:21000/express/get_express_trade/4e6b881de2eb3b9e8bdb4baefac9d5182c54eb274c821ca43e04301c9a7e2497
      * @apiVersion 1.0.0
@@ -343,11 +345,12 @@ export default () => {
      * @apiParam {string} base_amount  amount of base token
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
-     *  {
-			"success": true,
-    		"result": "15.70000000",
-    		"err": null
-     *  }
+     {
+        "code": 0,
+        "errorMsg": null,
+        "timeStamp": 1589339156877,
+        "data": "15.19000000"
+    }
      * @apiSampleRequest http://119.23.181.166:21000/express/get_price/ASIM/CNYC/1
      * @apiVersion 1.0.0
      */
@@ -376,10 +379,11 @@ export default () => {
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
      {
-        "success": true,
-        "result": "0",
-        "err": null
-     }
+        "code": 0,
+        "errorMsg": null,
+        "timeStamp": 1589339217284,
+        "data": "0"
+    }
      * @apiSampleRequest http://119.23.181.166:21000/express/my_express_length/0x6665bc429f51bdb3b95dac156c1c4b396c0b695162
      * @apiVersion 1.0.0
      */
@@ -404,17 +408,24 @@ export default () => {
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
      {
-     "success": true,
-        "result":[
+    "code": 0,
+    "errorMsg": null,
+    "timeStamp": 1589339105046,
+    "data": [
             {
                 "token_symbol": "CNYC",
-                "asim_asset_id": "000000000000000c00000000",
-                "asim_asset_balance": 0,
-                "icon": "https://www.mist.exchange/res/icons/CNYCa.png"
+                "asim_asset_id": "000000000000000300000000",
+                "asim_asset_balance": 88043.96569682,
+                "icon": "http://fingo-cdn.asimov.work/res/icons/CNYCa.png"
             },
-        ],
-        "err": null
-     }
+            {
+                "token_symbol": "MT",
+                "asim_asset_id": "000000000000000500000001",
+                "asim_asset_balance": 499928.52285529,
+                "icon": "http://fingo-cdn.asimov.work/res/icons/MTa.png"
+            }
+        ]
+    }
      * @apiSampleRequest http://119.23.181.166:21000/express/get_pool_info
      * @apiVersion 1.0.0
      */
@@ -476,10 +487,12 @@ export default () => {
      * @apiGroup express
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
-     *  {
-	 "success": true,
-	 "trade_id": "3882ef7e018ed713963ae2495687276936c5e87be42f52aaee3537549e2176eb"
-     *  }
+     {
+        "code": 100002,
+        "errorMsg": "-206: Argument must be hexadecimal string (not \"0xxx\")",
+        "timeStamp": 1589337174145,
+        "data": null
+    }
      * @apiSampleRequest http://119.23.181.166:21000/express/sendrawtransaction/build_express_v2/ETH/xxx
      * @apiVersion 1.0.0
      */
@@ -526,7 +539,7 @@ export default () => {
             }
             res.json({
                 code: errorCode.EXTERNAL_DEPENDENCIES_ERROR,
-                errorMsg:base_err,
+                errorMsg:base_err.message,
                 timeStamp:Date.now(),
                 data:null,
             });
@@ -542,10 +555,11 @@ export default () => {
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
      {
-        "success": true,
-        "result": false,
-        "err": "Express capital pool balance is insufficient, temporarily cannot exchange large amount"
-     }
+        "code": 200004,
+        "errorMsg": "Express capital pool balance is insufficient, temporarily cannot exchange large amount",
+        "timeStamp": 1589337373859,
+        "data": null
+    }
      * @apiSampleRequest http://119.23.181.166:21000/express/check_trade/BTC/1000000
      * @apiVersion 1.0.0
      */
@@ -553,21 +567,18 @@ export default () => {
     express.all('/check_trade/:quote_token/:quote_amount', async (req, res) => {
         const {quote_token, quote_amount} = req.params;
         const asset = new Asset(mist_config.asimov_master_rpc);
-        let [success, result, err] = [null, null, null];
+        let [result, err] = [null, null, null];
         // @ts-ignore
         // tslint:disable-next-line:no-shadowed-variable
         let code = errorCode.SUCCESSFUL;
         const [balancesErr, balances] = await to(asset.get_asset_balances(mist_wallet, mist_config.express_address, quote_token));
         if (!balances || !balances[0]) {
-            success = false;
             err = balancesErr;
             code = errorCode.EXTERNAL_DEPENDENCIES_ERROR;
         } else if (+quote_amount > balances[0].asim_asset_balance / 2) {
-            success = true;
-            result = false;
             err = `Express capital pool balance is insufficient, temporarily cannot exchange large amount`
+            code = errorCode.OFFICIAL_RESOURCES_INSUFFICIENT
         } else {
-            success = true;
             result = true;
         }
         res.json({

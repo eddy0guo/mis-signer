@@ -107,35 +107,31 @@ export default () => {
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
      {
-        "success": true,
-        "result": [
+    "code": 0,
+    "errorMsg": null,
+    "timeStamp": 1589332916122,
+    "data": [
             {
-                "market_id": "BTC-CNYC",
-                "price": "37527.67000000",
-                "ratio": "0.05424132",
-                "volume": "15.52140000",
-                "cnyc_price": "37527.67000000",
-                "maxprice": "41948.01000000",
-                "minprice": "31740.80000000",
-                "min_cnyc_price": "31740.80000000",
-                "max_cnyc_price": "41948.01000000",
-                "symbol": "BTC/CNYC",
-                "updated_at": "2020-03-18T02:29:07.325Z",
-                "created_at": "2020-03-12T09:29:37.531Z"
+                "token_symbol": "CNYC",
+                "erc20_address": "0x63cc0bfe91b31388dbd9eeafb233616bacc42cab31",
+                "erc20_balance": 3960320.141435896,
+                "value": 3960320.141435896,
+                "erc20_freeze_amount": 755264.263254,
+                "asim_assetid": "000000000000000300000000",
+                "asim_asset_balance": 0,
+                "asset_icon": "http://fingo-cdn.asimov.work/res/icons/CNYCa.png",
+                "coin_icon": "http://fingo-cdn.asimov.work/res/icons/CNYCm.png"
             },
             {
-                "market_id": "ASIM-MT",
-                "price": "0.02000000",
-                "ratio": "-0.92592593",
-                "volume": "5597.97050000",
-                "cnyc_price": "13.59000000",
-                "maxprice": "0.39000000",
-                "minprice": "0.02000000",
-                "min_cnyc_price": "1.06000000",
-                "max_cnyc_price": "20.68000000",
-                "symbol": "ASIM/MT",
-                "updated_at": "2020-03-18T02:29:07.325Z",
-                "created_at": "2020-03-12T09:29:37.531Z"
+                "token_symbol": "MT",
+                "erc20_address": "0x63064685c84dfe141c9ffe51c13c46bea61e57bf3a",
+                "erc20_balance": 4940347.76184583,
+                "value": 256058224.49646935,
+                "erc20_freeze_amount": 2406215.0608910006,
+                "asim_assetid": "000000000000000500000001",
+                "asim_asset_balance": 0,
+                "asset_icon": "http://fingo-cdn.asimov.work/res/icons/MTa.png",
+                "coin_icon": "http://fingo-cdn.asimov.work/res/icons/MTm.png"
             }
         ]
      }
@@ -171,10 +167,12 @@ export default () => {
      * @apiParam {string} symbol coin's symbol
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
-     {
-        "success": true,
-        "result": 831.43
-     }
+         {
+            "code": 0,
+            "errorMsg": null,
+            "timeStamp": 1589333610881,
+            "data": 39685.29
+        }
      * @apiSampleRequest http://119.23.181.166:21000/adex/get_token_price_v2/BTC
      * @apiVersion 1.0.0
      */
@@ -418,10 +416,12 @@ export default () => {
      * @apiSuccess {json}   result     orderID and expire_at
      * @apiSuccessExample {json} Success-Response:
      {
-        "success": true,
-        "result": {
-            "orderID": "8d79b581d57fbeec0680e550fe2622cc0e29ed17c402c74f6fe8195bc6169367",
-            "expire_at": 1585810263462
+         "code": 0,
+        "errorMsg": null,
+        "timeStamp": 1589333162986,
+        "data": {
+            "orderID": "e386e75b169aed9257b61a63ff20c2ce87218e0c2dc0119553da1027d09c3aac",
+            "expire_at": 1589336162984
         }
     }
      * @apiSampleRequest http://119.23.181.166:21000/adex/get_order_id_v3/0x66b1aded6908f6f3b77379703d16f3dbb55e88bf73/ASIM-CNYC/buy/30/100
@@ -474,9 +474,10 @@ export default () => {
      * @apiSuccess {json} result   order's ID
      * @apiSuccessExample {json} Success-Response:
      {
-        "success": true,
-        "result": "4757246fb03e7f88c9c98cea890b485f3571b5606a47f739c674557af380c017",
-        "err": null
+        "code": 0,
+        "errorMsg": null,
+        "timeStamp": 1589333314798,
+        "data": "e386e75b169aed9257b61a63ff20c2ce87218e0c2dc0119553da1027d09c3aac"
      }
      * @apiSampleRequest http://119.23.181.166:21000/adex/build_order_v4
      * @apiVersion 1.0.0
@@ -677,9 +678,10 @@ export default () => {
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
      {
-        "success": true,
-        "result": "[]",
-        "err": null
+        "code": 0,
+        "errorMsg": [],
+        "timeStamp": 1589333517684,
+        "data": null
     }
      * @apiSampleRequest http://119.23.181.166:21000/adex/cancle_order_v3
      * @apiVersion 1.0.0
@@ -748,8 +750,10 @@ export default () => {
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
      {
-        "success": true,
-        "err": null
+        "code": 0,
+        "errorMsg": [],
+        "timeStamp": 1589333517684,
+        "data": null
     }
      * @apiSampleRequest http://119.23.181.166:21000/adex/cancle_orders_v3
      * @apiVersion 1.0.0
@@ -897,32 +901,35 @@ export default () => {
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
      {
-        "success": true,
-        "result": {
+        "code": 0,
+        "errorMsg": null,
+        "timeStamp": 1589336131775,
+        "data": {
             "records": [
                 {
-                    "id": "f69e42169e3d8f51c5b45db400756f320f2ecaaf6b8f9a076aed149be573bbab",
-                    "trader_address": "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
+                    "id": "ff49af9a51ab01a516a48429bef05235510c3b793d060315178409c94e04bb35",
+                    "trader_address": "0x666a3d5822a9550a2dae0402b6e1055d8fabcf5133",
                     "market_id": "ETH-USDT",
                     "side": "sell",
-                    "price": "272.80000000",
-                    "amount": "8.11490000",
+                    "price": "190.78000000",
+                    "amount": "0.02120000",
                     "status": "pending",
                     "type": "limit",
-                    "available_amount": "8.11490000",
+                    "available_amount": "0.02120000",
                     "confirmed_amount": "0.00000000",
                     "canceled_amount": "0.00000000",
                     "pending_amount": "0.00000000",
-                    "updated_at": "2020-02-16T15:36:22.269Z",
-                    "created_at": "2020-02-16T15:36:22.269Z",
+                    "updated_at": "2020-05-13T02:15:07.490Z",
+                    "created_at": "2020-05-13T02:15:07.490Z",
+                    "signature": "0xe44868070a7c5e61d4b0cfedbc0c14da1cb07c114dffc7a0cd446a6d68d1fed433412cba7a0a9b88297f414d765b832d6904af6eaac3c2f7366a0bebeb3b9f711c",
+                    "expire_at": "1589339077145",
                     "average_price": "--",
                     "confirm_value": "--"
                 }
             ],
-            "totalLength": "2796"
-        },
-        "err": null
-     }
+            "totalLength": null
+        }
+    }
      * @apiSampleRequest http://119.23.181.166:21000/adex/my_orders_v5
      * @apiVersion 1.0.0
      */
@@ -985,8 +992,10 @@ export default () => {
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
      {
-        "success": true,
-        "result": [
+        "code": 0,
+        "errorMsg": null,
+        "timeStamp": 1589333691474,
+        "data": [
             {
                 "quoteToken": "CNYC",
                 "markets": [
@@ -1082,32 +1091,14 @@ export default () => {
      * @apiSuccess {json} result
      * @apiSuccessExample {json} Success-Response:
      {
-        "success": true,
-        "result": {
-            "records": [
-                {
-                    "id": "f69e42169e3d8f51c5b45db400756f320f2ecaaf6b8f9a076aed149be573bbab",
-                    "trader_address": "0x6632bd37c1331b34359920f1eaa18a38ba9ff203e9",
-                    "market_id": "ETH-USDT",
-                    "side": "sell",
-                    "price": "272.80000000",
-                    "amount": "8.11490000",
-                    "status": "pending",
-                    "type": "limit",
-                    "available_amount": "8.11490000",
-                    "confirmed_amount": "0.00000000",
-                    "canceled_amount": "0.00000000",
-                    "pending_amount": "0.00000000",
-                    "updated_at": "2020-02-16T15:36:22.269Z",
-                    "created_at": "2020-02-16T15:36:22.269Z",
-                    "average_price": "--",
-                    "confirm_value": "--"
-                }
-            ],
-            "totalLength": "2796"
-        },
-        "err": null
-     }
+        "code": 0,
+        "errorMsg": null,
+        "timeStamp": 1589334513972,
+        "data": {
+            "recordsRes": [],
+            "totalLength": "0"
+        }
+    }
      * @apiSampleRequest http://119.23.181.166:21000/adex/my_orders_v5
      * @apiVersion 1.0.0
      */
@@ -1126,7 +1117,7 @@ export default () => {
         const result = {recordsRes: records, totalLength};
         res.json({
             code: (recordsErr || totalLengthErr) ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
-            errorMsg:recordsErr + totalLengthErr,
+            errorMsg:recordsErr,
             timeStamp:Date.now(),
             data:result
         });
