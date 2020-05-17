@@ -115,7 +115,7 @@ export default () => {
 
             res.json({
                 code:errorCode.EXTERNAL_DEPENDENCIES_ERROR,
-                errorMsg:master_err,
+                errorMsg:master_err.message,
                 timeStamp:Date.now(),
                 data:null,
             });

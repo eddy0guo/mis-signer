@@ -639,18 +639,18 @@ export default () => {
             trader_address,
             market_id,
             side,
-            price,
-            amount,
+            price:+price,
+            amount:+amount,
             status: 'pending',
             type: 'limit',
-            available_amount: amount,
+            available_amount: +amount,
             confirmed_amount: 0,
             canceled_amount: 0,
             pending_amount: 0,
             updated_at: null,
             created_at: null,
             signature,
-            expire_at,
+            expire_at: +expire_at,
         };
 
         const [err, result2] = await to(order.build(message,redisClient));

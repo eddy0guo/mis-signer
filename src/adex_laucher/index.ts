@@ -196,7 +196,7 @@ class Launcher {
                 // @ts-ignore
                 const takerBaseRes = await hgetAsync(taker, baseToken);
                 const takerBase = +takerBaseRes.toString();
-                await this.redisClient.HMSET(taker, baseToken, NP.plus(takerBase, NP.times(amount, 0.995)));
+                await this.redisClient.HMSET(taker, baseToken, NP.plus(takerBase, NP.times(amount, 0.999)));
                 //
                 const takerQuoteRes = await hgetAsync(taker, quoteToken);
                 const takerQuote = +takerQuoteRes.toString();
@@ -210,7 +210,7 @@ class Launcher {
                 //
                 const makerQuoteRes = await hgetAsync(maker, quoteToken);
                 const makerQuote = +makerQuoteRes.toString();
-                await this.redisClient.HMSET(maker, quoteToken, NP.plus(makerQuote, NP.times(amount, price, 0.995)));
+                await this.redisClient.HMSET(maker, quoteToken, NP.plus(makerQuote, NP.times(amount, price, 0.999)));
             } else if (taker_side === 'sell') {
                 // @ts-ignore
                 const takerBaseRes = await hgetAsync(taker, baseToken);
@@ -219,7 +219,7 @@ class Launcher {
 
                 const takerQuoteRes = await hgetAsync(taker, quoteToken);
                 const takerQuote = +takerQuoteRes.toString();
-                await this.redisClient.HMSET(taker, quoteToken, NP.plus(takerQuote, NP.times(amount, price, 0.995)));
+                await this.redisClient.HMSET(taker, quoteToken, NP.plus(takerQuote, NP.times(amount, price, 0.999)));
 
                 const makerQuoteRes = await hgetAsync(maker, quoteToken);
                 const makerQuote = +makerQuoteRes.toString();

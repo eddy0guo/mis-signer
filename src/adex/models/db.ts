@@ -35,7 +35,7 @@ export default class DBClient {
         this.clientDB = client;
     }
 
-    async queryWithLog(sql:string,params?:any[]):Promise<any[]> {
+    async queryWithLog(sql:string,params?:any[]):Promise<any> {
         const start = new Date().getTime();
         const [err, result]: [any, any] = await to(this.clientDB.query(sql, params));
         if (err) {
@@ -100,7 +100,7 @@ export default class DBClient {
         // 临时表trade数据不能删完，保留一组定序
         const topTradeSql = `select * from mist_trades_tmp order by created_at desc limit 1`;
         const topTrade = await this.queryWithLog(topTradeSql);
-        const sql1 = `delete from mist_trades_tmp where (current_timestamp - created_at) > '25 hours' and transaction_id < ${topTrade[0].transaction_id} and status='successful'`;
+        const sql1 = `delete from mist_trades_tmp where (current_timestamp - created_at) > '25 hours' and transaction_id < ${topTrade.rows[0].transaction_id} and status='successful'`;
         const sql2 = `delete from mist_orders_tmp where available_amount=0;`
         await this.queryWithLog(sql1);
         await this.queryWithLog(sql2);
