@@ -158,8 +158,8 @@ class Watcher {
             AsimovConst.DEFAULT_FEE_AMOUNT,
             AsimovConst.DEFAULT_ASSET_ID,
             AsimovConst.CONTRACT_TYPE.CALL))
-        if (child_txid) {
-            const info = [child_txid, 'successful', current_time, id];
+        if (child_txid && child_txid.remoteTXid) {
+            const info = [child_txid.remoteTXid, 'successful', current_time, id];
             const [err3, result3] = await to(this.dbClient.update_asset2coin_bridge(info));
             if (err3) {
                 console.error(err3, result3)
@@ -168,6 +168,10 @@ class Watcher {
                 // tslint:disable-next-line:no-shadowed-variable
                this.redisClient.hget(address,token_name, async (err, value) => {
                    console.log(value); // > "bar"
+                   if(err ){
+                       console.log('address %o is new user',address);
+                       value = 0;
+                   }
                    await this.redisClient.HMSET(address, token_name, NP.plus(value,amount));
                });
             }
@@ -245,14 +249,13 @@ class Watcher {
 
         let [master_err, master_txid] = await send_asset(address, tokens[0].asim_assetid, amount);
         const master_txid_status = master_txid === null ? 'failed' : 'successful';
-
         if (master_err) {
+            console.log('send_asset error',master_err);
             master_err = null;
             master_txid = null;
         }
 
         const current_time = this.utils.get_current_time();
-
         const info = [master_txid, master_txid_status, child_txid, child_txid_status, current_time, id];
         const [updateBridgeErr, updateBridgeRes] = await to(this.dbClient.update_coin2asset_bridge(info));
         if (!updateBridgeRes){

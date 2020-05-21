@@ -227,7 +227,7 @@ class Launcher {
 
                 const makerBaseRes = await hgetAsync(maker, baseToken);
                 const makerBase = +makerBaseRes.toString();
-                await this.redisClient.HMSET(maker, baseToken, NP.plus(makerBase, NP.times(amount, 0.995)));
+                await this.redisClient.HMSET(maker, baseToken, NP.plus(makerBase, NP.times(amount, 0.999)));
             } else {
                 console.error('[ADEX_LAUNCHER]:updateLocalBook unknown side', taker_side);
                 return;

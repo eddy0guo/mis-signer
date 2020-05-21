@@ -7,6 +7,7 @@ enum errorCode {
     FEE_INSUFFICIENT = 200005,                  // 用户手续费不足
     BALANCE_INSUFFICIENT = 200006,              // 用户余额不足
     ENGINE_BUSY = 200007,              // 交易繁忙
+    CANCLE_MATCHING_ORDER = 200008,              // 订单匹配中无法取消
     INTERNAL_ERROR = 100001,                    // 保留错误码
     EXTERNAL_DEPENDENCIES_ERROR = 100002,       // 依赖服务（pg,redis,节点）异常
 }
