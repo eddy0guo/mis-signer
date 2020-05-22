@@ -4,7 +4,8 @@ import mist_config from '../../cfg';
 import to from 'await-to-js'
 import {IOrder, ITrade} from '../interface';
 import DBClient from '../models/db';
-
+import {promisify} from 'util';
+const ENGINE_ORDERS = 'engine_orders';
 export default class Engine {
     private db:DBClient;
     private utils:Utils;
@@ -14,7 +15,7 @@ export default class Engine {
         this.utils = new Utils();
     }
 
-    async match(message): Promise<IOrder[]> {
+    async match(message,redisClient): Promise<IOrder[]> {
         const  side = message.side ===  'buy'  ? 'sell':'buy';
         const filter = [message.price, side, message.market_id];
 
@@ -26,18 +27,23 @@ export default class Engine {
 
         const match_orders = [];
         let amount = 0;
+        const sismemberAsync = promisify(redisClient.sismember).bind(redisClient);
         // find and retunr。all orders。which's price below this order
         for (const i in result) {
             if (!result[i]) continue;
+            // 取消订单也耗时，防止正在取消de订单也被匹配上
+            // const isCanceling = await sismemberAsync(ENGINE_ORDERS, result[i].id);
+            //  if(isCanceling === 1) continue;
             result[i].amount = +result[i].amount;
             result[i].available_amount = +result[i].available_amount;
             match_orders.push(result[i]);
             amount = NP.plus(amount,result[i].available_amount);
+            // await redisClient.sadd(ENGINE_ORDERS,result[i].id);
             if (amount >= message.available_amount) {
                 break;
             }
         }
-
+        // todo: 更新redis正在撮合的订单
         return match_orders;
     }
 
@@ -90,11 +96,12 @@ export default class Engine {
             ];
 
             await this.db.update_orders(update_maker_orders_info);
+            console.log('[CANCLE]:-finished update ----',update_maker_orders_info,this.utils.get_current_time());
         }
         return trade_arr;
     }
 
-    async call_asimov(trades:ITrade[]): Promise<void> {
+    async call_asimov(trades:ITrade[],redisClient): Promise<void> {
         const [token_address_err, token_address] = await to(this.db.get_market([trades[0].market_id]));
         if (!token_address) {
             console.log('[ADEX ENGINE]::(get_market):', token_address_err, token_address);
@@ -142,6 +149,9 @@ export default class Engine {
             trades[i].transaction_id = transaction_id;
 
             trades_arr.push(this.utils.arr_values(trades[i]));
+            // console.log('matching remove ',trades[i].maker_order_id);
+            // await redisClient.srem(ENGINE_ORDERS,trades[i].maker_order_id);
+            // console.log('matching remove finish',trades[i].maker_order_id);
         }
         await this.db.insert_trades(trades_arr);
     }

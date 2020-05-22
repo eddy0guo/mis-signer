@@ -21,6 +21,8 @@ import {promisify} from 'util';
 import {errorCode} from '../error_code'
 import urllib = require('url');
 import crypto_sha256 = require('crypto');
+const ENGINE_ORDERS = 'engine_orders';
+
 
 // TODO :  这个RPC请求很高频，可能成为性能瓶颈
 // 1 优化可能：rpc请求加入块高度缓存，这样一个块高度只请求一次（已在wallet sdk完成）
@@ -707,6 +709,20 @@ export default () => {
                 data:null
             });
         }
+
+        // 规避下单后立马取消不等撮合的情况
+        /**
+        const sismemberAsync = promisify(redisClient.sismember).bind(redisClient);
+        const [balanceErr,isMatching] = await to(sismemberAsync(ENGINE_ORDERS, orderInfo[0].id));
+        if( isMatching === 1){
+            console.log('isMatching----result=%o-,err=%o---id=%o-',isMatching,balanceErr,orderInfo[0].id);
+            return res.json({
+                code: errorCode.CANCLE_MATCHING_ORDER,
+                errorMsg:'order is matching',
+                timeStamp:Date.now(),
+                data:null
+            });
+        }**/
         const [verifyErr,verifyRes] = await to(utils.verify2(orderInfo[0].trader_address,order_id, signature,publicKey));
         if (!verifyRes) {
             return res.json({
@@ -723,14 +739,17 @@ export default () => {
             price: orderInfo[0].price,
             market_id: orderInfo[0].market_id,
             id: order_id,
+            status: 'cancled',
         };
-
-        const [err, result] = await to(order.cancle_order(message,redisClient));
+        // update也有耗时，
+        await redisClient.sadd(ENGINE_ORDERS,order_id);
+        const [err, result] = await to(order.cancle(message));
+        await redisClient.srem(ENGINE_ORDERS,order_id);
         res.json({
             code: err ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
             errorMsg:err ? err:null,
             timeStamp:Date.now(),
-            data:err ? null:result
+            data:err ? null:''
         });
     });
     /**
@@ -801,9 +820,10 @@ export default () => {
                 side: order_info[0].side,
                 market_id: order_info[0].market_id,
                 id: order_info[0].id,
+                status: 'cancled',
             };
 
-            const [err, result] = await to(order.cancle_order(message,redisClient));
+            const [err, result] = await to(order.cancle(message));
             if (err) {
                 errs.push(err);
             }

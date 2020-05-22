@@ -272,8 +272,9 @@ export default () => {
                     side: oneOrder.side,
                     market_id: oneOrder.market_id,
                     id: oneOrder.id,
+                    status: 'cancled',
                 };
-                const [err, result] = await to(order.cancle_order(message,this.redisClient));
+                const [err, result] = await to(order.cancle(message));
                 if (err) {
                     console.log('cancel_all_orders error',err);
                     return res.json({

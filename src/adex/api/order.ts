@@ -9,32 +9,37 @@ import * as process from 'process';
 import {IOrder, IOrderBook} from '../interface';
 import {BullOption} from '../../cfg';
 import {promisify} from 'util';
+import * as Kafka from 'node-rdkafka'
+
 const FREEZE_PREFIX = 'freeze::';
 
-async function updateFreeze(trader_address,amount,price,side,market_id,redisClient):Promise<void>{
-    let  [baseToken, quoteToken] = market_id.split('-');
+async function updateFreeze(trader_address, amount, price, side, market_id, redisClient): Promise<void> {
+    let [baseToken, quoteToken] = market_id.split('-');
     quoteToken = FREEZE_PREFIX + quoteToken;
     baseToken = FREEZE_PREFIX + baseToken;
     const hgetAsync = promisify(redisClient.hget).bind(redisClient);
-    if(side === 'buy') {
+    if (side === 'buy') {
         const quoteRes = await hgetAsync(trader_address, quoteToken);
         const quoteAmount = +quoteRes.toString();
-        await redisClient.HMSET(trader_address, quoteToken, NP.plus(quoteAmount, NP.times(price,amount)));
-    }else if(side === 'sell'){
+        await redisClient.HMSET(trader_address, quoteToken, NP.plus(quoteAmount, NP.times(price, amount)));
+    } else if (side === 'sell') {
         const baseRes = await hgetAsync(trader_address, baseToken);
         const baseAmount = +baseRes.toString();
         await redisClient.HMSET(trader_address, baseToken, NP.plus(baseAmount, amount));
         // tslint:disable-next-line:no-empty
-    }else{}
-    return ;
+    } else {
+    }
+    return;
 }
 
-export default class order {
+export default class Order {
 
-    private db:DBClient;
-    private orderQueue:Queue.Queue;
-    private orderBookUpdateQueue:Queue.Queue;
-    private utils:Utils;
+    private db: DBClient;
+    private orderQueue: Queue.Queue;
+    private orderBookUpdateQueue: Queue.Queue;
+    private utils: Utils;
+    private streams:any[] = [];
+
 
     constructor(client) {
         this.db = client;
@@ -42,9 +47,9 @@ export default class order {
         this.createQueue();
     }
 
-    createQueue() : Queue.Queue {
-        this.orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE,BullOption);
-        this.orderBookUpdateQueue = new Queue('addOrderBookQueue',BullOption);
+    createQueue(): Queue.Queue {
+        this.orderQueue = new Queue('OrderQueue' + process.env.MIST_MODE, BullOption);
+        this.orderBookUpdateQueue = new Queue('addOrderBookQueue', BullOption);
 
         this.orderQueue.on('error', async e => {
             console.log('[SIGNER_API] Queue on Error', e);
@@ -61,85 +66,120 @@ export default class order {
             // kill instance when queue on error
             process.exit(-1);
         });
-
         return this.orderQueue;
     }
 
-    private async checkQueueStatus() : Promise<boolean>{
+    async createKafkaStreams() {
+        const markets = await this.db.list_markets();
+        for (const market of markets) {
+            const kafkaStream = Kafka.createWriteStream({
+                'client.id': 'mist',
+                'metadata.broker.list': 'localhost:9092'
+            }, {}, {
+                topic: market.id
+            });
+            this.streams.push(kafkaStream);
+        }
+    }
+
+    private async checkQueueStatus(): Promise<boolean> {
         const job = await this.orderQueue.add(null, {removeOnComplete: true, delay: 9999});
         await job.remove();
         return true;
     }
 
-    async queueWaitingCount() : Promise<number>{
+    async queueWaitingCount(): Promise<number> {
         const [err, num] = await to(this.orderQueue.getWaitingCount());
-        if( err ) {
+        if (err) {
             return Number.MAX_SAFE_INTEGER;
         }
         return num;
     }
 
-    async build(message,redisClient): Promise<any> {
-        /*暂时这块业务没做先去掉此逻辑
-        let mist_user = await this.db.find_user([message.trader_address]);
-        if (!mist_user[0]) {
-            let address_info = {
-                address: message.trader_address,
-            }
-            let result = await this.db.insert_users(this.utils.arr_values(address_info));
+    async build(message, redisClient): Promise<any> {
+        if(this.streams.length === 0){
+            await this.createKafkaStreams();
         }
-        */
-       // Hack Status checking , remove first
-        // const [statusErr, res] = await to(this.checkQueueStatus());
-        // if (statusErr || !res) {
-        //     console.log('[ADEX API] Queue Status Error:', statusErr);
-        //     this.createQueue();
-        // }
-        const [err, job] = await to(this.orderQueue.add(message,{removeOnComplete: true}));
+        const [err, job] = await to(this.orderQueue.add(message, {removeOnComplete: true}));
         if (err) {
             console.log('[ADEX API] Queue Error:', err);
             throw err;
         }
-        const {trader_address,amount,price,side,market_id} = message;
-        await updateFreeze(trader_address,amount,price,side,market_id,redisClient);
+        const {trader_address, id, amount, price, side, market_id} = message;
+        for (const stream of this.streams) {
+            console.log('gxytest----id=%o,topic=%o',id,stream.topicName)
+            if (market_id === stream.topicName) {
+                const engineOrder = {
+                    id,
+                    amount: +amount,
+                    price: +price,
+                    side,
+                    created_at: this.utils.get_current_time()
+                }
+                message.created_at = this.utils.get_current_time();
+                message.updated_at = this.utils.get_current_time();
+                const info = this.utils.arr_values(message);
+                // await this.db.insert_order_v3(info);
+                const queuedSuccess = stream.write(Buffer.from(JSON.stringify(message)));
+                if (queuedSuccess) {
+                    console.log('We queued our message!');
+                } else {
+                    console.log('Too many messages in our queue already');
+                }
+                break;
+            }
+        }
+        // await updateFreeze(trader_address, amount, price, side, market_id, redisClient);
         return job;
     }
 
-    async cancle_order(message,redisClient) : Promise<any>{
-        const {trader_address,amount,price,side,market_id,id} = message;
+    async cancle(message): Promise<any> {
+        if(this.streams.length === 0){
+            await this.createKafkaStreams();
+        }
+        const [err, job] = await to(this.orderQueue.add(message, {removeOnComplete: true}));
+        if (err) {
+            console.log('[ADEX API] Queue Error:', err);
+            throw err;
+        }
+        return job;
+    }
+
+    async cancle_order(message, redisClient): Promise<any> {
+        const {trader_address, amount, price, side, market_id, id,status} = message;
         const create_time = this.utils.get_current_time();
-        const cancle_info = [-message.amount, 0, message.amount, 0, 'cancled', create_time, message.id];
+        const cancle_info = [-message.amount, 0, message.amount, 0, status, create_time, message.id];
         await this.db.update_orders(cancle_info);
         let book;
-        if(message.side === 'buy'){
+        if (message.side === 'buy') {
             book = {
-                asks:[],
-                bids:[[message.price,-message.amount]]
+                asks: [],
+                bids: [[message.price, -message.amount]]
             }
-        }else{
+        } else {
             book = {
-                asks:[[message.price,-message.amount]],
-                bids:[]
+                asks: [[message.price, -message.amount]],
+                bids: []
             }
         }
 
         const marketUpdateBook = {
             data: book,
-            id:message.market_id,
+            id: message.market_id,
         }
-        await this.orderBookUpdateQueue.add(marketUpdateBook,{removeOnComplete: true});
+        await this.orderBookUpdateQueue.add(marketUpdateBook, {removeOnComplete: true});
         // cancle解冻，加上负值
-        await updateFreeze(trader_address,-amount,price,side,market_id,redisClient);
-        return ;
+        await updateFreeze(trader_address, -amount, price, side, market_id, redisClient);
+        return;
     }
-    async my_orders(address:string, page:number, perPage:number, status1:string, status2:string,MarketID?: string | undefined):Promise<IOrder[]> {
+
+    async my_orders(address: string, page: number, perPage: number, status1: string, status2: string, MarketID?: string | undefined): Promise<IOrder[]> {
         const offset = (page - 1) * perPage;
         // @ts-ignore
-        let [err,orders] = [null,null];
-        if(MarketID) {
-            [err, orders] = await to(this.db.my_orders4([address, offset, perPage, status1, status2,MarketID]));
-        }
-        else{
+        let [err, orders] = [null, null];
+        if (MarketID) {
+            [err, orders] = await to(this.db.my_orders4([address, offset, perPage, status1, status2, MarketID]));
+        } else {
             [err, orders] = await to(this.db.my_orders2([address, offset, perPage, status1, status2]));
         }
         if (!orders) {
@@ -149,7 +189,7 @@ export default class order {
 
         for (const oneOrder of orders) {
 
-            const trades:any[] = await this.db.order_trades([oneOrder.id]);
+            const trades: any[] = await this.db.order_trades([oneOrder.id]);
             if (trades.length === 0) {
                 oneOrder.average_price = '--';
                 oneOrder.confirm_value = '--';
@@ -170,21 +210,21 @@ export default class order {
     }
 
 
-    async my_orders_v2(address:string, page:number, perPage:number, status1:string, status2:string,MarketID: string,side:string):Promise<IOrder[]> {
+    async my_orders_v2(address: string, page: number, perPage: number, status1: string, status2: string, MarketID: string, side: string): Promise<IOrder[]> {
         const offset = (page - 1) * perPage;
         // @ts-ignore
-        let [err,orders] = [null,null];
-        if(MarketID === '') {
-            if(side === '') {
+        let [err, orders] = [null, null];
+        if (MarketID === '') {
+            if (side === '') {
                 [err, orders] = await to(this.db.my_orders2([address, offset, perPage, status1, status2]));
-            }else{
-                [err, orders] = await to(this.db.my_orders3([address, offset, perPage, status1, status2,side]));
+            } else {
+                [err, orders] = await to(this.db.my_orders3([address, offset, perPage, status1, status2, side]));
             }
-        } else{
-            if(side === '') {
+        } else {
+            if (side === '') {
                 [err, orders] = await to(this.db.my_orders4([address, offset, perPage, status1, status2, MarketID]));
-            }else{
-                [err, orders] = await to(this.db.my_orders5([address, offset, perPage, status1, status2, MarketID,side]));
+            } else {
+                [err, orders] = await to(this.db.my_orders5([address, offset, perPage, status1, status2, MarketID, side]));
             }
         }
         if (!orders) {
@@ -194,7 +234,7 @@ export default class order {
 
         for (const oneOrder of orders) {
 
-            const trades:any[] = await this.db.order_trades([oneOrder.id]);
+            const trades: any[] = await this.db.order_trades([oneOrder.id]);
             if (trades.length === 0) {
                 oneOrder.average_price = '--';
                 oneOrder.confirm_value = '--';
@@ -214,10 +254,10 @@ export default class order {
         return orders;
     }
 
-    async my_orders_v3(address:string, page:number, perPage:number, status1:string, status2:string,MarketID: string,side:string,start:Date,end:Date):Promise<IOrder[]> {
+    async my_orders_v3(address: string, page: number, perPage: number, status1: string, status2: string, MarketID: string, side: string, start: Date, end: Date): Promise<IOrder[]> {
         const offset = (page - 1) * perPage;
         // @ts-ignore
-        const [err,orders] = await to(this.db.my_orders6([address, offset, perPage, status1, status2,start,end,MarketID,side]));
+        const [err, orders] = await to(this.db.my_orders6([address, offset, perPage, status1, status2, start, end, MarketID, side]));
         if (!orders) {
             console.error(err, orders);
             return orders;
@@ -225,7 +265,7 @@ export default class order {
 
         for (const oneOrder of orders) {
 
-            const trades:any[] = await this.db.order_trades([oneOrder.id]);
+            const trades: any[] = await this.db.order_trades([oneOrder.id]);
             if (trades.length === 0) {
                 oneOrder.average_price = '--';
                 oneOrder.confirm_value = '--';
@@ -245,18 +285,18 @@ export default class order {
         return orders;
     }
 
-    async my_orders_length(address:string, status1:string, status2:string,start:string,end:string) : Promise<number>{
+    async my_orders_length(address: string, status1: string, status2: string, start: string, end: string): Promise<number> {
         const result = await this.db.my_orders_length([address, status1, status2, start, end]);
         return result;
     }
 
-    async order_book(marketID:string, precision:string) : Promise<IOrderBook>{
-        const result =  await this.db.get_order_book_tmp([marketID,precision]);
+    async order_book(marketID: string, precision: string): Promise<IOrderBook> {
+        const result = await this.db.get_order_book_tmp([marketID, precision]);
         const bookObj = JSON.parse(result[0].order_book);
         return bookObj;
     }
 
-    async order_book_v2(marketID:string, precision:string) : Promise<IOrderBook>{
+    async order_book_v2(marketID: string, precision: string): Promise<IOrderBook> {
 
         const asks = await this.db.order_book(['sell', marketID, precision]);
         const bids = await this.db.order_book(['buy', marketID, precision]);
@@ -265,7 +305,7 @@ export default class order {
         const bids_arr = [];
         for (const item of asks) {
             if (!item) continue
-            const askPriceAdd  =  NP.divide(1, Math.pow(10, +precision));
+            const askPriceAdd = NP.divide(1, Math.pow(10, +precision));
             item.price = NP.plus(item.price, askPriceAdd).toFixed(+precision).toString();
             asks_arr.push(this.utils.arr_values(item));
         }
@@ -279,11 +319,11 @@ export default class order {
             asks: asks_arr.reverse(),
             bids: bids_arr,
         };
-     //   console.log(order_book);
+        //   console.log(order_book);
         return order_book;
     }
 
-    async get_order(order_id:string) : Promise<IOrder[]>{
+    async get_order(order_id: string): Promise<IOrder[]> {
         return await this.db.find_order([order_id]);
     }
 

@@ -6,6 +6,8 @@ import { Logger } from '../common/Logger';
 import LogUnhandled from '../common/LogUnhandled';
 import DBClient from '../adex/models/db';
 import Engine from '../adex/api/engine';
+import Order from '../adex/api/order';
+
 import Utils from '../adex/api/utils';
 import MistWallet from '../adex/api/mist_wallet';
 
@@ -14,12 +16,36 @@ import { IOrder, IOrderBook, ILastTrade } from '../adex/interface';
 import { BullOption,OrderQueueConfig } from '../cfg';
 import { get_available_erc20_amount } from '../adex';
 import * as redis from 'redis';
+import {promisify} from 'util';
+import {errorCode} from '../error_code';
 
 const QueueNames = {
     OrderQueue: 'OrderQueue' + process.env.MIST_MODE,
     AddOrderBookQueue: 'addOrderBookQueue',
     AddTradesQueue: 'addTradesQueue',
 };
+
+
+const FREEZE_PREFIX = 'freeze::';
+
+async function updateFreeze(trader_address, amount, price, side, market_id, redisClient): Promise<void> {
+    let [baseToken, quoteToken] = market_id.split('-');
+    quoteToken = FREEZE_PREFIX + quoteToken;
+    baseToken = FREEZE_PREFIX + baseToken;
+    const hgetAsync = promisify(redisClient.hget).bind(redisClient);
+    if (side === 'buy') {
+        const quoteRes = await hgetAsync(trader_address, quoteToken);
+        const quoteAmount = +quoteRes.toString();
+        await redisClient.HMSET(trader_address, quoteToken, NP.plus(quoteAmount, NP.times(price, amount)));
+    } else if (side === 'sell') {
+        const baseRes = await hgetAsync(trader_address, baseToken);
+        const baseAmount = +baseRes.toString();
+        await redisClient.HMSET(trader_address, baseToken, NP.plus(baseAmount, amount));
+        // tslint:disable-next-line:no-empty
+    } else {
+    }
+    return;
+}
 
 // tslint:disable-next-line:no-shadowed-variable
 function computeOrderBookUpdates(
@@ -92,6 +118,7 @@ class AdexEngine {
     private exchange: Engine;
     private utils: Utils;
     private mistWallat: MistWallet;
+    private order: Order;
     // 5分钟无log输出会杀死进程。
     private logger: Logger = new Logger(AdexEngine.name, 5 * 60 * 1000);
     private status: IEngineStatus = {
@@ -108,6 +135,7 @@ class AdexEngine {
         this.exchange = new Engine(this.db);
         this.utils = new Utils();
         this.mistWallat = new MistWallet(this.db);
+        this.order = new Order(this.db);
         if (typeof BullOption.redis !== 'string') {
             this.redisClient = redis.createClient(BullOption.redis.port, BullOption.redis.host);
             this.redisClient.auth(BullOption.redis.password);
@@ -150,10 +178,35 @@ class AdexEngine {
 
     async worker(job, done) {
         const jobStarted = new Date().getTime();
+        console.log('11112-----',new Date().getTime() - jobStarted);
         this.status.workingTime = jobStarted - this.status.startTime.getTime();
         this.status.waitingJobs = await this.orderQueue.getWaitingCount();
 
         const message = job.data;
+        if(message.status === 'cancled'){
+            console.log('[CANCLE]start cancled',message,this.utils.get_current_time());
+            const orderInfo: IOrder[] = await this.order.get_order(message.id);
+            if (!orderInfo || orderInfo.length <= 0) {
+                console.error('[MIST_ENGINE]:get order failed',message.id);
+                done();
+                return;
+            }
+            if(orderInfo[0].available_amount <= 0){
+                console.error('[MIST_ENGINE]:[CANCLE]:cancled order have no available amount ',orderInfo[0]);
+                done();
+                return;
+            }
+            // 取消金额以实际剩下的为准
+            message.amount = orderInfo[0].available_amount;
+            console.log('[CANCLE]cancleding cancled get order',orderInfo[0],this.utils.get_current_time());
+            const [cancleOrderErr,cancleOrderRes] = await to(this.order.cancle_order(message,this.redisClient));
+            if(cancleOrderErr){
+                console.error('[MIST_ENGINE]:cancle_order failed',message);
+            }
+            console.log('[CANCLE]finished cancled',message,this.utils.get_current_time());
+            done();
+            return;
+        }
         this.logger.log(
             `[ADEX ENGINE] Message ${message.market_id} from OrderQueue${process.env.MIST_MODE}`
         );
@@ -161,7 +214,9 @@ class AdexEngine {
 
         let checkAvailableRes = true;
         if(this.status.waitingJobs < OrderQueueConfig.maxWaiting * 2 ){
+            console.log('aaa-----',new Date().getTime() - jobStarted);
             checkAvailableRes = await this.checkOrderAvailability(message);
+            console.log('bbb-----',new Date().getTime() - jobStarted);
         } else {
             // TODO 这里暂时当任务过多时候，跳过检测，并做了一些冗余的判断，HA进程小于 OrderQueueConfig.maxWaiting 个一般不会出现这问题
             if( this.status.waitingJobs > OrderQueueConfig.maxWaiting * 10 ){
@@ -179,7 +234,7 @@ class AdexEngine {
             }
 
         }
-
+        console.log('2222-----',new Date().getTime() - jobStarted);
         if (!checkAvailableRes) {
             // 直接抹掉非法订单
             this.logger.log(`[ADEX ENGINE]:order %o check available failed`, message);
@@ -187,15 +242,18 @@ class AdexEngine {
             return;
         }
 
+        await updateFreeze(message.trader_address, message.amount, message.price, message.side, message.market_id, this.redisClient);
         const create_time = this.utils.get_current_time();
         message.created_at = create_time;
         message.updated_at = create_time;
         const lastTrades = [];
         // 每次匹配100单，超过300的二次匹配直到匹配不到挂单
         await this.db.begin();
+        console.log('3333-----',new Date().getTime() - jobStarted);
         while (message.available_amount > 0) {
+        	console.log('3.1-----',new Date().getTime() - jobStarted);
             const [find_orders_err, find_orders] = await to(
-                this.exchange.match(message)
+                this.exchange.match(message,this.redisClient)
             );
 
             if (!find_orders) {
@@ -212,12 +270,14 @@ class AdexEngine {
             if (find_orders.length === 0) {
                 break;
             }
+        	console.log('3.15-----',new Date().getTime() - jobStarted);
 
             this.status.totalMatched += find_orders.length;
 
             const [trades_err, trades] = await to(
                 this.exchange.makeTrades(find_orders, message)
             );
+        	console.log('3.2-----',new Date().getTime() - jobStarted);
             if (!trades) {
                 this.logger.log('make trades', trades_err, trades);
                 await this.db.rollback();
@@ -226,8 +286,9 @@ class AdexEngine {
             }
 
             const [call_asimov_err, call_asimov_result] = await to(
-                this.exchange.call_asimov(trades)
+                this.exchange.call_asimov(trades,this.redisClient)
             );
+        	console.log('3.3-----',new Date().getTime() - jobStarted);
             if (call_asimov_err) {
                 this.logger.log('call asimov', call_asimov_err, call_asimov_result);
                 await this.db.rollback();
@@ -250,6 +311,7 @@ class AdexEngine {
             message.available_amount = NP.minus(message.available_amount, amount);
             message.pending_amount = NP.plus(message.pending_amount, amount);
         }
+        console.log('4444-----',new Date().getTime() - jobStarted);
         if (lastTrades.length > 0) {
             const marketLastTrades = {
                 data: lastTrades,
@@ -269,6 +331,7 @@ class AdexEngine {
                     lastTradesAddErr
                 );
         }
+        console.log('5555-----',new Date().getTime() - jobStarted);
         const book = computeOrderBookUpdates(lastTrades, message);
         const marketUpdateBook = {
             data: book,
@@ -282,6 +345,7 @@ class AdexEngine {
                 '[ADEX ENGINE]:orderBookUpdateQueue failed %o', orderBookQueueErr
             );
         }
+
         if (message.pending_amount === 0) {
             message.status = 'pending';
         } else if (message.available_amount === 0) {
@@ -289,11 +353,12 @@ class AdexEngine {
         } else {
             message.status = 'partial_filled';
         }
-
+        console.log('6666-----',new Date().getTime() - jobStarted);
         const arr_message = this.utils.arr_values(message);
         const [insert_order_err, insert_order_result] = await to(
             this.db.insert_order_v2(arr_message)
         );
+        console.log('[CANCLE]:-finished insert ----',arr_message,this.utils.get_current_time());
         if (!insert_order_result) {
             this.logger.log(
                 `[ADEX ENGINE] insert_order_err`,
@@ -305,12 +370,13 @@ class AdexEngine {
             return;
         }
         await this.db.commit();
-
+        console.log('7777-----',new Date().getTime() - jobStarted);
         const jobFinished = new Date().getTime();
         this.status.ordersPerMin = this.status.totalMatched/(this.status.workingTime/1000/60)
         this.logger.log(`Job finished in ${jobFinished-jobStarted}ms,${this.status}`);
 
         done();
+        console.log('8888-----',new Date().getTime() - jobStarted);
     }
 
     async checkOrderAvailability(order: IOrder): Promise<boolean> {
