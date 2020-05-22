@@ -96,26 +96,16 @@ export default class Order {
         return num;
     }
 
-    async build(message, redisClient): Promise<any> {
+    async build(message): Promise<any> {
         if(this.streams.length === 0){
             await this.createKafkaStreams();
         }
-        const [err, job] = await to(this.orderQueue.add(message, {removeOnComplete: true}));
-        if (err) {
-            console.log('[ADEX API] Queue Error:', err);
-            throw err;
-        }
+        const job = await this.orderQueue.add(message, {removeOnComplete: true});
+
         const {trader_address, id, amount, price, side, market_id} = message;
         for (const stream of this.streams) {
-            console.log('gxytest----id=%o,topic=%o',id,stream.topicName)
+            // console.log('gxytest----id=%o,topic=%o',id,stream.topicName)
             if (market_id === stream.topicName) {
-                const engineOrder = {
-                    id,
-                    amount: +amount,
-                    price: +price,
-                    side,
-                    created_at: this.utils.get_current_time()
-                }
                 message.created_at = this.utils.get_current_time();
                 message.updated_at = this.utils.get_current_time();
                 const info = this.utils.arr_values(message);
@@ -124,12 +114,11 @@ export default class Order {
                 if (queuedSuccess) {
                     console.log('We queued our message!');
                 } else {
-                    console.log('Too many messages in our queue already');
+                    console.error('Too many messages in our queue already',message);
                 }
                 break;
             }
         }
-        // await updateFreeze(trader_address, amount, price, side, market_id, redisClient);
         return job;
     }
 
@@ -137,12 +126,7 @@ export default class Order {
         if(this.streams.length === 0){
             await this.createKafkaStreams();
         }
-        const [err, job] = await to(this.orderQueue.add(message, {removeOnComplete: true}));
-        if (err) {
-            console.log('[ADEX API] Queue Error:', err);
-            throw err;
-        }
-        return job;
+        return await this.orderQueue.add(message, {removeOnComplete: true});
     }
 
     async cancle_order(message, redisClient): Promise<any> {
@@ -172,99 +156,11 @@ export default class Order {
         await updateFreeze(trader_address, -amount, price, side, market_id, redisClient);
         return;
     }
-
-    async my_orders(address: string, page: number, perPage: number, status1: string, status2: string, MarketID?: string | undefined): Promise<IOrder[]> {
-        const offset = (page - 1) * perPage;
-        // @ts-ignore
-        let [err, orders] = [null, null];
-        if (MarketID) {
-            [err, orders] = await to(this.db.my_orders4([address, offset, perPage, status1, status2, MarketID]));
-        } else {
-            [err, orders] = await to(this.db.my_orders2([address, offset, perPage, status1, status2]));
-        }
-        if (!orders) {
-            console.error(err, orders);
-            return orders;
-        }
-
-        for (const oneOrder of orders) {
-
-            const trades: any[] = await this.db.order_trades([oneOrder.id]);
-            if (trades.length === 0) {
-                oneOrder.average_price = '--';
-                oneOrder.confirm_value = '--';
-                continue;
-            }
-            let amount = 0;
-            let value = 0;
-            for (const trade of trades) {
-                amount = NP.plus(amount, trade.amount);
-                const trade_value = NP.times(trade.amount, trade.price);
-                value = NP.plus(value, trade_value);
-            }
-            oneOrder.average_price = NP.divide(value, amount).toFixed(8);
-            oneOrder.confirm_value = value.toFixed(8);
-        }
-
-        return orders;
-    }
-
-
-    async my_orders_v2(address: string, page: number, perPage: number, status1: string, status2: string, MarketID: string, side: string): Promise<IOrder[]> {
-        const offset = (page - 1) * perPage;
-        // @ts-ignore
-        let [err, orders] = [null, null];
-        if (MarketID === '') {
-            if (side === '') {
-                [err, orders] = await to(this.db.my_orders2([address, offset, perPage, status1, status2]));
-            } else {
-                [err, orders] = await to(this.db.my_orders3([address, offset, perPage, status1, status2, side]));
-            }
-        } else {
-            if (side === '') {
-                [err, orders] = await to(this.db.my_orders4([address, offset, perPage, status1, status2, MarketID]));
-            } else {
-                [err, orders] = await to(this.db.my_orders5([address, offset, perPage, status1, status2, MarketID, side]));
-            }
-        }
-        if (!orders) {
-            console.error(err, orders);
-            return orders;
-        }
-
-        for (const oneOrder of orders) {
-
-            const trades: any[] = await this.db.order_trades([oneOrder.id]);
-            if (trades.length === 0) {
-                oneOrder.average_price = '--';
-                oneOrder.confirm_value = '--';
-                continue;
-            }
-            let amount = 0;
-            let value = 0;
-            for (const trade of trades) {
-                amount = NP.plus(amount, trade.amount);
-                const trade_value = NP.times(trade.amount, trade.price);
-                value = NP.plus(value, trade_value);
-            }
-            oneOrder.average_price = NP.divide(value, amount).toFixed(8);
-            oneOrder.confirm_value = value.toFixed(8);
-        }
-
-        return orders;
-    }
-
     async my_orders_v3(address: string, page: number, perPage: number, status1: string, status2: string, MarketID: string, side: string, start: Date, end: Date): Promise<IOrder[]> {
         const offset = (page - 1) * perPage;
         // @ts-ignore
-        const [err, orders] = await to(this.db.my_orders6([address, offset, perPage, status1, status2, start, end, MarketID, side]));
-        if (!orders) {
-            console.error(err, orders);
-            return orders;
-        }
-
+        const orders = await this.db.my_orders6([address, offset, perPage, status1, status2, start, end, MarketID, side]);
         for (const oneOrder of orders) {
-
             const trades: any[] = await this.db.order_trades([oneOrder.id]);
             if (trades.length === 0) {
                 oneOrder.average_price = '--';
@@ -283,11 +179,6 @@ export default class Order {
         }
 
         return orders;
-    }
-
-    async my_orders_length(address: string, status1: string, status2: string, start: string, end: string): Promise<number> {
-        const result = await this.db.my_orders_length([address, status1, status2, start, end]);
-        return result;
     }
 
     async order_book(marketID: string, precision: string): Promise<IOrderBook> {
@@ -319,7 +210,6 @@ export default class Order {
             asks: asks_arr.reverse(),
             bids: bids_arr,
         };
-        //   console.log(order_book);
         return order_book;
     }
 

@@ -18,32 +18,20 @@ export default class Engine {
     async match(message,redisClient): Promise<IOrder[]> {
         const  side = message.side ===  'buy'  ? 'sell':'buy';
         const filter = [message.price, side, message.market_id];
-
-        const [err, result] = await to(this.db.filter_orders(filter));
-        if (!result) {
-            console.log('[ADEX ENGINE]::{filter_orders}', err, result);
-            return [];
-        }
-
+        const result = await this.db.filter_orders(filter);
         const match_orders = [];
         let amount = 0;
-        const sismemberAsync = promisify(redisClient.sismember).bind(redisClient);
         // find and retunr。all orders。which's price below this order
         for (const i in result) {
             if (!result[i]) continue;
-            // 取消订单也耗时，防止正在取消de订单也被匹配上
-            // const isCanceling = await sismemberAsync(ENGINE_ORDERS, result[i].id);
-            //  if(isCanceling === 1) continue;
             result[i].amount = +result[i].amount;
             result[i].available_amount = +result[i].available_amount;
             match_orders.push(result[i]);
             amount = NP.plus(amount,result[i].available_amount);
-            // await redisClient.sadd(ENGINE_ORDERS,result[i].id);
             if (amount >= message.available_amount) {
                 break;
             }
         }
-        // todo: 更新redis正在撮合的订单
         return match_orders;
     }
 
@@ -54,7 +42,7 @@ export default class Engine {
 
         for (let item = 0; item < find_orders.length; item++) {
             let maker_status = 'full_filled';
-            // 吃单全部成交,挂单有剩余的场景,--24000,
+            // 吃单全部成交,挂单有剩余,
             if (item === find_orders.length - 1 && available_amount < find_orders[item].available_amount) {
                 const overflow_amount = NP.minus(find_orders[item].available_amount, available_amount);
                 find_orders[item].available_amount = NP.minus(
@@ -96,25 +84,19 @@ export default class Engine {
             ];
 
             await this.db.update_orders(update_maker_orders_info);
-            console.log('[CANCLE]:-finished update ----',update_maker_orders_info,this.utils.get_current_time());
         }
         return trade_arr;
     }
 
-    async call_asimov(trades:ITrade[],redisClient): Promise<void> {
-        const [token_address_err, token_address] = await to(this.db.get_market([trades[0].market_id]));
+    async call_asimov(trades:ITrade[]): Promise<void> {
+        const token_address = await this.db.get_market([trades[0].market_id]);
         if (!token_address) {
-            console.log('[ADEX ENGINE]::(get_market):', token_address_err, token_address);
+            console.log('[ADEX ENGINE]::(get_market):', token_address);
             return;
         }
 
-        const [transactions_err, transactions] = await to(this.db.list_all_trades());
-        const [matched_trades_err, matched_trades] = await to(this.db.list_matched_trades());
-        if (!transactions || !matched_trades) {
-            console.log('[ADEX ENGINE]::(list_all_trades):', transactions_err, transactions);
-            console.log('[ADEX ENGINE]::(list_matched_trades):', matched_trades_err, matched_trades);
-            return;
-        }
+        const transactions = await this.db.list_all_trades();
+        const matched_trades = await this.db.list_matched_trades();
         // 经验值300为单次上链trades数量，主要受rpc接口相应时间限制
         const add_queue_num = Math.floor(matched_trades / 100) + 1;
 
@@ -147,11 +129,7 @@ export default class Engine {
             };
 
             trades[i].transaction_id = transaction_id;
-
             trades_arr.push(this.utils.arr_values(trades[i]));
-            // console.log('matching remove ',trades[i].maker_order_id);
-            // await redisClient.srem(ENGINE_ORDERS,trades[i].maker_order_id);
-            // console.log('matching remove finish',trades[i].maker_order_id);
         }
         await this.db.insert_trades(trades_arr);
     }

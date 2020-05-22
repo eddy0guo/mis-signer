@@ -150,10 +150,10 @@ export default () => {
      * @apiVersion 1.0.0
      */
     adex.all('/list_market_quotations_v2', async (req, res) => {
-        const result = await market.list_market_quotations();
+        const [err,result] = await market.list_market_quotations();
         res.json({
-            code: errorCode.SUCCESSFUL,
-            errorMsg:null,
+            code: err ? errorCode.EXTERNAL_DEPENDENCIES_ERROR:errorCode.SUCCESSFUL,
+            errorMsg:err ? err:null,
             timeStamp:Date.now(),
             data:result
         });
@@ -683,7 +683,7 @@ export default () => {
             expire_at: +expire_at,
         };
 
-        const [err, result2] = await to(order.build(message,redisClient));
+        const [err, result2] = await to(order.build(message));
         res.json({
             code: err ? errorCode.EXTERNAL_DEPENDENCIES_ERROR: errorCode.SUCCESSFUL,
             errorMsg:err ? err:null,
@@ -1001,8 +1001,9 @@ export default () => {
     adex.all('/my_orders_v5', async (req, res) => {
         // cancled，full_filled，历史委托
         const {address, page, perPage, status1, status2, market_id, side, start, end, need_total_length} = req.body;
-        if(!address || !page || !perPage || !status1 || !status2 || !side ||
-                    !start || !end || need_total_length === undefined){
+        console.log('----s-s-s222222111-----',req.body);
+        if(!address || !page || !perPage || !status1 || !status2 || !side || !end ||
+            start === undefined || need_total_length === undefined){
             return res.json({
                 code: errorCode.INVALID_PARAMS,
                 errorMsg:'Parameter incomplete',
@@ -1016,6 +1017,7 @@ export default () => {
         const [err, records] = await to(
             order.my_orders_v3(address, page, perPage, status1, status2, market_id, side, startDate, endDate)
         );
+        console.log('----s-s-s222-----',records,req.body);
         if(need_total_length === true){
             const filter = [address, status1, status2, startDate, endDate,market_id, side];
             [totalLengthErr,totalLength] = await to(client.my_orders_length_v2(filter));
@@ -1186,8 +1188,8 @@ export default () => {
 
     adex.all('/my_trades_v4', async (req, res) => {
         const {address,page,perPage,market_id,status,start,end,need_total_length} = req.body;
-        if(!address || !page || !perPage || !market_id || !status ||
-                !start || !end || need_total_length === undefined){
+        if(!address || !page || !perPage || !market_id || !status || !end ||
+            start === undefined || need_total_length === undefined){
             return res.json({
                 code: errorCode.INVALID_PARAMS,
                 errorMsg:'Parameter incomplete',

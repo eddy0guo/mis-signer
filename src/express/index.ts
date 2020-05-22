@@ -169,7 +169,8 @@ export default () => {
 
     express.all('/my_records_v2', async (req, res) => {
         const {address, page, perpage,start,end,need_total_length} = req.body;
-        if(!address || !page || !perpage || !start || !end || need_total_length === undefined ){
+        if(!address || !page || !perpage ||  !end ||
+            start === undefined || need_total_length === undefined ){
             return res.json({
                 code: errorCode.INVALID_PARAMS,
                 errorMsg:'Parameter incomplete',

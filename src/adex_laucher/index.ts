@@ -280,13 +280,7 @@ class Launcher {
     }
 
     async mainLoop(): Promise<void> {
-        const [trades_err, trades] = await to(this.db.get_laucher_trades());
-        if (trades_err) {
-            this.logger.log('get_laucher_trades error', trades_err, trades);
-            this.countError(trades_err);
-            return await this.sleep(500);
-        }
-
+        const trades = await this.db.get_laucher_trades();
         if (!trades || trades.length <= 0) {
             this.logger.log('No matched trades');
             return await this.sleep(1000);
@@ -303,13 +297,7 @@ class Launcher {
             current_time,
             trades[0].transaction_id,
         ];
-        const [launchUpdateErr, launchUpdateRes] = await to(
-            this.db.launch_update_trades(update_trade_info)
-        );
-        if (launchUpdateErr || !launchUpdateRes) {
-            return await this.sleep(500);
-        }
-
+        await this.db.launch_update_trades(update_trade_info);
         // 准备laucher之前先延时2秒,waiting locked in db?
         // mt 3s 一个块，所以目前问题不大。
         // 但是utxo已经主动拆分，其实可以更快速度进行launch，按目前的拆分可以一个块提交10个以内交易。
@@ -328,6 +316,7 @@ class Launcher {
             const [err] = await to(this.mainLoop());
             if (err) {
                 this.logger.log(`Catched Main Loop Error:${err}`);
+                this.sleep(500);
             }
             this.logger.log(
                 `Main loop finished in:${new Date().getTime() - start.getTime()}ms`

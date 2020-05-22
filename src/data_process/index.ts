@@ -40,7 +40,10 @@ class ProcessData {
             this.redisClient.auth(BullOption.redis.password);
         }
         this.startCleanupJob();
-        await this.init();
+        const [initErr,initRes] = await to(this.init());
+        if (initErr){
+            console.error('[DATA_PROCESS]: init data failed',initErr)
+        }
         this.refreshCoinBookLoop();
         setTimeout(() => {
             this.orderBookLoop();
@@ -110,7 +113,7 @@ class ProcessData {
         return;
     }
 
-    async marketQuotationLoop() {
+    async marketQuotationLoop(): Promise<any> {
         this.logger.log('Start processing market data');
         const [markets_err, markets] = await to(this.market.list_online_markets());
         if (!markets) {
@@ -120,6 +123,7 @@ class ProcessData {
         }
         const now =  this.utils.get_current_time();
         for (const marketInfo of markets) {
+            // todo:await to
             const marketQuotation = await this.market.getMarketQuotation(marketInfo.id);
             let info = this.utils.arr_values(marketQuotation);
             info = info.concat([now]);
@@ -130,7 +134,7 @@ class ProcessData {
         return;
     }
 
-    async init() {
+    async init(): Promise<any> {
         const [markets_err, markets] = await to(this.market.list_online_markets());
         if (!markets) {
             console.error(markets_err, markets);

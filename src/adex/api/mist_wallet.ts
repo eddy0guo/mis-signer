@@ -35,11 +35,7 @@ export default class mist_wallet {
         }
         const db = (this.db as DBClient);
         let marketID = symbol + '-CNYC';
-        const [err,result] = await to(db.get_market_current_price([marketID]));
-        if (err) {
-            console.error(err);
-        }
-
+        const result = await db.get_market_current_price([marketID]);
         let price = 0;
 
         if (result.length <= 0) {

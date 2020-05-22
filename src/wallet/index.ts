@@ -439,7 +439,8 @@ export default () => {
     wallet.all(
         '/my_converts_v4', async (req, res) => {
             const {address, token, page, perpage, start, end, need_total_length} = req.body;
-            if(!address || !token || !page || !perpage || !start || !end || need_total_length === undefined){
+            if(!address || !token || !page || !perpage || !end ||
+                start === undefined || need_total_length === undefined){
                 return res.json({
                     code: errorCode.INVALID_PARAMS,
                     errorMsg:'Parameter incomplete',

@@ -59,10 +59,7 @@ export default class Market {
     }
 
     async list_online_markets_v2(): Promise<IMarket[]> {
-        const [err, markets] = await to(this.db.list_online_markets());
-        if (!markets) {
-            console.error(err, markets);
-        }
+        const markets = await this.db.list_online_markets();
         const onlineMarkets = [];
         for(const market of markets){
             if(onlineMarkets.length === 0){
@@ -113,9 +110,9 @@ export default class Market {
     }
 
 
-    async getMarketQuotation(marketId){
+    async getMarketQuotation(marketId:string): Promise<any>{
         const logs = [];
-        const defaultQuotations = {
+        const quotation = {
             market_id: marketId,
             price: 0,
             ratio: 0,
@@ -127,33 +124,24 @@ export default class Market {
             max_CNYC_price: 0,
             symbol: marketId.replace('-', '/'),
         };
-        let [err, result]: [any, any] = await to(this.db.get_market_quotations([marketId]));
-        if (err || !result ) {
-            console.error(`get_market_quotations failed ${marketId},err ${err}`);
-            err = null;
-            result = [defaultQuotations];
-        } else if( result.length <= 0 ) {
-            result[0] = defaultQuotations;
-        } else {
-            const [base_token, quote_token] = result[0].market_id.split('-');
+        const result = await this.db.get_market_quotations([marketId]);
+        if(result) {
+            const [base_token, quote_token] = result.market_id.split('-');
             const quote_price = await this.mistMallet.get_token_price2pi(quote_token);
             const max_price = await this.db.get_market_max_price([marketId]);
             const min_price = await this.db.get_market_min_price([marketId]);
 
             if (max_price.length > 0 && min_price.length > 0 && quote_price > 0) {
-                result[0].CNYC_price = await this.mistMallet.get_token_price2pi(base_token);
-                result[0].maxprice = max_price[0].price;
-                result[0].minprice = min_price[0].price;
-                result[0].min_CNYC_price = (min_price[0].price * quote_price).toFixed(2);
-                result[0].max_CNYC_price = (max_price[0].price * quote_price).toFixed(2);
-                result[0].symbol = marketId.replace('-', '/');
-            } else {
-                result[0] = defaultQuotations;
+                quotation.CNYC_price = await this.mistMallet.get_token_price2pi(base_token);
+                quotation.maxprice = max_price[0].price;
+                quotation.minprice = min_price[0].price;
+                quotation.min_CNYC_price = parseFloat((min_price[0].price * quote_price).toFixed(2));
+                quotation.max_CNYC_price = parseFloat((max_price[0].price * quote_price).toFixed(2));
+                quotation.symbol = marketId.replace('-', '/');
             }
         }
-
         logs.push({marketItem:new Date().toLocaleString(),marketId});
-        return  result[0];
+        return  quotation;
     }
 
 }

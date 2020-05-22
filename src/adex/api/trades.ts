@@ -25,9 +25,7 @@ export default class trades {
         const offset = (page - 1) * perPage;
         const filter = [address, offset, perPage,start,end,MarketID,status];
         // tslint:disable-next-line:no-shadowed-variable
-        const [err, trades] = await to(this.db.my_trades4(filter));
-        if (!trades) console.error(err, trades);
-        return trades;
+        return await this.db.my_trades4(filter);
     }
     // 应该先停laucher的线程，再回滚，否则可能出现已经launched的也回滚了
     async rollback_trades() : Promise<void>{

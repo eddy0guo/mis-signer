@@ -189,7 +189,7 @@ const product: IConfig = {
     asimov_chain_rpc: 'https://rpc.fin.fingo.dev',
     asimov_master_rpc: 'https://rpc.fin.fingo.dev',
     asimov_child_rpc: 'https://rpc.mt.fingo.dev',
-    mist_server_port: 16000,
+    mist_server_port: 21000,
     pg_host: 'pgm-wz9m1yb4h5g4sl7x127770.pg.rds.aliyuncs.com',
     pg_database: process.env.MIST_MODE,
     pg_user: 'product',

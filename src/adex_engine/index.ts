@@ -176,7 +176,7 @@ class AdexEngine {
 
     }
 
-    async worker(job, done) {
+    async worker(job, done): Promise<any> {
         const jobStarted = new Date().getTime();
         console.log('11112-----',new Date().getTime() - jobStarted);
         this.status.workingTime = jobStarted - this.status.startTime.getTime();
@@ -184,7 +184,6 @@ class AdexEngine {
 
         const message = job.data;
         if(message.status === 'cancled'){
-            console.log('[CANCLE]start cancled',message,this.utils.get_current_time());
             const orderInfo: IOrder[] = await this.order.get_order(message.id);
             if (!orderInfo || orderInfo.length <= 0) {
                 console.error('[MIST_ENGINE]:get order failed',message.id);
@@ -286,7 +285,7 @@ class AdexEngine {
             }
 
             const [call_asimov_err, call_asimov_result] = await to(
-                this.exchange.call_asimov(trades,this.redisClient)
+                this.exchange.call_asimov(trades)
             );
         	console.log('3.3-----',new Date().getTime() - jobStarted);
             if (call_asimov_err) {
