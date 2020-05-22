@@ -73,9 +73,17 @@ export default () => {
     wallet.all(
         '/sendrawtransaction/asset2coin_v3/:sign_data',
         async (req, res) => {
-            const sign_data = [req.params.sign_data];
+            const {sign_data} = req.params;
+            if(!sign_data){
+                return res.json({
+                    code: errorCode.INVALID_PARAMS,
+                    errorMsg:'Parameter incomplete',
+                    timeStamp:Date.now(),
+                    data:null
+                });
+            }
             const [master_err, master_txid] = await to(
-                chain.sendrawtransaction(sign_data)
+                chain.sendrawtransaction([sign_data])
             );
 
             if (!master_err) {
@@ -156,6 +164,14 @@ export default () => {
 
     wallet.all('/sendrawtransaction/coin2asset_v4', async (req, res) => {
         const {signature, address, token_name, amount, expire_time,publicKey} = req.body;
+        if(!signature || !address || !token_name || !amount || !expire_time || !publicKey){
+            return res.json({
+                code: errorCode.INVALID_PARAMS,
+                errorMsg:'Parameter incomplete',
+                timeStamp:Date.now(),
+                data:null
+            });
+        }
 
         const asset = new Asset(mist_config.asimov_master_rpc);
         const [balancesErr, balances] = await to(asset.get_asset_balances(mist_wallet, mist_config.bridge_address, token_name));
@@ -247,6 +263,14 @@ export default () => {
         '/burn_coin_tohex/:address/:token_name/:amount',
         async (req, res) => {
             const {address, token_name, amount} = req.params;
+            if(!address || !token_name || !amount){
+                return res.json({
+                    code: errorCode.INVALID_PARAMS,
+                    errorMsg:'Parameter incomplete',
+                    timeStamp:Date.now(),
+                    data:null
+                });
+            }
             const expire_time = 600;
             const tokens = await psql_db.get_tokens([token_name]);
             const token = new Token(tokens[0].address);
@@ -327,6 +351,14 @@ export default () => {
      */
 
     wallet.all('/find_convert/:id', async (req, res) => {
+        if(!req.params.id){
+            return res.json({
+                code: errorCode.INVALID_PARAMS,
+                errorMsg:'Parameter incomplete',
+                timeStamp:Date.now(),
+                data:null
+            });
+        }
         const [err, convert] = await to(psql_db.find_bridge([req.params.id]));
         if (err) {
             return res.json({
@@ -407,6 +439,14 @@ export default () => {
     wallet.all(
         '/my_converts_v4', async (req, res) => {
             const {address, token, page, perpage, start, end, need_total_length} = req.body;
+            if(!address || !token || !page || !perpage || !start || !end || need_total_length === undefined){
+                return res.json({
+                    code: errorCode.INVALID_PARAMS,
+                    errorMsg:'Parameter incomplete',
+                    timeStamp:Date.now(),
+                    data:null
+                });
+            }
             let [totalLengthErr, totalLength] = [null, null];
             const startDate = new Date(start);
             const endDate = new Date(end);

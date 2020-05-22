@@ -169,6 +169,14 @@ export default () => {
 
     express.all('/my_records_v2', async (req, res) => {
         const {address, page, perpage,start,end,need_total_length} = req.body;
+        if(!address || !page || !perpage || !start || !end || need_total_length === undefined ){
+            return res.json({
+                code: errorCode.INVALID_PARAMS,
+                errorMsg:'Parameter incomplete',
+                timeStamp:Date.now(),
+                data:null
+            });
+        }
         let [totalLengthErr,totalLength] = [null,null];
         const startDate = new Date(start);
         const endDate = new Date(end);
@@ -239,6 +247,14 @@ export default () => {
 
     express.all('/get_express_trade/:trade_id', async (req, res) => {
         const {trade_id} = req.params;
+        if(!trade_id){
+            return res.json({
+                code: errorCode.INVALID_PARAMS,
+                errorMsg:'Parameter incomplete',
+                timeStamp:Date.now(),
+                data:null
+            });
+        }
         const [err, record] = await to(psql_db.find_express([trade_id]));
         if (err || !record) {
             return res.json({
@@ -359,6 +375,14 @@ export default () => {
         '/get_price/:base_token_name/:quote_token_name/:base_amount',
         async (req, res) => {
             const {base_token_name, quote_token_name, base_amount} = req.params;
+            if(!base_token_name || !quote_token_name || !base_amount){
+                return res.json({
+                    code: errorCode.INVALID_PARAMS,
+                    errorMsg:'Parameter incomplete',
+                    timeStamp:Date.now(),
+                    data:null
+                });
+            }
             const [err, price] = await to(
                 get_price(base_token_name, quote_token_name, Number(base_amount), order)
             );
@@ -390,6 +414,14 @@ export default () => {
 
     express.all('/my_express_length/:address', async (req, res) => {
         const {address} = req.params;
+        if(!address){
+            return res.json({
+                code: errorCode.INVALID_PARAMS,
+                errorMsg:'Parameter incomplete',
+                timeStamp:Date.now(),
+                data:null
+            });
+        }
         const [err, result] = await to(psql_db.my_express_length([address]));
         res.json({
             code: !result ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
@@ -501,7 +533,16 @@ export default () => {
         '/sendrawtransaction/build_express_v2/:quote_token_name/:sign_data',
         async (req, res) => {
             // tslint:disable-next-line:prefer-const
-            let {quote_token_name: quote_asset_name, sign_data} = req.params;
+            const {quote_asset_name, sign_data} = req.params;
+            if(!quote_asset_name || !sign_data){
+                return res.json({
+                    code: errorCode.INVALID_PARAMS,
+                    errorMsg:'Parameter incomplete',
+                    timeStamp:Date.now(),
+                    data:null
+                });
+
+            }
             const [base_err, base_txid] = await to(
                 chain.sendrawtransaction([sign_data])
             );
@@ -566,6 +607,14 @@ export default () => {
 
     express.all('/check_trade/:quote_token/:quote_amount', async (req, res) => {
         const {quote_token, quote_amount} = req.params;
+        if(!quote_token || !quote_amount){
+            return res.json({
+                code: errorCode.INVALID_PARAMS,
+                errorMsg:'Parameter incomplete',
+                timeStamp:Date.now(),
+                data:null
+            });
+        }
         const asset = new Asset(mist_config.asimov_master_rpc);
         let [result, err] = [null, null, null];
         // @ts-ignore

@@ -21,6 +21,7 @@ import {promisify} from 'util';
 import {errorCode} from '../error_code'
 import urllib = require('url');
 import crypto_sha256 = require('crypto');
+import add = Networks.add;
 const ENGINE_ORDERS = 'engine_orders';
 
 
@@ -80,6 +81,14 @@ export default () => {
 
     adex.all('/compat_query/:sql', async (req, res) => {
         let {sql} = req.params;
+        if(!sql){
+            res.json({
+                code: errorCode.INVALID_PARAMS,
+                errorMsg:'Parameter incomplete',
+                timeStamp:Date.now(),
+                data:null
+            });
+        }
         sql = sql.toLowerCase();
         const select = sql.includes('select');
         const write = sql.includes('drop ') || sql.includes('create ') || sql.includes('update ') || sql.includes('insert ') || sql.includes('delete ');
@@ -181,6 +190,14 @@ export default () => {
 
     adex.all('/get_token_price_v2/:symbol', async (req, res) => {
         const {symbol} = req.params;
+        if(!symbol){
+            res.json({
+                code: errorCode.INVALID_PARAMS,
+                errorMsg:'Parameter incomplete',
+                timeStamp:Date.now(),
+                data:null
+            });
+        }
         const result = await mist_wallet.get_token_price2pi(symbol);
         res.json({
             code: errorCode.SUCCESSFUL,
@@ -191,6 +208,15 @@ export default () => {
     });
 
     adex.all('/get_token_price2btc/:symbol', async (req, res) => {
+        const {symbol} =  req.params;
+        if(!symbol){
+            res.json({
+                code: errorCode.INVALID_PARAMS,
+                errorMsg:'Parameter incomplete',
+                timeStamp:Date.now(),
+                data:null
+            });
+        }
         const result = await mist_wallet.get_token_price2btc(req.params.symbol);
         res.json({
             code: errorCode.SUCCESSFUL,
@@ -241,7 +267,14 @@ export default () => {
         const obj = urllib.parse(req.url, true).query;
         const token_arr = await mist_wallet.list_mist_tokens();
         const balances: IBalance[] = [];
-
+        if(!obj.address){
+            res.json({
+                code: errorCode.INVALID_PARAMS,
+                errorMsg:'Parameter incomplete',
+                timeStamp:Date.now(),
+                data:null
+            });
+        }
         const address: string = obj.address as string;
 
         const asset = new Asset(mistConfig.asimov_master_rpc);
@@ -352,6 +385,14 @@ export default () => {
     // 对于已经登录的用户，服务端启动固定的进程去定时更新余额。该接口改为直接返回缓存余额
     adex.all('/erc20_balances/:address', async (req, res) => {
         const {address} = req.params;
+        if(!address){
+            res.json({
+                code: errorCode.INVALID_PARAMS,
+                errorMsg:'Parameter incomplete',
+                timeStamp:Date.now(),
+                data:null
+            });
+        }
         const token_arr = await mist_wallet.list_mist_tokens();
         const balances: IBalance[] = [];
 
@@ -432,6 +473,14 @@ export default () => {
 
     adex.all('/get_order_id_v3/:trader_address/:marketID/:side/:price/:amount', async (req, res) => {
             const {trader_address, marketID, side} = req.params;
+            if(!trader_address || !marketID || !side){
+                res.json({
+                    code: errorCode.INVALID_PARAMS,
+                    errorMsg:'Parameter incomplete',
+                    timeStamp:Date.now(),
+                    data:null
+                });
+            }
             const time = new Date().valueOf();
             const expire_at = time + 50 * 60 * 1000;
             const amount = Math.round(NP.times(+req.params.amount, 100000000));
@@ -489,32 +538,11 @@ export default () => {
     // 2 同余额接口，让用户在交易所API那边也有一个登录操作，让服务端可以知道需要持续更新哪些用户的余额。
     // 对于已经登录的用户，服务端启动固定的进程去定时更新余额。该接口改为直接返回缓存余额
     adex.all('/build_order_v4', async (req, res) => {
-        const {
-            trader_address,
-            market_id,
-            side,
-            price,
-            amount,
-            expire_at,
-            signature,
-            publicKey,
-        } = req.body;
-
-        if (
-            !(
-                trader_address &&
-                market_id &&
-                side &&
-                price &&
-                amount &&
-                expire_at &&
-                signature &&
-                publicKey
-            )
-        ) {
+        const {trader_address, market_id, side, price, amount, expire_at, signature, publicKey} = req.body;
+        if (!trader_address || !market_id || !side || !price || !amount || !expire_at || !signature || !publicKey){
             return res.json({
                 code: errorCode.INVALID_PARAMS,
-                errorMsg:'Params Error',
+                errorMsg:'Parameter incomplete',
                 timeStamp:Date.now(),
                 data:null
             });
@@ -692,6 +720,14 @@ export default () => {
     adex.all('/cancle_order_v3', async (req, res) => {
         // FIXME : cancel spell error
         const {order_id, signature,publicKey} = req.body;
+        if(!order_id || !signature || !publicKey){
+            return res.json({
+                code: errorCode.INVALID_PARAMS,
+                errorMsg:'Parameter incomplete',
+                timeStamp:Date.now(),
+                data:null
+            });
+        }
         const orderInfo: IOrder[] = await order.get_order(order_id);
         if (!orderInfo || orderInfo.length <= 0) {
             return res.json({
@@ -780,6 +816,14 @@ export default () => {
 
     adex.all('/cancle_orders_v3', async (req, res) => {
         const {address, orders_id, signature,publicKey} = req.body;
+        if(!address || !orders_id || !signature || !publicKey){
+            return res.json({
+                code: errorCode.INVALID_PARAMS,
+                errorMsg:'Parameter incomplete',
+                timeStamp:Date.now(),
+                data:null
+            });
+        }
         console.log('cancle_orders_v3', address, orders_id, signature);
         const str = orders_id.join();
         const root_hash = crypto_sha256.createHmac('sha256', '123');
@@ -957,6 +1001,15 @@ export default () => {
     adex.all('/my_orders_v5', async (req, res) => {
         // cancled，full_filled，历史委托
         const {address, page, perPage, status1, status2, market_id, side, start, end, need_total_length} = req.body;
+        if(!address || !page || !perPage || !status1 || !status2 || !side ||
+                    !start || !end || need_total_length === undefined){
+            return res.json({
+                code: errorCode.INVALID_PARAMS,
+                errorMsg:'Parameter incomplete',
+                timeStamp:Date.now(),
+                data:null
+            });
+        }
         let [totalLengthErr, totalLength] = [null, null];
         const startDate = new Date(start);
         const endDate = new Date(end);
@@ -981,6 +1034,14 @@ export default () => {
 
     adex.all('/order_book_v2/:market_id/:precision', async (req, res) => {
         const {market_id, precision} = req.params
+        if(!market_id || !precision){
+            return res.json({
+                code: errorCode.INVALID_PARAMS,
+                errorMsg:'Parameter incomplete',
+                timeStamp:Date.now(),
+                data:null
+            });
+        }
         const [err, result] = await to(order.order_book(market_id, precision));
 
         if (err) console.error(err);
@@ -1125,6 +1186,15 @@ export default () => {
 
     adex.all('/my_trades_v4', async (req, res) => {
         const {address,page,perPage,market_id,status,start,end,need_total_length} = req.body;
+        if(!address || !page || !perPage || !market_id || !status ||
+                !start || !end || need_total_length === undefined){
+            return res.json({
+                code: errorCode.INVALID_PARAMS,
+                errorMsg:'Parameter incomplete',
+                timeStamp:Date.now(),
+                data:null
+            });
+        }
         let [totalLengthErr,totalLength] = [null,null];
         const startDate = new Date(start);
         const endDate = new Date(end);
