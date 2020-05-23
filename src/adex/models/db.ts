@@ -86,6 +86,15 @@ export default class DBClient {
         return;
     }
 
+    async truncate(table): Promise<void> {
+        const [err, result]: [any, any] = await to(this.queryWithLog(`truncate ${table}`));
+        if (!result) {
+            console.error('truncate failed', err);
+            process.exit(-1);
+        }
+        return;
+    }
+
     async rollback(): Promise<void> {
         const [err, result]: [any, any] = await to(this.queryWithLog('rollback'));
         if (!result) {

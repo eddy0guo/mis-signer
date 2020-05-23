@@ -140,6 +140,8 @@ class ProcessData {
             console.error(markets_err, markets);
             return [];
         }
+        await this.db.truncate('mist_market_quotation_tmp');
+        await this.db.truncate('mist_order_book_tmp');
         const now =  this.utils.get_current_time();
         for (const marketInfo of markets) {
             const [findMarketQuotationErr,findMarketQuotationRes] = await to(this.db.get_market_quotation_tmp([marketInfo.id]));

@@ -126,6 +126,10 @@ export default class Market {
         };
         const result = await this.db.get_market_quotations([marketId]);
         if(result) {
+            quotation.price = result.price;
+            quotation.ratio = result.ratio;
+            quotation.volume = result.volume;
+
             const [base_token, quote_token] = result.market_id.split('-');
             const quote_price = await this.mistMallet.get_token_price2pi(quote_token);
             const max_price = await this.db.get_market_max_price([marketId]);
