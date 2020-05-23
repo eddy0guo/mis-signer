@@ -34,24 +34,7 @@ async function get_available_erc20_amount(address, symbol, client:DBClient, mist
     // fixme:此处本地账本传用户地址链上账本用合约地址，容易歧义
     const token = new Token(address);
     const [err, balance] = await to(token.localBalanceOf(symbol,redisClient));
-    // const [err, res] = await to(token.balanceOf(address,'child_poa'));
     if (err) console.error(err);
-    /*
-    let freeze_amount = 0;
-    const freeze_result = await client.get_freeze_amount([address, symbol]);
-
-    if (freeze_result && freeze_result.length > 0) {
-        for (const freeze of freeze_result) {
-            if (freeze.side === 'buy') {
-                freeze_amount = NP.plus(freeze_amount, freeze.quote_amount);
-            } else if (freeze.side === 'sell') {
-                freeze_amount = NP.plus(freeze_amount, freeze.base_amount);
-            } else {
-                console.error(`${freeze.side} error`);
-            }
-        }
-    }
-     */
     const hgetAsync = promisify(redisClient.hget).bind(redisClient);
     const [freezeErr,freezeRes] = await to(hgetAsync(address, 'freeze::' + symbol));
     if(freezeErr || freezeRes === null){
@@ -81,14 +64,6 @@ export default () => {
 
     adex.all('/compat_query/:sql', async (req, res) => {
         let {sql} = req.params;
-        if(!sql){
-            res.json({
-                code: errorCode.INVALID_PARAMS,
-                errorMsg:'Parameter incomplete',
-                timeStamp:Date.now(),
-                data:null
-            });
-        }
         sql = sql.toLowerCase();
         const select = sql.includes('select');
         const write = sql.includes('drop ') || sql.includes('create ') || sql.includes('update ') || sql.includes('insert ') || sql.includes('delete ');
@@ -190,14 +165,6 @@ export default () => {
 
     adex.all('/get_token_price_v2/:symbol', async (req, res) => {
         const {symbol} = req.params;
-        if(!symbol){
-            res.json({
-                code: errorCode.INVALID_PARAMS,
-                errorMsg:'Parameter incomplete',
-                timeStamp:Date.now(),
-                data:null
-            });
-        }
         const result = await mist_wallet.get_token_price2pi(symbol);
         res.json({
             code: errorCode.SUCCESSFUL,
@@ -209,14 +176,6 @@ export default () => {
 
     adex.all('/get_token_price2btc/:symbol', async (req, res) => {
         const {symbol} =  req.params;
-        if(!symbol){
-            res.json({
-                code: errorCode.INVALID_PARAMS,
-                errorMsg:'Parameter incomplete',
-                timeStamp:Date.now(),
-                data:null
-            });
-        }
         const result = await mist_wallet.get_token_price2btc(req.params.symbol);
         res.json({
             code: errorCode.SUCCESSFUL,
@@ -267,7 +226,7 @@ export default () => {
         const obj = urllib.parse(req.url, true).query;
         const token_arr = await mist_wallet.list_mist_tokens();
         const balances: IBalance[] = [];
-        if(!obj.address){
+        if(obj.address === undefined){
             res.json({
                 code: errorCode.INVALID_PARAMS,
                 errorMsg:'Parameter incomplete',
@@ -385,14 +344,6 @@ export default () => {
     // 对于已经登录的用户，服务端启动固定的进程去定时更新余额。该接口改为直接返回缓存余额
     adex.all('/erc20_balances/:address', async (req, res) => {
         const {address} = req.params;
-        if(!address){
-            res.json({
-                code: errorCode.INVALID_PARAMS,
-                errorMsg:'Parameter incomplete',
-                timeStamp:Date.now(),
-                data:null
-            });
-        }
         const token_arr = await mist_wallet.list_mist_tokens();
         const balances: IBalance[] = [];
 
@@ -473,14 +424,6 @@ export default () => {
 
     adex.all('/get_order_id_v3/:trader_address/:marketID/:side/:price/:amount', async (req, res) => {
             const {trader_address, marketID, side} = req.params;
-            if(!trader_address || !marketID || !side){
-                res.json({
-                    code: errorCode.INVALID_PARAMS,
-                    errorMsg:'Parameter incomplete',
-                    timeStamp:Date.now(),
-                    data:null
-                });
-            }
             const time = new Date().valueOf();
             const expire_at = time + 50 * 60 * 1000;
             const amount = Math.round(NP.times(+req.params.amount, 100000000));
@@ -1001,9 +944,12 @@ export default () => {
     adex.all('/my_orders_v5', async (req, res) => {
         // cancled，full_filled，历史委托
         const {address, page, perPage, status1, status2, market_id, side, start, end, need_total_length} = req.body;
-        console.log('----s-s-s222222111-----',req.body);
-        if(!address || !page || !perPage || !status1 || !status2 || !side || !end ||
-            start === undefined || need_total_length === undefined){
+        if(!address || !page || !perPage || !end ||
+            side === undefined ||
+            status2 === undefined ||
+            status1 === undefined ||
+            start === undefined ||
+            need_total_length === undefined){
             return res.json({
                 code: errorCode.INVALID_PARAMS,
                 errorMsg:'Parameter incomplete',
@@ -1188,8 +1134,11 @@ export default () => {
 
     adex.all('/my_trades_v4', async (req, res) => {
         const {address,page,perPage,market_id,status,start,end,need_total_length} = req.body;
-        if(!address || !page || !perPage || !market_id || !status || !end ||
-            start === undefined || need_total_length === undefined){
+        if(!address || !page || !perPage || !end ||
+            market_id === undefined ||
+            status === undefined ||
+            start === undefined ||
+            need_total_length === undefined){
             return res.json({
                 code: errorCode.INVALID_PARAMS,
                 errorMsg:'Parameter incomplete',

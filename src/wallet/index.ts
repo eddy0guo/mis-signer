@@ -263,14 +263,6 @@ export default () => {
         '/burn_coin_tohex/:address/:token_name/:amount',
         async (req, res) => {
             const {address, token_name, amount} = req.params;
-            if(!address || !token_name || !amount){
-                return res.json({
-                    code: errorCode.INVALID_PARAMS,
-                    errorMsg:'Parameter incomplete',
-                    timeStamp:Date.now(),
-                    data:null
-                });
-            }
             const expire_time = 600;
             const tokens = await psql_db.get_tokens([token_name]);
             const token = new Token(tokens[0].address);
@@ -351,14 +343,6 @@ export default () => {
      */
 
     wallet.all('/find_convert/:id', async (req, res) => {
-        if(!req.params.id){
-            return res.json({
-                code: errorCode.INVALID_PARAMS,
-                errorMsg:'Parameter incomplete',
-                timeStamp:Date.now(),
-                data:null
-            });
-        }
         const [err, convert] = await to(psql_db.find_bridge([req.params.id]));
         if (err) {
             return res.json({
@@ -439,8 +423,11 @@ export default () => {
     wallet.all(
         '/my_converts_v4', async (req, res) => {
             const {address, token, page, perpage, start, end, need_total_length} = req.body;
-            if(!address || !token || !page || !perpage || !end ||
-                start === undefined || need_total_length === undefined){
+            console.log(address, token, page, perpage, start, end, need_total_length);
+            if( !address || !page || !perpage || !end ||
+                token === undefined ||
+                start === undefined ||
+                need_total_length === undefined){
                 return res.json({
                     code: errorCode.INVALID_PARAMS,
                     errorMsg:'Parameter incomplete',

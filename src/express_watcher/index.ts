@@ -69,8 +69,10 @@ class Watcher {
         }
         // tslint:disable-next-line:prefer-const
         let [err, price] = await to(get_price(base_token[0].symbol, quoteAssetName, to_amount, this.order));
-        if (!price) console.error('[ADEX EXPRESS]::(get_price):', err);
-
+        if (!price){
+            base_tx_status = 'illegaled';
+            console.error('[ADEX EXPRESS]::get zero price or error', err,price);
+        }
         let quote_amount = NP.times(to_amount, Number(price), 0.995);
         let fee_amount = NP.times(to_amount, Number(price), 0.005);
         const asset = new Asset(mist_config.asimov_master_rpc);
@@ -162,6 +164,7 @@ class Watcher {
 
         const [err3, result3] = await to(this.db.update_quote(info));
         if (!result3) console.error('[Express Watcher] update_quote Error:', err3, result3)
+        await this.utils.requestCacheTXid(quote_txid);
         setTimeout(() => {
             this.quoteTXProcessLoop.call(this)
             // 间隔时间随着用户量的增长而降低

@@ -248,14 +248,6 @@ export default () => {
 
     express.all('/get_express_trade/:trade_id', async (req, res) => {
         const {trade_id} = req.params;
-        if(!trade_id){
-            return res.json({
-                code: errorCode.INVALID_PARAMS,
-                errorMsg:'Parameter incomplete',
-                timeStamp:Date.now(),
-                data:null
-            });
-        }
         const [err, record] = await to(psql_db.find_express([trade_id]));
         if (err || !record) {
             return res.json({
@@ -376,14 +368,6 @@ export default () => {
         '/get_price/:base_token_name/:quote_token_name/:base_amount',
         async (req, res) => {
             const {base_token_name, quote_token_name, base_amount} = req.params;
-            if(!base_token_name || !quote_token_name || !base_amount){
-                return res.json({
-                    code: errorCode.INVALID_PARAMS,
-                    errorMsg:'Parameter incomplete',
-                    timeStamp:Date.now(),
-                    data:null
-                });
-            }
             const [err, price] = await to(
                 get_price(base_token_name, quote_token_name, Number(base_amount), order)
             );
@@ -534,20 +518,10 @@ export default () => {
         '/sendrawtransaction/build_express_v2/:quote_token_name/:sign_data',
         async (req, res) => {
             // tslint:disable-next-line:prefer-const
-            const {quote_asset_name, sign_data} = req.params;
-            if(!quote_asset_name || !sign_data){
-                return res.json({
-                    code: errorCode.INVALID_PARAMS,
-                    errorMsg:'Parameter incomplete',
-                    timeStamp:Date.now(),
-                    data:null
-                });
-
-            }
+            const {quote_token_name, sign_data} = req.params;
             const [base_err, base_txid] = await to(
                 chain.sendrawtransaction([sign_data])
             );
-            let trade_id;
             if (base_txid) {
                 // 只有decode成功才是成功
                 const info = {
@@ -556,10 +530,10 @@ export default () => {
                     base_asset_name: null,
                     base_amount: null,
                     price: null,
-                    quote_asset_name,
+                    quote_asset_name:quote_token_name,
                     quote_amount: null,
                     fee_rate: 0.005,
-                    fee_token: quote_asset_name,
+                    fee_token: quote_token_name,
                     fee_amount: null,
                     base_txid,
                     base_tx_status: 'pending',
@@ -567,9 +541,7 @@ export default () => {
                     quote_tx_status: 'pending',
                 };
                 info.trade_id = utils.get_hash(info);
-                trade_id = info.trade_id;
                 const info_arr = utils.arr_values(info);
-
                 const [insertExpressErr, insertExpressRes] = await to(psql_db.insert_express(info_arr));
                 if (insertExpressErr || !insertExpressRes) console.error('[ADEX EXPRESS]::(insert_express):', insertExpressErr, insertExpressRes);
                 res.json({
@@ -608,14 +580,6 @@ export default () => {
 
     express.all('/check_trade/:quote_token/:quote_amount', async (req, res) => {
         const {quote_token, quote_amount} = req.params;
-        if(!quote_token || !quote_amount){
-            return res.json({
-                code: errorCode.INVALID_PARAMS,
-                errorMsg:'Parameter incomplete',
-                timeStamp:Date.now(),
-                data:null
-            });
-        }
         const asset = new Asset(mist_config.asimov_master_rpc);
         let [result, err] = [null, null, null];
         // @ts-ignore

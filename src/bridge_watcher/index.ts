@@ -187,7 +187,6 @@ class Watcher {
     }
 
     async coin2asset_release_loop() {
-
         const [failed_err, failed_trade]: [any,any] = await to(this.dbClient.filter_bridge(['coin2asset', 'failed', 'successful']));
         if(failed_err){
 			console.error('err,pending_trade', failed_err, failed_trade);
@@ -219,6 +218,7 @@ class Watcher {
                     this.coin2asset_release_loop.call(this);
                     return ;
                 }
+                await this.utils.requestCacheTXid(masterTxid);
             } else {
                 console.error(`the trade ${id} failed again`, masterErr)
 			}
@@ -264,6 +264,7 @@ class Watcher {
             this.coin2asset_release_loop.call(this)
             return ;
         }
+        await this.utils.requestCacheTXid(master_txid);
         await this.dbClient.commit();
         setTimeout(() => {
             this.coin2asset_release_loop.call(this)

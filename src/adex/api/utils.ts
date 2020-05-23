@@ -9,6 +9,8 @@ import * as bitcore_lib_1 from 'bitcore-lib';
 const Address = require('bitcore-lib/lib/address');
 const ECDSA = bitcore_lib_1.crypto.ECDSA;
 const HASH = bitcore_lib_1.crypto.Hash;
+import axios from 'axios';
+
 
 
 import NP from '../../common/NP';
@@ -196,5 +198,23 @@ export default class Utils {
         };
 
         return transfer_info;
+    }
+
+    async requestCacheTXid(txid:string){
+        const content = txid + '_asimov';
+        const result = crypto.createHash('md5').update(content).digest('hex');
+        const param = {
+            txid,
+            sign: result
+        }
+        const [err, res] = await to(
+            axios.post('https://fingoapp.com/_api/wal/public/after/broadcast', param, {
+                timeout: 10 * 1000,
+            })
+        );
+        console.log('requestCacheTXid',param,err,res.data);
+        if (res.data.code !== 0){
+            console.error('requestCacheTXid failed',txid);
+        }
     }
 }
