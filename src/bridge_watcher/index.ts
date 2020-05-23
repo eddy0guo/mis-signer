@@ -182,8 +182,6 @@ class Watcher {
             this.asset2coin_loop.call(this)
             // 间隔时间随着用户量的增长而降低
         }, 1000 * 10);
-
-
     }
 
     async coin2asset_release_loop() {
@@ -218,8 +216,10 @@ class Watcher {
                     this.coin2asset_release_loop.call(this);
                     return ;
                 }
-                await this.utils.requestCacheTXid(masterTxid);
-            } else {
+                const [requestCacheTXidErr,requestCacheTXidRes] = await to(this.utils.requestCacheTXid(masterTxid));
+                if (requestCacheTXidErr) console.error(requestCacheTXidErr)
+            }
+             else {
                 console.error(`the trade ${id} failed again`, masterErr)
 			}
         }
@@ -264,7 +264,8 @@ class Watcher {
             this.coin2asset_release_loop.call(this)
             return ;
         }
-        await this.utils.requestCacheTXid(master_txid);
+        const [cacheTXidErr,cacheTXidRes] = await to(this.utils.requestCacheTXid(master_txid));
+        if(cacheTXidErr) console.error(cacheTXidErr);
         await this.dbClient.commit();
         setTimeout(() => {
             this.coin2asset_release_loop.call(this)

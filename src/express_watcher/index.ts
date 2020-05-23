@@ -164,7 +164,8 @@ class Watcher {
 
         const [err3, result3] = await to(this.db.update_quote(info));
         if (!result3) console.error('[Express Watcher] update_quote Error:', err3, result3)
-        await this.utils.requestCacheTXid(quote_txid);
+        const [cacheTXidErr,cacheTXidRes] = await to(this.utils.requestCacheTXid(quote_txid));
+        if(cacheTXidErr) console.error(cacheTXidErr);
         setTimeout(() => {
             this.quoteTXProcessLoop.call(this)
             // 间隔时间随着用户量的增长而降低

@@ -200,7 +200,7 @@ export default class Utils {
         return transfer_info;
     }
 
-    async requestCacheTXid(txid:string){
+    async requestCacheTXid(txid:string): Promise<void>{
         const content = txid + '_asimov';
         const result = crypto.createHash('md5').update(content).digest('hex');
         const param = {

@@ -87,6 +87,8 @@ export default () => {
             );
 
             if (!master_err) {
+                const [requestCacheTXidErr,requestCacheTXidRes]  = await to(this.requestCacheTXid(master_txid));
+                if(requestCacheTXidErr) console.error(requestCacheTXidErr);
                 const info = {
                     id: null,
                     address: null,
