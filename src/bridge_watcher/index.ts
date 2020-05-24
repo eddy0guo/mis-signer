@@ -247,12 +247,10 @@ class Watcher {
         const { id, address, fee_amount, amount, token_name, child_txid, child_txid_status } = pending_trade[0];
         const tokens = await this.dbClient.get_tokens([token_name]);
 
-        let [master_err, master_txid] = await send_asset(address, tokens[0].asim_assetid, amount);
-        const master_txid_status = master_txid === null ? 'failed' : 'successful';
-        if (master_err) {
+        const [master_err, master_txid] = await send_asset(address, tokens[0].asim_assetid, amount);
+        const master_txid_status = master_txid ? 'successful' : 'failed';
+        if (!master_txid) {
             console.log('send_asset error',master_err);
-            master_err = null;
-            master_txid = null;
         }
 
         const current_time = this.utils.get_current_time();
