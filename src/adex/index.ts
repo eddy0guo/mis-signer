@@ -125,7 +125,7 @@ export default () => {
      * @apiVersion 1.0.0
      */
     adex.all('/list_market_quotations_v2', async (req, res) => {
-        const [err,result] = await market.list_market_quotations();
+        const [err,result] = await to(market.list_market_quotations());
         res.json({
             code: err ? errorCode.EXTERNAL_DEPENDENCIES_ERROR:errorCode.SUCCESSFUL,
             errorMsg:err ? err:null,
@@ -136,10 +136,10 @@ export default () => {
 
 
     adex.all('/list_tokens_v2', async (req, res) => {
-        const result = await mist_wallet.list_mist_tokens();
+        const [err,result] = await to(mist_wallet.list_mist_tokens());
         res.json({
-            code: errorCode.SUCCESSFUL,
-            errorMsg:null,
+            code: err ? errorCode.EXTERNAL_DEPENDENCIES_ERROR:errorCode.SUCCESSFUL,
+            errorMsg:err ? err:null,
             timeStamp:Date.now(),
             data:result
         });
@@ -165,10 +165,10 @@ export default () => {
 
     adex.all('/get_token_price_v2/:symbol', async (req, res) => {
         const {symbol} = req.params;
-        const result = await mist_wallet.get_token_price2pi(symbol);
+        const [err,result] = await to(mist_wallet.get_token_price2pi(symbol));
         res.json({
-            code: errorCode.SUCCESSFUL,
-            errorMsg:null,
+            code: err ? errorCode.EXTERNAL_DEPENDENCIES_ERROR:errorCode.SUCCESSFUL,
+            errorMsg:err ? err:null,
             timeStamp:Date.now(),
             data:result
         });
@@ -176,10 +176,10 @@ export default () => {
 
     adex.all('/get_token_price2btc/:symbol', async (req, res) => {
         const {symbol} =  req.params;
-        const result = await mist_wallet.get_token_price2btc(req.params.symbol);
+        const [err,result] = await to(mist_wallet.get_token_price2btc(symbol));
         res.json({
-            code: errorCode.SUCCESSFUL,
-            errorMsg:null,
+            code: err ? errorCode.EXTERNAL_DEPENDENCIES_ERROR:errorCode.SUCCESSFUL,
+            errorMsg:err ? err:null,
             timeStamp:Date.now(),
             data:result
         });
@@ -224,7 +224,6 @@ export default () => {
      */
     adex.all('/balances_v2', async (req, res) => {
         const obj = urllib.parse(req.url, true).query;
-        const token_arr = await mist_wallet.list_mist_tokens();
         const balances: IBalance[] = [];
         if(obj.address === undefined){
             res.json({
@@ -248,10 +247,19 @@ export default () => {
         }
         const assets_balance = result4[0].assets;
 
-        for (const i in token_arr as any[]) {
-            if (!token_arr[i]) continue;
+        const [listTokenErr,listTokenRes] = await to(mist_wallet.list_mist_tokens());
+        if (!listTokenRes) {
+            console.error('[MIST SIGNER]::list_mist_tokens:', listTokenErr, listTokenRes);
+            return res.json({
+                success: false,
+                errorCode:errorCode.EXTERNAL_DEPENDENCIES_ERROR,
+                err: err4,
+            });
+        }
+        for (const i in listTokenRes as any[]) {
+            if (!listTokenRes[i]) continue;
             const token = new Token(address);
-            const [err, localErc20Err] = await to(token.localBalanceOf(token_arr[i].symbol,redisClient));
+            const [err, localErc20Err] = await to(token.localBalanceOf(listTokenRes[i].symbol,redisClient));
             if (err || localErc20Err === undefined || typeof localErc20Err !== 'number') {
                 console.error('[MIST SIGNER]::(token.balanceOf):', err, localErc20Err);
                 return res.json({
@@ -264,33 +272,33 @@ export default () => {
             let asset_balance = 0;
             for (const j in assets_balance) {
                 if (!assets_balance[j]) continue;
-                if (token_arr[i].asim_assetid === assets_balance[j].asset) {
+                if (listTokenRes[i].asim_assetid === assets_balance[j].asset) {
                     asset_balance = assets_balance[j].value;
                 }
             }
             const available_amount = await get_available_erc20_amount(
                 address,
-                token_arr[i].symbol,
+                listTokenRes[i].symbol,
                 client,
                 mist_wallet,
                 redisClient
             );
-            const price = await mist_wallet.get_token_price2pi(token_arr[i].symbol);
+            const price = await mist_wallet.get_token_price2pi(listTokenRes[i].symbol);
             const balance_info = {
-                token_symbol: token_arr[i].symbol,
-                erc20_address: token_arr[i].address,
+                token_symbol: listTokenRes[i].symbol,
+                erc20_address: listTokenRes[i].address,
                 erc20_balance: localErc20Err,
                 value: NP.times(localErc20Err, price),
                 erc20_freeze_amount: NP.minus(localErc20Err,available_amount),
-                asim_assetid: token_arr[i].asim_assetid,
+                asim_assetid: listTokenRes[i].asim_assetid,
                 asim_asset_balance: asset_balance / (1 * 10 ** 8),
                 asset_icon:
                     MistConfig.icon_url +
-                    token_arr[i].symbol +
+                    listTokenRes[i].symbol +
                     'a.png',
                 coin_icon:
                     MistConfig.icon_url +
-                    token_arr[i].symbol +
+                    listTokenRes[i].symbol +
                     'm.png',
             };
 

@@ -523,7 +523,7 @@ export default () => {
                 chain.sendrawtransaction([sign_data])
             );
             if (base_txid) {
-                const [cacheTXidErr,cacheTXidRes] = await  to(this.utils.requestCacheTXid(base_txid));
+                const [cacheTXidErr,cacheTXidRes] = await  to(utils.requestCacheTXid(base_txid));
                 if(cacheTXidErr) console.error(cacheTXidErr);
                 // 只有decode成功才是成功
                 const info = {
