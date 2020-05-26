@@ -178,7 +178,6 @@ class AdexEngine {
 
     async worker(job, done): Promise<any> {
         const jobStarted = new Date().getTime();
-        console.log('11112-----',new Date().getTime() - jobStarted);
         this.status.workingTime = jobStarted - this.status.startTime.getTime();
         this.status.waitingJobs = await this.orderQueue.getWaitingCount();
 
@@ -213,9 +212,7 @@ class AdexEngine {
 
         let checkAvailableRes = true;
         if(this.status.waitingJobs < OrderQueueConfig.maxWaiting * 2 ){
-            console.log('aaa-----',new Date().getTime() - jobStarted);
             checkAvailableRes = await this.checkOrderAvailability(message);
-            console.log('bbb-----',new Date().getTime() - jobStarted);
         } else {
             // TODO 这里暂时当任务过多时候，跳过检测，并做了一些冗余的判断，HA进程小于 OrderQueueConfig.maxWaiting 个一般不会出现这问题
             if( this.status.waitingJobs > OrderQueueConfig.maxWaiting * 10 ){
@@ -233,7 +230,6 @@ class AdexEngine {
             }
 
         }
-        console.log('2222-----',new Date().getTime() - jobStarted);
         if (!checkAvailableRes) {
             // 直接抹掉非法订单
             this.logger.log(`[ADEX ENGINE]:order %o check available failed`, message);
@@ -248,9 +244,7 @@ class AdexEngine {
         const lastTrades = [];
         // 每次匹配100单，超过300的二次匹配直到匹配不到挂单
         await this.db.begin();
-        console.log('3333-----',new Date().getTime() - jobStarted);
         while (message.available_amount > 0) {
-        	console.log('3.1-----',new Date().getTime() - jobStarted);
             const [find_orders_err, find_orders] = await to(
                 this.exchange.match(message,this.redisClient)
             );
@@ -269,14 +263,11 @@ class AdexEngine {
             if (find_orders.length === 0) {
                 break;
             }
-        	console.log('3.15-----',new Date().getTime() - jobStarted);
-
             this.status.totalMatched += find_orders.length;
 
             const [trades_err, trades] = await to(
                 this.exchange.makeTrades(find_orders, message)
             );
-        	console.log('3.2-----',new Date().getTime() - jobStarted);
             if (!trades) {
                 this.logger.log('make trades', trades_err, trades);
                 await this.db.rollback();
@@ -287,7 +278,6 @@ class AdexEngine {
             const [call_asimov_err, call_asimov_result] = await to(
                 this.exchange.call_asimov(trades)
             );
-        	console.log('3.3-----',new Date().getTime() - jobStarted);
             if (call_asimov_err) {
                 this.logger.log('call asimov', call_asimov_err, call_asimov_result);
                 await this.db.rollback();
@@ -310,7 +300,6 @@ class AdexEngine {
             message.available_amount = NP.minus(message.available_amount, amount);
             message.pending_amount = NP.plus(message.pending_amount, amount);
         }
-        console.log('4444-----',new Date().getTime() - jobStarted);
         if (lastTrades.length > 0) {
             const marketLastTrades = {
                 data: lastTrades,
@@ -330,7 +319,6 @@ class AdexEngine {
                     lastTradesAddErr
                 );
         }
-        console.log('5555-----',new Date().getTime() - jobStarted);
         const book = computeOrderBookUpdates(lastTrades, message);
         const marketUpdateBook = {
             data: book,
@@ -352,12 +340,10 @@ class AdexEngine {
         } else {
             message.status = 'partial_filled';
         }
-        console.log('6666-----',new Date().getTime() - jobStarted);
         const arr_message = this.utils.arr_values(message);
         const [insert_order_err, insert_order_result] = await to(
             this.db.insert_order_v2(arr_message)
         );
-        console.log('[CANCLE]:-finished insert ----',arr_message,this.utils.get_current_time());
         if (!insert_order_result) {
             this.logger.log(
                 `[ADEX ENGINE] insert_order_err`,
@@ -369,13 +355,11 @@ class AdexEngine {
             return;
         }
         await this.db.commit();
-        console.log('7777-----',new Date().getTime() - jobStarted);
         const jobFinished = new Date().getTime();
         this.status.ordersPerMin = this.status.totalMatched/(this.status.workingTime/1000/60)
         this.logger.log(`Job finished in ${jobFinished-jobStarted}ms,${this.status}`);
 
         done();
-        console.log('8888-----',new Date().getTime() - jobStarted);
     }
 
     async checkOrderAvailability(order: IOrder): Promise<boolean> {

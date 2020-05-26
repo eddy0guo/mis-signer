@@ -7,7 +7,7 @@ import to from 'await-to-js';
 import * as Queue from 'bull';
 import * as process from 'process';
 import {IOrder, IOrderBook} from '../interface';
-import {BullOption} from '../../cfg';
+import mistConfig, {BullOption} from '../../cfg';
 import {promisify} from 'util';
 import * as Kafka from 'node-rdkafka'
 
@@ -97,26 +97,27 @@ export default class Order {
     }
 
     async build(message): Promise<any> {
-        if(this.streams.length === 0){
+        if(process.env.MIST_MODE !== 'k8s' && this.streams.length === 0){
             await this.createKafkaStreams();
         }
         const job = await this.orderQueue.add(message, {removeOnComplete: true});
 
         const {trader_address, id, amount, price, side, market_id} = message;
         for (const stream of this.streams) {
-            // console.log('gxytest----id=%o,topic=%o',id,stream.topicName)
-            if (market_id === stream.topicName) {
-                message.created_at = this.utils.get_current_time();
-                message.updated_at = this.utils.get_current_time();
-                const info = this.utils.arr_values(message);
-                // await this.db.insert_order_v3(info);
-                const queuedSuccess = stream.write(Buffer.from(JSON.stringify(message)));
-                if (queuedSuccess) {
-                    console.log('We queued our message!');
-                } else {
-                    console.error('Too many messages in our queue already',message);
+            if(process.env.MIST_MODE !== 'k8s'){
+                if (market_id === stream.topicName) {
+                    message.created_at = this.utils.get_current_time();
+                    message.updated_at = this.utils.get_current_time();
+                    const info = this.utils.arr_values(message);
+                    // await this.db.insert_order_v3(info);
+                    const queuedSuccess = stream.write(Buffer.from(JSON.stringify(message)));
+                    if (queuedSuccess) {
+                        console.log('We queued our message!');
+                    } else {
+                        console.error('Too many messages in our queue already',message);
+                    }
+                    break;
                 }
-                break;
             }
         }
         return job;
