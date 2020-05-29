@@ -201,8 +201,6 @@ class Launcher {
                 const takerQuoteRes = await hgetAsync(taker, quoteToken);
                 const takerQuote = +takerQuoteRes.toString();
                 await this.redisClient.HMSET(taker, quoteToken, NP.minus(takerQuote, NP.times(amount, price)));
-                console.log('gxy123--', taker, quoteToken,
-                    takerQuote, amount, price, NP.minus(takerQuote, NP.times(amount, price)));
                 //
                 const makerBaseRes = await hgetAsync(maker, baseToken);
                 const makerBase = +makerBaseRes.toString();

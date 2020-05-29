@@ -653,7 +653,6 @@ export default class DBClient {
                 tradesArr = tradesArr.concat(tradesInfo[index]);
             }
         }
-		console.log('abc--%s-%o-',query,tradesArr);
         const [err, result]: [any, any] = await to(this.queryWithLog('insert into mist_trades ' + query, tradesArr));
         if (err) {
             console.error('insert_traders_ failed', err, tradesInfo);

@@ -201,7 +201,8 @@ class AdexEngine {
             if(cancleOrderErr){
                 console.error('[MIST_ENGINE]:cancle_order failed',message);
             }
-            console.log('[CANCLE]finished cancled',message,this.utils.get_current_time());
+            const cancelJobFinished = new Date().getTime();
+            this.logger.log(`cancel Job finished in ${cancelJobFinished-jobStarted}ms`);
             done();
             return;
         }

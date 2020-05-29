@@ -696,20 +696,17 @@ export default () => {
                 data:null
             });
         }
-
-        // 规避下单后立马取消不等撮合的情况
-        /**
-        const sismemberAsync = promisify(redisClient.sismember).bind(redisClient);
-        const [balanceErr,isMatching] = await to(sismemberAsync(ENGINE_ORDERS, orderInfo[0].id));
-        if( isMatching === 1){
-            console.log('isMatching----result=%o-,err=%o---id=%o-',isMatching,balanceErr,orderInfo[0].id);
+        // 直接判断队列长度，如果消费阻塞，返回失败
+        const waitingOrders = await order.queueWaitingCount();
+        console.log('cancel waitingOrders ',waitingOrders);
+        if( waitingOrders > OrderQueueConfig.maxWaiting ) {
             return res.json({
-                code: errorCode.CANCLE_MATCHING_ORDER,
-                errorMsg:'order is matching',
+                code: errorCode.ENGINE_BUSY,
+                errorMsg:'Match Engine Busy Now:' + waitingOrders,
                 timeStamp:Date.now(),
                 data:null
             });
-        }**/
+        }
         const [verifyErr,verifyRes] = await to(utils.verify2(orderInfo[0].trader_address,order_id, signature,publicKey));
         if (!verifyRes) {
             return res.json({
@@ -971,7 +968,6 @@ export default () => {
         const [err, records] = await to(
             order.my_orders_v3(address, page, perPage, status1, status2, market_id, side, startDate, endDate)
         );
-        console.log('----s-s-s222-----',records,req.body);
         if(need_total_length === true){
             const filter = [address, status1, status2, startDate, endDate,market_id, side];
             [totalLengthErr,totalLength] = await to(client.my_orders_length_v2(filter));
