@@ -20,11 +20,11 @@ async function updateFreeze(trader_address, amount, price, side, market_id, redi
     const hgetAsync = promisify(redisClient.hget).bind(redisClient);
     if (side === 'buy') {
         const quoteRes = await hgetAsync(trader_address, quoteToken);
-        const quoteAmount = +quoteRes.toString();
+        const quoteAmount = quoteRes.toString();
         await redisClient.HMSET(trader_address, quoteToken, NP.plus(quoteAmount, NP.times(price, amount)));
     } else if (side === 'sell') {
         const baseRes = await hgetAsync(trader_address, baseToken);
-        const baseAmount = +baseRes.toString();
+        const baseAmount = baseRes.toString();
         await redisClient.HMSET(trader_address, baseToken, NP.plus(baseAmount, amount));
         // tslint:disable-next-line:no-empty
     } else {
@@ -168,15 +168,15 @@ export default class Order {
                 oneOrder.confirm_value = '--';
                 continue;
             }
-            let amount = 0;
-            let value = 0;
+            let amount = '0';
+            let value = '0';
             for (const trade of trades) {
                 amount = NP.plus(amount, trade.amount);
                 const trade_value = NP.times(trade.amount, trade.price);
                 value = NP.plus(value, trade_value);
             }
-            oneOrder.average_price = NP.divide(value, amount).toFixed(8);
-            oneOrder.confirm_value = value.toFixed(8);
+            oneOrder.average_price = parseFloat(NP.divide(value, amount)).toFixed(8);
+            oneOrder.confirm_value = parseFloat(value).toFixed(8);
         }
 
         return orders;
@@ -198,7 +198,7 @@ export default class Order {
         for (const item of asks) {
             if (!item) continue
             const askPriceAdd = NP.divide(1, Math.pow(10, +precision));
-            item.price = NP.plus(item.price, askPriceAdd).toFixed(+precision).toString();
+            item.price = parseFloat(NP.plus(item.price, askPriceAdd)).toFixed(+precision).toString();
             asks_arr.push(this.utils.arr_values(item));
         }
 

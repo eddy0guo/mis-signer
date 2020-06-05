@@ -114,7 +114,7 @@ export default class Utils {
         let result = true;
         if (num <= 0) {
             result = false;
-        } else if (NP.times(num, 10000) !== Math.floor(NP.times(num, 10000))) {
+        } else if (+NP.times(num, 10000) !== Math.floor(+NP.times(num, 10000))){
             console.error('cannt support this decimal', num, NP.times(num, 10000), num * 10000);
             result = false;
         }

@@ -2,7 +2,7 @@ import to from 'await-to-js'
 import Utils from '../adex/api/utils'
 import DBClient from '../adex/models/db'
 
-import NP from 'number-precision'
+import NP from '../common/NP'
 
 import mist_config, {BullOption} from '../cfg'
 import { AsimovWallet, AsimovConst } from '@fingo/asimov-wallet';
@@ -152,7 +152,7 @@ class Watcher {
         const [child_err, child_txid] = await to(wallet.contractCall.call(
             transfer_tokens[0].address,
             'mint(address,uint256)',
-            [address, Math.round((NP.times(amount, 100000000)))],
+            [address, NP.times(amount, 100000000)],
             AsimovConst.DEFAULT_GAS_LIMIT, 0,
             AsimovConst.DEFAULT_ASSET_ID,
             AsimovConst.DEFAULT_FEE_AMOUNT,
@@ -316,7 +316,7 @@ class Watcher {
         const [child_err, child_txid] = await to(child_wallet.contractCall.call(
             tokens[0].address,
             'burn(address,uint256)',
-            [address, Math.round(NP.times(burn_amount, 100000000))],
+            [address, NP.times(burn_amount, 100000000)],
             AsimovConst.DEFAULT_GAS_LIMIT, 0,
             AsimovConst.DEFAULT_ASSET_ID,
             AsimovConst.DEFAULT_FEE_AMOUNT,

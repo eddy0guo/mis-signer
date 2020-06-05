@@ -184,3 +184,36 @@ create table mist_order_book_tmp(
   created_at  timestamp default now()
 );
 create index idx_mist_order_book_tmp_market_book on mist_order_book_tmp (market_id,precision);
+
+/**
+id                   | text                        |          | not null |
+ address              | text                        |          |          |
+ deposit_assetid      | text                        |          |          |
+ deposit_amount       | numeric(32,18)              |          |          |
+ deposit_token_name   | text                        |          |          |
+ deposit_price        | numeric(32,18)              |          |          |
+ interest_rate        | numeric(32,18)              |          |          |
+ cdp_id               | integer                     |          |          |
+ status               | text                        |          |          |
+ zhiya_rate           | numeric(32,18)              |          |          |
+ usage                | text                        |          |          |
+ borrow_amount        | numeric(32,18)              |          |          |
+ borrow_time          | integer                     |          |          |
+ repaid_amount        | numeric(32,18)              |          |          |
+ should_repaid_amount | numeric(32,18)              |          |          |
+ cdp_address          | text                        |          |          |
+ updated_at           | timestamp without time zone |          |          |
+ created_at           | timestamp without time zone |          |          |
+索引：****/
+create table mist_borrows(
+  id text default '',
+  address text default '',
+  token text default '',
+  trade_id text default '',
+  amount  numeric(32,18) default 0,
+  repaid_amount numeric(32,18) default 0,
+  rate numeric(32,18) default 0, --一小时利率
+  status text default '', --open,close,forced 爆仓
+  updated_at  timestamp default now(),
+  created_at  timestamp default now()
+);

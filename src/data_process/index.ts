@@ -13,6 +13,8 @@ import {Logger} from '../common/Logger';
 import Token from '../wallet/contract/Token';
 import * as redis from 'redis';
 const FREEZE_PREFIX = 'freeze::';
+import BigNumber from 'bignumber.js'
+
 
 class ProcessData {
 
@@ -56,7 +58,7 @@ class ProcessData {
         for (const address of listBridgeAddressRes){
             addressArr.push(address.address);
         }
-        console.log('start refreshCoinBook');
+        console.log('start refreshCoinBook at',this.utils.get_current_time());
         const tokens = await this.mist_wallet.list_mist_tokens();
         for (const token of tokens) {
             const tokenOjb = new Token(token.address);
@@ -69,7 +71,7 @@ class ProcessData {
                 console.error('[data_process]:batchqueryErr',batchqueryErr);
             }
             for (const address of addressArr){
-                let freeze_amount = 0;
+                let freeze_amount = '0';
                 const freezeResult = await this.db.get_freeze_amount([address,token.symbol]);
                 if (freezeResult && freezeResult.length > 0) {
                     for (const freeze of freezeResult) {
@@ -85,10 +87,10 @@ class ProcessData {
                 await this.redisClient.HMSET(address, FREEZE_PREFIX + token.symbol,freeze_amount);
             }
         }
-        console.log('end refreshCoinBook');
+        console.log('end refreshCoinBook at',this.utils.get_current_time());
         setTimeout(() => {
             this.refreshCoinBookLoop.call(this);
-        }, 60 * 60 * 1000);
+        }, 24 * 60 * 60 * 1000);
     }
 
     async orderBookLoop() {

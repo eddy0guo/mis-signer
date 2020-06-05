@@ -1,5 +1,5 @@
 import to from 'await-to-js'
-import NP from 'number-precision'
+import NP from '../common/NP'
 
 import DBClient from '../adex/models/db'
 import Utils from '../adex/api/utils'
@@ -184,20 +184,20 @@ class Watcher {
         baseToken = FREEZE_PREFIX + baseToken;
         if (taker_side === 'buy'){
             const takerQuoteRes = await this.hgetAsync(taker, quoteToken);
-            const takerQuote = +takerQuoteRes.toString();
+            const takerQuote = takerQuoteRes.toString();
             await this.redisClient.HMSET(taker, quoteToken, NP.minus(takerQuote, NP.times(amount,price)));
 
             const makerBaseRes = await this.hgetAsync(maker, baseToken);
-            const makerBase = +makerBaseRes.toString();
+            const makerBase = makerBaseRes.toString();
             await this.redisClient.HMSET(maker, baseToken, NP.minus(makerBase, amount));
         }else if (taker_side === 'sell'){
             // @ts-ignore
             const takerBaseRes = await this.hgetAsync(taker, baseToken);
-            const takerBase = +takerBaseRes.toString();
+            const takerBase = takerBaseRes.toString();
             await this.redisClient.HMSET(taker, baseToken, NP.minus(takerBase,amount));
 
             const makerQuoteRes = await this.hgetAsync(maker, quoteToken);
-            const makerQuote = +makerQuoteRes.toString();
+            const makerQuote = makerQuoteRes.toString();
             await this.redisClient.HMSET(maker, quoteToken, NP.minus(makerQuote, NP.times(amount,price)));
         }
         else{

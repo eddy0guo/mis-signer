@@ -1,5 +1,5 @@
 import to from 'await-to-js';
-import NP from 'number-precision';
+import NP from '../common/NP';
 
 import Exchange from './Exchange';
 
@@ -144,16 +144,16 @@ class Launcher {
                 continue;
             }
 
-            const base_amount = Math.round(NP.times(+oneTrade.amount, 100000000));
-            const quote_amount = Math.round(NP.times(+oneTrade.amount, +oneTrade.price, 100000000));
+            const base_amount = +NP.times(+oneTrade.amount, 100000000);
+            const quote_amount = +NP.times(+oneTrade.amount, +oneTrade.price, 100000000);
 
             //    let taker = ["0x66a7bc2e2041d7d15fdfae69bbce9bbbecefc8704c",10,12,time,"ASIM-BTC","sell"]
             const takerOrder = await this.db.find_order([oneTrade.taker_order_id]);
             const makerOrder = await this.db.find_order([oneTrade.maker_order_id]);
             const takerProcessOrder = [
                 takerOrder[0].trader_address,
-                Math.round(NP.times(takerOrder[0].amount, 100000000)),
-                Math.round(NP.times(takerOrder[0].price, 100000000)),
+                +NP.times(takerOrder[0].amount, 100000000),
+                +NP.times(takerOrder[0].price, 100000000),
                 +takerOrder[0].expire_at,
                 takerOrder[0].market_id,
                 takerOrder[0].side,
@@ -161,8 +161,8 @@ class Launcher {
 
             const makerProcessOrder = [
                 makerOrder[0].trader_address,
-                Math.round(NP.times(makerOrder[0].amount, 100000000)),
-                Math.round(NP.times(makerOrder[0].price, 100000000)),
+                +NP.times(makerOrder[0].amount, 100000000),
+                +NP.times(makerOrder[0].price, 100000000),
                 +makerOrder[0].expire_at,
                 makerOrder[0].market_id,
                 makerOrder[0].side,
@@ -173,7 +173,7 @@ class Launcher {
                 makerProcessOrder,
                 base_amount,
                 quote_amount,
-                Math.round(NP.times(+oneTrade.price, 100000000)),
+                NP.times(+oneTrade.price, 100000000),
                 token_address.base_token_address,
                 token_address.quote_token_address,
                 oneTrade.taker_side,
@@ -195,37 +195,47 @@ class Launcher {
             if (taker_side === 'buy') {
                 // @ts-ignore
                 const takerBaseRes = await hgetAsync(taker, baseToken);
-                const takerBase = +takerBaseRes.toString();
+                const takerBase = takerBaseRes.toString();
                 await this.redisClient.HMSET(taker, baseToken, NP.plus(takerBase, NP.times(amount, 0.999)));
                 //
                 const takerQuoteRes = await hgetAsync(taker, quoteToken);
-                const takerQuote = +takerQuoteRes.toString();
+                const takerQuote = takerQuoteRes.toString();
                 await this.redisClient.HMSET(taker, quoteToken, NP.minus(takerQuote, NP.times(amount, price)));
                 //
                 const makerBaseRes = await hgetAsync(maker, baseToken);
-                const makerBase = +makerBaseRes.toString();
+                const makerBase = makerBaseRes.toString();
                 await this.redisClient.HMSET(maker, baseToken, NP.minus(makerBase, amount));
                 //
                 const makerQuoteRes = await hgetAsync(maker, quoteToken);
-                const makerQuote = +makerQuoteRes.toString();
-                await this.redisClient.HMSET(maker, quoteToken, NP.plus(makerQuote, NP.times(amount, price, 0.999)));
+                const makerQuote = makerQuoteRes.toString();
+                let makerQuoteeResult = NP.plus(makerQuote, NP.times(amount, price, 0.999));
+                // 合约里手续费扣除之后有小数,则手续费取整，用户余额少扣1
+                if (makerQuoteeResult.split('.')[1].length > 8){
+                    makerQuoteeResult = NP.plus(makerQuoteeResult.substr(0,makerQuoteeResult.length - 1),0.00000001);
+                }
+                await this.redisClient.HMSET(maker, quoteToken,makerQuoteeResult);
             } else if (taker_side === 'sell') {
                 // @ts-ignore
                 const takerBaseRes = await hgetAsync(taker, baseToken);
-                const takerBase = +takerBaseRes.toString();
+                const takerBase = takerBaseRes.toString();
                 await this.redisClient.HMSET(taker, baseToken, NP.minus(takerBase, amount));
 
                 const takerQuoteRes = await hgetAsync(taker, quoteToken);
-                const takerQuote = +takerQuoteRes.toString();
-                await this.redisClient.HMSET(taker, quoteToken, NP.plus(takerQuote, NP.times(amount, price, 0.999)));
+                const takerQuote = takerQuoteRes.toString();
+                let takerQuoteResult =  NP.plus(takerQuote, NP.times(amount, price, 0.999));
+                // 合约里手续费扣除之后有小数,则手续费取整，用户余额少扣1
+                if (takerQuoteResult.split('.')[1].length > 8){
+                    takerQuoteResult = NP.plus(takerQuoteResult.substr(0,takerQuoteResult.length - 1),0.00000001);
+                }
+                await this.redisClient.HMSET(taker, quoteToken,takerQuoteResult);
 
                 const makerQuoteRes = await hgetAsync(maker, quoteToken);
-                const makerQuote = +makerQuoteRes.toString();
+                const makerQuote = makerQuoteRes.toString();
                 await this.redisClient.HMSET(maker, quoteToken, NP.minus(makerQuote, NP.times(amount, price)));
 
                 const makerBaseRes = await hgetAsync(maker, baseToken);
-                const makerBase = +makerBaseRes.toString();
-                await this.redisClient.HMSET(maker, baseToken, NP.plus(makerBase, NP.times(amount, 0.999)));
+                const makerBase = makerBaseRes.toString();
+                await this.redisClient.HMSET(maker, baseToken,NP.plus(makerBase, NP.times(amount, 0.999)));
             } else {
                 console.error('[ADEX_LAUNCHER]:updateLocalBook unknown side', taker_side);
                 return;

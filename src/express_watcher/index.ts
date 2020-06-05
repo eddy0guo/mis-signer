@@ -73,20 +73,20 @@ class Watcher {
             base_tx_status = 'illegaled';
             console.error('[ADEX EXPRESS]::get zero price or error', err,price);
         }
-        let quote_amount = NP.times(to_amount, Number(price), 0.995);
-        let fee_amount = NP.times(to_amount, Number(price), 0.005);
+        let quote_amount = NP.times(to_amount, price, 0.995);
+        let fee_amount = NP.times(to_amount, price, 0.005);
         const asset = new Asset(mist_config.asimov_master_rpc);
         const [balancesErr, balances] = await to(asset.get_asset_balances(this.mist_wallet, mist_config.express_address, quoteAssetName));
         if(!balances){
             console.error(`[ADEX EXPRESS]::(get_price):'' ${balancesErr}`);
             this.baseTXDecodeLoop.call(this);
             return;
-        } else if (quote_amount > balances[0].asim_asset_balance) {
+        } else if (+quote_amount > balances[0].asim_asset_balance) {
             console.error(`The express account only have ${balances[0].asim_asset_balance}  ${quoteAssetName}`);
             console.log(`Start refunding users' ${base_token[0].symbol}`);
             price = '1';
             quote_amount = to_amount;
-            fee_amount = 0;
+            fee_amount = '0';
             quoteAssetName = base_token[0].symbol;
             // tslint:disable-next-line:no-empty
         }else{

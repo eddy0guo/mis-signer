@@ -50,8 +50,8 @@ const express_config = [
 ];
 
 async function get_price(base_token_name :string, quote_token_name: string, amount: number, order: OrderAPI): Promise<string> {
-    let base_value = 0;
-    let base_amount = 0;
+    let base_value = '0';
+    let base_amount = '0';
     if (base_token_name !== 'CNYC') {
         const [base_book_err, base_book] = await to(order.order_book(base_token_name + '-CNYC', `${2}`));
         if (base_book_err || !base_book || !base_book.bids) {
@@ -64,19 +64,19 @@ async function get_price(base_token_name :string, quote_token_name: string, amou
             if (!base_bids[index]) continue;
             const tmp_amount = base_amount;
             base_amount = NP.plus(base_amount,+base_bids[index][1]);
-            if (base_amount >= amount) {
-                base_value += NP.times(amount - tmp_amount, base_bids[index][0]);
+            if (+base_amount >= amount) {
+                base_value = NP.plus(base_value,NP.times(NP.divide(amount,tmp_amount), base_bids[index][0]));
                 break;
             } else {
-                base_value += NP.times(base_bids[index][1], base_bids[index][0]);
+                base_value = NP.plus(base_value,NP.times(base_bids[index][1], base_bids[index][0]));
             }
         }
     } else {
         base_value = NP.times(amount, 1);
     }
 
-    let quote_value = 0;
-    let quote_amount = 0;
+    let quote_value = '0';
+    let quote_amount = '0';
     if (quote_token_name !== 'CNYC') {
         const [quote_book_err, quote_book] = await to(order.order_book(quote_token_name + '-CNYC', '2'));
         if (quote_book_err || !quote_book || !quote_book.asks) {
@@ -88,10 +88,10 @@ async function get_price(base_token_name :string, quote_token_name: string, amou
         for (const index in quote_asks) {
             if (!quote_asks[index]) continue;
             const tmp_value = quote_value;
-            quote_value += NP.times(quote_asks[index][1], quote_asks[index][0]);
+            quote_value = NP.plus(quote_value,NP.times(quote_asks[index][1], quote_asks[index][0]));
 
             if (quote_value >= base_value) {
-                quote_amount += NP.divide(base_value - tmp_value, quote_asks[index][0]);
+                quote_amount = NP.plus(quote_amount,NP.divide(NP.divide(base_value,tmp_value), quote_asks[index][0]));
                 break;
             } else {
                 // amount * price
@@ -101,7 +101,7 @@ async function get_price(base_token_name :string, quote_token_name: string, amou
     } else {
         quote_amount = NP.divide(base_value, 1);
     }
-    const price = NP.divide(quote_amount, amount).toFixed(8);
+    const price = (+NP.divide(quote_amount, amount)).toFixed(8);
     return price;
 }
 

@@ -288,8 +288,8 @@ export default () => {
                 token_symbol: listTokenRes[i].symbol,
                 erc20_address: listTokenRes[i].address,
                 erc20_balance: localErc20Err,
-                value: NP.times(localErc20Err, price),
-                erc20_freeze_amount: NP.minus(localErc20Err,available_amount),
+                value: +NP.times(localErc20Err, price),
+                erc20_freeze_amount: +NP.minus(localErc20Err,available_amount),
                 asim_assetid: listTokenRes[i].asim_assetid,
                 asim_asset_balance: asset_balance / (1 * 10 ** 8),
                 asset_icon:
@@ -385,9 +385,9 @@ export default () => {
                 token_symbol: tokenInfo.symbol,
                 erc20_address: tokenInfo.address,
                 erc20_balance:localErc20Err,
-                erc20_freeze_amount: NP.minus(localErc20Err,available_amount),
+                erc20_freeze_amount: +NP.minus(localErc20Err,available_amount),
                 asim_assetid: tokenInfo.asim_assetid,
-                value: NP.times(localErc20Err, price),
+                value: +NP.times(localErc20Err, price),
                 token_icon:
                     MistConfig.icon_url +
                     tokenInfo.symbol +
@@ -434,8 +434,8 @@ export default () => {
             const {trader_address, marketID, side} = req.params;
             const time = new Date().valueOf();
             const expire_at = time + 50 * 60 * 1000;
-            const amount = Math.round(NP.times(+req.params.amount, 100000000));
-            const price = Math.round(NP.times(+req.params.price, 100000000));
+            const amount = +NP.times(+req.params.amount, 100000000);
+            const price = +NP.times(+req.params.price, 100000000);
             const orderArr =  [trader_address,amount,price, expire_at, marketID, side];
             const orderID = utils.orderHash(orderArr);
             const result = {
@@ -511,8 +511,8 @@ export default () => {
                 data:null
             });
         }
-        const amount2 = Math.round(NP.times(amount, 100000000));
-        const price2 = Math.round(NP.times(price, 100000000));
+        const amount2 = +NP.times(amount, 100000000);
+        const price2 = +NP.times(price, 100000000);
 
         const orderArr = [trader_address, amount2, price2, expire_at, market_id, side];
         const orderhash = utils.orderHash(orderArr);
@@ -558,8 +558,8 @@ export default () => {
         let min_limit = 0;
         let max_limit = 100000;
         if (last_trade.length !== 0) {
-            max_limit = NP.times(last_trade[0].price, 10);
-            min_limit = NP.divide(last_trade[0].price, 10);
+            max_limit = +NP.times(last_trade[0].price, 10);
+            min_limit = +NP.divide(last_trade[0].price, 10);
         }
 
         if (price < min_limit || price > max_limit) {

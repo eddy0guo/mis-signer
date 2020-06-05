@@ -20,7 +20,7 @@ export default class Engine {
         const filter = [message.price, side, message.market_id];
         const result = await this.db.filter_orders(filter);
         const match_orders = [];
-        let amount = 0;
+        let amount = '0';
         // find and retunr。all orders。which's price below this order
         for (const i in result) {
             if (!result[i]) continue;
@@ -102,32 +102,9 @@ export default class Engine {
 
         const transaction_id =
             transactions.length === 0 ? 0 : transactions[0].transaction_id + add_queue_num;
-
-        const index = transaction_id % 1;
-        const order_address_set = [
-            token_address[0].base_token_address,
-            token_address[0].quote_token_address,
-            mist_config.relayers[index].address,
-        ];
-
         const trades_arr = [];
         for (const i in trades) {
             if (!trades[i]) continue;
-            const trade_info = {
-                taker: trades[i].taker,
-                maker: trades[i].maker,
-                baseToken: order_address_set[0],
-                quoteToken: order_address_set[1],
-                relayer: order_address_set[2],
-                baseTokenAmount: Math.round(NP.times(trades[i].amount, 100000000)), //    uint256 baseTokenAmount;
-                quoteTokenAmount: Math.round(NP.times(
-                    trades[i].amount,
-                    trades[i].price,
-                    100000000
-                )), // quoteTokenAmount;
-                takerSide: trades[i].taker_side,
-            };
-
             trades[i].transaction_id = transaction_id;
             trades_arr.push(this.utils.arr_values(trades[i]));
         }

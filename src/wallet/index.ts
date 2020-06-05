@@ -269,7 +269,7 @@ export default () => {
             const tokens = await psql_db.get_tokens([token_name]);
             const token = new Token(tokens[0].address);
             const [balanceErr, balanceRes] = await to(token.balanceOf(address,'child_poa'));
-            const available_amount = NP.divide(balanceRes, 100000000);
+            const available_amount = +NP.divide(balanceRes, 100000000);
             if (available_amount < Number(amount)) {
                 return res.json({
                     code:errorCode.BALANCE_INSUFFICIENT,

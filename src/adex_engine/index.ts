@@ -1,5 +1,5 @@
 import * as Queue from 'bull';
-import NP from 'number-precision';
+import NP from '../common/NP';
 import to from 'await-to-js';
 
 import { Logger } from '../common/Logger';
@@ -35,11 +35,11 @@ async function updateFreeze(trader_address, amount, price, side, market_id, redi
     const hgetAsync = promisify(redisClient.hget).bind(redisClient);
     if (side === 'buy') {
         const quoteRes = await hgetAsync(trader_address, quoteToken);
-        const quoteAmount = +quoteRes.toString();
+        const quoteAmount = quoteRes.toString();
         await redisClient.HMSET(trader_address, quoteToken, NP.plus(quoteAmount, NP.times(price, amount)));
     } else if (side === 'sell') {
         const baseRes = await hgetAsync(trader_address, baseToken);
-        const baseAmount = +baseRes.toString();
+        const baseAmount = baseRes.toString();
         await redisClient.HMSET(trader_address, baseToken, NP.plus(baseAmount, amount));
         // tslint:disable-next-line:no-empty
     } else {
@@ -65,7 +65,7 @@ function computeOrderBookUpdates(
             let priceExsit = false;
             for (const bid of book.bids) {
                 if (trade.price === bid[0]) {
-                    bid[1] = NP.minus(bid[1], trade.amount);
+                    bid[1] = +NP.minus(bid[1], trade.amount);
                     priceExsit = true;
                     break;
                 }
@@ -80,7 +80,7 @@ function computeOrderBookUpdates(
             let priceExsit = false;
             for (const ask of book.asks) {
                 if (trade.price === ask[0]) {
-                    ask[1] = NP.minus(ask[1], trade.amount);
+                    ask[1] = +NP.minus(ask[1], trade.amount);
                     priceExsit = true;
                     break;
                 }
@@ -288,7 +288,7 @@ class AdexEngine {
 
             let amount = 0;
             for (const item of trades) {
-                amount = NP.plus(amount, item.amount);
+                amount = +NP.plus(amount, item.amount);
                 const trade: ILastTrade = {
                     price: item.price,
                     amount: item.amount,
@@ -298,8 +298,8 @@ class AdexEngine {
                 lastTrades.push(trade);
             }
 
-            message.available_amount = NP.minus(message.available_amount, amount);
-            message.pending_amount = NP.plus(message.pending_amount, amount);
+            message.available_amount = +NP.minus(message.available_amount, amount);
+            message.pending_amount = +NP.plus(message.pending_amount, amount);
         }
         if (lastTrades.length > 0) {
             const marketLastTrades = {

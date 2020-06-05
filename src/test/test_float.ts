@@ -7,4 +7,4 @@ a = a.times(100000000)
 
 console.log('BN',a.toFixed());
 
-console.log('NP',NP.round(NP.times(0.33,103343.6081,100000000),0));
+console.log('NP',NP.times(0.33,103343.6081,100000000));

@@ -8,3 +8,5 @@ drop table if exists mist_transactions;
 drop table if exists mist_bridge;
 drop table if exists mist_market_quotation_tmp;
 drop table if exists mist_order_book_tmp
+drop table if exists mist_borrows
+
