@@ -65,7 +65,7 @@ async function get_price(base_token_name :string, quote_token_name: string, amou
             const tmp_amount = base_amount;
             base_amount = NP.plus(base_amount,+base_bids[index][1]);
             if (+base_amount >= amount) {
-                base_value = NP.plus(base_value,NP.times(NP.divide(amount,tmp_amount), base_bids[index][0]));
+                base_value = NP.plus(base_value,NP.times(NP.minus(amount,tmp_amount), base_bids[index][0]));
                 break;
             } else {
                 base_value = NP.plus(base_value,NP.times(base_bids[index][1], base_bids[index][0]));
@@ -90,12 +90,12 @@ async function get_price(base_token_name :string, quote_token_name: string, amou
             const tmp_value = quote_value;
             quote_value = NP.plus(quote_value,NP.times(quote_asks[index][1], quote_asks[index][0]));
 
-            if (quote_value >= base_value) {
+            if (+quote_value >= +base_value) {
                 quote_amount = NP.plus(quote_amount,NP.divide(NP.divide(base_value,tmp_value), quote_asks[index][0]));
                 break;
             } else {
                 // amount * price
-                quote_amount += +quote_asks[index][1];
+                quote_amount = NP.plus(quote_amount,quote_asks[index][1]);
             }
         }
     } else {
