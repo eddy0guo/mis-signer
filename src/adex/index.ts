@@ -580,11 +580,11 @@ export default () => {
                 mist_wallet,
                 redisClient
             );
-            const quota_amount = NP.times(+amount, +price);
+            const quota_amount = +NP.times(+amount, +price);
             if (quota_amount > available_quota) {
                 return res.json({
                     code: errorCode.BALANCE_INSUFFICIENT,
-                    errorMsg:`quotation  balance is not enoungh,available amount is ${available_quota},but your order value is ${quota_amount}`,
+                    errorMsg:`quotation  balance is not enough,available amount is ${available_quota},but your order value is ${quota_amount}`,
                     timeStamp:Date.now(),
                     data:null
                 });
@@ -600,7 +600,7 @@ export default () => {
             if (amount > available_base) {
                 return res.json({
                     code: errorCode.BALANCE_INSUFFICIENT,
-                    errorMsg:`${market_id} base  balance is not enoungh,available amount is ${available_base},but your want to sell ${amount}`,
+                    errorMsg:`${market_id} base  balance is not enough,available amount is ${available_base},but your want to sell ${amount}`,
                     timeStamp:Date.now(),
                     data:null
                 });

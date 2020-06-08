@@ -332,13 +332,14 @@ class Watcher {
             return
         }
         setTimeout(async () => {
-            const [get_receipt_err, child_txid_status] = await to(this.utils.get_receipt_log(child_txid.remoteTXid));
-            if (get_receipt_err) {
+            const [getReceiptErr, getReceiptRes] = await to(this.utils.get_receipt_log(child_txid.remoteTXid));
+            if (getReceiptErr) {
                 this.coin2asset_burn_loop.call(this)
                 return;
             }
+            const  childTxidStatus = getReceiptRes.length > 0 ? 'successful' : 'failed';
             const current_time = this.utils.get_current_time();
-            if (child_txid_status === 'successful') {
+            if (childTxidStatus === 'successful') {
                 // tslint:disable-next-line:no-shadowed-variable
                 this.redisClient.hget(address,token_name, async (err, value) => {
                     await this.redisClient.HMSET(address, token_name, NP.minus(value,burn_amount));

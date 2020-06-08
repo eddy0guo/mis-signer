@@ -33,62 +33,55 @@ class Watcher {
     }
 
     async start() {
-        this.loop()
+        while(true){
+            const [loopErr,loopRes] = await to(this.loop());
+            if(loopErr){
+                console.log(loopErr);
+            }else{
+                await this.utils.sleep(1000);
+            }
+        }
     }
 
     async loop() {
-
-        const [transaction_err, transaction] = await to(this.db.get_pending_transactions())
-        if (!transaction) {
-            console.error('[ADEX WATCHER] transaction_err Error:', transaction_err);
-            setTimeout(() => {
-                this.loop.call(this)
-            }, 1000);
-            return;
-        }
-
+        const transaction = await this.db.get_pending_transactions();
         // 全部都是成功的,就睡眠1s
         if (transaction.length === 0) {
             console.log('[ADEX WATCHER]:no pending transaction');
-            setTimeout(() => {
-                this.loop.call(this)
-            }, 1000);
             return;
         }
         const id = transaction[0].id;
         let status = 'successful';
-
+        let contract_status = 'successful';
         const updateTime = this.utils.get_current_time();
-        const [get_receipt_err, contract_status] = await to(this.utils.get_receipt_log(transaction[0].transaction_hash));
+        const watcherTrades = await this.db.get_trades([id]);
+        const [getReceiptErr, getReceiptRes] = await to(this.utils.get_receipt_log(transaction[0].transaction_hash));
         // 直接在sql里过滤待确认txid，安全起见对找不到的交易仍多做4次检查,实际运行中发现30秒没确认de交易这里，放到到60次
         const checkTimes = 60;
-        if (get_receipt_err && this.getReceiptTimes <= checkTimes) {
-            console.error(`[ADEX Watcher Pending]:get_receipt_err ${get_receipt_err},It's been retried ${this.getReceiptTimes} times for ${transaction[0].transaction_hash}`);
-            setTimeout(() => {
-                this.getReceiptTimes++;
-                this.loop.call(this)
-            }, 1000);
-            return;
-
-        } else if (get_receipt_err && this.getReceiptTimes > checkTimes) {
+        if (getReceiptErr && this.getReceiptTimes <= checkTimes) {
+            console.error(`[ADEX Watcher Pending]:get_receipt_err ${getReceiptErr},It's been retried ${this.getReceiptTimes} times for ${transaction[0].transaction_hash}`);
+            this.getReceiptTimes++;
+            await this.utils.sleep(1000);
+            throw new Error(getReceiptErr);
+        } else if (getReceiptErr && this.getReceiptTimes > checkTimes) {
             status = 'failed';
             console.error(`[ADEX Watcher Pending]:get_receipt_log failed,It's been retried ${this.getReceiptTimes} times for ${transaction[0].transaction_hash},please check  block chain `);
-        } else if (contract_status === 'failed') {
-            const trades = await  this.db.get_trades([id]);
-            for (const trade of trades){
-                console.log('contract_status_gxy_failed trade  %o',trade);
+        } else if (getReceiptRes.length !== watcherTrades.length * 4) {
+            contract_status = 'failed';
+            console.error('getReceiptRes len %s,watcherTrades len,transaction_id',getReceiptRes.length,watcherTrades.length,id);
+            for (const trade of watcherTrades){
                 const [base_token, quota_token] = trade.market_id.split('-');
                 const tokenMaker = new Token(trade.maker);
                 const tokenTaker = new Token(trade.taker);
                 if(trade.taker_side === 'sell'){
                     const maker_balance = await tokenMaker.localBalanceOf(quota_token,this.redisClient);
                     const taker_balance = await tokenTaker.localBalanceOf(base_token,this.redisClient);
-                    console.log('contract_status_gxy_failed side=%o maker_balance=%o,takker_balance=%o',
+                    console.error('contract status failed side=%o maker_balance=%o,taker_balance=%o',
                         trade.taker_side,maker_balance,taker_balance)
                 }else{
                      const maker_balance = await tokenMaker.localBalanceOf(base_token,this.redisClient);
                      const taker_balance = await tokenTaker.localBalanceOf(quota_token,this.redisClient);
-                    console.log('contract_status_gxy_failed side=%o maker_balance=%o,takker_balance=%o',
+                    console.error('contract status failed side=%o maker_balance=%o,taker_balance=%o',
                         trade.taker_side,maker_balance,taker_balance)
                 }
             }
@@ -99,10 +92,6 @@ class Watcher {
 
         this.getReceiptTimes = 0;
         await this.updateDB(status, contract_status, updateTime, id);
-
-        setImmediate(() => {
-            this.loop.call(this)
-        })
     }
 
     async updateDB(status, contract_status, updateTime, id): Promise<void> {

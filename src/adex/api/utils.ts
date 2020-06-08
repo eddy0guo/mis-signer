@@ -108,7 +108,7 @@ export default class Utils {
             throw new Error(`${txid} get_receipt_log failed,transaction haven't confirmed yet`);
         }
 
-        return result.logs.length > 0 ? 'successful' : 'failed';
+        return result.logs;
     }
     judge_legal_num(num): boolean {
         let result = true;
@@ -216,5 +216,13 @@ export default class Utils {
         if (res.data.code !== 0){
             console.error('requestCacheTXid failed',txid);
         }
+    }
+
+    async sleep(ms: number): Promise<void> {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                resolve();
+            }, ms);
+        });
     }
 }
