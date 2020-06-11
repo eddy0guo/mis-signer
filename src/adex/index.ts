@@ -716,6 +716,7 @@ export default () => {
                 data:null
             });
         }
+        /**
         const message = {
             trader_address: orderInfo[0].trader_address,
             amount: orderInfo[0].available_amount,
@@ -724,11 +725,12 @@ export default () => {
             market_id: orderInfo[0].market_id,
             id: order_id,
             status: 'cancled',
-        };
+        };**/
+        const message = orderInfo[0];
+        message.status = 'cancled';
+        message.amount = message.available_amount;
         // update也有耗时，
-        await redisClient.sadd(ENGINE_ORDERS,order_id);
         const [err, result] = await to(order.cancle(message));
-        await redisClient.srem(ENGINE_ORDERS,order_id);
         res.json({
             code: err ? errorCode.EXTERNAL_DEPENDENCIES_ERROR : errorCode.SUCCESSFUL,
             errorMsg:err ? err:null,

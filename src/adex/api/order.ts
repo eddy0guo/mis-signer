@@ -124,8 +124,25 @@ export default class Order {
     }
 
     async cancle(message): Promise<any> {
-        if(this.streams.length === 0){
+        if(process.env.MIST_MODE !== 'k8s' && this.streams.length === 0){
             await this.createKafkaStreams();
+        }
+        for (const stream of this.streams) {
+            if(process.env.MIST_MODE !== 'k8s'){
+                if (message.market_id === stream.topicName) {
+                    message.created_at = this.utils.get_current_time();
+                    message.updated_at = this.utils.get_current_time();
+                    const info = this.utils.arr_values(message);
+                    // await this.db.insert_order_v3(info);
+                    const queuedSuccess = stream.write(Buffer.from(JSON.stringify(message)));
+                    if (queuedSuccess) {
+                        console.log('We queued our message!');
+                    } else {
+                        console.error('Too many messages in our queue already',message);
+                    }
+                    break;
+                }
+            }
         }
         return await this.orderQueue.add(message, {removeOnComplete: true});
     }
