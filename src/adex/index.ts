@@ -15,14 +15,18 @@ import MistConfig from '../cfg';
 import mistConfig, {BullOption, OrderQueueConfig} from '../cfg';
 import Token from '../wallet/contract/Token';
 import Asset from '../wallet/contract/Asset';
-import {Networks} from 'bitcore-lib';
 import * as redis from 'redis';
 import {promisify} from 'util';
 import {errorCode} from '../error_code'
 import urllib = require('url');
 import crypto_sha256 = require('crypto');
-import add = Networks.add;
 const ENGINE_ORDERS = 'engine_orders';
+import * as bitcore from 'bitcore-lib';;
+import Address = require('bitcore-lib/lib/address');
+import {AsimovWallet} from '@fingo/asimov-wallet';
+import Exchange from '../adex_laucher/Exchange';
+const { HDPrivateKey, PrivateKey, crypto, PublicKey } = (bitcore as any)
+
 
 
 // TODO :  这个RPC请求很高频，可能成为性能瓶颈
@@ -30,19 +34,21 @@ const ENGINE_ORDERS = 'engine_orders';
 // 2 同余额接口，让用户在交易所API那边也有一个登录操作，让服务端可以知道需要持续更新哪些用户的余额。
 // 对于已经登录的用户，服务端启动固定的进程去定时更新余额。该接口改为直接返回缓存余额
 // 3 sql查询的优化
-async function get_available_erc20_amount(address, symbol, client:DBClient, mist_wallet,redisClient) {
+async function get_available_erc20_amount(address, symbol,redisClient) :Promise<number>{
     // fixme:此处本地账本传用户地址链上账本用合约地址，容易歧义
+    /**
     const token = new Token(address);
     const [err, balance] = await to(token.localBalanceOf(symbol,redisClient));
     if (err) console.error(err);
-    const hgetAsync = promisify(redisClient.hget).bind(redisClient);
-    const [freezeErr,freezeRes] = await to(hgetAsync(address, 'freeze::' + symbol));
+    const hgetAsync = promisify(redisClient.hget).bind(redisClient)
+    const key = Utils.bookKeyFromAddress(address);
+    const [freezeErr,freezeRes] = await to(hgetAsync(key, 'freeze::' + symbol));
     if(freezeErr || freezeRes === null){
         console.error('localBalanceOf2 ',freezeErr,freezeRes);
         return balance;
-    }
-    const freeze = +freezeRes.toString();
-    return NP.minus(balance, freeze);
+    }**/
+    const localBook = await Token.getLocalBook(symbol,redisClient,address);
+    return +NP.minus(localBook.balance, localBook.freezeAmount) + 50000;
 }
 
 export default () => {
@@ -55,11 +61,12 @@ export default () => {
     const mist_wallet: MistWallet = new MistWallet(client);
 
     const utils = new Utils();
-    let redisClient;
-    if (typeof BullOption.redis !== 'string') {
-        redisClient = redis.createClient(BullOption.redis.port, BullOption.redis.host);
-        redisClient.auth(BullOption.redis.password);
+    if (typeof BullOption.redis === 'string') {
+        console.error('typeof BullOption.redis === string');
+       process.exit(-1);
     }
+    const redisClient = redis.createClient(BullOption.redis.port, BullOption.redis.host);
+    redisClient.auth(BullOption.redis.password);
 
 
     adex.all('/compat_query/:sql', async (req, res) => {
@@ -83,6 +90,25 @@ export default () => {
                 data:null
             });
         }
+    });
+
+    adex.all('/local_book/:address', async (req, res) => {
+        const books = [];
+        const tokens = await client.list_tokens();
+        for(const token of tokens){
+            const localBook = await Token.getLocalBook(token.symbol,redisClient,req.params.address);
+            console.log('ttt,%o',localBook);
+            books.push(localBook);
+
+        }
+        console.log('sss,%o',books);
+        res.json({
+                code: errorCode.SUCCESSFUL,
+                errorMsg:null,
+                data:books,
+            timeStamp:Date.now(),
+
+        });
     });
 
     /**
@@ -279,8 +305,6 @@ export default () => {
             const available_amount = await get_available_erc20_amount(
                 address,
                 listTokenRes[i].symbol,
-                client,
-                mist_wallet,
                 redisClient
             );
             const price = await mist_wallet.get_token_price2pi(listTokenRes[i].symbol);
@@ -374,8 +398,6 @@ export default () => {
             const available_amount = await get_available_erc20_amount(
                 address,
                 tokenInfo.symbol,
-                client,
-                mist_wallet,
                 redisClient
             );
 
@@ -489,7 +511,8 @@ export default () => {
     // 2 同余额接口，让用户在交易所API那边也有一个登录操作，让服务端可以知道需要持续更新哪些用户的余额。
     // 对于已经登录的用户，服务端启动固定的进程去定时更新余额。该接口改为直接返回缓存余额
     adex.all('/build_order_v4', async (req, res) => {
-        const {trader_address, market_id, side, price, amount, expire_at, signature, publicKey} = req.body;
+        // tslint:disable-next-line:prefer-const
+        let {trader_address, market_id, side, price, amount, expire_at, signature, publicKey} = req.body;
         if (!trader_address || !market_id || !side || !price || !amount || !expire_at || !signature || !publicKey){
             return res.json({
                 code: errorCode.INVALID_PARAMS,
@@ -576,8 +599,6 @@ export default () => {
             const available_quota = await get_available_erc20_amount(
                 trader_address,
                 quota_token,
-                client,
-                mist_wallet,
                 redisClient
             );
             const quota_amount = +NP.times(+amount, +price);
@@ -593,8 +614,6 @@ export default () => {
             const available_base = await get_available_erc20_amount(
                 trader_address,
                 base_token,
-                client,
-                mist_wallet,
                 redisClient
             );
             if (amount > available_base) {
@@ -668,8 +687,9 @@ export default () => {
      * @apiVersion 1.0.0
      */
 
-    adex.all('/cancle_order_v3', async (req, res) => {
-        // FIXME : cancel spell error
+    // adex.all('/cancle_order_v3', async (req, res) => {
+        adex.all('/cancle_order_v8', async (req, res) => {
+            // FIXME : cancel spell error
         const {order_id, signature,publicKey} = req.body;
         if(!order_id || !signature || !publicKey){
             return res.json({
@@ -1171,7 +1191,75 @@ export default () => {
 
     });
 
+    adex.all('/approve_leverage', async (req, res) => {
+         const word = 'wrong siege decline yard use chair solid essay foam safe stay guitar'
+         const address = '0x669b7bae95f3823acb2d5d434f4b4be6968cc8a233'
+         const prikey = '7da0a4c0071f6b126fc7caab2580461d134acfa17fa0702a3d6b4fa50c57dcf7';
+         /***
+          city tiger course cradle slim clerk acquire avocado tank token taste eight
+          0x66b99300f5ff671ef99539326f9ad601f0959584f8
+          a149d1877a07c7d1f62e12d933a4aae4318f8b60ef92ecc7656a57eb99b86ad8
+          * **/
 
+         /*
+         * 0x669b7bae95f3823acb2d5d434f4b4be6968cc8a233
+7da0a4c0071f6b126fc7caab2580461d134acfa17fa0702a3d6b4fa50c57dcf7
+         *
+         * */
+        const  hash = utils.approveHash();
+        console.log('approve_leverage hash',hash);
+        const  signature = utils.tmp_sign(prikey,hash);
+        console.log('approve_leverage signature',signature);
+
+        const publicKey = new PrivateKey(prikey).toPublicKey().toString('hex');
+        const publick =  new PublicKey(Buffer.from(publicKey,'hex'));
+        const recoverAddress = '0x66' + Address.fromPublicKey(publick, 'livenet').hashBuffer.toString('hex');
+        console.log('approve_leverage address',recoverAddress);
+        /// address:string,orderhash: string,sign: string, publicKey: string
+         const [verifyErr,verifyRes] = await to( utils.verify2(recoverAddress,hash,signature,publicKey));
+
+        const  relayerWallet = new AsimovWallet({
+            name: 'Exchange_Relayer',
+            rpc: MistConfig.asimov_child_rpc,
+            pk: MistConfig.relayers[0].prikey,
+        });
+        const  mist = new Exchange('0x633a436dc5e727676cb1989a956d100f5026410d05', relayerWallet);
+        const [approveErr,approveRes] = await to(mist.approveLeverage([[address,signature]]));
+
+        res.json({recoverAddress,verifyRes,verifyErr,approveErr,approveRes});
+    });
+      /***
+       *
+       *     async verify2(address:string,orderhash: string,sign: string, publicKey: string) {
+
+       async function empower_verify(signinfo,privatekey,hash){
+    if(signinfo.length != 132){
+        throw new Error("signature length is invalid")
+    }
+    let pubkey = new bitcore_lib_1.PrivateKey(privatekey).toPublicKey()
+    let  hashbuf = Buffer.from(hash, 'hex')
+    let r = signinfo.slice(2,66)
+    let s = signinfo.slice(66,130)
+    let bitcore_sign = new bitcore_lib_1.crypto.Signature()
+    r = new bitcore_lib_1.crypto.BN(r, 'hex')
+    s = new bitcore_lib_1.crypto.BN(s, 'hex')
+    bitcore_sign.set({
+        r: r,
+        s: s
+    })
+    let bl = ECDSA.verify(hashbuf, bitcore_sign, pubkey)
+    console.log("bl",bl)
+    return bl
+
+    empower_verify(signinfo,config3.pk,hash)
+    await call(Leverage,"empower(tuple[])",[[["0x669952fb5d185d36b168b9f6c3bbeade4ad6510aee",signinfo]]])
+}
+       ****/
+      /***
+    adex.all('/my_leverage_borrows', async (req, res) => {
+    });
+    adex.all('/my_leverage_repaies', async (req, res) => {
+    });****/
     return adex;
 };
 export {get_available_erc20_amount};

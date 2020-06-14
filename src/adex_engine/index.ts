@@ -18,6 +18,7 @@ import { get_available_erc20_amount } from '../adex';
 import * as redis from 'redis';
 import {promisify} from 'util';
 import {errorCode} from '../error_code';
+import Token from '../wallet/contract/Token';
 
 const QueueNames = {
     OrderQueue: 'OrderQueue' + process.env.MIST_MODE,
@@ -26,21 +27,17 @@ const QueueNames = {
 };
 
 
-const FREEZE_PREFIX = 'freeze::';
-
 async function updateFreeze(trader_address, amount, price, side, market_id, redisClient): Promise<void> {
-    let [baseToken, quoteToken] = market_id.split('-');
-    quoteToken = FREEZE_PREFIX + quoteToken;
-    baseToken = FREEZE_PREFIX + baseToken;
-    const hgetAsync = promisify(redisClient.hget).bind(redisClient);
+    const [baseToken, quoteToken] = market_id.split('-');
     if (side === 'buy') {
-        const quoteRes = await hgetAsync(trader_address, quoteToken);
-        const quoteAmount = quoteRes.toString();
-        await redisClient.HMSET(trader_address, quoteToken, NP.plus(quoteAmount, NP.times(price, amount)));
+        const quoteRes = await Token.getLocalBook(quoteToken,redisClient,trader_address);
+        quoteRes.freezeAmount = NP.plus(quoteRes.freezeAmount, NP.times(price, amount));
+        await Token.setLocalBook(quoteToken,redisClient,trader_address,quoteRes);
+
     } else if (side === 'sell') {
-        const baseRes = await hgetAsync(trader_address, baseToken);
-        const baseAmount = baseRes.toString();
-        await redisClient.HMSET(trader_address, baseToken, NP.plus(baseAmount, amount));
+        const baseRes = await Token.getLocalBook(baseToken,redisClient,trader_address);
+        baseRes.freezeAmount = NP.plus(baseRes.freezeAmount, amount);
+        await Token.setLocalBook(baseToken,redisClient,trader_address,baseRes);
         // tslint:disable-next-line:no-empty
     } else {
     }
@@ -371,8 +368,6 @@ class AdexEngine {
         const availableCheckAmount = await get_available_erc20_amount(
             trader_address,
             checkToken,
-            this.db,
-            this.mistWallat,
             this.redisClient
         );
 

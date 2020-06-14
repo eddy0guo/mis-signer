@@ -14,6 +14,7 @@ import Token from '../wallet/contract/Token';
 import * as redis from 'redis';
 const FREEZE_PREFIX = 'freeze::';
 import BigNumber from 'bignumber.js'
+import {IERC20Book, ILocalBook} from '../interface';
 
 
 class ProcessData {
@@ -58,33 +59,49 @@ class ProcessData {
         for (const address of listBridgeAddressRes){
             addressArr.push(address.address);
         }
+        addressArr.push('0x660b26beb33778dbece8148bf32e83373dd1fee80e');
+        addressArr.push('0x669b7bae95f3823acb2d5d434f4b4be6968cc8a233');
         console.log('start refreshCoinBook at',this.utils.get_current_time());
         const tokens = await this.mist_wallet.list_mist_tokens();
-        for (const token of tokens) {
-            const tokenOjb = new Token(token.address);
-            const [batchqueryErr, batchqueryRes] = await to(tokenOjb.batchquery(addressArr, 'child_poa'));
+        // @ts-ignore
+        // tslint:disable-next-line:forin
+        for (let index:number in tokens) {
+            const tokenOjb = new Token(tokens[index].address);
+            const [batchqueryErr, batchqueryRes]:[Error,IERC20Book] = await to(tokenOjb.batchquery(addressArr, 'child_poa'));
             if(!batchqueryErr && batchqueryRes) {
+                // @ts-ignore
                 for (const account of batchqueryRes) {
-                    await this.redisClient.HMSET(account.account, token.symbol, NP.divide(account.balance, 100000000));
-                }
-            }else{
-                console.error('[data_process]:batchqueryErr',batchqueryErr);
-            }
-            for (const address of addressArr){
-                let freeze_amount = '0';
-                const freezeResult = await this.db.get_freeze_amount([address,token.symbol]);
-                if (freezeResult && freezeResult.length > 0) {
-                    for (const freeze of freezeResult) {
-                        if (freeze.side === 'buy') {
-                            freeze_amount = NP.plus(freeze_amount, freeze.quote_amount);
-                        } else if (freeze.side === 'sell') {
-                            freeze_amount = NP.plus(freeze_amount, freeze.base_amount);
-                        } else {
-                            console.error(`${freeze.side} error`);
+                        const balance = NP.divide(account.balance, 100000000);
+                        const borrowAmount = NP.divide(account.borrow, 100000000);
+                        const repayAmount = NP.divide(account.repay, 100000000);
+                        const latestBorrowTime = account.latesttime;
+
+                        let freezeAmount = '0';
+                        const freezeResult = await this.db.get_freeze_amount([account.account, tokens[index].symbol]);
+                        if (freezeResult && freezeResult.length > 0) {
+                            for (const freeze of freezeResult) {
+                                if (freeze.side === 'buy') {
+                                    freezeAmount = NP.plus(freezeAmount, freeze.quote_amount);
+                                } else if (freeze.side === 'sell') {
+                                    freezeAmount = NP.plus(freezeAmount, freeze.base_amount);
+                                } else {
+                                    console.error(`${freeze.side} error`);
+                                }
+                            }
                         }
+                        const localBook:ILocalBook = {
+                            balance,
+                            borrowAmount,
+                            repayAmount,
+                            latestBorrowTime,
+                            freezeAmount,
+                        }
+                        await this.redisClient.HMSET(Utils.bookKeyFromAddress(account.account),tokens[index].symbol,JSON.stringify(localBook));
+                         // @ts-ignore
+                        index++;
                     }
-                }
-                await this.redisClient.HMSET(address, FREEZE_PREFIX + token.symbol,freeze_amount);
+            }else{
+                console.error('[data_process]:batchqueryErr',tokens[index].symbol,batchqueryErr);
             }
         }
         console.log('end refreshCoinBook at',this.utils.get_current_time());

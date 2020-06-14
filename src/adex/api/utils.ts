@@ -10,6 +10,8 @@ const Address = require('bitcore-lib/lib/address');
 const ECDSA = bitcore_lib_1.crypto.ECDSA;
 const HASH = bitcore_lib_1.crypto.Hash;
 import axios from 'axios';
+import * as secp256k1 from 'secp256k1'
+
 
 
 
@@ -67,6 +69,26 @@ export default class Utils {
         str = str.slice(2, str.length)
         const hash = HASH.sha256(Buffer.from(str, 'hex')).toString('hex');
         return hash;
+    }
+    approveHash(){
+        /**
+         *
+         *     let str = abi.defaultAbiCoder.encode(["string"],["Fingo DEX"])
+         str = str.slice(2,str.length)
+         let hash = HASH.sha256(Buffer.from(str,'hex')).toString('hex');
+         *
+         * **/
+        let str = abi.defaultAbiCoder.encode(['string'],['Fingo DEX']);
+        str = str.slice(2, str.length)
+        const hash = HASH.sha256(Buffer.from(str, 'hex')).toString('hex');
+        return hash;
+    }
+    tmp_sign(privateKey, order_id) {
+        const  hashbuf = Buffer.from(order_id, 'hex')
+        const  hashbuf_uint8 = new Uint8Array(Buffer.from(privateKey,'hex'))
+        const  sig= secp256k1.ecdsaSign(hashbuf,hashbuf_uint8)
+        const recovery = sig.recid +27
+        return  '0x'+(Buffer.from(sig.signature).toString('hex')+recovery.toString(16))
     }
 
     get_current_time(): string {
@@ -224,5 +246,8 @@ export default class Utils {
                 resolve();
             }, ms);
         });
+    }
+    static bookKeyFromAddress(address): string{
+        return process.env.MIST_MODE + '::' + address;
     }
 }

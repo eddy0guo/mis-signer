@@ -10,24 +10,33 @@ import {IOrder, IOrderBook} from '../interface';
 import mistConfig, {BullOption} from '../../cfg';
 import {promisify} from 'util';
 import * as Kafka from 'node-rdkafka'
+import {ILocalBook} from '../../interface';
+import Token from '../../wallet/contract/Token';
 
 const FREEZE_PREFIX = 'freeze::';
 
-async function updateFreeze(trader_address, amount, price, side, market_id, redisClient): Promise<void> {
-    let [baseToken, quoteToken] = market_id.split('-');
-    quoteToken = FREEZE_PREFIX + quoteToken;
-    baseToken = FREEZE_PREFIX + baseToken;
-    const hgetAsync = promisify(redisClient.hget).bind(redisClient);
+async function updateCancelFreeze(trader_address, amount, price, side, market_id, redisClient): Promise<void> {
+    const [baseToken, quoteToken] = market_id.split('-');
     if (side === 'buy') {
-        const quoteRes = await hgetAsync(trader_address, quoteToken);
-        const quoteAmount = quoteRes.toString();
-        await redisClient.HMSET(trader_address, quoteToken, NP.plus(quoteAmount, NP.times(price, amount)));
+       // const quoteRes:ILocalBook = await hgetAsync(trader_address, quoteToken);
+       // quoteRes.freezeAmount = NP.plus(quoteRes.freezeAmount, NP.times(price, amount));
+        const localBook = await Token.getLocalBook(quoteToken,redisClient,trader_address);
+        localBook.freezeAmount = NP.plus(localBook.freezeAmount, NP.times(price, amount));
+        await Token.setLocalBook(quoteToken,redisClient,trader_address,localBook);
     } else if (side === 'sell') {
-        const baseRes = await hgetAsync(trader_address, baseToken);
+        /*
+        const baseRes = await hgetAsync(key, baseToken);
         const baseAmount = baseRes.toString();
-        await redisClient.HMSET(trader_address, baseToken, NP.plus(baseAmount, amount));
+        await redisClient.HMSET(key, baseToken, NP.plus(baseAmount, amount));
         // tslint:disable-next-line:no-empty
+         */
+        const localBook = await Token.getLocalBook(baseToken,redisClient,trader_address);
+        localBook.freezeAmount = NP.plus(localBook.freezeAmount, amount);
+        await Token.setLocalBook(baseToken,redisClient,trader_address,localBook);
     } else {
+        const errorMessage = `Unsupported types ${side}`;
+        console.error(errorMessage);
+        throw Error(errorMessage);
     }
     return;
 }
@@ -171,7 +180,7 @@ export default class Order {
         }
         await this.orderBookUpdateQueue.add(marketUpdateBook, {removeOnComplete: true});
         // cancle解冻，加上负值
-        await updateFreeze(trader_address, -amount, price, side, market_id, redisClient);
+        await updateCancelFreeze(trader_address, -amount, price, side, market_id, redisClient);
         return;
     }
     async my_orders_v3(address: string, page: number, perPage: number, status1: string, status2: string, MarketID: string, side: string, start: Date, end: Date): Promise<IOrder[]> {

@@ -93,7 +93,8 @@ const local: IConfig = {
 };
 
 const dev: IConfig = {
-    ex_address: '0x630122b8d818203e407eaf9ba59668934b73198f4c',
+    // ex_address: '0x63ae1ace4fedd235ddce11636a239068c7df73282a',
+    ex_address: '0x63ce4ce4d07f890d0f976d1901624b7f71bde1cd16',
     mist_earnings_address: '0x634b2ee429ce7dd2d1540dfd8ee5475b5a144ce71a',
     order_hash_word:
         'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
@@ -103,30 +104,39 @@ const dev: IConfig = {
     fauct_prikey:
         '0x47c98c143179d48664dfc2f029a8583cb6a394a94037e06f0658dcf18ed6c66a',
 
+    /**
+     *
+     * loud easily calm spell frequent exhibit release acid wear grass axis thank
+     0x669b7bae95f3823acb2d5d434f4b4be6968cc8a233
+     7da0a4c0071f6b126fc7caab2580461d134acfa17fa0702a3d6b4fa50c57dcf7
+     * */
+
+
     relayers: [
         {
             prikey:
-                '0xb74dec46bddca59a39bbbb309ccf48f97be5ca5f980c62fab635a749f5f317ce',
+                '0x7da0a4c0071f6b126fc7caab2580461d134acfa17fa0702a3d6b4fa50c57dcf7',
             word:
-                'two earn wide ignore month spider seek wage enrich stuff small day',
-            address: '0x66e900c058c225d973949c1cb162c23c810a7417d3',
+                'loud easily calm spell frequent exhibit release acid wear grass axis thank',
+            address: '0x669b7bae95f3823acb2d5d434f4b4be6968cc8a233',
         },
         {
             prikey:
-                '0xb74dec46bddca59a39bbbb309ccf48f97be5ca5f980c62fab635a749f5f317ce',
+                '0x7da0a4c0071f6b126fc7caab2580461d134acfa17fa0702a3d6b4fa50c57dcf7',
             word:
-                'two earn wide ignore month spider seek wage enrich stuff small day',
-            address: '0x66e900c058c225d973949c1cb162c23c810a7417d3',
+                'loud easily calm spell frequent exhibit release acid wear grass axis thank',
+            address: '0x669b7bae95f3823acb2d5d434f4b4be6968cc8a233',
         },
         {
             prikey:
-                '0xb74dec46bddca59a39bbbb309ccf48f97be5ca5f980c62fab635a749f5f317ce',
+                '0x7da0a4c0071f6b126fc7caab2580461d134acfa17fa0702a3d6b4fa50c57dcf7',
             word:
-                'two earn wide ignore month spider seek wage enrich stuff small day',
-            address: '0x66e900c058c225d973949c1cb162c23c810a7417d3',
+                'loud easily calm spell frequent exhibit release acid wear grass axis thank',
+            address: '0x669b7bae95f3823acb2d5d434f4b4be6968cc8a233',
         },
     ],
     // 0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c
+    /**
     bridge_word:
         'crouch spring portion wide mention deposit water renew lake switch amount danger',
     bridge_address: '0x663eba898c351ca8b5ff8de3f3c380de88ee8061f7',
@@ -134,12 +144,19 @@ const dev: IConfig = {
     express_word:
         'solve page fuel once ghost team move trophy flag coil suffer fan',
     express_address: '0x66d0594c76342ec891017d0639792ffc7872b4df81',
+     ***/
+
+    bridge_word: 'sound mandate urban welcome grass gospel gather shoulder hunt catch host second',
+    bridge_address: '0x66a5e2e1d9243f9dfd1d54b31952d94043a105188f',
+
+    express_word: 'wing safe foster choose wisdom myth quality own gallery logic imitate pink',
+    express_address: '0x66b7a9a597306b5fb16909b515c654f30a4c2eb74c',
 
     wallet_default_passwd: '111111',
     asimov_chain_rpc: 'https://rpc.fin.fingo.dev',
     asimov_master_rpc: 'https://rpc.fin.fingo.dev',
     asimov_child_rpc: 'https://rpc.mt.fingo.dev',
-    mist_server_port: 21000,
+    mist_server_port: 15000,
     pg_host: 'pgm-wz9m1yb4h5g4sl7x127770.pg.rds.aliyuncs.com',
     pg_database: process.env.MIST_MODE,
     pg_user: 'product',

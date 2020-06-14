@@ -10,6 +10,7 @@ import {BullOption} from '../cfg';
 import * as redis from 'redis';
 import {ITrade} from '../adex/interface';
 import Token from '../wallet/contract/Token';
+import {ILocalBook} from '../interface';
 const FREEZE_PREFIX = 'freeze::';
 
 class Watcher {
@@ -19,7 +20,6 @@ class Watcher {
     private getReceiptTimes: number;
     // 5分钟无log输出会杀死进程。
     private logger: Logger = new Logger(Watcher.name, 5 * 60 * 1000);
-    private hgetAsync;
     private redisClient;
     constructor() {
         this.db = new DBClient();
@@ -29,7 +29,6 @@ class Watcher {
             this.redisClient = redis.createClient(BullOption.redis.port, BullOption.redis.host);
             this.redisClient.auth(BullOption.redis.password);
         }
-        this.hgetAsync = promisify(this.redisClient.hget).bind(this.redisClient);
     }
 
     async start() {
@@ -166,28 +165,56 @@ class Watcher {
         return updates;
 
     }
+    /**
     async updateFreeze(trade:ITrade) : Promise<void>{
         const {taker_side,market_id,taker,maker,price,amount} = trade;
         let [baseToken, quoteToken] = market_id.split('-');
         quoteToken = FREEZE_PREFIX + quoteToken;
         baseToken = FREEZE_PREFIX + baseToken;
+        const takerKey = Utils.bookKeyFromAddress(taker);
+        const makerKey = Utils.bookKeyFromAddress(maker);
         if (taker_side === 'buy'){
-            const takerQuoteRes = await this.hgetAsync(taker, quoteToken);
+            const takerQuoteRes = await this.hgetAsync(takerKey, quoteToken);
             const takerQuote = takerQuoteRes.toString();
-            await this.redisClient.HMSET(taker, quoteToken, NP.minus(takerQuote, NP.times(amount,price)));
+            await this.redisClient.HMSET(takerKey, quoteToken, NP.minus(takerQuote, NP.times(amount,price)));
 
-            const makerBaseRes = await this.hgetAsync(maker, baseToken);
+            const makerBaseRes = await this.hgetAsync(makerKey, baseToken);
             const makerBase = makerBaseRes.toString();
-            await this.redisClient.HMSET(maker, baseToken, NP.minus(makerBase, amount));
+            await this.redisClient.HMSET(makerKey, baseToken, NP.minus(makerBase, amount));
         }else if (taker_side === 'sell'){
             // @ts-ignore
-            const takerBaseRes = await this.hgetAsync(taker, baseToken);
+            const takerBaseRes = await this.hgetAsync(takerKey, baseToken);
             const takerBase = takerBaseRes.toString();
-            await this.redisClient.HMSET(taker, baseToken, NP.minus(takerBase,amount));
+            await this.redisClient.HMSET(takerKey, baseToken, NP.minus(takerBase,amount));
 
-            const makerQuoteRes = await this.hgetAsync(maker, quoteToken);
+            const makerQuoteRes = await this.hgetAsync(makerKey, quoteToken);
             const makerQuote = makerQuoteRes.toString();
-            await this.redisClient.HMSET(maker, quoteToken, NP.minus(makerQuote, NP.times(amount,price)));
+            await this.redisClient.HMSET(makerKey, quoteToken, NP.minus(makerQuote, NP.times(amount,price)));
+        }
+        else{
+            console.error('[ADEX_watcher]:updateFreeze unknown side',taker_side);
+            return;
+        }
+    }**/
+    async updateFreeze(trade:ITrade) : Promise<void>{
+        const {taker_side,market_id,taker,maker,price,amount} = trade;
+        const [baseToken, quoteToken] = market_id.split('-');
+        if (taker_side === 'buy'){
+            const takerQuoteRes:ILocalBook = await Token.getLocalBook(quoteToken,this.redisClient,taker);
+            takerQuoteRes.freezeAmount = NP.minus(takerQuoteRes.freezeAmount, NP.times(amount,price));
+            await Token.setLocalBook(quoteToken,this.redisClient,taker,takerQuoteRes);
+
+            const makerBaseRes:ILocalBook = await Token.getLocalBook(baseToken,this.redisClient,maker);
+            makerBaseRes.freezeAmount = NP.minus(makerBaseRes.freezeAmount, amount);
+            await Token.setLocalBook(baseToken,this.redisClient,maker,makerBaseRes);
+        }else if (taker_side === 'sell'){
+            const takerBaseRes:ILocalBook = await Token.getLocalBook(baseToken,this.redisClient,taker);
+            takerBaseRes.freezeAmount = NP.minus(takerBaseRes.freezeAmount, amount);
+            await Token.setLocalBook(quoteToken,this.redisClient,taker,takerBaseRes);
+
+            const makerQuoteRes:ILocalBook = await Token.getLocalBook(quoteToken,this.redisClient,maker);
+            makerQuoteRes.freezeAmount = NP.minus(makerQuoteRes.freezeAmount, NP.times(amount,price));
+            await Token.setLocalBook(quoteToken,this.redisClient,maker,makerQuoteRes);
         }
         else{
             console.error('[ADEX_watcher]:updateFreeze unknown side',taker_side);
