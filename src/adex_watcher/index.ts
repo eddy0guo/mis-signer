@@ -197,12 +197,15 @@ class Watcher {
         }
     }**/
     async updateFreeze(trade:ITrade) : Promise<void>{
-        const {taker_side,market_id,taker,maker,price,amount} = trade;
+        const {taker_side,market_id,taker,maker,price,amount,taker_order_id} = trade;
+        const takerOrder = await this.db.find_order([taker_order_id])
         const [baseToken, quoteToken] = market_id.split('-');
         if (taker_side === 'buy'){
             const takerQuoteRes:ILocalBook = await Token.getLocalBook(quoteToken,this.redisClient,taker);
-            takerQuoteRes.freezeAmount = NP.minus(takerQuoteRes.freezeAmount, NP.times(amount,price));
+            // 解冻的数量依据的价格是taker 订单的，而不是trade的
+            takerQuoteRes.freezeAmount = NP.minus(takerQuoteRes.freezeAmount, NP.times(amount,takerOrder[0].price));
             await Token.setLocalBook(quoteToken,this.redisClient,taker,takerQuoteRes);
+            console.log('tttt---',takerQuoteRes.freezeAmount, amount,price,NP.minus(takerQuoteRes.freezeAmount, NP.times(amount,price)));
 
             const makerBaseRes:ILocalBook = await Token.getLocalBook(baseToken,this.redisClient,maker);
             makerBaseRes.freezeAmount = NP.minus(makerBaseRes.freezeAmount, amount);

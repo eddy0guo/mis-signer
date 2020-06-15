@@ -257,55 +257,87 @@ class Launcher {
             }
         }
     }**/
+    async updateBalanceBorrow(symbol:string,address:string,addAmount:string): Promise<void>{
+        const now = Math.floor(+NP.divide(Date.now(),1000));
+        const book:ILocalBook = await Token.getLocalBook(symbol,this.redisClient,address);
+        if(+book.balance > 0){
+            const balance = NP.plus(book.balance,addAmount);
+            if(+balance >= 0){
+                book.balance = balance;
+            }else{
+                book.balance = '0';
+                // get abs()
+                book.borrowAmount = balance.substr(1);
+                book.latestBorrowTime = now;
+            }
+        }else if (+book.balance === 0){
+            // 复利计算，日利息万五，小时0.000017
+            const duration = (now - book.latestBorrowTime) / 3600 + 1;
+            let interest = NP.times(book.borrowAmount,Math.pow(1.000017,duration));
+            interest = NP.divide(Math.floor(+NP.times(interest,100000000)),100000000);
+            // addAmount的负号是相对于balance的，borrow就用minus而不是plus
+            const borrowAmount = NP.minus(interest,addAmount);
+            if(+borrowAmount >= 0){
+                book.borrowAmount = borrowAmount;
+                book.latestBorrowTime = now;
+                // 有还债
+                if(+addAmount > 0){
+                    book.repayAmount = NP.plus(book.repayAmount,addAmount);
+                }
+            }else if (+borrowAmount < 0){
+                book.borrowAmount = '0';
+                book.latestBorrowTime = 0;
+                book.repayAmount = '0';
+                book.balance = borrowAmount.substr(1);
+            }else {
+                book.borrowAmount = '0';
+                book.repayAmount = '0';
+                book.latestBorrowTime = 0;
+            }
+
+        }else{
+            const message = `account balance error ${symbol} ${address} ${book.balance}`
+            console.error(message);
+            throw new Error(message);
+        }
+        await Token.setLocalBook(symbol,this.redisClient,address,book);
+    }
     async updateLocalBook(tx_trades: ITrade[]): Promise<void> {
         console.log('update local book on redis');
         for (const trade of tx_trades) {
             const {taker_side, price, amount, taker, maker} = trade;
             const [baseToken, quoteToken] = trade.market_id.split('-');
             if (taker_side === 'buy') {
-                const takerBaseRes:ILocalBook = await Token.getLocalBook(baseToken,this.redisClient,taker);
                 // amount有效位于0.0001，这里不用判断手续费精度超8位de情况
-                takerBaseRes.balance = NP.plus(takerBaseRes.balance, NP.times(amount, 0.999));
-                await Token.setLocalBook(baseToken,this.redisClient,taker,takerBaseRes);
+                const takerBaseAddAmount = NP.times(amount, 0.999);
+                await this.updateBalanceBorrow(baseToken,taker,takerBaseAddAmount);
 
-                const takerQuoteRes:ILocalBook = await Token.getLocalBook(quoteToken,this.redisClient,taker);
-                takerQuoteRes.balance = NP.minus(takerQuoteRes.balance, NP.times(amount, price));
-                await Token.setLocalBook(quoteToken,this.redisClient,taker,takerQuoteRes);
+                const takerQuoteAddAmount = '-' + NP.times(amount, price);
+                await this.updateBalanceBorrow(quoteToken,taker,takerQuoteAddAmount);
 
-                const makerBaseRes:ILocalBook = await Token.getLocalBook(baseToken,this.redisClient,maker);
-                makerBaseRes.balance = NP.minus(makerBaseRes.balance, amount)
-                await Token.setLocalBook(baseToken,this.redisClient,maker,makerBaseRes);
+                const makerBaseAddAmount = '-' + amount.toString();
+                await this.updateBalanceBorrow(baseToken,maker,makerBaseAddAmount);
 
-                const makerQuoteRes:ILocalBook = await Token.getLocalBook(quoteToken,this.redisClient,maker);
-                let balance = NP.plus(makerQuoteRes.balance, NP.times(amount, price, 0.999));
                 // 合约里手续费扣除之后有小数,则手续费取整，用户余额少扣1
-                if (balance.split('.')[1].length > 8){
-                    balance = NP.plus(balance.substr(0,balance.length - 1),0.00000001);
-                }
-                makerQuoteRes.balance = balance;
-                await Token.setLocalBook(quoteToken,this.redisClient,maker,makerQuoteRes);
+                let fee = NP.times(amount, price, 0.001);
+                fee = NP.divide(Math.floor(+NP.times(fee,100000000)),100000000);
+                const makerQuoteAddAmount = NP.minus(NP.times(amount, price),fee);
+                await this.updateBalanceBorrow(quoteToken,maker,makerQuoteAddAmount);
 
             } else if (taker_side === 'sell') {
-                const takerBaseRes:ILocalBook = await Token.getLocalBook(baseToken,this.redisClient,taker);
-                takerBaseRes.balance = NP.minus(takerBaseRes.balance, amount)
-                await Token.setLocalBook(baseToken,this.redisClient,taker,takerBaseRes);
+                const takerBaseAddAmount = '-' + amount.toString();
+                await this.updateBalanceBorrow(baseToken,taker,takerBaseAddAmount);
 
-                const takerQuoteRes:ILocalBook = await Token.getLocalBook(quoteToken,this.redisClient,taker);
-                let balance = NP.plus(takerQuoteRes.balance, NP.times(amount, price, 0.999));
-                // 合约里手续费扣除之后有小数,则手续费取整，用户余额少扣1
-                if (balance.split('.')[1].length > 8){
-                    balance = NP.plus(balance.substr(0,balance.length - 1),0.00000001);
-                }
-                takerQuoteRes.balance = balance;
-                await Token.setLocalBook(quoteToken,this.redisClient,taker,takerQuoteRes);
+                let fee = NP.times(amount, price, 0.001);
+                fee = NP.divide(Math.floor(+NP.times(fee,100000000)),100000000);
+                const takerQuoteAddAmount =  NP.minus(NP.times(amount, price),fee);
+                await this.updateBalanceBorrow(quoteToken,taker,takerQuoteAddAmount);
 
-                const makerQuoteRes:ILocalBook = await Token.getLocalBook(quoteToken,this.redisClient,maker);
-                makerQuoteRes.balance = NP.minus(makerQuoteRes.balance, NP.times(amount, price));
-                await Token.setLocalBook(quoteToken,this.redisClient,maker,makerQuoteRes);
+                const makerQuoteAddAmount = '-' + NP.times(amount, price);
+                await this.updateBalanceBorrow(quoteToken,maker,makerQuoteAddAmount);
 
-                const makerBaseRes:ILocalBook = await Token.getLocalBook(baseToken,this.redisClient,maker);
-                makerBaseRes.balance = NP.plus(makerBaseRes.balance, NP.times(amount, 0.999))
-                await Token.setLocalBook(baseToken,this.redisClient,maker,makerBaseRes);
+                const makerBaseAddAmount = NP.times(amount,0.999);
+                await this.updateBalanceBorrow(baseToken,maker,makerBaseAddAmount);
             } else {
                 console.error('[ADEX_LAUNCHER]:updateLocalBook unknown side', taker_side);
                 return;
