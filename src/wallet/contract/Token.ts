@@ -6,6 +6,9 @@ import { promisify } from 'util';
 import to from 'await-to-js';
 import Utils from '../../adex/api/utils';
 import {ILocalBook} from '../../interface';
+import {Networks} from 'bitcore-lib';
+import add = Networks.add;
+import utils from '../../adex/api/utils';
 
 
 
@@ -55,11 +58,32 @@ export default class Token {
   static async getLocalBook(symbol:string, redisClient, address:string) : Promise<ILocalBook>{
     const hgetAsync = promisify(redisClient.hget).bind(redisClient)
     const loocalBookStr = await hgetAsync(Utils.bookKeyFromAddress(address), symbol);
-    return JSON.parse(loocalBookStr);
+    return JSON.parse(loocalBookStr.toString());
   }
   static async setLocalBook(symbol:string, redisClient, address:string, book:ILocalBook) : Promise<void>{
     const hgetAsync = promisify(redisClient.hget).bind(redisClient)
     await redisClient.HMSET(Utils.bookKeyFromAddress(address), symbol, JSON.stringify(book));
+    return ;
+  }
+
+  static async lockLocalBook(redisClient, address:string) : Promise<void>{
+    const key = 'lock::' + address;
+    const setnxAsync = promisify(redisClient.setnx).bind(redisClient)
+    while (true){
+      const result = await setnxAsync(key, 1);
+      if(result){
+        break;
+      }
+      // console.log('%s is locked',address,Date.now());
+      await Utils.sleep2(20);
+    }
+    await redisClient.expire(key, 10);
+    return ;
+  }
+
+  static async unlockLocalBook(redisClient, address:string) : Promise<void>{
+    const key = 'lock::' + address;
+    await redisClient.del(key);
     return ;
   }
 

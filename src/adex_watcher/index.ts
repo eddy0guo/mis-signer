@@ -12,6 +12,8 @@ import {ITrade} from '../adex/interface';
 import Token from '../wallet/contract/Token';
 import {ILocalBook} from '../interface';
 const FREEZE_PREFIX = 'freeze::';
+let baseAmountTmp = '0';
+let quoteAmountTmp = '0';
 
 class Watcher {
 
@@ -200,29 +202,61 @@ class Watcher {
         const {taker_side,market_id,taker,maker,price,amount,taker_order_id} = trade;
         const takerOrder = await this.db.find_order([taker_order_id])
         const [baseToken, quoteToken] = market_id.split('-');
+
+        await Token.lockLocalBook(this.redisClient,taker);
+        if(taker !== maker){
+            await Token.lockLocalBook(this.redisClient,maker);
+        }
+        const start = Date.now();
         if (taker_side === 'buy'){
             const takerQuoteRes:ILocalBook = await Token.getLocalBook(quoteToken,this.redisClient,taker);
             // 解冻的数量依据的价格是taker 订单的，而不是trade的
+            const tmpa = takerQuoteRes.freezeAmount;
             takerQuoteRes.freezeAmount = NP.minus(takerQuoteRes.freezeAmount, NP.times(amount,takerOrder[0].price));
             await Token.setLocalBook(quoteToken,this.redisClient,taker,takerQuoteRes);
-            console.log('tttt---',takerQuoteRes.freezeAmount, amount,price,NP.minus(takerQuoteRes.freezeAmount, NP.times(amount,price)));
+            // --
+            const tmp1 = quoteAmountTmp;
+            quoteAmountTmp =NP.minus(quoteAmountTmp, NP.times(amount,takerOrder[0].price));
+            console.log('freeze123_USDT_minux',tmpa,takerQuoteRes.freezeAmount,taker,tmp1,NP.times(takerOrder[0].price,amount),quoteAmountTmp);
 
             const makerBaseRes:ILocalBook = await Token.getLocalBook(baseToken,this.redisClient,maker);
+            const tmpb = makerBaseRes.freezeAmount;
             makerBaseRes.freezeAmount = NP.minus(makerBaseRes.freezeAmount, amount);
             await Token.setLocalBook(baseToken,this.redisClient,maker,makerBaseRes);
+            // --
+            const tmp2 = baseAmountTmp;
+            baseAmountTmp = NP.minus(baseAmountTmp,amount);
+            console.log('freeze123_BTC_minus',tmpb,makerBaseRes.freezeAmount,maker,tmp2,amount,baseAmountTmp);
+
         }else if (taker_side === 'sell'){
             const takerBaseRes:ILocalBook = await Token.getLocalBook(baseToken,this.redisClient,taker);
+            const tmpa = takerBaseRes.freezeAmount;
             takerBaseRes.freezeAmount = NP.minus(takerBaseRes.freezeAmount, amount);
-            await Token.setLocalBook(quoteToken,this.redisClient,taker,takerBaseRes);
+            await Token.setLocalBook(baseToken,this.redisClient,taker,takerBaseRes);
+            // --
+            const tmp2 = baseAmountTmp;
+            baseAmountTmp = NP.minus(baseAmountTmp,amount);
+            console.log('freeze123_BTC_minus',tmpa,takerBaseRes.freezeAmount,taker,tmp2,amount,baseAmountTmp);
+
 
             const makerQuoteRes:ILocalBook = await Token.getLocalBook(quoteToken,this.redisClient,maker);
+            const tmpb = makerQuoteRes.freezeAmount;
             makerQuoteRes.freezeAmount = NP.minus(makerQuoteRes.freezeAmount, NP.times(amount,price));
             await Token.setLocalBook(quoteToken,this.redisClient,maker,makerQuoteRes);
+            // --
+            const tmp1 = quoteAmountTmp;
+            quoteAmountTmp =NP.minus(quoteAmountTmp, NP.times(amount,price));
+            console.log('freeze123_USDT_minux',tmpb,makerQuoteRes.freezeAmount,taker,tmp1,NP.times(price,amount),quoteAmountTmp);
         }
         else{
             console.error('[ADEX_watcher]:updateFreeze unknown side',taker_side);
             return;
         }
+        await Token.unlockLocalBook(this.redisClient,taker);
+        if(taker !== maker){
+            await Token.unlockLocalBook(this.redisClient,maker);
+        }
+        console.log('watcher update freeze spend %o ms',Date.now() - start);
     }
 }
 

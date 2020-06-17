@@ -250,4 +250,12 @@ export default class Utils {
     static bookKeyFromAddress(address): string{
         return process.env.MIST_MODE + '::' + address;
     }
+
+    static async sleep2(ms: number): Promise<void> {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                resolve();
+            }, ms);
+        });
+    }
 }

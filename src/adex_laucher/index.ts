@@ -258,6 +258,9 @@ class Launcher {
         }
     }**/
     async updateBalanceBorrow(symbol:string,address:string,addAmount:string): Promise<void>{
+        console.log('start updateBalanceBorrow');
+        await Token.lockLocalBook(this.redisClient,address);
+        const start = Date.now();
         const now = Math.floor(+NP.divide(Date.now(),1000));
         const book:ILocalBook = await Token.getLocalBook(symbol,this.redisClient,address);
         if(+book.balance > 0){
@@ -301,6 +304,8 @@ class Launcher {
             throw new Error(message);
         }
         await Token.setLocalBook(symbol,this.redisClient,address,book);
+        await Token.unlockLocalBook(this.redisClient,address);
+        console.log('laucher update freeze spend %o ms',Date.now() - start);
     }
     async updateLocalBook(tx_trades: ITrade[]): Promise<void> {
         console.log('update local book on redis');

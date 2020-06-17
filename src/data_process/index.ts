@@ -63,9 +63,8 @@ class ProcessData {
         addressArr.push('0x669b7bae95f3823acb2d5d434f4b4be6968cc8a233');
         console.log('start refreshCoinBook at',this.utils.get_current_time());
         const tokens = await this.mist_wallet.list_mist_tokens();
-        // @ts-ignore
-        // tslint:disable-next-line:forin
-        for (let index:number in tokens) {
+        let index = 0;
+        while (index < tokens.length ) {
             const tokenOjb = new Token(tokens[index].address);
             const [batchqueryErr, batchqueryRes]:[Error,IERC20Book] = await to(tokenOjb.batchquery(addressArr, 'child_poa'));
             if(!batchqueryErr && batchqueryRes) {
@@ -97,9 +96,8 @@ class ProcessData {
                             freezeAmount,
                         }
                         await this.redisClient.HMSET(Utils.bookKeyFromAddress(account.account),tokens[index].symbol,JSON.stringify(localBook));
-                         // @ts-ignore
-                        index++;
                     }
+                index++;
             }else{
                 console.error('[data_process]:batchqueryErr',tokens[index].symbol,batchqueryErr);
             }
