@@ -12,7 +12,6 @@ import LogUnhandled from '../common/LogUnhandled';
 import {AsimovWallet} from '@fingo/asimov-wallet';
 import {ITrade} from '../../src/adex/interface';
 import * as redis from 'redis';
-import {promisify} from 'util';
 import Token from '../wallet/contract/Token';
 import {ILocalBook} from '../interface';
 
@@ -39,14 +38,6 @@ class Launcher {
         this.mist = new Exchange(MistConfig.ex_address, this.relayer);
     }
 
-    async sleep(ms: number): Promise<void> {
-        return new Promise(resolve => {
-            setTimeout(() => {
-                resolve();
-            }, ms);
-        });
-    }
-
     countError(err: Error) {
         this.errorCount++;
         if (this.errorCount > 100) {
@@ -68,7 +59,7 @@ class Launcher {
             const [err, txinfo] = await to(this.relayer.commonTX.detail(txid));
             if (err || !txinfo) {
                 console.log('[UTILS] asimov_getRawTransaction failed', err,txid,tryTimes);
-                await this.sleep(500);
+                await Utils.sleep(500);
             }else{
                 return true;
             }
@@ -188,79 +179,8 @@ class Launcher {
     }
 
     // 按照合约逻辑进行本地账本更新
-    /**
-    async updateLocalBook(tx_trades: ITrade[]): Promise<void> {
-        const hgetAsync = promisify(this.redisClient.hget).bind(this.redisClient);
-        console.log('update local book on redis');
-        for (const trade of tx_trades) {
-            const {taker_side, price, amount, taker, maker} = trade;
-            const taker_key = Utils.bookKeyFromAddress(taker);
-            const maker_key = Utils.bookKeyFromAddress(maker);
-            const [baseToken, quoteToken] = trade.market_id.split('-');
-            console.log(`step0-`,taker_side, price, amount, taker, maker);
-            if (taker_side === 'buy') {
-                // @ts-ignore
-                const takerBaseRes = await hgetAsync(taker_key, baseToken);
-                const takerBase = takerBaseRes.toString();
-                await this.redisClient.HMSET(taker_key, baseToken, NP.plus(takerBase, NP.times(amount, 0.999)));
-                console.log(`step1-taker-base-${baseToken}: ${takerBase} + ${NP.times(amount, 0.999)} = ${NP.plus(takerBase, NP.times(amount, 0.999))}`)
-                // 0 + 0.0032 * 0。999 = 0.0031968
-
-                const takerQuoteRes = await hgetAsync(taker_key, quoteToken);
-                const takerQuote = takerQuoteRes.toString();
-                await this.redisClient.HMSET(taker_key, quoteToken, NP.minus(takerQuote, NP.times(amount, price)));
-                console.log(`step2-taker-quoteToken-${quoteToken}: ${takerQuote} - ${NP.times(amount, price)} = ${NP.minus(takerQuote, NP.times(amount, price))}`)
-                // 0 - 9000 * 0.0032 = -28.8
-
-                const makerBaseRes = await hgetAsync(maker_key, baseToken);
-                const makerBase = makerBaseRes.toString();
-                await this.redisClient.HMSET(maker_key, baseToken, NP.minus(makerBase, amount));
-                console.log(`step3-maker-base-${baseToken}: ${makerBase} - ${amount} = ${ NP.minus(makerBase, amount)}`)
-                // 0.0031968 - 0.0032 = -0.0000032
-
-                const makerQuoteRes = await hgetAsync(maker_key, quoteToken);
-                const makerQuote = makerQuoteRes.toString();
-                let makerQuoteeResult = NP.plus(makerQuote, NP.times(amount, price, 0.999));
-                // 合约里手续费扣除之后有小数,则手续费取整，用户余额少扣1
-                if (makerQuoteeResult.split('.')[1].length > 8){
-                    makerQuoteeResult = NP.plus(makerQuoteeResult.substr(0,makerQuoteeResult.length - 1),0.00000001);
-                }
-                await this.redisClient.HMSET(maker_key, quoteToken,makerQuoteeResult);
-                console.log(`step4-maker-quotetoken-${quoteToken}: ${makerQuote} + ${NP.times(amount, price, 0.999)} = ${NP.plus(makerQuote, NP.times(amount, price, 0.999))}`)
-                // -28.8 + 28.8 * 0.999 = -28.8 * 0.0001 = -0.0288
-
-            } else if (taker_side === 'sell') {
-                // @ts-ignore
-                const takerBaseRes = await hgetAsync(taker_key, baseToken);
-                const takerBase = takerBaseRes.toString();
-                await this.redisClient.HMSET(taker_key, baseToken, NP.minus(takerBase, amount));
-
-                const takerQuoteRes = await hgetAsync(taker_key, quoteToken);
-                const takerQuote = takerQuoteRes.toString();
-                let takerQuoteResult =  NP.plus(takerQuote, NP.times(amount, price, 0.999));
-                // 合约里手续费扣除之后有小数,则手续费取整，用户余额少扣1
-                if (takerQuoteResult.split('.')[1].length > 8){
-                    takerQuoteResult = NP.plus(takerQuoteResult.substr(0,takerQuoteResult.length - 1),0.00000001);
-                }
-                await this.redisClient.HMSET(taker_key, quoteToken,takerQuoteResult);
-
-                const makerQuoteRes = await hgetAsync(maker_key, quoteToken);
-                const makerQuote = makerQuoteRes.toString();
-                await this.redisClient.HMSET(maker_key, quoteToken, NP.minus(makerQuote, NP.times(amount, price)));
-
-                const makerBaseRes = await hgetAsync(maker_key, baseToken);
-                const makerBase = makerBaseRes.toString();
-                await this.redisClient.HMSET(maker_key, baseToken,NP.plus(makerBase, NP.times(amount, 0.999)));
-            } else {
-                console.error('[ADEX_LAUNCHER]:updateLocalBook unknown side', taker_side);
-                return;
-            }
-        }
-    }**/
     async updateBalanceBorrow(symbol:string,address:string,addAmount:string): Promise<void>{
-        console.log('start updateBalanceBorrow');
         await Token.lockLocalBook(this.redisClient,address);
-        const start = Date.now();
         const now = Math.floor(+NP.divide(Date.now(),1000));
         const book:ILocalBook = await Token.getLocalBook(symbol,this.redisClient,address);
         if(+book.balance > 0){
@@ -305,7 +225,6 @@ class Launcher {
         }
         await Token.setLocalBook(symbol,this.redisClient,address,book);
         await Token.unlockLocalBook(this.redisClient,address);
-        console.log('laucher update freeze spend %o ms',Date.now() - start);
     }
     async updateLocalBook(tx_trades: ITrade[]): Promise<void> {
         console.log('update local book on redis');
@@ -391,14 +310,14 @@ class Launcher {
             }
         }
         // 500ms的作用：1、为等待pg磁盘写入的时间，2、防止laucher过快，watcher跟不上，因为wathcer的需要链上确认
-        return await this.sleep(500);
+        return await Utils.sleep(500);
     }
 
     async mainLoop(): Promise<void> {
         const trades = await this.db.get_laucher_trades();
         if (trades.length <= 0) {
             this.logger.log('No matched trades-- ',trades);
-            return await this.sleep(1000);
+            return await Utils.sleep(1000);
         }
 
         const current_time = this.utils.get_current_time();
@@ -416,7 +335,7 @@ class Launcher {
         // 准备laucher之前先延时2秒,waiting locked in db?
         // mt 3s 一个块，所以目前问题不大。
         // 但是utxo已经主动拆分，其实可以更快速度进行launch，按目前的拆分可以一个块提交10个以内交易。
-        await this.sleep(500);
+        await Utils.sleep(500);
         return await this.doLaunch(trades, current_time);
     }
 
@@ -431,7 +350,7 @@ class Launcher {
             const [err] = await to(this.mainLoop());
             if (err) {
                 this.logger.log(`Catched Main Loop Error:${err}`);
-                this.sleep(500);
+                await Utils.sleep(500);
             }
             this.logger.log(
                 `Main loop finished in:${new Date().getTime() - start.getTime()}ms`

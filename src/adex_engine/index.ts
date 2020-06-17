@@ -16,8 +16,6 @@ import { IOrder, IOrderBook, ILastTrade } from '../adex/interface';
 import { BullOption,OrderQueueConfig } from '../cfg';
 import { get_available_erc20_amount } from '../adex';
 import * as redis from 'redis';
-import {promisify} from 'util';
-import {errorCode} from '../error_code';
 import Token from '../wallet/contract/Token';
 
 const QueueNames = {
@@ -25,34 +23,18 @@ const QueueNames = {
     AddOrderBookQueue: 'addOrderBookQueue',
     AddTradesQueue: 'addTradesQueue',
 };
-
-let baseAmountTmp = '0';
-let quoteAmountTmp = '0';
 async function updateFreeze(trader_address, amount, price, side, market_id, redisClient,utils): Promise<void> {
     const [baseToken, quoteToken] = market_id.split('-');
     await Token.lockLocalBook(redisClient,trader_address);
     const start = Date.now();
     if (side === 'buy') {
         const quoteRes = await Token.getLocalBook(quoteToken,redisClient,trader_address);
-        const tmpa = quoteRes.freezeAmount;
         quoteRes.freezeAmount = NP.plus(quoteRes.freezeAmount, NP.times(price, amount));
         await Token.setLocalBook(quoteToken,redisClient,trader_address,quoteRes);
-        // console.log('freeze123_engine_1',side,trader_address,quoteRes.freezeAmount);
-        const tmp1 = quoteAmountTmp;
-        quoteAmountTmp = NP.plus(quoteAmountTmp,NP.times(price,amount));
-        console.log('freeze123_USDT_plus',tmpa,NP.times(price,amount),quoteRes.freezeAmount,trader_address,utils.get_current_time(),tmp1,NP.times(price,amount),quoteAmountTmp);
-
     } else if (side === 'sell') {
         const baseRes = await Token.getLocalBook(baseToken,redisClient,trader_address);
-        const tmpa = baseRes.freezeAmount;
         baseRes.freezeAmount = NP.plus(baseRes.freezeAmount, amount);
         await Token.setLocalBook(baseToken,redisClient,trader_address,baseRes);
-        const baseRes2 = await Token.getLocalBook(baseToken,redisClient,trader_address);
-        console.log('freeze123_BTC_plus_baseRes&&baseRes2',baseRes.freezeAmount,baseRes2.freezeAmount);
-        // ---
-        const tmp2 = baseAmountTmp;
-        baseAmountTmp = NP.plus(baseAmountTmp,amount);
-        // console.log('freeze123_BTC_plus',tmpa,amount,baseRes.freezeAmount,trader_address,utils.get_current_time(),tmp2,amount,baseAmountTmp);
         // tslint:disable-next-line:no-empty
     } else {
     }

@@ -75,7 +75,7 @@ export default class Token {
         break;
       }
       // console.log('%s is locked',address,Date.now());
-      await Utils.sleep2(20);
+      await Utils.sleep(20);
     }
     await redisClient.expire(key, 10);
     return ;
