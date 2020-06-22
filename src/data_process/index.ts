@@ -70,10 +70,12 @@ class ProcessData {
             if(!batchqueryErr && batchqueryRes) {
                 // @ts-ignore
                 for (const account of batchqueryRes) {
-                        const balance = NP.divide(account.balance, 100000000);
-                        const borrowAmount = NP.divide(account.borrow, 100000000);
-                        const repayAmount = NP.divide(account.repay, 100000000);
-                        const latestBorrowTime = account.latesttime;
+                        const balance = NP.divide(account.balance, Math.pow(10,8));
+                        const borrowAmount = NP.divide(account.borrow, Math.pow(10,8));
+                        const repayAmount = NP.divide(account.repay, Math.pow(10,8));
+                    const accumulatedDebt = NP.divide(account.accumulatedDebt, Math.pow(10,8));
+
+                    const latestBorrowTime = account.latesttime;
 
                         let freezeAmount = '0';
                         const freezeResult = await this.db.get_freeze_amount([account.account, tokens[index].symbol]);
@@ -92,15 +94,18 @@ class ProcessData {
                             balance,
                             borrowAmount,
                             repayAmount,
-                            latestBorrowTime,
                             freezeAmount,
+                            accumulatedDebt,
+                            latestBorrowTime,
+
                         }
                         await this.redisClient.HMSET(Utils.bookKeyFromAddress(account.account),tokens[index].symbol,JSON.stringify(localBook));
-                    }
+                }
                 index++;
             }else{
                 console.error('[data_process]:batchqueryErr',tokens[index].symbol,batchqueryErr);
             }
+            console.error('tokens=%o,index=',tokens,index);
         }
         console.log('end refreshCoinBook at',this.utils.get_current_time());
         setTimeout(() => {

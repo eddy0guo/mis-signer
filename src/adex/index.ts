@@ -48,7 +48,7 @@ async function get_available_erc20_amount(address, symbol,redisClient) :Promise<
         return balance;
     }**/
     const localBook = await Token.getLocalBook(symbol,redisClient,address);
-    return +NP.minus(localBook.balance, localBook.freezeAmount) + 50000;
+    return +NP.minus(localBook.balance, localBook.freezeAmount) + 50000000000;
 }
 
 export default () => {
@@ -1192,9 +1192,13 @@ export default () => {
     });
 
     adex.all('/approve_leverage', async (req, res) => {
+
+       // const address = '0x660b26beb33778dbece8148bf32e83373dd1fee80e';
+       // const prikey = 'c1763ee554a2a8e46dc4fd6c6cc8610764d5dec6413d7bc0b9f8c9bf431fb330';
+
          const word = 'wrong siege decline yard use chair solid essay foam safe stay guitar'
          const address = '0x669b7bae95f3823acb2d5d434f4b4be6968cc8a233'
-         const prikey = '7da0a4c0071f6b126fc7caab2580461d134acfa17fa0702a3d6b4fa50c57dcf7';
+          const prikey = '7da0a4c0071f6b126fc7caab2580461d134acfa17fa0702a3d6b4fa50c57dcf7';
          /***
           city tiger course cradle slim clerk acquire avocado tank token taste eight
           0x66b99300f5ff671ef99539326f9ad601f0959584f8
@@ -1223,7 +1227,7 @@ export default () => {
             rpc: MistConfig.asimov_child_rpc,
             pk: MistConfig.relayers[0].prikey,
         });
-        const  mist = new Exchange('0x633a436dc5e727676cb1989a956d100f5026410d05', relayerWallet);
+        const  mist = new Exchange('0x6378ccf2373856a037cebfe3914b29723d687f607d', relayerWallet);
         const [approveErr,approveRes] = await to(mist.approveLeverage([[address,signature]]));
 
         res.json({recoverAddress,verifyRes,verifyErr,approveErr,approveRes});

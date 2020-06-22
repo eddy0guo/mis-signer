@@ -67,7 +67,7 @@ class Launcher {
         return false;
     }
     async updateDataBase(tx_trades,trades,txid,current_time){
-        const [updateLocalBookErr, updateLocalBookRes] = await to(this.updateLocalBook(tx_trades));
+        const [updateLocalBookErr, updateLocalBookRes] = await to(this.updateLocalBook(tx_trades,current_time));
         if (updateLocalBookErr) {
             console.error('[ADEX LAUCNHER]', updateLocalBookErr);
             process.exit(-1);
@@ -114,7 +114,7 @@ class Launcher {
         await this.db.commit();
     }
 
-    async generateProcessOrders(tx_trades) {
+    async generateProcessOrders(tx_trades,now:number) {
         const processOrders = [];
         const [markets_err, markets] = await to(this.db.list_online_markets());
         if (!markets) {
@@ -166,7 +166,8 @@ class Launcher {
                 makerProcessOrder,
                 base_amount,
                 quote_amount,
-                NP.times(+oneTrade.price, 100000000),
+                +NP.times(+oneTrade.price, 100000000),
+                now,
                 token_address.base_token_address,
                 token_address.quote_token_address,
                 oneTrade.taker_side,
@@ -178,90 +179,283 @@ class Launcher {
         return processOrders;
     }
 
+
+
+    async  test_repayment(account,basetokenamount,time2){
+        if(account.latesttime === 0){
+            account.balance = account.balance + basetokenamount
+        }else{
+            // tslint:disable-next-line:radix
+            const  diff =  parseInt(String((time2 - account.latesttime) / 3600)) + 1
+            const  base = Math.pow(10,16)
+            const  debt = Math.pow(1.000017,diff) * base
+
+            // tslint:disable-next-line:radix
+            const  totoal = parseInt(String(account.accumulatedDebt * debt / base))
+            // tslint:disable-next-line:radix
+            const  rep  =  parseInt(String(basetokenamount * base / debt))
+
+            if (totoal >= account.borrow){
+                const  interest = totoal - account.borrow
+                if(basetokenamount >= interest){
+                    if(basetokenamount >= totoal){
+                        account.accumulatedDebt = 0
+                        account.borrow = 0;
+                        account.latesttime = 0;
+                        account.balance = account.balance + basetokenamount - totoal
+                    }else{
+                        account.accumulatedDebt = account.accumulatedDebt - rep
+                        account.borrow = account.borrow - (basetokenamount - interest)
+                        account.repay = account.repay + basetokenamount
+                    }
+                }else{
+                    account.accumulatedDebt = account.accumulatedDebt - rep
+                    account.repay = account.repay + basetokenamount
+                }
+            }else{
+                if (basetokenamount >= account.borrow){
+                    account.accumulatedDebt = 0
+                    account.borrow = 0;
+                    account.latesttime = 0;
+                    account.balance = account.balance + (basetokenamount - account.borrow)
+                }else{
+                    account.accumulatedDebt = account.accumulatedDebt - rep
+                    account.borrow = account.borrow - basetokenamount
+                    account.repay = account.repay + basetokenamount
+                }
+            }
+
+        }
+        return account
+    }
+
+    async  test_debt(account,amount,time2){
+        // tslint:disable-next-line:radix
+        const diff =  parseInt(String((time2 - account.latesttime) / 3600)) + 1;
+        const base = Math.pow(10,16);
+        const  debt = Math.pow(1.000017,diff) * base;
+        // tslint:disable-next-line:radix
+        const total = parseInt(String(amount * base / debt));
+        if(account.balance>=amount){
+            account.balance = account.balance - amount
+        }else{
+            if (account.latesttime === 0){
+                account.borrow = amount - account.balance
+                account.latesttime = time2
+                account.accumulatedDebt = amount - account.balance
+            }else{
+                account.borrow = account.borrow+ amount
+                account.accumulatedDebt = account.accumulatedDebt + total
+            }
+        }
+        return account
+    }
     // 按照合约逻辑进行本地账本更新
-    async updateBalanceBorrow(symbol:string,address:string,addAmount:string): Promise<void>{
+    async updateBalanceBorrow(symbol:string,address:string,addAmount:string,now:number): Promise<void>{
         await Token.lockLocalBook(this.redisClient,address);
-        const now = Math.floor(+NP.divide(Date.now(),1000));
+        let  book:ILocalBook = await Token.getLocalBook(symbol,this.redisClient,address);
+        let book2 = {
+            account: address,
+            balance : +NP.times(book.balance,Math.pow(10,8)),
+            borrow: +NP.times(book.borrowAmount,Math.pow(10,8)),
+            latesttime: book.latestBorrowTime,
+            accumulatedDebt: +NP.times(book.accumulatedDebt,Math.pow(10,8)),
+            repay: +NP.times(book.repayAmount,Math.pow(10,8)),
+        };
+        console.log('bbb',symbol,address,addAmount,now,book);
+        // tslint:disable-next-line:radix
+        const addAmount2 = Math.abs(parseInt(NP.times(addAmount,Math.pow(10,8))));
+        console.log('test_befor---',book2);
+        if(+addAmount < 0){
+            book2 = await this.test_debt(book2,addAmount2,now);
+            console.log(`test_debt_${symbol},--${address}-`,book2,addAmount2,now);
+        }else{
+            book2 = await this.test_repayment(book2,addAmount2,now);
+            console.log(`test_repayment-${symbol}-${address}-,`,book2,addAmount2,now);
+
+        }
+        book = {
+            balance : NP.divide(book2.balance,Math.pow(10,8)),
+            borrowAmount: NP.divide(book2.borrow.toString(),Math.pow(10,8)),
+            repayAmount: NP.divide(book2.repay.toString(),Math.pow(10,8)),
+            accumulatedDebt: NP.divide(book2.accumulatedDebt.toString(),Math.pow(10,8)),
+            freezeAmount: book.freezeAmount,
+            latestBorrowTime:book2.latesttime,
+        }
+        console.log('fff--%o',book);
+        await Token.setLocalBook(symbol,this.redisClient,address,book);
+        await Token.unlockLocalBook(this.redisClient,address);
+    }
+
+
+
+    // 按照合约逻辑进行本地账本更新
+    async updateBalanceBorrow2(symbol:string,address:string,addAmount:string,now:number): Promise<void>{
+        await Token.lockLocalBook(this.redisClient,address);
+        console.log('aaa')
         const book:ILocalBook = await Token.getLocalBook(symbol,this.redisClient,address);
+        console.log('bbb',symbol,address,addAmount,now,book);
+        const sixteenPower = Math.pow(10,16);
+        const eightPower = Math.pow(10,8);
+        console.log('bbb2',symbol,address,addAmount,now,book);
         if(+book.balance > 0){
+            console.log('bbb111')
             const balance = NP.plus(book.balance,addAmount);
             if(+balance >= 0){
                 book.balance = balance;
+                console.log('bbb2224--',symbol,address,book.balance,addAmount);
             }else{
                 book.balance = '0';
                 // get abs()
                 book.borrowAmount = balance.substr(1);
                 book.latestBorrowTime = now;
+                book.accumulatedDebt = balance.substr(1);
+                console.log('bbb333----book.accumulatedDebt--',book.accumulatedDebt,book.balance,addAmount);
             }
         }else if (+book.balance === 0){
+            console.log('cccc')
             // 复利计算，日利息万五，小时0.000017
-            const duration = (now - book.latestBorrowTime) / 3600 + 1;
-            let interest = NP.times(book.borrowAmount,Math.pow(1.000017,duration));
-            interest = NP.divide(Math.floor(+NP.times(interest,100000000)),100000000);
-            // addAmount的负号是相对于balance的，borrow就用minus而不是plus
-            const borrowAmount = NP.minus(interest,addAmount);
-            if(+borrowAmount >= 0){
-                book.borrowAmount = borrowAmount;
-                book.latestBorrowTime = now;
-                // 有还债
-                if(+addAmount > 0){
-                    book.repayAmount = NP.plus(book.repayAmount,addAmount);
-                }
-            }else if (+borrowAmount < 0){
-                book.borrowAmount = '0';
-                book.latestBorrowTime = 0;
-                book.repayAmount = '0';
-                book.balance = borrowAmount.substr(1);
-            }else {
-                book.borrowAmount = '0';
-                book.repayAmount = '0';
-                book.latestBorrowTime = 0;
-            }
+            const duration = Math.floor((now - book.latestBorrowTime) / 3600) + 1;
+            const sixteenPowerRate = NP.times(Math.pow(1.000017,duration),sixteenPower);
+            // 当前累计的债务+利息,向下取整
+            const DebtAtNow =(+NP.minus(NP.times(book.accumulatedDebt,Math.pow(1.000017,duration)),0.000000005)).toFixed(8);
+            const currentFee = NP.minus(DebtAtNow,book.accumulatedDebt,);
+            // const fortyPowerAddAmount = NP.times(addAmount,sixteenPower,eightPower,sixteenPower);
+            // console.log('2--',fortyPowerAddAmount);
+            // 11
+            const TFAddAmount = NP.times(addAmount,eightPower,sixteenPower);
+            console.log('test2--',addAmount,TFAddAmount);
+            // 111
+            // rate 和 新借贷同时放到16次方之后，再乘以16次方然后取整
+           //  let equalOriginAddAmount = (Math.floor(+NP.divide(TFAddAmount,sixteenPowerRate)) + 1).toString();
+            let equalOriginAddAmount = Math.floor(+NP.divide(TFAddAmount,sixteenPowerRate)).toString();
 
+            if(+TFAddAmount < 0){
+                 equalOriginAddAmount = '-' +  Math.floor(+NP.divide(TFAddAmount.substr(1),sixteenPowerRate));
+             }
+             console.log('test3--',TFAddAmount,sixteenPowerRate,NP.divide(TFAddAmount,sixteenPowerRate),equalOriginAddAmount);
+
+            // let equalOriginAddAmount = Math.floor(+NP.divide(NP.times(addAmount,sixteenPower,eightPower),sixteenPowerRate));
+              //   equalOriginAddAmount = +NP.times(equalOriginAddAmount,sixteenPower);
+            // const equalOriginFee = NP.divide(currentFee,Math.pow(1.000017,duration));
+
+            // 111 const liquidateResult = NP.minus(NP.times(book.accumulatedDebt,eightPower,sixteenPower),equalOriginAddAmount);
+            const liquidateResult = NP.minus(NP.times(book.accumulatedDebt,eightPower),equalOriginAddAmount);
+            // liquidateResult = Math.floor(+NP.divide(liquidateResult,sixteenPower)).toString();
+            console.log('test4--',NP.times(book.accumulatedDebt,sixteenPower,eightPower),equalOriginAddAmount);
+            const tmp = book.accumulatedDebt;
+            console.log('4.a--',liquidateResult,book);
+            // 债务还完，balance有剩余
+            if(+liquidateResult <= 0){
+                book.accumulatedDebt = '0';
+                book.latestBorrowTime = 0;
+                book.borrowAmount = '0';
+                book.balance = NP.divide(liquidateResult.substr(1),eightPower);
+                console.log('4.a1--',liquidateResult,eightPower,book);
+                // book.balance = liquidateResult.substr(1);
+                // 107/100
+            }else{
+                if(book.accumulatedDebt === '0'){
+                    book.accumulatedDebt = addAmount;
+                    book.latestBorrowTime = now;
+                }else if (+book.accumulatedDebt > 0){
+                    // book.accumulatedDebt = NP.divide(liquidateResult,sixteenPower,eightPower);
+                    book.accumulatedDebt = NP.divide(liquidateResult,eightPower);
+                }else{
+                    console.error('book.accumulatedDebt shouldn\'t be less than zero')
+                }
+                // book.accumulatedDebt = liquidateResult;
+                console.log('4.b--',liquidateResult,book);
+                if (+currentFee < +addAmount)
+                {
+                    const tmp2 = book.borrowAmount;
+                    console.log('4.5--',book.borrowAmount,addAmount,currentFee);
+                    book.borrowAmount = NP.minus(book.borrowAmount,NP.minus(addAmount,currentFee));
+                    console.log('5--',book.borrowAmount,addAmount,currentFee);
+                }else if(+addAmount < 0){
+                    console.log('5.5--',book.borrowAmount,addAmount);
+                    book.borrowAmount = NP.minus(book.borrowAmount,addAmount);
+                    console.log('6--',book.borrowAmount,addAmount);
+                }
+                // console.log('compute2 borrow',tmp2,addAmount,)
+                console.log('4.c--',liquidateResult,book);
+            }
+            console.log('eeee');
+            console.log('compute---symbol=%o,  originAccumulatedDebt=%o,  duration=%o,   addamount=%o,  equalOriginaddAmount=%o,  liquidateResult+%o',
+                symbol,tmp,duration,addAmount,equalOriginAddAmount,liquidateResult);
         }else{
-            const message = `account balance error ${symbol} ${address} ${book.balance}`
+            console.log('bbb3',symbol,address,addAmount,now);
+            const message = `account balance error ${symbol} ${address} ${book.balance}`;
             console.error(message);
             throw new Error(message);
         }
+        console.log('fff--%o',book);
         await Token.setLocalBook(symbol,this.redisClient,address,book);
         await Token.unlockLocalBook(this.redisClient,address);
     }
-    async updateLocalBook(tx_trades: ITrade[]): Promise<void> {
+    async updateLocalBook(tx_trades: ITrade[],currentTime:string): Promise<void> {
+        const nowStr = currentTime.replace(/-/g,'/');
+        const now =  Math.floor((new Date(nowStr)).getTime() / 1000);
         console.log('update local book on redis');
         for (const trade of tx_trades) {
             const {taker_side, price, amount, taker, maker} = trade;
             const [baseToken, quoteToken] = trade.market_id.split('-');
             if (taker_side === 'buy') {
+                //  更新顺序先扣钱，再收钱
+                const makerBaseAddAmount = '-' + amount.toString();
+                await this.updateBalanceBorrow(baseToken,maker,makerBaseAddAmount,now);
+                /**
                 // amount有效位于0.0001，这里不用判断手续费精度超8位de情况
                 const takerBaseAddAmount = NP.times(amount, 0.999);
-                await this.updateBalanceBorrow(baseToken,taker,takerBaseAddAmount);
+                await this.updateBalanceBorrow(baseToken,taker,takerBaseAddAmount,now);
+                **/
+                const takerBaseAddAmount = NP.times(amount, 1);
+                await this.updateBalanceBorrow(baseToken,taker,takerBaseAddAmount,now);
+                const takerBaseAddAmount2 = NP.times(amount, -0.001);
+                await this.updateBalanceBorrow(baseToken,taker,takerBaseAddAmount2,now);
+
+
+
 
                 const takerQuoteAddAmount = '-' + NP.times(amount, price);
-                await this.updateBalanceBorrow(quoteToken,taker,takerQuoteAddAmount);
+                await this.updateBalanceBorrow(quoteToken,taker,takerQuoteAddAmount,now);
 
-                const makerBaseAddAmount = '-' + amount.toString();
-                await this.updateBalanceBorrow(baseToken,maker,makerBaseAddAmount);
+                /**
+                 // 合约里手续费扣除之后有小数,则手续费取整，用户余额少扣1
+                 let fee = NP.times(amount, price, 0.001);
+                 fee = NP.divide(Math.floor(+NP.times(fee,100000000)),100000000);
+                 const makerQuoteAddAmount = NP.minus(NP.times(amount, price),fee);
+                 await this.updateBalanceBorrow(quoteToken,maker,makerQuoteAddAmount,now);
+                **/
+                //  start
+                const makerQuoteAddAmount2 = NP.times(amount, price);
+                await this.updateBalanceBorrow(quoteToken,maker,makerQuoteAddAmount2,now);
 
-                // 合约里手续费扣除之后有小数,则手续费取整，用户余额少扣1
                 let fee = NP.times(amount, price, 0.001);
-                fee = NP.divide(Math.floor(+NP.times(fee,100000000)),100000000);
-                const makerQuoteAddAmount = NP.minus(NP.times(amount, price),fee);
-                await this.updateBalanceBorrow(quoteToken,maker,makerQuoteAddAmount);
+                fee = NP.divide(-Math.floor(+NP.times(fee,100000000)),100000000);
+                console.log('feeeee-',fee);
+                await this.updateBalanceBorrow(quoteToken,maker,fee,now);
+
+
 
             } else if (taker_side === 'sell') {
                 const takerBaseAddAmount = '-' + amount.toString();
-                await this.updateBalanceBorrow(baseToken,taker,takerBaseAddAmount);
+                await this.updateBalanceBorrow(baseToken,taker,takerBaseAddAmount,now);
+                console.log('compute1');
+
+                const makerBaseAddAmount = NP.times(amount,0.999);
+                await this.updateBalanceBorrow(baseToken,maker,makerBaseAddAmount,now);
+                console.log('compute4');
+
+                const makerQuoteAddAmount = '-' + NP.times(amount, price);
+                await this.updateBalanceBorrow(quoteToken,maker,makerQuoteAddAmount,now);
+                console.log('compute3,',quoteToken,maker,makerQuoteAddAmount,now);
 
                 let fee = NP.times(amount, price, 0.001);
                 fee = NP.divide(Math.floor(+NP.times(fee,100000000)),100000000);
                 const takerQuoteAddAmount =  NP.minus(NP.times(amount, price),fee);
-                await this.updateBalanceBorrow(quoteToken,taker,takerQuoteAddAmount);
-
-                const makerQuoteAddAmount = '-' + NP.times(amount, price);
-                await this.updateBalanceBorrow(quoteToken,maker,makerQuoteAddAmount);
-
-                const makerBaseAddAmount = NP.times(amount,0.999);
-                await this.updateBalanceBorrow(baseToken,maker,makerBaseAddAmount);
+                await this.updateBalanceBorrow(quoteToken,taker,takerQuoteAddAmount,now);
+                console.log('compute2',);
             } else {
                 console.error('[ADEX_LAUNCHER]:updateLocalBook unknown side', taker_side);
                 return;
@@ -281,7 +475,11 @@ class Launcher {
             );
             return;
         }
-        const processOrders = await this.generateProcessOrders(tx_trades);
+        const nowStr = current_time.replace(/-/g,'/');
+        const now =  Math.floor((new Date(nowStr)).getTime() / 1000);
+
+        const processOrders = await this.generateProcessOrders(tx_trades,now);
+        console.log('matchorder---',processOrders);
         const [err, txid] = await to(this.mist.matchorder(processOrders));
         if (!err && !txid.remoteErr) {
             await this.updateDataBase(tx_trades,trades,txid.remoteTXid,current_time);
