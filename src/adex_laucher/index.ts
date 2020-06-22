@@ -403,22 +403,22 @@ class Launcher {
             if (taker_side === 'buy') {
                 //  更新顺序先扣钱，再收钱
                 const makerBaseAddAmount = '-' + amount.toString();
-                await this.updateBalanceBorrow(baseToken,maker,makerBaseAddAmount,now);
+                await this.updateBalanceBorrow2(baseToken,maker,makerBaseAddAmount,now);
                 /**
                 // amount有效位于0.0001，这里不用判断手续费精度超8位de情况
                 const takerBaseAddAmount = NP.times(amount, 0.999);
                 await this.updateBalanceBorrow(baseToken,taker,takerBaseAddAmount,now);
                 **/
                 const takerBaseAddAmount = NP.times(amount, 1);
-                await this.updateBalanceBorrow(baseToken,taker,takerBaseAddAmount,now);
+                await this.updateBalanceBorrow2(baseToken,taker,takerBaseAddAmount,now);
                 const takerBaseAddAmount2 = NP.times(amount, -0.001);
-                await this.updateBalanceBorrow(baseToken,taker,takerBaseAddAmount2,now);
+                await this.updateBalanceBorrow2(baseToken,taker,takerBaseAddAmount2,now);
 
 
 
 
                 const takerQuoteAddAmount = '-' + NP.times(amount, price);
-                await this.updateBalanceBorrow(quoteToken,taker,takerQuoteAddAmount,now);
+                await this.updateBalanceBorrow2(quoteToken,taker,takerQuoteAddAmount,now);
 
                 /**
                  // 合约里手续费扣除之后有小数,则手续费取整，用户余额少扣1
@@ -429,32 +429,47 @@ class Launcher {
                 **/
                 //  start
                 const makerQuoteAddAmount2 = NP.times(amount, price);
-                await this.updateBalanceBorrow(quoteToken,maker,makerQuoteAddAmount2,now);
+                await this.updateBalanceBorrow2(quoteToken,maker,makerQuoteAddAmount2,now);
 
                 let fee = NP.times(amount, price, 0.001);
                 fee = NP.divide(-Math.floor(+NP.times(fee,100000000)),100000000);
                 console.log('feeeee-',fee);
-                await this.updateBalanceBorrow(quoteToken,maker,fee,now);
+                await this.updateBalanceBorrow2(quoteToken,maker,fee,now);
 
 
 
             } else if (taker_side === 'sell') {
                 const takerBaseAddAmount = '-' + amount.toString();
-                await this.updateBalanceBorrow(baseToken,taker,takerBaseAddAmount,now);
+                await this.updateBalanceBorrow2(baseToken,taker,takerBaseAddAmount,now);
                 console.log('compute1');
 
+                /**
                 const makerBaseAddAmount = NP.times(amount,0.999);
                 await this.updateBalanceBorrow(baseToken,maker,makerBaseAddAmount,now);
+                 **/
+                const makerBaseAddAmount = NP.times(amount,1);
+                await this.updateBalanceBorrow2(baseToken,maker,makerBaseAddAmount,now);
+                const makerBaseAddAmount2 = NP.times(amount,-0.001);
+                await this.updateBalanceBorrow2(baseToken,maker,makerBaseAddAmount2,now);
                 console.log('compute4');
 
                 const makerQuoteAddAmount = '-' + NP.times(amount, price);
-                await this.updateBalanceBorrow(quoteToken,maker,makerQuoteAddAmount,now);
+                await this.updateBalanceBorrow2(quoteToken,maker,makerQuoteAddAmount,now);
                 console.log('compute3,',quoteToken,maker,makerQuoteAddAmount,now);
 
+                /**
                 let fee = NP.times(amount, price, 0.001);
                 fee = NP.divide(Math.floor(+NP.times(fee,100000000)),100000000);
                 const takerQuoteAddAmount =  NP.minus(NP.times(amount, price),fee);
                 await this.updateBalanceBorrow(quoteToken,taker,takerQuoteAddAmount,now);
+                 **/
+                const takerQuoteAddAmount = NP.times(amount, price);
+                await this.updateBalanceBorrow2(quoteToken,taker,takerQuoteAddAmount,now);
+
+                let fee = NP.times(amount, price, 0.001);
+                fee = NP.divide(-Math.floor(+NP.times(fee,100000000)),100000000);
+                await this.updateBalanceBorrow2(quoteToken,taker,fee,now);
+
                 console.log('compute2',);
             } else {
                 console.error('[ADEX_LAUNCHER]:updateLocalBook unknown side', taker_side);

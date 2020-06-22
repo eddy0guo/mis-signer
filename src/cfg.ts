@@ -94,7 +94,7 @@ const local: IConfig = {
 
 const dev: IConfig = {
     // ex_address: '0x63ae1ace4fedd235ddce11636a239068c7df73282a',
-    ex_address: '0x63ce4ce4d07f890d0f976d1901624b7f71bde1cd16',
+    ex_address: '0x6345e08064fe37ea64554112d9d823ff9486ea3a09',
     mist_earnings_address: '0x634b2ee429ce7dd2d1540dfd8ee5475b5a144ce71a',
     order_hash_word:
         'enhance donor garment gospel loop purse pumpkin bag oven bone decide street',
