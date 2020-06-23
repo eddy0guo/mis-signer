@@ -184,7 +184,7 @@ class Launcher {
     async  test_repayment(account,basetokenamount,time2){
         if(account.latesttime === 0){
             account.balance = account.balance + basetokenamount
-        }else{
+        }else {
             // tslint:disable-next-line:radix
             const  diff =  parseInt(String((time2 - account.latesttime) / 3600)) + 1
             const  base = Math.pow(10,16)
@@ -195,7 +195,7 @@ class Launcher {
             // tslint:disable-next-line:radix
             const  rep  =  parseInt(String(basetokenamount * base / debt))
 
-            if (totoal >= account.borrow){
+           if (totoal >= account.borrow){
                 const  interest = totoal - account.borrow
                 if(basetokenamount >= interest){
                     if(basetokenamount >= totoal){
@@ -265,13 +265,14 @@ class Launcher {
         console.log('bbb',symbol,address,addAmount,now,book);
         // tslint:disable-next-line:radix
         const addAmount2 = Math.abs(parseInt(NP.times(addAmount,Math.pow(10,8))));
-        console.log('test_befor---',book2);
+        const  tmpBorrow = book2.borrow;
         if(+addAmount < 0){
             book2 = await this.test_debt(book2,addAmount2,now);
-            console.log(`test_debt_${symbol},--${address}-`,book2,addAmount2,now);
+            console.log(`test_1debt_${symbol},--${address}----${book2.borrow}=${tmpBorrow} - ${addAmount2} ,at ${now}`);
         }else{
             book2 = await this.test_repayment(book2,addAmount2,now);
-            console.log(`test_repayment-${symbol}-${address}-,`,book2,addAmount2,now);
+            console.log(`test_1repay_${symbol},--${address}----${book2.borrow}=${tmpBorrow} - ${addAmount2} ,at ${now}`);
+            // console.log(`test_1repayment-${symbol}-${address}-,`,book2.borrow,addAmount2,now);
 
         }
         book = {
@@ -299,90 +300,80 @@ class Launcher {
         const eightPower = Math.pow(10,8);
         console.log('bbb2',symbol,address,addAmount,now,book);
         if(+book.balance > 0){
-            console.log('bbb111')
             const balance = NP.plus(book.balance,addAmount);
             if(+balance >= 0){
                 book.balance = balance;
-                console.log('bbb2224--',symbol,address,book.balance,addAmount);
             }else{
                 book.balance = '0';
                 // get abs()
                 book.borrowAmount = balance.substr(1);
                 book.latestBorrowTime = now;
                 book.accumulatedDebt = balance.substr(1);
-                console.log('bbb333----book.accumulatedDebt--',book.accumulatedDebt,book.balance,addAmount);
             }
         }else if (+book.balance === 0){
-            console.log('cccc')
             // 复利计算，日利息万五，小时0.000017
             const duration = Math.floor((now - book.latestBorrowTime) / 3600) + 1;
             const sixteenPowerRate = NP.times(Math.pow(1.000017,duration),sixteenPower);
             // 当前累计的债务+利息,向下取整
-            const DebtAtNow =(+NP.minus(NP.times(book.accumulatedDebt,Math.pow(1.000017,duration)),0.000000005)).toFixed(8);
-            const currentFee = NP.minus(DebtAtNow,book.accumulatedDebt,);
-            // const fortyPowerAddAmount = NP.times(addAmount,sixteenPower,eightPower,sixteenPower);
-            // console.log('2--',fortyPowerAddAmount);
-            // 11
+            let DebtAtNow =NP.times(book.accumulatedDebt,Math.pow(1.000017,duration));
+            DebtAtNow = Math.floor(+NP.divide(NP.times(DebtAtNow,eightPower),eightPower)).toString();
             const TFAddAmount = NP.times(addAmount,eightPower,sixteenPower);
-            console.log('test2--',addAmount,TFAddAmount);
-            // 111
-            // rate 和 新借贷同时放到16次方之后，再乘以16次方然后取整
-           //  let equalOriginAddAmount = (Math.floor(+NP.divide(TFAddAmount,sixteenPowerRate)) + 1).toString();
             let equalOriginAddAmount = Math.floor(+NP.divide(TFAddAmount,sixteenPowerRate)).toString();
-
             if(+TFAddAmount < 0){
                  equalOriginAddAmount = '-' +  Math.floor(+NP.divide(TFAddAmount.substr(1),sixteenPowerRate));
              }
-             console.log('test3--',TFAddAmount,sixteenPowerRate,NP.divide(TFAddAmount,sixteenPowerRate),equalOriginAddAmount);
-
-            // let equalOriginAddAmount = Math.floor(+NP.divide(NP.times(addAmount,sixteenPower,eightPower),sixteenPowerRate));
-              //   equalOriginAddAmount = +NP.times(equalOriginAddAmount,sixteenPower);
-            // const equalOriginFee = NP.divide(currentFee,Math.pow(1.000017,duration));
-
-            // 111 const liquidateResult = NP.minus(NP.times(book.accumulatedDebt,eightPower,sixteenPower),equalOriginAddAmount);
-            const liquidateResult = NP.minus(NP.times(book.accumulatedDebt,eightPower),equalOriginAddAmount);
-            // liquidateResult = Math.floor(+NP.divide(liquidateResult,sixteenPower)).toString();
-            console.log('test4--',NP.times(book.accumulatedDebt,sixteenPower,eightPower),equalOriginAddAmount);
-            const tmp = book.accumulatedDebt;
-            console.log('4.a--',liquidateResult,book);
             // 债务还完，balance有剩余
-            if(+liquidateResult <= 0){
-                book.accumulatedDebt = '0';
-                book.latestBorrowTime = 0;
-                book.borrowAmount = '0';
-                book.balance = NP.divide(liquidateResult.substr(1),eightPower);
-                console.log('4.a1--',liquidateResult,eightPower,book);
-                // book.balance = liquidateResult.substr(1);
-                // 107/100
-            }else{
-                if(book.accumulatedDebt === '0'){
-                    book.accumulatedDebt = addAmount;
-                    book.latestBorrowTime = now;
-                }else if (+book.accumulatedDebt > 0){
-                    // book.accumulatedDebt = NP.divide(liquidateResult,sixteenPower,eightPower);
-                    book.accumulatedDebt = NP.divide(liquidateResult,eightPower);
+            if(DebtAtNow >= book.borrowAmount){
+                const currentFee = NP.minus(DebtAtNow,book.borrowAmount);
+                const liquidateResult = NP.minus(NP.times(book.accumulatedDebt,eightPower),equalOriginAddAmount);
+                if(+liquidateResult <= 0){
+                    book.accumulatedDebt = '0';
+                    book.latestBorrowTime = 0;
+                    book.borrowAmount = '0';
+                    book.balance = NP.divide(liquidateResult.substr(1),eightPower);
+                    console.log('4.a1--',liquidateResult,eightPower,book);
+                    // book.balance = liquidateResult.substr(1);
                 }else{
-                    console.error('book.accumulatedDebt shouldn\'t be less than zero')
+                    book.accumulatedDebt = NP.divide(liquidateResult,eightPower);
+                        if(+addAmount >= +currentFee){
+                            const tmp = book.borrowAmount;
+                            book.borrowAmount = NP.minus(book.borrowAmount,NP.minus(addAmount,currentFee));
+                            console.log(`borrow11::${book.borrowAmount} =${tmp} - ${addAmount} + ${currentFee} -----`);
+                            book.repayAmount = NP.plus(book.repayAmount,addAmount);
+                        }else if(+addAmount < 0){
+                            const tmp = book.borrowAmount;
+                            book.borrowAmount = NP.minus(book.borrowAmount,addAmount);
+                            console.log(`borrow12::${book.borrowAmount} =${tmp} - ${addAmount} -----`);
+                        }else if(+addAmount >0 && +currentFee > +addAmount){
+                            book.repayAmount = NP.plus(book.repayAmount,addAmount);
+                        }
                 }
-                // book.accumulatedDebt = liquidateResult;
-                console.log('4.b--',liquidateResult,book);
-                if (+currentFee < +addAmount)
-                {
-                    const tmp2 = book.borrowAmount;
-                    console.log('4.5--',book.borrowAmount,addAmount,currentFee);
-                    book.borrowAmount = NP.minus(book.borrowAmount,NP.minus(addAmount,currentFee));
-                    console.log('5--',book.borrowAmount,addAmount,currentFee);
-                }else if(+addAmount < 0){
-                    console.log('5.5--',book.borrowAmount,addAmount);
-                    book.borrowAmount = NP.minus(book.borrowAmount,addAmount);
-                    console.log('6--',book.borrowAmount,addAmount);
+            }else{
+                const liquidateResult = NP.minus(NP.times(book.borrowAmount,eightPower),addAmount);
+                if(+liquidateResult <= 0){
+                    book.accumulatedDebt = '0';
+                    book.latestBorrowTime = 0;
+                    book.borrowAmount = '0';
+                    book.balance = NP.divide(liquidateResult.substr(1),eightPower);
+                    console.log('4.a1--',liquidateResult,eightPower,book);
+                }else{
+                    book.accumulatedDebt = NP.divide(NP.minus(NP.times(book.accumulatedDebt,eightPower),equalOriginAddAmount),eightPower);
+                        if(+addAmount >= 0){
+                            const tmp = book.borrowAmount;
+                            book.borrowAmount = NP.minus(book.borrowAmount,addAmount);
+                            console.log(`borrow13::${book.borrowAmount} =${tmp} - ${addAmount} -----`);
+                            book.repayAmount = NP.plus(book.repayAmount,addAmount);
+                        }else{
+                            const tmp = book.borrowAmount;
+                            book.borrowAmount = NP.minus(book.borrowAmount,addAmount);
+                            console.log(`borrow14::${book.borrowAmount} =${tmp} - ${addAmount} -----`);
+                        }
                 }
-                // console.log('compute2 borrow',tmp2,addAmount,)
-                console.log('4.c--',liquidateResult,book);
+
             }
-            console.log('eeee');
-            console.log('compute---symbol=%o,  originAccumulatedDebt=%o,  duration=%o,   addamount=%o,  equalOriginaddAmount=%o,  liquidateResult+%o',
-                symbol,tmp,duration,addAmount,equalOriginAddAmount,liquidateResult);
+
+            // console.log('compute---symbol=%o,  originAccumulatedDebt=%o,  duration=%o,   addamount=%o,  equalOriginaddAmount=%o,  liquidateResult+%o',
+             //   symbol,tmp,duration,addAmount,equalOriginAddAmount,liquidateResult);
         }else{
             console.log('bbb3',symbol,address,addAmount,now);
             const message = `account balance error ${symbol} ${address} ${book.balance}`;
